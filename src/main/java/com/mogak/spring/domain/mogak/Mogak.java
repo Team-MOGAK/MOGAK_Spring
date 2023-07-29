@@ -5,7 +5,7 @@ import com.mogak.spring.domain.user.User;
 import lombok.*;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Builder
 @Getter
@@ -30,8 +30,8 @@ public class Mogak extends BaseEntity {
     @Column(nullable = false)
     private String state;
     @Column(nullable = false)
-    private LocalDateTime startAt;
-    private LocalDateTime endAt;
+    private LocalDate startAt;
+    private LocalDate endAt;
 
     @Column(nullable = false)
     private String validation;
