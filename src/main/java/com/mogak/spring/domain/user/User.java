@@ -15,19 +15,16 @@ public class User extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
     private Long id;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="job_id")
     private Job job;
     @Column(nullable = false)
     private String nickname;
-    private Enum gender;
+    private char gender;
     private int age;
     private String profileImg;
-    private String userUuid;
     @Column(nullable = false)
     private String email;
-
     @Column(nullable = false)
     private String validation;
     private Double weekRate;
