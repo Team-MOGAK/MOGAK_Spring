@@ -21,4 +21,11 @@ public class MogakConverter {
                 .validation(Validation.ACTIVE.toString())
                 .build();
     }
+
+    public static MogakResponseDto.createDto toCreateDto(Mogak mogak) {
+        return MogakResponseDto.createDto.builder()
+                .mogakId(mogak.getId())
+                .title(mogak.getTitle())
+                .build();
+    }
 }

@@ -21,6 +21,6 @@ public class MogakController {
     @PostMapping("/")
     public ResponseEntity<MogakResponseDto.createDto> createMogak(MogakRequestDto.CreateDto request) {
         Mogak mogak = mogakService.create(request);
-        return ResponseEntity.ok(MogakConverter.toCreateDto);
+        return ResponseEntity.ok(MogakConverter.toCreateDto(mogak));
     }
 }
