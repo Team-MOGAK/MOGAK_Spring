@@ -31,4 +31,29 @@ class DataInitializerTest {
         softly.assertThat(jobStudy.getName()).isEqualTo("직무공부");
     }
 
+    @Test
+    @DisplayName("카테고리 데이터 insert")
+    void 카테고리데이터_insert() {
+        //given
+        MogakCategory certification = DataInitializer.categoryConstructor("자격증");
+        MogakCategory jobStudy = DataInitializer.categoryConstructor("직무공부");
+
+        //when
+        mogakCategoryRepository.save(certification);
+        mogakCategoryRepository.save(jobStudy);
+
+        Optional<MogakCategory> certificationInJPA = mogakCategoryRepository.findMogakCategoryByName("자격증");
+        Optional<MogakCategory> jobStudyInJPA = mogakCategoryRepository.findMogakCategoryByName("직무공부");
+        Optional<MogakCategory> noDataInJPA = mogakCategoryRepository.findMogakCategoryByName("노우");
+        System.out.println(noDataInJPA);
+
+        //then
+        SoftAssertions softly = new SoftAssertions();
+        softly.assertThat(certificationInJPA.get().getName()).isEqualTo("자격증");
+        softly.assertThat(jobStudyInJPA.get().getName()).isEqualTo("직무공부");
+        softly.assertThatThrownBy(() ->{
+            noDataInJPA.get();
+        }).isInstanceOf(NoSuchElementException.class);
+    }
+
 }
