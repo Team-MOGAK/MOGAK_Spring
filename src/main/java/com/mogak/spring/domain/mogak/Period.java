@@ -13,7 +13,7 @@ import javax.persistence.*;
 public class Period {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "period_id")
-    private Long id;
+    private int id;
     @Column(nullable = false)
     private String day;
 }
