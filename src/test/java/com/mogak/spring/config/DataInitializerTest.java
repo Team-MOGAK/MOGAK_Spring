@@ -17,7 +17,6 @@ class DataInitializerTest {
     @Autowired
     private MogakCategoryRepository mogakCategoryRepository;
 
-
     @Test
     @DisplayName("카테고리 객체가 잘 생성되는지")
     void 모각카테고리_생성_test() {

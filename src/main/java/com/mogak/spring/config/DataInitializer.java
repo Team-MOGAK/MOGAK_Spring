@@ -1,18 +1,16 @@
 package com.mogak.spring.config;
 
 import com.mogak.spring.domain.mogak.MogakCategory;
+import com.mogak.spring.domain.mogak.Period;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.MogakCategoryRepository;
+import com.mogak.spring.repository.PeriodRepository;
 import com.mogak.spring.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @AllArgsConstructor
 @Component
@@ -20,12 +18,14 @@ public class DataInitializer implements ApplicationRunner {
 
     private final MogakCategoryRepository mogakCategoryRepository;
     private final AddressRepository addressRepository;
+    private final PeriodRepository periodRepository;
     private final UserRepository userRepository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         insertMogakCategory();
         insertAddress();
+        insertPeriod();
     }
 
     private void insertMogakCategory() {
@@ -62,6 +62,23 @@ public class DataInitializer implements ApplicationRunner {
     private static Address getAddress(String address) {
         return Address.builder()
                 .name(address)
+                .build();
+    }
+
+    private void insertPeriod() {
+        String[] dayArr = {
+                "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"
+        };
+
+        for (String day: dayArr) {
+            Period periodEntity = getPeriod(day);
+            periodRepository.save(periodEntity);
+        }
+    }
+
+    private static Period getPeriod(String period) {
+        return Period.builder()
+                .days(period)
                 .build();
     }
 
