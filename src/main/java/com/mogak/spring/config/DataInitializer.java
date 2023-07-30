@@ -3,10 +3,8 @@ package com.mogak.spring.config;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.mogak.Period;
 import com.mogak.spring.domain.user.Address;
-import com.mogak.spring.repository.AddressRepository;
-import com.mogak.spring.repository.MogakCategoryRepository;
-import com.mogak.spring.repository.PeriodRepository;
-import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.domain.user.Job;
+import com.mogak.spring.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -19,6 +17,7 @@ public class DataInitializer implements ApplicationRunner {
     private final MogakCategoryRepository mogakCategoryRepository;
     private final AddressRepository addressRepository;
     private final PeriodRepository periodRepository;
+    private final JobRepository jobRepository;
     private final UserRepository userRepository;
 
     @Override
@@ -26,6 +25,7 @@ public class DataInitializer implements ApplicationRunner {
         insertMogakCategory();
         insertAddress();
         insertPeriod();
+        insertJob();
     }
 
     private void insertMogakCategory() {
@@ -79,6 +79,29 @@ public class DataInitializer implements ApplicationRunner {
     private static Period getPeriod(String period) {
         return Period.builder()
                 .days(period)
+                .build();
+    }
+
+    private void insertJob() {
+        String[] jobArr = {
+                "기획/전략", "법무,사무,총무", "인사/HR", "회계/세무", "마케팅/광고/MD",
+                "개발/데이터", "디자인", "물류/무역", "운전/운송/배송", "영업",
+                "고객상담/TM", "금융/보험", "식/음료", "고객서비스/리테일", "엔지니어링/설계",
+                "제조/생산", "교육", "건축/시설", "의료/바이오", "미디어/문화",
+                "스포츠", "공공복지", "자영업", "군인", "의료",
+                "회계사", "법무사", "노무사", "세무사", "관세사",
+                "교사", "디지털노마드", "영상제작자", "크리에이터"
+        };
+
+        for (String job: jobArr) {
+            Job jobEntity = getJob(job);
+            jobRepository.save(jobEntity);
+        }
+    }
+
+    private static Job getJob(String job) {
+        return Job.builder()
+                .name(job)
                 .build();
     }
 
