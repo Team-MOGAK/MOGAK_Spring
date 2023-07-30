@@ -32,4 +32,9 @@ public class Post extends BaseEntity {
     private int viewCnt;
     @Column(nullable = false)
     private int likeCnt;
+
+    //setter 대신
+    public void updatePost(String contents){
+        this.contents=contents;
+    }
 }

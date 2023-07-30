@@ -1,4 +1,4 @@
 package com.mogak.spring.web.dto;
 
-public class dto {
+public class UserResponseDto {
 }

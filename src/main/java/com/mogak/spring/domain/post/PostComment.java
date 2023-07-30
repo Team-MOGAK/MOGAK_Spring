@@ -28,4 +28,8 @@ public class PostComment extends BaseEntity {
 
     @Column(nullable = false)
     private String validation;
+
+    public void updateComment(String contents){
+        this.contents=contents;
+    }
 }
