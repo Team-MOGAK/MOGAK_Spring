@@ -1,4 +1,4 @@
-package com.mogak.spring.domain.mogak;
+package com.mogak.spring.domain.user;
 
 import lombok.*;
 
@@ -6,14 +6,13 @@ import javax.persistence.*;
 
 @Builder
 @Getter
+@Table(name = "address")
+@Entity
 @AllArgsConstructor(access= AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "period")
-@Entity
-public class Period {
+public class Address {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "period_id")
+    @Column(name = "address_id")
     private int id;
-    @Column(nullable = false)
-    private String days;
+    private String name;
 }
