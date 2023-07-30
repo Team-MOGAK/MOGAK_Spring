@@ -13,7 +13,7 @@ import javax.persistence.*;
 public class MogakCategory {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "mogak_category_id")
-    private Long id;
+    private int id;
     @Column(nullable = false)
     private String name;
 

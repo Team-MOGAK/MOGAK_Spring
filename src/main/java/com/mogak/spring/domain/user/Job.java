@@ -12,6 +12,6 @@ import javax.persistence.*;
 public class Job {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "job_id")
-    private Long id;
+    private int id;
     private String name;
 }
