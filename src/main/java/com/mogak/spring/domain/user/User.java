@@ -22,6 +22,9 @@ public class User extends BaseEntity {
     private String nickname;
     private char gender;
     private int age;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "address_id")
+    private Address address;
     private String profileImg;
     @Column(nullable = false)
     private String email;
