@@ -22,8 +22,8 @@ class DataInitializerTest {
     @DisplayName("카테고리 객체가 잘 생성되는지")
     void 모각카테고리_생성_test() {
         //given, when
-        MogakCategory certification = DataInitializer.categoryConstructor("자격증");
-        MogakCategory jobStudy = DataInitializer.categoryConstructor("직무공부");
+        MogakCategory certification = DataInitializer.getCategory("자격증");
+        MogakCategory jobStudy = DataInitializer.getCategory("직무공부");
 
         //then
         SoftAssertions softly = new SoftAssertions();
@@ -35,8 +35,8 @@ class DataInitializerTest {
     @DisplayName("카테고리 데이터 insert")
     void 카테고리데이터_insert() {
         //given
-        MogakCategory certification = DataInitializer.categoryConstructor("자격증");
-        MogakCategory jobStudy = DataInitializer.categoryConstructor("직무공부");
+        MogakCategory certification = DataInitializer.getCategory("자격증");
+        MogakCategory jobStudy = DataInitializer.getCategory("직무공부");
 
         //when
         mogakCategoryRepository.save(certification);
