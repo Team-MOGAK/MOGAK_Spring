@@ -8,7 +8,8 @@ public class UserResponseDto {
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class CreateDto {
-
+    public static class toCreateDto {
+        private Long userId;
+        private String nickname;
     }
 }

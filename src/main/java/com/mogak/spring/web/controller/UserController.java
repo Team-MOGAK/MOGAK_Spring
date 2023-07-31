@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/users")
 public class UserController {
     private UserService userService;
+
     @PostMapping("/api/users/nickname/verify")
     public ResponseEntity<Object> verifyNickname(String nickname) {
         if (userService.findUserByNickname(nickname)) {
@@ -24,5 +25,11 @@ public class UserController {
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @PostMapping("/api/users/join")
+    public ResponseEntity<UserResponseDto.toCreateDto> createUser(UserRequestDto.CreateUserDto request) {
+        User user = userService.create(request);
+        return ResponseEntity.ok(UserConverter.toCreateDto(user));
     }
 }
