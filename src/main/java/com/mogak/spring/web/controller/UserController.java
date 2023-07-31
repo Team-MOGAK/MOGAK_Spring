@@ -6,6 +6,7 @@ import com.mogak.spring.service.UserService;
 import com.mogak.spring.web.dto.UserRequestDto;
 import com.mogak.spring.web.dto.UserResponseDto;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,8 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private UserService userService;
     @PostMapping("/api/users/nickname/verify")
-    public ResponseEntity<UserResponseDto> verifyNickname(String nickname) {
-        userService.findUserByNickname(nickname);
-        return ResponseEntity.ok();
+    public ResponseEntity<Object> verifyNickname(String nickname) {
+        if (userService.findUserByNickname(nickname)) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }
