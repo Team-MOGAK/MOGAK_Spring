@@ -31,5 +31,5 @@ public class User extends BaseEntity {
     private Double weekRate;
     @Column(nullable = false)
     private String validation;
-    
+
 }
