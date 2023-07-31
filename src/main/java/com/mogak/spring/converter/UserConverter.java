@@ -17,4 +17,11 @@ public class UserConverter {
                 .email(response.getEmail())
                 .build();
     }
+
+    public static UserResponseDto.toCreateDto toCreateDto(User user) {
+        return UserResponseDto.toCreateDto.builder()
+                .userId(user.getId())
+                .nickname(user.getNickname())
+                .build();
+    }
 }
