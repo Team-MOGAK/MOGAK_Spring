@@ -16,7 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-
+    private final JobRepository jobRepository;
+    private final AddressRepository addressRepository;
+    @Override
+    public User create(UserRequestDto.CreateUserDto response) {
+        User user = userRepository.save(UserConverter.toUser(response));
+        return null;
+    }
     @Override
     public Boolean findUserByNickname(String nickname) {
         return userRepository.findUserByNickname(nickname).isPresent();

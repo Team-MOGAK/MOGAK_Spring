@@ -6,7 +6,6 @@ import com.mogak.spring.service.UserService;
 import com.mogak.spring.web.dto.UserRequestDto;
 import com.mogak.spring.web.dto.UserResponseDto;
 import lombok.AllArgsConstructor;
-import org.apache.catalina.startup.UserConfig;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
