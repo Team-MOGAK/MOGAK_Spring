@@ -31,6 +31,7 @@ public class UserController {
     @PostMapping("/join")
     public ResponseEntity<UserResponseDto.toCreateDto> createUser(@RequestBody UserRequestDto.CreateUserDto request) {
         User user = userService.create(request);
-        return ResponseEntity.ok(UserConverter.toCreateDto(user));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(UserConverter.toCreateDto(user));
     }
 }
