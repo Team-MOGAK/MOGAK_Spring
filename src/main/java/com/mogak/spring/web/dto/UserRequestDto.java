@@ -1,9 +1,11 @@
 package com.mogak.spring.web.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 
 public class UserRequestDto {
 
+    @Builder
     @Getter
     public static class CreateUserDto {
         private String nickname;
