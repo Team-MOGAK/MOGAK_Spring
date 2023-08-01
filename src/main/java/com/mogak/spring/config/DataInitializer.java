@@ -1,14 +1,20 @@
 package com.mogak.spring.config;
 
+import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.mogak.Period;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
+import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @Component
@@ -22,6 +28,11 @@ public class DataInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        insertStaticData();
+        insertUser();
+    }
+
+    private void insertStaticData() {
         insertMogakCategory();
         insertAddress();
         insertPeriod();
@@ -103,6 +114,55 @@ public class DataInitializer implements ApplicationRunner {
         return Job.builder()
                 .name(job)
                 .build();
+    }
+
+    //임시로 유저 5명 넣기
+    private void insertUser() {
+        String[] nickArr = {
+                "hyun1234!", "hhhh9999!", "abcd78!@",
+                "hello77@!", "mogak9!"
+        };
+        String[] jobArr = {
+                "개발/데이터", "디자인", "물류/무역",
+                "운전/운송/배송", "영업"
+        };
+        List<Job> jobList = new ArrayList<>();
+        for (String job: jobArr) {
+            System.out.println("job = " + job);
+            Optional<Job> jobInDB = jobRepository.findJobByName(job);
+            System.out.println("jobInDB = " + jobInDB.get().getName());
+            jobInDB.ifPresent(jobList::add);
+        }
+
+        String[] addressArr = {
+                "서울특별시", "세종특별자치시", "대전광역시",
+                "광주광역시", "대구광역시"
+        };
+        List<Address> addressList = new ArrayList<>();
+        for (String address: addressArr) {
+            System.out.println("address = " + address);
+            Optional<Address> addressInDB = addressRepository.findAddressByName(address);
+            System.out.println("addressInDB = " + addressInDB.get().getName());
+            addressInDB.ifPresent(addressList::add);
+        }
+
+        String[] emailArr = {
+                "hyun123@naver.com", "gachon123@gc.ac.kr",
+                "kyunghee123@khu.ac.kr", "kyonggi123@kgu.ac.kr",
+                "kingwangjjang123@king.com"
+        };
+
+        int arrCnt = nickArr.length;
+        for (int i = 0; i < arrCnt; i++) {
+            User user = User.builder()
+                    .nickname(nickArr[i])
+                    .job(jobList.get(i))
+                    .address(addressList.get(i))
+                    .email(emailArr[i])
+                    .validation(Validation.ACTIVE.toString())
+                    .build();
+            userRepository.save(user);
+        }
     }
 
 }
