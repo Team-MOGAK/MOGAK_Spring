@@ -1,5 +1,6 @@
 package com.mogak.spring.converter;
 
+import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
@@ -15,6 +16,7 @@ public class UserConverter {
                 .address(address)
                 .profileImg(response.getProfileImg())
                 .email(response.getEmail())
+                .validation(Validation.ACTIVE.toString())
                 .build();
     }
 
