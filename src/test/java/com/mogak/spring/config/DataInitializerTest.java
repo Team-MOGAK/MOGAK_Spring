@@ -50,9 +50,7 @@ class DataInitializerTest {
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(certificationInJPA.get().getName()).isEqualTo("자격증");
         softly.assertThat(jobStudyInJPA.get().getName()).isEqualTo("직무공부");
-        softly.assertThatThrownBy(() ->{
-            noDataInJPA.get();
-        }).isInstanceOf(NoSuchElementException.class);
+        softly.assertThatThrownBy(noDataInJPA::get).isInstanceOf(NoSuchElementException.class);
     }
 
 }
