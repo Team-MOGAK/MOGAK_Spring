@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public Boolean findUserByNickname(String nickname) {
-        return userRepository.findUserByNickname(nickname).isPresent();
+        return userRepository.findOneByNickname(nickname).isPresent();
     }
 
     private void inputVerify(UserRequestDto.CreateUserDto response) throws RuntimeException {

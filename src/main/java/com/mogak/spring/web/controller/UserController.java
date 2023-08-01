@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,17 +19,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private UserService userService;
 
-    @PostMapping("/api/users/nickname/verify")
+    @PostMapping("/nickname/verify")
     public ResponseEntity<Object> verifyNickname(String nickname) {
         if (userService.findUserByNickname(nickname)) {
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(HttpStatus.OK);
         }
     }
 
-    @PostMapping("/api/users/join")
-    public ResponseEntity<UserResponseDto.toCreateDto> createUser(UserRequestDto.CreateUserDto request) {
+    @PostMapping("/join")
+    public ResponseEntity<UserResponseDto.toCreateDto> createUser(@RequestBody UserRequestDto.CreateUserDto request) {
         User user = userService.create(request);
         return ResponseEntity.ok(UserConverter.toCreateDto(user));
     }
