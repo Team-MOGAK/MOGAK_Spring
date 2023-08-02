@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 @AllArgsConstructor
 @Service
@@ -35,7 +34,7 @@ public class MogakServiceImpl implements MogakService {
             throw new RuntimeException("기타 카테고리가 존재하지 않습니다");
         }
 
-        State state = State.registerState(request.getStartAt(), LocalDate.now());
+        State state = State.registerState(request.getStartAt(), request.getEndAt(), LocalDate.now());
         return mogakRepository.save(MogakConverter.toMogak(request, category, otherCategory, user, state));
     }
 }
