@@ -14,6 +14,7 @@ public class MogakRequestDto {
         private String title;
         private Long userId;
         private String category;
+        private String otherCategory;
         private LocalDate startAt;
         private LocalDate endAt;
     }

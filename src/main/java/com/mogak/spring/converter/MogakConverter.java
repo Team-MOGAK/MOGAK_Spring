@@ -10,10 +10,11 @@ import com.mogak.spring.web.dto.MogakResponseDto;
 
 public class MogakConverter {
 
-    public static Mogak toMogak(MogakRequestDto.CreateDto request, MogakCategory mogakCategory, User user, State state) {
+    public static Mogak toMogak(MogakRequestDto.CreateDto request, MogakCategory mogakCategory, String otherCategory, User user, State state) {
         return Mogak.builder()
                 .user(user)
                 .category(mogakCategory)
+                .otherCategory(otherCategory)
                 .title(request.getTitle())
                 .state(state.toString())
                 .startAt(request.getStartAt())
