@@ -37,16 +37,29 @@ public class MogakServiceImpl implements MogakService {
         if (category.getName().equals("기타") && otherCategory == null) {
             throw new RuntimeException("기타 카테고리가 존재하지 않습니다");
         }
-        List<Period> period = periodRepository.findAll();
-        MogakPeriod mogakPeriod = periodRepository.save();
-        List<Period> mogakPeriods = periodRepository.findAll();
+
+        State state = State.registerState(request.getStartAt(), request.getEndAt(), LocalDate.now());
+        Mogak result = mogakRepository.save(MogakConverter.toMogak(request, category, otherCategory, user, state));
+
+        List<Period> periods = new ArrayList<>();
+        List<String> requestDays = request.getDays();
+        List<Period> mogakPeriods = new ArrayList<>();
         int mogakPeriodSize = mogakPeriods.size();
         List<Long> mogakPeriodsIds = new ArrayList<>();
         for (Long id: mogakPeriods.get().getId()) {
-             mogakPeriodsIds.add(id);
+            mogakPeriodsIds.add(id);
+        }
+        for (String day: requestDays) {
+            periods.add(periodRepository.findOneByDay(day));
+        }
+        for (Period period: periods) {
+            MogakPeriod mogakPeriod = MogakPeriod.builder()
+                    .period(period)
+                    .mogak(result)
+                    .build();
+            mogakPeriodRepository.save(mogakPeriod);
         }
 
-        State state = State.registerState(request.getStartAt(), request.getEndAt(), LocalDate.now());
-        return mogakRepository.save(MogakConverter.toMogak(request, category, otherCategory, user, state));
+        return result;
     }
 }
