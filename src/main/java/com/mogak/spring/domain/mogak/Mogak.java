@@ -6,6 +6,8 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Getter
@@ -25,6 +27,8 @@ public class Mogak extends BaseEntity {
     private MogakCategory category;
     @Column(name = "category_other")
     private String otherCategory;
+    @OneToMany(mappedBy = "mogak")
+    private List<MogakPeriod> mogakPeriods = new ArrayList<>();
     @Column(nullable = false)
     private String title;
     @Column(nullable = false)
