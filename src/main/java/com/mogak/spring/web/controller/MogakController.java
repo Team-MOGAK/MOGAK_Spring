@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,9 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class MogakController {
     private final MogakService mogakService;
 
-    @PostMapping("/")
-    public ResponseEntity<MogakResponseDto.createDto> createMogak(MogakRequestDto.CreateDto request) {
+    @PostMapping("")
+    public ResponseEntity<MogakResponseDto.createDto> createMogak(@RequestBody MogakRequestDto.CreateDto request) {
         Mogak mogak = mogakService.create(request);
-        return ResponseEntity.ok(MogakConverter.toCreateDto(mogak));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(MogakConverter.toCreateDto(mogak));
     }
 }
