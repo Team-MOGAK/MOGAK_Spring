@@ -3,6 +3,7 @@ package com.mogak.spring.web.dto;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class MogakRequestDto {
 
@@ -15,6 +16,7 @@ public class MogakRequestDto {
         private Long userId;
         private String category;
         private String otherCategory;
+        private List<String> days;
         private LocalDate startAt;
         private LocalDate endAt;
     }

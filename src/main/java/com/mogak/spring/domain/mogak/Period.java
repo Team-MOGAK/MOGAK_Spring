@@ -17,7 +17,7 @@ public class Period {
     @Column(name = "period_id")
     private int id;
     @Column(nullable = false)
-    private String days;
+    private String day;
     @OneToMany(mappedBy = "period")
     private List<MogakPeriod> mogakPeriods = new ArrayList<>();
 }
