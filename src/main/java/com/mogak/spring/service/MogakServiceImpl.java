@@ -43,15 +43,10 @@ public class MogakServiceImpl implements MogakService {
 
         List<Period> periods = new ArrayList<>();
         List<String> requestDays = request.getDays();
-        List<Period> mogakPeriods = new ArrayList<>();
-        int mogakPeriodSize = mogakPeriods.size();
-        List<Long> mogakPeriodsIds = new ArrayList<>();
-        for (Long id: mogakPeriods.get().getId()) {
-            mogakPeriodsIds.add(id);
-        }
         for (String day: requestDays) {
-            periods.add(periodRepository.findOneByDay(day));
+            periods.add(periodRepository.findOneByDays(day));
         }
+
         for (Period period: periods) {
             MogakPeriod mogakPeriod = MogakPeriod.builder()
                     .period(period)
