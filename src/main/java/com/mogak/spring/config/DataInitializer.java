@@ -128,9 +128,7 @@ public class DataInitializer implements ApplicationRunner {
         };
         List<Job> jobList = new ArrayList<>();
         for (String job: jobArr) {
-            System.out.println("job = " + job);
             Optional<Job> jobInDB = jobRepository.findJobByName(job);
-            System.out.println("jobInDB = " + jobInDB.get().getName());
             jobInDB.ifPresent(jobList::add);
         }
 
@@ -140,9 +138,7 @@ public class DataInitializer implements ApplicationRunner {
         };
         List<Address> addressList = new ArrayList<>();
         for (String address: addressArr) {
-            System.out.println("address = " + address);
             Optional<Address> addressInDB = addressRepository.findAddressByName(address);
-            System.out.println("addressInDB = " + addressInDB.get().getName());
             addressInDB.ifPresent(addressList::add);
         }
 
