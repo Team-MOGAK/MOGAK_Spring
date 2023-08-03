@@ -34,4 +34,14 @@ public class MogakController {
         Mogak mogak = mogakService.achieveMogak(id);
         return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toUpdateDto(mogak));
     }
+
+    /**
+     * 모각 수정 API
+     * */
+    @PutMapping("")
+    public ResponseEntity<MogakResponseDto.updateStateDto> updateMogak(@RequestBody MogakRequestDto.UpdateDto request) {
+        Mogak mogak = mogakService.updateMogak(request);
+        return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toUpdateDto(mogak));
+    }
+
 }
