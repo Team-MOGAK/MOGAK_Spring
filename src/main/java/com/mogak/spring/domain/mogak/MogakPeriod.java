@@ -22,4 +22,8 @@ public class MogakPeriod {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="mogak_id")
     private Mogak mogak;
+
+    public void updatePeriod(Period period) {
+        this.period = period;
+    }
 }

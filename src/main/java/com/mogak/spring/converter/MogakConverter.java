@@ -29,4 +29,11 @@ public class MogakConverter {
                 .title(mogak.getTitle())
                 .build();
     }
+
+    public static MogakResponseDto.updateStateDto toUpdateDto(Mogak mogak) {
+        return MogakResponseDto.updateStateDto.builder()
+                .mogakId(mogak.getId())
+                .updatedAt(mogak.getUpdatedAt())
+                .build();
+    }
 }
