@@ -38,4 +38,8 @@ public class Mogak extends BaseEntity {
     private LocalDate endAt;
     @Column(nullable = false)
     private String validation;
+
+    public void updateState(String state) {
+        this.state = state;
+    }
 }

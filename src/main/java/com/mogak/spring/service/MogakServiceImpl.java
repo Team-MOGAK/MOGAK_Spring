@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @Service
@@ -54,7 +55,18 @@ public class MogakServiceImpl implements MogakService {
                     .build();
             mogakPeriodRepository.save(mogakPeriod);
         }
-
         return result;
+    }
+
+    @Transactional
+    @Override
+    public Mogak achieveMogak(Long id) {
+        Mogak mogak = mogakRepository.findById(id)
+                .orElseThrow(IllegalArgumentException::new);
+        if (!mogak.getState().equals("ONGOING")) {
+            throw new RuntimeException("잘못된 상태 변경입니다");
+        }
+        mogak.updateState(State.COMPLETE.toString());
+        return mogak;
     }
 }
