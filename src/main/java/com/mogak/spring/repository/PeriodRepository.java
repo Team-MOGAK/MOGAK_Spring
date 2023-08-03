@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.Query;
 public interface PeriodRepository extends JpaRepository<Period, Integer> {
 
     //요일 불러오는 메소드
-    Period findOneByDay(String day);
+    Period findOneByDays(String day);
 }
