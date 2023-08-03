@@ -6,19 +6,20 @@ public enum State {
     BEFORE,ONGOING,COMPLETE;
 
     public static State registerState(LocalDate start, LocalDate end, LocalDate now) throws RuntimeException {
-        if (verifyReverseStartAnd(start, end) && discriminateBeforeOrStart(start, now)) {
+        verifyReverseStartAnd(start, end);
+        if (discriminateBeforeOrStart(start, now)) {
             return BEFORE;
         } else {
             return ONGOING;
         }
     }
 
-    private static boolean verifyReverseStartAnd(LocalDate start, LocalDate end) {
-        if (end == null) {
-            return true;
+    private static void verifyReverseStartAnd(LocalDate start, LocalDate end) {
+        if (end == null || start.isBefore(end)) {
+            return;
         }
-        else if (start.isBefore(end) || start.isEqual(end)) {
-            return true;
+        else if (start.isEqual(end)) {
+            return;
         }
         throw new RuntimeException("시작 날짜와 끝 날짜 역전");
     }
@@ -30,9 +31,9 @@ public enum State {
      * */
     private static Boolean discriminateBeforeOrStart(LocalDate start, LocalDate now) {
         if (start.isEqual(now)) {
-            return true;
-        } else if (start.isAfter(now)) {
             return false;
+        } else if (start.isAfter(now)) {
+            return true;
         } else throw new RuntimeException("잘못 입력된 시작 날짜입니다.");
     }
 }
