@@ -12,8 +12,8 @@ public class MogakRequestDto {
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class CreateDto {
-        private String title;
         private Long userId;
+        private String title;
         private String category;
         private String otherCategory;
         private List<String> days;
@@ -21,5 +21,17 @@ public class MogakRequestDto {
         private LocalDate endAt;
     }
 
-
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class UpdateDto {
+        private Long mogakId;
+        private String title;
+        private String category;
+        private String otherCategory;
+        private List<String> days;
+        private LocalDate startAt;
+        private LocalDate endAt;
+    }
 }
