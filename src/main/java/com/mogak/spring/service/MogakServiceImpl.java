@@ -10,6 +10,7 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -140,5 +141,12 @@ public class MogakServiceImpl implements MogakService {
             updateMogakPeriod(days, mogak);
         }
         return mogak;
+    }
+
+    @Override
+    public List<Mogak> getMogakList(Long userId, int cursor, int size) {
+        User user = userRepository.findById(userId).orElseThrow(RuntimeException::new);
+        PageRequest pageRequest = PageRequest.of(cursor, size);
+        return mogakRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId(), pageRequest);
     }
 }
