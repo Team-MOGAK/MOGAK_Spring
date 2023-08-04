@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Builder
 @Getter
@@ -25,7 +26,7 @@ public class Mogak extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     private User user;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="mogak_category_id")
     private MogakCategory category;
     @Column(name = "category_other")
@@ -41,6 +42,14 @@ public class Mogak extends BaseEntity {
     private LocalDate endAt;
     @Column(nullable = false)
     private String validation;
+
+    public List<String> getPeriod() {
+        return this.getMogakPeriods()
+                .stream()
+                .map(MogakPeriod::getPeriod)
+                .map(Period::getDays)
+                .collect(Collectors.toList());
+    }
 
     public void updateState(String state) {
         this.state = state;
