@@ -3,6 +3,8 @@ package com.mogak.spring.domain.mogak;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Getter
@@ -13,7 +15,9 @@ import javax.persistence.*;
 public class Period {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "period_id")
-    private Long id;
+    private int id;
     @Column(nullable = false)
-    private String day;
+    private String days;
+    @OneToMany(mappedBy = "period")
+    private List<MogakPeriod> mogakPeriods = new ArrayList<>();
 }
