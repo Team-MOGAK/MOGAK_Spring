@@ -8,4 +8,6 @@ import java.util.List;
 public interface MogakPeriodRepository extends JpaRepository<MogakPeriod, Long> {
 
     List<MogakPeriod> findAllByMogak_Id(Long id);
+
+    void deleteAllByMogakId(Long mogakId);
 }

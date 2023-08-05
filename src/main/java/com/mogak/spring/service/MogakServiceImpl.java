@@ -149,4 +149,17 @@ public class MogakServiceImpl implements MogakService {
         PageRequest pageRequest = PageRequest.of(cursor, size);
         return mogakRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId(), pageRequest);
     }
+
+    @Transactional
+    @Override
+    public void deleteMogak(Long mogakId) {
+        //모각 존재 확인
+        mogakRepository.findById(mogakId).orElseThrow(IllegalArgumentException::new);
+        // 모각 주기 삭제
+        mogakPeriodRepository.deleteAllByMogakId(mogakId);
+        // 조각 삭제 필요
+        // 회고록 삭제 + 회고록 삭제에서 댓글 삭제도 같이 구현 필요
+
+        mogakRepository.deleteById(mogakId);
+    }
 }
