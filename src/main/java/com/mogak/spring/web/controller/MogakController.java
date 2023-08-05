@@ -61,4 +61,13 @@ public class MogakController {
             return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toGetMogakListDto(mogaks));
     }
 
+    /**
+     * 모각 삭제 API
+     * */
+    @DeleteMapping("/{mogakId}")
+    public ResponseEntity<Void> deleteMogak(
+            @PathVariable Long mogakId) {
+        mogakService.deleteMogak(mogakId);
+        return ResponseEntity.noContent().build();
+    }
 }
