@@ -9,8 +9,6 @@ public interface MogakService {
     Mogak create(MogakRequestDto.CreateDto createDto);
     Mogak achieveMogak(Long id);
     Mogak updateMogak(MogakRequestDto.UpdateDto request);
-
     List<Mogak> getMogakList(Long userId, int cursor, int size);
-
     void deleteMogak(Long mogakId);
 }

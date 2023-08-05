@@ -162,4 +162,5 @@ public class MogakServiceImpl implements MogakService {
 
         mogakRepository.deleteById(mogakId);
     }
+
 }
