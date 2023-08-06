@@ -5,6 +5,7 @@ import com.mogak.spring.domain.user.User;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -20,6 +21,7 @@ public class PostResponseDto {
         private Long mogakId;
         private Long userId; //추후 로그인 구현후 수정 필요할듯
         private String contents;
+        private List<String> imgUrls;
         //추후 좋아요수, 조회수 추가
     }
     //list 만들어야하나?
