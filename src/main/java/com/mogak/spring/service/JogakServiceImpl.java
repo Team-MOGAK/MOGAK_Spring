@@ -17,13 +17,13 @@ public class JogakServiceImpl implements JogakService {
     private final JogakRepository jogakRepository;
 
     @Override
-    public Jogak createJogak(JogakRequestDto.CreateJogakDto request) {
-        Mogak mogak = mogakRepository.findById(request.getMogakId())
+    public Jogak createJogak(Long mogakId) {
+        Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(IllegalArgumentException::new);
         if (!mogak.getState().equals(State.ONGOING.toString())) {
             throw new RuntimeException("진행중인 모각만 조각을 생성할 수 있습니다");
         }
-        return jogakRepository.save(JogakConverter.toJogak(request, mogak));
+        return jogakRepository.save(JogakConverter.toJogak(mogak));
     }
 
 

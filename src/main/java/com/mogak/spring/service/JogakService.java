@@ -4,5 +4,5 @@ import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.web.dto.JogakRequestDto;
 
 public interface JogakService {
-    Jogak createJogak(JogakRequestDto.CreateJogakDto request);
+    Jogak createJogak(Long mogakId);
 }

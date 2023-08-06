@@ -71,37 +71,4 @@ public class MogakController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * 모각 달성하기 API
-     * */
-    @PutMapping("/{id}/complete")
-    public ResponseEntity<MogakResponseDto.updateStateDto> achieveMogak(@PathVariable Long id) {
-        Mogak mogak = mogakService.achieveMogak(id);
-        return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toUpdateDto(mogak));
-    }
-
-    /**
-     * 모각 수정 API
-     * */
-    @PutMapping("")
-    public ResponseEntity<MogakResponseDto.updateStateDto> updateMogak(@RequestBody MogakRequestDto.UpdateDto request) {
-        Mogak mogak = mogakService.updateMogak(request);
-        return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toUpdateDto(mogak));
-    }
-
-    /**
-     * 모각 조회 API
-     * user => 유저 PK
-     * cursor => 데이터 조회 시작점
-     * size => 조회할 데이터 개수
-     * */
-    @GetMapping("")
-    public ResponseEntity<MogakResponseDto.getMogakListDto> getMogakList(
-            @RequestParam(value = "user") Long userId,
-            @RequestParam(value = "cursor") int cursor,
-            @RequestParam(value = "size") int size) {
-            List<Mogak> mogaks = mogakService.getMogakList(userId, cursor, size);
-            return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toGetMogakListDto(mogaks));
-    }
-
 }

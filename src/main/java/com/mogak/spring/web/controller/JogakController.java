@@ -18,10 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class JogakController {
     private final JogakService jogakService;
 
-    @PostMapping("")
-    public ResponseEntity<Object> create(@RequestBody JogakRequestDto.CreateJogakDto request) {
-        Jogak jogak = jogakService.createJogak(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(JogakConverter.toJogakResponseDto(jogak));
-    }
+//    @PostMapping("")
+//    public ResponseEntity<Object> create(@RequestBody JogakRequestDto.CreateJogakDto request) {
+//        Jogak jogak = jogakService.createJogak(request);
+//        return ResponseEntity.status(HttpStatus.CREATED)
+//                .body(JogakConverter.toJogakResponseDto(jogak));
+//    }
+
+
 }

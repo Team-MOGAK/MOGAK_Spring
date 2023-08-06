@@ -6,10 +6,9 @@ import com.mogak.spring.web.dto.JogakRequestDto;
 import com.mogak.spring.web.dto.JogakResponseDto;
 
 public class JogakConverter {
-    public static Jogak toJogak(JogakRequestDto.CreateJogakDto jogakDto, Mogak mogak) {
+    public static Jogak toJogak(Mogak mogak) {
         return Jogak.builder()
                 .mogak(mogak)
-                .startTime(jogakDto.getStartTime().toLocalTime())
                 .build();
     }
     public static JogakResponseDto.JogakDto toJogakResponseDto(Jogak jogak) {
