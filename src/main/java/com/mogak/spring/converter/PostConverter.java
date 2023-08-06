@@ -8,6 +8,7 @@ import com.mogak.spring.web.dto.PostRequestDto;
 import com.mogak.spring.web.dto.PostResponseDto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PostConverter {
 
@@ -32,12 +33,13 @@ public class PostConverter {
                 .build();
     }
 
-    public static PostResponseDto.PostDto toPostDto(Post post){
+    public static PostResponseDto.PostDto toPostDto(Post post, List<String> imgUrls){
         return PostResponseDto.PostDto.builder()
                 .postId(post.getId())
                 .mogakId(post.getMogak().getId())
                 .userId(post.getUser().getId())
                 .contents(post.getContents())
+                .imgUrls(imgUrls)
                 .build();
     }
 
