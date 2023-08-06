@@ -2,7 +2,7 @@ package com.mogak.spring.web.controller;
 
 import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.domain.post.PostComment;
-import com.mogak.spring.service.PostCommentService;
+import com.mogak.spring.service.PostCommentServiceImpl;
 import com.mogak.spring.web.dto.CommentRequestDto;
 import com.mogak.spring.web.dto.CommentResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentController {
 
-    private final PostCommentService postCommentService;
+    private final PostCommentServiceImpl postCommentService;
 
     //create
     @PostMapping("/posts/{postId}/comments")
