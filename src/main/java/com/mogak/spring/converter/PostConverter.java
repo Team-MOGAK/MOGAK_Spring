@@ -1,5 +1,6 @@
 package com.mogak.spring.converter;
 
+import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
@@ -25,6 +26,9 @@ public class PostConverter {
                 .mogak(mogak)
                 .user(user)
                 .contents(request.getContents())
+                .likeCnt(1) //더미데이터
+                .viewCnt(10) //더미데이터
+                .validation(Validation.ACTIVE.toString())
                 .build();
     }
 
@@ -47,7 +51,7 @@ public class PostConverter {
 
     public static PostResponseDto.DeletePostDto toDeletePostDto(){
         return PostResponseDto.DeletePostDto.builder()
-                .validation("Inactive")
+                .validation(Validation.INACTIVE.toString())
                 .build();
     }
 

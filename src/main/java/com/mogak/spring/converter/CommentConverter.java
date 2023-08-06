@@ -1,5 +1,6 @@
 package com.mogak.spring.converter;
 
+import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.user.User;
@@ -27,6 +28,7 @@ public class CommentConverter {
                 .post(post)
                 .user(user)
                 .contents(request.getContents())
+                .validation(Validation.ACTIVE.toString())
                 .build();
     }
     public static CommentResponseDto.CommentDto toCommentDto(PostComment comment){
@@ -60,7 +62,7 @@ public class CommentConverter {
 
     public static CommentResponseDto.DeleteCommentDto toDeleteCommentDto(){
         return CommentResponseDto.DeleteCommentDto.builder()
-                .validation("Inactive")
+                .validation(Validation.INACTIVE.toString())
                 .build();
     }
 }

@@ -1,31 +1,33 @@
 package com.mogak.spring.web.controller;
 
 import com.mogak.spring.converter.PostConverter;
-import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.service.PostService;
+import com.mogak.spring.service.AwsS3Service;
+import com.mogak.spring.service.PostServiceImpl;
+import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
 import com.mogak.spring.web.dto.PostResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
-import org.springframework.beans.factory.annotation.Required;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Optional;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 public class PostController {
 
-    private final PostService postService;
-
-    //create => mogak id를 path variable로 받아야하지 않나?, 처음 찍은 사진 어케 받아오지
+    private final PostServiceImpl postService;
+    private final AwsS3Service awsS3Service;
+    private static String dirName = "img";
+    //create
     @PostMapping("/mogaks/{mogakId}/posts")
-    public ResponseEntity<PostResponseDto.CreatePostDto> createPost(@PathVariable Long mogakId,@RequestBody PostRequestDto.CreatePostDto request, User user){
-        Post post = postService.create(request,user,mogakId); //request에 userid 받아오게
+    public ResponseEntity<PostResponseDto.CreatePostDto> createPost(@PathVariable Long mogakId, @RequestPart PostRequestDto.CreatePostDto request, @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/){
+        //에러핸들링 필요
+        List<PostImgRequestDto.CreatePostImgDto> postImgDtoList = awsS3Service.uploadImg(multipartFile, dirName);
+        Post post = postService.create(request, postImgDtoList, mogakId);
         return ResponseEntity.ok(PostConverter.toCreatePostDto(post));
     }
 
