@@ -150,6 +150,14 @@ public class MogakServiceImpl implements MogakService {
         return mogakRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId(), pageRequest);
     }
 
+    /**
+     * 진행중이고 해당 날의 모각들 불러오기
+     * */
+    @Override
+    public List<Mogak> getOngoingTodayMogakList(int today) {
+        return mogakRepository.findAllOngoingToday(State.ONGOING.name(), today);
+    }
+
     @Transactional
     @Override
     public void deleteMogak(Long mogakId) {
