@@ -18,6 +18,7 @@ public class Period {
     private int id;
     @Column(nullable = false)
     private String days;
+    @Builder.Default
     @OneToMany(mappedBy = "period")
     private List<MogakPeriod> mogakPeriods = new ArrayList<>();
 }

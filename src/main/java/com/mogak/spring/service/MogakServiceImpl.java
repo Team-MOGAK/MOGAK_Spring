@@ -52,7 +52,7 @@ public class MogakServiceImpl implements MogakService {
     private void saveMogakPeriod(List<String> days, Mogak mogak) {
         List<Period> periods = new ArrayList<>();
         for (String day: days) {
-            periods.add(periodRepository.findOneByDays(day));
+            periods.add(periodRepository.findOneByDays(day).orElseThrow(IllegalArgumentException::new));
         }
         for (Period period: periods) {
             MogakPeriod mogakPeriod = MogakPeriod.builder()
@@ -70,7 +70,7 @@ public class MogakServiceImpl implements MogakService {
 
         List<Period> periods = new ArrayList<>();
         for (String day : days) {
-            periods.add(periodRepository.findOneByDays(day));
+            periods.add(periodRepository.findOneByDays(day).orElseThrow(IllegalAccessError::new));
         }
         List<MogakPeriod> mogakPeriods = mogakPeriodRepository.findAllByMogak_Id(mogak.getId());
 
@@ -148,6 +148,14 @@ public class MogakServiceImpl implements MogakService {
         User user = userRepository.findById(userId).orElseThrow(RuntimeException::new);
         PageRequest pageRequest = PageRequest.of(cursor, size);
         return mogakRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId(), pageRequest);
+    }
+
+    /**
+     * 진행중이고 해당 날의 모각들 불러오기
+     * */
+    @Override
+    public List<Mogak> getOngoingTodayMogakList(int today) {
+        return mogakRepository.findAllOngoingToday(State.ONGOING.name(), today);
     }
 
     @Transactional

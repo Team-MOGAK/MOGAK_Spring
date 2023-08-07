@@ -10,4 +10,5 @@ public class JogakRequestDto {
         private Long mogakId;
         private LocalDateTime startTime;
     }
+
 }

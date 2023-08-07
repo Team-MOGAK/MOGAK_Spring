@@ -21,7 +21,6 @@ public class Jogak extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mogak_id")
     private Mogak mogak;
-    @Column(nullable = false)
     private LocalTime startTime;
     private LocalTime endTime;
 }

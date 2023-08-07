@@ -24,4 +24,6 @@ public class JogakController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(JogakConverter.toJogakResponseDto(jogak));
     }
+
+
 }
