@@ -2,7 +2,6 @@ package com.mogak.spring.converter;
 
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.common.Validation;
-import com.mogak.spring.domain.common.Weeks;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.user.User;

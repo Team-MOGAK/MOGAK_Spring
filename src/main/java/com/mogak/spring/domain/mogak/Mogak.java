@@ -31,6 +31,7 @@ public class Mogak extends BaseEntity {
     private MogakCategory category;
     @Column(name = "category_other")
     private String otherCategory;
+    @Builder.Default
     @OneToMany(mappedBy = "mogak")
     private List<MogakPeriod> mogakPeriods = new ArrayList<>();
     @Column(nullable = false)
