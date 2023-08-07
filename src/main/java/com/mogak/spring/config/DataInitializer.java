@@ -1,17 +1,21 @@
 package com.mogak.spring.config;
 
 import com.mogak.spring.domain.common.Validation;
+import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.mogak.Period;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
+import com.mogak.spring.service.MogakService;
+import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,11 +29,13 @@ public class DataInitializer implements ApplicationRunner {
     private final PeriodRepository periodRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
+    private final MogakService mogakService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         insertStaticData();
         insertUser();
+        insertMogak();
     }
 
     private void insertStaticData() {
@@ -159,6 +165,42 @@ public class DataInitializer implements ApplicationRunner {
                     .build();
             userRepository.save(user);
         }
+    }
+
+    private void insertMogak() {
+        MogakRequestDto.CreateDto req1 =
+                MogakRequestDto.CreateDto.builder()
+                        .userId(1L)
+                        .title("스프링 해야딩")
+                        .category("직무공부")
+                        .days(List.of("SATURDAY", "SUNDAY"))
+                        .startAt(LocalDate.now())
+                        .endAt(LocalDate.now().plusDays(7))
+                        .build();
+
+        MogakRequestDto.CreateDto req2 =
+                MogakRequestDto.CreateDto.builder()
+                        .userId(1L)
+                        .title("스프링가링가링")
+                        .category("직무공부")
+                        .days(List.of("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"))
+                        .startAt(LocalDate.now())
+                        .endAt(LocalDate.now().plusDays(30))
+                        .build();
+
+        MogakRequestDto.CreateDto req3 =
+                MogakRequestDto.CreateDto.builder()
+                        .userId(1L)
+                        .title("스프링딩동링딩동")
+                        .category("직무공부")
+                        .days(List.of("SATURDAY", "SUNDAY"))
+                        .startAt(LocalDate.now().plusDays(5))
+                        .endAt(LocalDate.now().plusDays(7))
+                        .build();
+
+        mogakService.create(req1);
+        mogakService.create(req2);
+        mogakService.create(req3);
     }
 
 }
