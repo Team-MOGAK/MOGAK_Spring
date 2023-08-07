@@ -52,7 +52,7 @@ public class MogakServiceImpl implements MogakService {
     private void saveMogakPeriod(List<String> days, Mogak mogak) {
         List<Period> periods = new ArrayList<>();
         for (String day: days) {
-            periods.add(periodRepository.findOneByDays(day));
+            periods.add(periodRepository.findOneByDays(day).orElseThrow(IllegalArgumentException::new));
         }
         for (Period period: periods) {
             MogakPeriod mogakPeriod = MogakPeriod.builder()
@@ -70,7 +70,7 @@ public class MogakServiceImpl implements MogakService {
 
         List<Period> periods = new ArrayList<>();
         for (String day : days) {
-            periods.add(periodRepository.findOneByDays(day));
+            periods.add(periodRepository.findOneByDays(day).orElseThrow(IllegalAccessError::new));
         }
         List<MogakPeriod> mogakPeriods = mogakPeriodRepository.findAllByMogak_Id(mogak.getId());
 

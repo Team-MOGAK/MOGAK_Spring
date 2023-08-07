@@ -4,7 +4,6 @@ import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.service.MogakService;
 import com.mogak.spring.web.dto.MogakRequestDto;
-import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.logging.Logger;
 
 import static org.assertj.core.api.SoftAssertions.*;
 
@@ -38,7 +36,7 @@ class MogakRepositoryTest {
                         .userId(1L)
                         .title("스프링 해야딩")
                         .category("직무공부")
-                        .days(List.of("MON", "TUE", "SAT", "SUN"))
+                        .days(List.of("MONDAY", "TUESDAY", "SATURDAY", "SUNDAY"))
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
