@@ -78,7 +78,7 @@ public class DataInitializer implements ApplicationRunner {
 
     private void insertPeriod() {
         String[] dayArr = {
-                "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"
+                "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"
         };
 
         for (String day: dayArr) {
