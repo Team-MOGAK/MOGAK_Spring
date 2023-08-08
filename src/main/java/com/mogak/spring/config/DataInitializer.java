@@ -1,6 +1,7 @@
 package com.mogak.spring.config;
 
 import com.mogak.spring.domain.common.Validation;
+import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.mogak.Period;
@@ -8,13 +9,16 @@ import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
+import com.mogak.spring.service.JogakService;
 import com.mogak.spring.service.MogakService;
+import com.mogak.spring.web.dto.JogakRequestDto;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +33,14 @@ public class DataInitializer implements ApplicationRunner {
     private final PeriodRepository periodRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
+    private final JogakRepository jogakRepository;
     private final MogakService mogakService;
+    private final JogakService jogakService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         insertStaticData();
-        insertUser();
-        insertMogak();
+        insertDummyData();
     }
 
     private void insertStaticData() {
@@ -45,12 +50,17 @@ public class DataInitializer implements ApplicationRunner {
         insertJob();
     }
 
+    private void insertDummyData() {
+        insertUser();
+        insertMogak();
+        insertJogak();
+    }
+
     private void insertMogakCategory() {
         String[] taskArr = {
                 "자격증", "대외활동", "운동", "인사이트", "공모전", "직무공부",
                 "산업분석", "어학", "강연,강의", "프로젝트", "스터디", "기타"
         };
-
         for (String task: taskArr) {
             MogakCategory categoryEntity = DataInitializer.getCategory(task);
             mogakCategoryRepository.save(categoryEntity);
@@ -187,13 +197,22 @@ public class DataInitializer implements ApplicationRunner {
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(30))
                         .build();
-
         MogakRequestDto.CreateDto req3 =
                 MogakRequestDto.CreateDto.builder()
                         .userId(1L)
                         .title("스프링딩동링딩동")
                         .category("직무공부")
-                        .days(List.of("SATURDAY", "SUNDAY"))
+                        .days(List.of("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"))
+                        .startAt(LocalDate.now())
+                        .endAt(LocalDate.now().plusDays(7))
+                        .build();
+
+        MogakRequestDto.CreateDto req4 =
+                MogakRequestDto.CreateDto.builder()
+                        .userId(1L)
+                        .title("스프링딩동링딩동기기기기딩딩딩")
+                        .category("직무공부")
+                        .days(List.of("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"))
                         .startAt(LocalDate.now().plusDays(5))
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
@@ -201,6 +220,20 @@ public class DataInitializer implements ApplicationRunner {
         mogakService.create(req1);
         mogakService.create(req2);
         mogakService.create(req3);
+        mogakService.create(req4);
+    }
+
+    private void insertJogak() {
+        LocalDate today = LocalDate.now();
+        DayOfWeek dayOfWeek = today.getDayOfWeek();
+        int dayNum = dayOfWeek.getValue();
+
+        List<Mogak> mogaks = mogakService.getOngoingTodayMogakList(dayNum);
+        for (Mogak mogak: mogaks) {
+            jogakService.createJogak(mogak.getId());
+        }
+
+
     }
 
 }

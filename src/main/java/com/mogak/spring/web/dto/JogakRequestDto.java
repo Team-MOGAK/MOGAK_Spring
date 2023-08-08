@@ -8,7 +8,10 @@ public class JogakRequestDto {
     @Getter
     public static class CreateJogakDto {
         private Long mogakId;
-        private LocalDateTime startTime;
+
+        public CreateJogakDto(Long mogakId) {
+            this.mogakId = mogakId;
+        }
     }
 
 }
