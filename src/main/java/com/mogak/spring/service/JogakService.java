@@ -11,4 +11,8 @@ public interface JogakService {
     Jogak createJogak(Long mogakId);
 
     List<Jogak> getDailyJogaks(Long userId);
+
+    Jogak startJogak(Long jogakId);
+
+    Jogak endJogak(Long jogakId);
 }
