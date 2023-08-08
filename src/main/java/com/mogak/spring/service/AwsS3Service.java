@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.repository.PostImgRepository;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostImgResponseDto;
@@ -55,20 +56,19 @@ public class AwsS3Service {
                     .imgName(imgName)
                     .imgUrl(amazonS3.getUrl(bucket, imgName).toString())
                     .build());
-
         });
         return postImgRequestDtoList;
     }
-    //s3 이미지 delete
-    public void deleteImg(String imgName, String dirName){
-        amazonS3.deleteObject(new DeleteObjectRequest(bucket, dirName + "/" + imgName));
+    //s3 이미지객체 delete
+    public void deleteImg(List<PostImg> postImgList, String dirName){
+        for(PostImg postImg : postImgList){
+            String imgName = postImg.getImgName();
+            amazonS3.deleteObject(new DeleteObjectRequest(bucket, imgName));
+        }
     }
     //파일 업로드할 시 파일명 난수화를 위해 uuid 생성
     private String createImgName(String imgName, String dirName){
         String end = imgName.substring(imgName.indexOf(".")+1); // 이미지 형식 . 뒷부분 추출
         return dirName + "/" + UUID.randomUUID().toString() + "." + end;
     }
-
-
-
 }

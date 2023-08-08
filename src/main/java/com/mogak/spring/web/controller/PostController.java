@@ -1,7 +1,9 @@
 package com.mogak.spring.web.controller;
 
 import com.mogak.spring.converter.PostConverter;
+import com.mogak.spring.converter.PostImgConverter;
 import com.mogak.spring.domain.post.Post;
+import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.PostImgService;
@@ -30,7 +32,7 @@ public class PostController {
     public ResponseEntity<PostResponseDto.CreatePostDto> createPost(@PathVariable Long mogakId, @RequestPart PostRequestDto.CreatePostDto request, @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/){
         //에러핸들링 필요
         List<PostImgRequestDto.CreatePostImgDto> postImgDtoList = awsS3Service.uploadImg(multipartFile, dirName);
-        Post post = postService.create(request, postImgDtoList, mogakId); //회고록 생성시 이미지 분리해야할듯
+        Post post = postService.create(request, postImgDtoList, mogakId);
         return ResponseEntity.ok(PostConverter.toCreatePostDto(post));
     }
 
@@ -52,9 +54,12 @@ public class PostController {
         return ResponseEntity.ok(PostConverter.toUpdatePostDto(post));
     }
 
-    //Delete - s3 이미지 삭제도 구현
+    //Delete - s3 이미지 삭제,댓글 삭제도 구현
     @DeleteMapping("/mogaks/posts/{postId}")
     public ResponseEntity<PostResponseDto.DeletePostDto> deletePost(@PathVariable Long postId){
+        Post post = postService.findById(postId);
+        List<PostImg> postImgList = postImgService.findAllByPost(post);
+        awsS3Service.deleteImg(postImgList,dirName); //s3이미지 객체 삭제
         postService.delete(postId);
         return ResponseEntity.ok(PostConverter.toDeletePostDto());
     }

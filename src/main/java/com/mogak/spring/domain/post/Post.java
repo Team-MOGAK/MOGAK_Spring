@@ -7,6 +7,8 @@ import com.mogak.spring.domain.user.User;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Getter
@@ -29,6 +31,12 @@ public class Post extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "jogak_id")
     private Jogak jogak;
+    @Builder.Default
+    @OneToMany(mappedBy = "post")
+    private List<PostComment> postComments = new ArrayList<>();
+    @Builder.Default
+    @OneToMany(mappedBy = "post")
+    private List<PostImg> postImgs = new ArrayList<>();
     @Column(nullable = false)
     private String validation;
     @Column(nullable = false)
@@ -40,4 +48,13 @@ public class Post extends BaseEntity {
     public void updatePost(String contents){
         this.contents=contents;
     }
+
+    public void putComment(PostComment postComment){
+        this.postComments.add(postComment);
+    }
+
+    public void putPostImg(PostImg postImg){
+        this.postImgs.add(postImg);
+    }
+
 }

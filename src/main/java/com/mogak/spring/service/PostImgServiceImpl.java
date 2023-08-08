@@ -1,7 +1,9 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.domain.post.Post;
+import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.post.PostImg;
+import com.mogak.spring.repository.PostCommentRepository;
 import com.mogak.spring.repository.PostImgRepository;
 import com.mogak.spring.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,4 +31,11 @@ public class PostImgServiceImpl implements PostImgService{
         }
         return imgUrlList;
     }
+
+    @Override
+    public List<PostImg> findAllByPost(Post post){
+        return postImgRepository.findAllByPost(post);
+    }
+
+
 }

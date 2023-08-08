@@ -6,10 +6,7 @@ import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.repository.MogakRepository;
-import com.mogak.spring.repository.PostImgRepository;
-import com.mogak.spring.repository.PostRepository;
-import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +25,9 @@ public class PostServiceImpl implements PostService{
     private final MogakRepository mogakRepository;
     private final UserRepository userRepository;
     private final PostImgRepository postImgRepository;
+    private final PostCommentRepository postCommentRepository;
 
-    //회고록 & 회고록 이미지 생성
+    //회고록 & 회고록 이미지 생성 => 리팩토링 필요
     @Transactional
     @Override
     public Post create(PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, /*User user,*/Long mogakId){
@@ -44,7 +42,7 @@ public class PostServiceImpl implements PostService{
         return postRepository.save(post);
     }
 
-    //회고록 상세 조회
+    //회고록 상세 조회 + 댓글, 이미지 같이 보이게
     @Override
     public Post findById(Long postId){
         return postRepository.findById(postId).get();
@@ -65,8 +63,13 @@ public class PostServiceImpl implements PostService{
     @Transactional
     @Override
     public void delete(Long postId){
+        Post post = postRepository.findById(postId).get();
+        //이미지 삭제
+        postImgRepository.deleteAllByPost(post);
+        //댓글 삭제
+        postCommentRepository.deleteAllByPost(post);
+        //회고록 삭제
         postRepository.deleteById(postId);
-        return;
     }
 
 }
