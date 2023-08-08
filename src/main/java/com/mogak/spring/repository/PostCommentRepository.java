@@ -1,5 +1,6 @@
 package com.mogak.spring.repository;
 
+import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -16,4 +17,6 @@ public interface PostCommentRepository extends JpaRepository<PostComment, Long> 
 
     //댓글 삭제
     void deleteByPostAndId(Long postId, Long commentId);
+    //연쇄삭제
+    void deleteAllByPost(Post post);
 }
