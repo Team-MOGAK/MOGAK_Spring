@@ -4,8 +4,10 @@ import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
+import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.JogakRepository;
 import com.mogak.spring.repository.MogakRepository;
+import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.web.dto.JogakRequestDto;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,6 +21,8 @@ import java.util.List;
 @AllArgsConstructor
 @Service
 public class JogakServiceImpl implements JogakService {
+
+    private final UserRepository userRepository;
     private final MogakService mogakService;
     private final MogakRepository mogakRepository;
     private final JogakRepository jogakRepository;
@@ -50,5 +54,10 @@ public class JogakServiceImpl implements JogakService {
         return jogakRepository.save(JogakConverter.toJogak(mogak));
     }
 
+    @Override
+    public List<Jogak> getDailyJogaks(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(RuntimeException::new);
+        return jogakRepository.findDailyJogak(user);
+    }
 
 }
