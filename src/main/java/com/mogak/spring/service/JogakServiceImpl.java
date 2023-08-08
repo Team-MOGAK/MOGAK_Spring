@@ -57,11 +57,23 @@ public class JogakServiceImpl implements JogakService {
         }
     }
 
+    /**
+     * 새벽 4시까지 종료를 누르지 않은 조각 실패 처리
+     * */
+    @Transactional
+    @Scheduled(zone = "Asia/Seoul", cron = "0 0 4 * * *")
+    public void failJogakAtFourByScheduler() {
+        List<Jogak> jogaks = jogakRepository.findJogakIsOngoingYesterday(JogakState.ONGOING.name());
+        for (Jogak jogak: jogaks) {
+            jogak.updateState(JogakState.FAIL);
+        }
+    }
+
     @Override
     public Jogak createJogak(Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(IllegalArgumentException::new);
-        if (!mogak.getState().equals(State.ONGOING.toString())) {
+        if (!mogak.getState().equals(State.ONGOING.name())) {
             throw new RuntimeException("진행중인 모각만 조각을 생성할 수 있습니다");
         }
         return jogakRepository.save(JogakConverter.toJogak(mogak));

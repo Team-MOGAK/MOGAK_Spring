@@ -36,12 +36,12 @@ public class Jogak extends BaseEntity {
         }
 
         this.startTime = now;
-        this.state = JogakState.ONGOING.toString();
+        this.state = JogakState.ONGOING.name();
     }
 
     public void end(LocalDateTime now) {
        if (this.startTime == null ||
-               !this.state.equals(JogakState.ONGOING.toString())) {
+               !this.state.equals(JogakState.ONGOING.name())) {
            throw new RuntimeException("시작하지 않은 조각입니다");
        }
        if (this.endTime != null) {
@@ -55,10 +55,11 @@ public class Jogak extends BaseEntity {
        }
 
        this.endTime = now;
-       this.state = JogakState.SUCCESS.toString();
+       this.state = JogakState.SUCCESS.name();
     }
 
     public void updateState(JogakState state) {
         this.state = state.toString();
     }
+
 }
