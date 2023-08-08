@@ -7,7 +7,6 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Objects;
 
 @Builder
@@ -26,6 +25,7 @@ public class Jogak extends BaseEntity {
     private Mogak mogak;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private String state;
 
     public void start(LocalDateTime now) {
         if (this.startTime != null) {
@@ -36,5 +36,6 @@ public class Jogak extends BaseEntity {
         }
 
         this.startTime = now;
+        this.state = JogakState.ONGOING.toString();
     }
 }
