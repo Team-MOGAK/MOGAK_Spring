@@ -1,6 +1,8 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.jogak.JogakState;
+import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.repository.JogakRepository;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import org.assertj.core.api.Assertions;
@@ -94,6 +96,30 @@ class JogakServiceImplTest {
 
         List<Jogak> jogaks = jogakRepository.findJogakByState(null);
         assertThat(jogaks.size()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("어제_시작한_조각_불러오기")
+    void 어제_시작한_조각_불러오기_테스트() {
+        MogakRequestDto.CreateDto req =
+                MogakRequestDto.CreateDto.builder()
+                        .userId(1L)
+                        .title("슈우웅")
+                        .category("직무공부")
+                        .days(List.of("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"))
+                        .startAt(LocalDate.now())
+                        .endAt(LocalDate.now().plusDays(7))
+                        .build();
+        Mogak mogak = mogakService.create(req);
+        Jogak jogak = Jogak.builder()
+                .mogak(mogak)
+                .state(JogakState.ONGOING.name())
+                .startTime(LocalDateTime.now().minusDays(1))
+                .build();
+        jogakRepository.save(jogak);
+
+        int size = jogakRepository.findJogakIsOngoingYesterday(JogakState.ONGOING.name()).size();
+        assertThat(size).isEqualTo(1);
     }
 
 }
