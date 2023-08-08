@@ -3,6 +3,7 @@ package com.mogak.spring.service;
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.JogakRepository;
@@ -29,10 +30,9 @@ public class JogakServiceImpl implements JogakService {
 
     /**
      * 자정에 Ongoing인 모든 모각 생성
-     * TimeZone에 맞게 시간을 조정할 필요있음
      * */
     @Transactional
-    @Scheduled(cron = "1 0 0 * * *")
+    @Scheduled(zone = "Asia/Seoul", cron = "1 0 0 * * *")
     public void createJogakByScheduler() {
         LocalDate today = LocalDate.now();
         DayOfWeek dayOfWeek = today.getDayOfWeek();
@@ -41,6 +41,19 @@ public class JogakServiceImpl implements JogakService {
         List<Mogak> mogaks = mogakService.getOngoingTodayMogakList(dayNum);
         for (Mogak mogak: mogaks) {
             createJogak(mogak.getId());
+        }
+    }
+
+    /**
+     * 자정 1분까지 시작하지 않은 조각 실패 처리
+     * +) 자정엔 조각 생성 스케줄이 있어서 1분 이후에 처리
+     * */
+    @Transactional
+    @Scheduled(zone = "Asia/Seoul", cron = "0 1 0 * * *")
+    public void failJogakMidnightByScheduler() {
+        List<Jogak> jogaks = jogakRepository.findJogakByState(null);
+        for (Jogak jogak: jogaks) {
+            jogak.updateState(JogakState.FAIL);
         }
     }
 

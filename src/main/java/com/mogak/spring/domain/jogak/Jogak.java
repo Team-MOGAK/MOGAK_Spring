@@ -57,4 +57,8 @@ public class Jogak extends BaseEntity {
        this.endTime = now;
        this.state = JogakState.SUCCESS.toString();
     }
+
+    public void updateState(JogakState state) {
+        this.state = state.toString();
+    }
 }
