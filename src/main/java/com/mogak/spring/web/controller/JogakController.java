@@ -38,5 +38,11 @@ public class JogakController {
                 .body(JogakConverter.toGetStartJogakDto(jogak));
     }
 
+    @PutMapping("/{jogakId}/end")
+    public ResponseEntity<JogakResponseDto.endJogakDto> endJogak(@PathVariable Long jogakId) {
+        Jogak jogak = jogakService.endJogak(jogakId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(JogakConverter.toEndJogakDto(jogak));
+    }
 
 }

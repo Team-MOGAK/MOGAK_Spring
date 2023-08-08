@@ -41,4 +41,14 @@ public class JogakResponseDto {
         private String title;
         private LocalDateTime startTime;
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class endJogakDto {
+        private String title;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+    }
 }

@@ -42,4 +42,12 @@ public class JogakConverter {
                 .startTime(jogak.getStartTime())
                 .build();
     }
+
+    public static JogakResponseDto.endJogakDto toEndJogakDto(Jogak jogak) {
+        return JogakResponseDto.endJogakDto.builder()
+                .title(jogak.getMogak().getTitle())
+                .startTime(jogak.getStartTime())
+                .endTime(jogak.getEndTime())
+                .build();
+    }
 }

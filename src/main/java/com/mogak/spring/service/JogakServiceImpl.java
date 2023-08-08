@@ -68,4 +68,12 @@ public class JogakServiceImpl implements JogakService {
         return jogak;
     }
 
+    @Transactional
+    @Override
+    public Jogak endJogak(Long jogakId) {
+        Jogak jogak = jogakRepository.findById(jogakId).orElseThrow(IllegalArgumentException::new);
+        jogak.end(LocalDateTime.now());
+        return jogak;
+    }
+
 }
