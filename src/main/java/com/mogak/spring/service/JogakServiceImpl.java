@@ -76,4 +76,9 @@ public class JogakServiceImpl implements JogakService {
         return jogak;
     }
 
+    @Override
+    public void deleteJogak(Long jogakId) {
+        jogakRepository.deleteById(jogakId);
+    }
+
 }

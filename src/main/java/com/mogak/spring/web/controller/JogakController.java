@@ -45,4 +45,13 @@ public class JogakController {
                 .body(JogakConverter.toEndJogakDto(jogak));
     }
 
+    /**
+     * 임시로 조각 삭제 API 뚫어놓았습니다
+     * */
+    @DeleteMapping("/{jogakId}")
+    public ResponseEntity<Void> deleteJogak(@PathVariable Long jogakId) {
+        jogakService.deleteJogak(jogakId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

@@ -2,6 +2,7 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
+import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.mogak.MogakPeriod;
@@ -10,6 +11,7 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,8 @@ public class MogakServiceImpl implements MogakService {
     private final MogakPeriodRepository mogakPeriodRepository;
     private final PeriodRepository periodRepository;
     private final MogakCategoryRepository categoryRepository;
+
+    private final JogakRepository jogakRepository;
 
     @Transactional
     @Override
@@ -162,10 +166,11 @@ public class MogakServiceImpl implements MogakService {
     @Override
     public void deleteMogak(Long mogakId) {
         //모각 존재 확인
-        mogakRepository.findById(mogakId).orElseThrow(IllegalArgumentException::new);
+        Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(IllegalArgumentException::new);
         // 모각 주기 삭제
         mogakPeriodRepository.deleteAllByMogakId(mogakId);
         // 조각 삭제 필요
+        jogakRepository.deleteAll(mogak.getJogaks());
         // 회고록 삭제 + 회고록 삭제에서 댓글 삭제도 같이 구현 필요
 
         mogakRepository.deleteById(mogakId);
