@@ -22,7 +22,7 @@ public class MogakController {
      * 모각 생성 API
      * */
     @PostMapping("")
-    public ResponseEntity<MogakResponseDto.createDto> createMogak(@RequestBody MogakRequestDto.CreateDto request) {
+    public ResponseEntity<MogakResponseDto.CreateDto> createMogak(@RequestBody MogakRequestDto.CreateDto request) {
         Mogak mogak = mogakService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(MogakConverter.toCreateDto(mogak));
@@ -32,7 +32,7 @@ public class MogakController {
      * 모각 달성하기 API
      * */
     @PutMapping("/{id}/complete")
-    public ResponseEntity<MogakResponseDto.updateStateDto> achieveMogak(@PathVariable Long id) {
+    public ResponseEntity<MogakResponseDto.UpdateStateDto> achieveMogak(@PathVariable Long id) {
         Mogak mogak = mogakService.achieveMogak(id);
         return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toUpdateDto(mogak));
     }
@@ -41,7 +41,7 @@ public class MogakController {
      * 모각 수정 API
      * */
     @PutMapping("")
-    public ResponseEntity<MogakResponseDto.updateStateDto> updateMogak(@RequestBody MogakRequestDto.UpdateDto request) {
+    public ResponseEntity<MogakResponseDto.UpdateStateDto> updateMogak(@RequestBody MogakRequestDto.UpdateDto request) {
         Mogak mogak = mogakService.updateMogak(request);
         return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toUpdateDto(mogak));
     }
@@ -53,7 +53,7 @@ public class MogakController {
      * size => 조회할 데이터 개수
      * */
     @GetMapping("")
-    public ResponseEntity<MogakResponseDto.getMogakListDto> getMogakList(
+    public ResponseEntity<MogakResponseDto.GetMogakListDto> getMogakList(
             @RequestParam(value = "user") Long userId,
             @RequestParam(value = "cursor") int cursor,
             @RequestParam(value = "size") int size) {

@@ -26,15 +26,15 @@ public class MogakConverter {
                 .build();
     }
 
-    public static MogakResponseDto.createDto toCreateDto(Mogak mogak) {
-        return MogakResponseDto.createDto.builder()
+    public static MogakResponseDto.CreateDto toCreateDto(Mogak mogak) {
+        return MogakResponseDto.CreateDto.builder()
                 .mogakId(mogak.getId())
                 .title(mogak.getTitle())
                 .build();
     }
 
-    public static MogakResponseDto.updateStateDto toUpdateDto(Mogak mogak) {
-        return MogakResponseDto.updateStateDto.builder()
+    public static MogakResponseDto.UpdateStateDto toUpdateDto(Mogak mogak) {
+        return MogakResponseDto.UpdateStateDto.builder()
                 .mogakId(mogak.getId())
                 .updatedAt(mogak.getUpdatedAt())
                 .build();
@@ -43,8 +43,8 @@ public class MogakConverter {
     /**
      * 여러 모각 조회
      * */
-    public static MogakResponseDto.getMogakListDto toGetMogakListDto(List<Mogak> mogaks) {
-        return MogakResponseDto.getMogakListDto.builder()
+    public static MogakResponseDto.GetMogakListDto toGetMogakListDto(List<Mogak> mogaks) {
+        return MogakResponseDto.GetMogakListDto.builder()
                 .mogaks(mogaks.stream()
                         .map(MogakConverter::toGetMogakDto)
                         .collect(Collectors.toList()))
@@ -55,8 +55,8 @@ public class MogakConverter {
     /**
      * 단일 모각 조회
      * */
-    public static MogakResponseDto.getMogakDto toGetMogakDto(Mogak mogak) {
-        return MogakResponseDto.getMogakDto.builder()
+    public static MogakResponseDto.GetMogakDto toGetMogakDto(Mogak mogak) {
+        return MogakResponseDto.GetMogakDto.builder()
                 .title(mogak.getTitle())
                 .state(mogak.getState())
                 .periods(mogak.getPeriod())

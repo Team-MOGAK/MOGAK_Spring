@@ -1,8 +1,6 @@
 package com.mogak.spring.web.dto;
 
-import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
-import com.mogak.spring.domain.mogak.MogakPeriod;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -15,7 +13,7 @@ public class MogakResponseDto {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class createDto {
+    public static class CreateDto {
         private Long mogakId;
         private String title;
     }
@@ -24,7 +22,7 @@ public class MogakResponseDto {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class updateStateDto {
+    public static class UpdateStateDto {
         private Long mogakId;
         private LocalDateTime updatedAt;
     }
@@ -33,8 +31,8 @@ public class MogakResponseDto {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class getMogakListDto {
-        private List<getMogakDto> mogaks;
+    public static class GetMogakListDto {
+        private List<GetMogakDto> mogaks;
         private int size;
     }
 
@@ -42,7 +40,7 @@ public class MogakResponseDto {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class getMogakDto {
+    public static class GetMogakDto {
         private String title;
         private String state;
         private List<String> periods;
