@@ -31,5 +31,12 @@ public class JogakController {
                 .body(JogakConverter.toGetJogakListResponseDto(jogakList));
     }
 
+    @PutMapping("/{jogakId}/start")
+    public ResponseEntity<JogakResponseDto.startJogakDto> startJogak(@PathVariable Long jogakId) {
+        Jogak jogak = jogakService.startJogak(jogakId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(JogakConverter.toGetStartJogakDto(jogak));
+    }
+
 
 }

@@ -8,7 +8,6 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.JogakRepository;
 import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.UserRepository;
-import com.mogak.spring.web.dto.JogakRequestDto;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -16,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -58,6 +58,14 @@ public class JogakServiceImpl implements JogakService {
     public List<Jogak> getDailyJogaks(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(RuntimeException::new);
         return jogakRepository.findDailyJogak(user);
+    }
+
+    @Transactional
+    @Override
+    public Jogak startJogak(Long jogakId) {
+        Jogak jogak = jogakRepository.findById(jogakId).orElseThrow(IllegalArgumentException::new);
+        jogak.start(LocalDateTime.now());
+        return jogak;
     }
 
 }
