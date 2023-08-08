@@ -2,6 +2,7 @@ package com.mogak.spring.domain.mogak;
 
 import com.mogak.spring.domain.base.BaseEntity;
 import com.mogak.spring.domain.common.State;
+import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.*;
@@ -34,6 +35,8 @@ public class Mogak extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "mogak")
     private List<MogakPeriod> mogakPeriods = new ArrayList<>();
+    @OneToMany(mappedBy = "mogak")
+    private List<Jogak> jogaks = new ArrayList<>();
     @Column(nullable = false)
     private String title;
     @Column(nullable = false)
