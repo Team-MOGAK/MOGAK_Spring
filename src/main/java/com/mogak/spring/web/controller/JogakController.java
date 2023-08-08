@@ -45,4 +45,10 @@ public class JogakController {
                 .body(JogakConverter.toEndJogakDto(jogak));
     }
 
+    @DeleteMapping("/{jogakId}")
+    public ResponseEntity<Void> deleteJogak(@PathVariable Long jogakId) {
+        jogakService.deleteJogak(jogakId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

@@ -15,4 +15,6 @@ public interface JogakService {
     Jogak startJogak(Long jogakId);
 
     Jogak endJogak(Long jogakId);
+
+    void deleteJogak(Long jogakId);
 }
