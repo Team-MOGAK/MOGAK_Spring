@@ -7,10 +7,12 @@ import java.util.List;
 
 public interface JogakService {
 
-    void createJogakByScheduler();
+    void createJogakToday();
     Jogak createJogak(Long mogakId);
 
     List<Jogak> getDailyJogaks(Long userId);
+    void failJogakAtMidnight();
+    void failJogakAtFour();
 
     Jogak startJogak(Long jogakId);
 

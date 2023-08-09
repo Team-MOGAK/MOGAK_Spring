@@ -32,8 +32,7 @@ public class JogakServiceImpl implements JogakService {
      * 자정에 Ongoing인 모든 모각 생성
      * */
     @Transactional
-    @Scheduled(zone = "Asia/Seoul", cron = "1 0 0 * * *")
-    public void createJogakByScheduler() {
+    public void createJogakToday() {
         LocalDate today = LocalDate.now();
         DayOfWeek dayOfWeek = today.getDayOfWeek();
         int dayNum = dayOfWeek.getValue();
@@ -49,8 +48,7 @@ public class JogakServiceImpl implements JogakService {
      * +) 자정엔 조각 생성 스케줄이 있어서 1분 이후에 처리
      * */
     @Transactional
-    @Scheduled(zone = "Asia/Seoul", cron = "0 1 0 * * *")
-    public void failJogakMidnightByScheduler() {
+    public void failJogakAtMidnight() {
         List<Jogak> jogaks = jogakRepository.findJogakByState(null);
         for (Jogak jogak: jogaks) {
             jogak.updateState(JogakState.FAIL);
@@ -61,8 +59,7 @@ public class JogakServiceImpl implements JogakService {
      * 새벽 4시까지 종료를 누르지 않은 조각 실패 처리
      * */
     @Transactional
-    @Scheduled(zone = "Asia/Seoul", cron = "0 0 4 * * *")
-    public void failJogakAtFourByScheduler() {
+    public void failJogakAtFour() {
         List<Jogak> jogaks = jogakRepository.findJogakIsOngoingYesterday(JogakState.ONGOING.name());
         for (Jogak jogak: jogaks) {
             jogak.updateState(JogakState.FAIL);
