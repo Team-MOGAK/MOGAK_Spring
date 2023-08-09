@@ -34,14 +34,17 @@ public class PostServiceImpl implements PostService{
         Mogak mogak = mogakRepository.findById(mogakId).get();
         User user = userRepository.findById(request.getUserId()).get();
         Post post= PostConverter.toPost(request, user, mogak);
-        List<String> imgUrlList = new ArrayList<>();
         for(PostImgRequestDto.CreatePostImgDto postImgDto : postImgDtoList){
             PostImg postImg = PostImgConverter.toPostImg(postImgDto, post);
-            post.putPostImg(postImg);
-            imgUrlList.add(postImg.getImgUrl());
+            //썸네일이미지인지 체크 필요
+            if(postImgDto.isThumbnail()==true){
+                post.putPostThumbnailUrl(postImg.getImgUrl());
+            }
+            else{
+                post.putPostImg(postImg);
+            }
             postImgRepository.save(postImg);
         }
-
         return postRepository.save(post);
     }
 

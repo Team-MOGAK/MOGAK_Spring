@@ -14,5 +14,6 @@ public class PostImgRequestDto {
     public static class CreatePostImgDto{
         private String imgName;
         private String imgUrl;
+        private boolean thumbnail;
     }
 }
