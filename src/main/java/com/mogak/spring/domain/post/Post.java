@@ -38,6 +38,8 @@ public class Post extends BaseEntity {
     @OneToMany(mappedBy = "post")
     private List<PostImg> postImgs = new ArrayList<>();
     @Column(nullable = false)
+    private String postThumbnailUrl;
+    @Column(nullable = false)
     private String validation;
     @Column(nullable = false)
     private int viewCnt;
@@ -55,6 +57,10 @@ public class Post extends BaseEntity {
 
     public void putPostImg(PostImg postImg){
         this.postImgs.add(postImg);
+    }
+
+    public void putPostThumbnailUrl(String thumbnailUrl){
+        this.postThumbnailUrl=thumbnailUrl;
     }
 
 }
