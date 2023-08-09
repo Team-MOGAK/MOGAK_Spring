@@ -3,7 +3,7 @@ package com.mogak.spring.domain.common;
 import java.time.LocalDate;
 
 public enum State {
-    BEFORE,ONGOING,COMPLETE;
+    BEFORE,ONGOING,COMPLETE,FAIL;
 
     public static State registerState(LocalDate start, LocalDate end, LocalDate now) throws RuntimeException {
         verifyReverseStartAnd(start, end);

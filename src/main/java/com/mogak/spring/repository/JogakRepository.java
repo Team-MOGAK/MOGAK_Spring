@@ -1,6 +1,7 @@
 package com.mogak.spring.repository;
 
 import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,4 +20,6 @@ public interface JogakRepository extends JpaRepository<Jogak, Long> {
     @Query(value = "SELECT j FROM Jogak j WHERE j.state = :state " +
             "AND j.startTime < CURRENT_DATE AND j.createdAt >= CURRENT_DATE - 1")
     List<Jogak> findJogakIsOngoingYesterday(@Param(value = "state") String state);
+
+    List<Jogak> findAllByMogak(Mogak mogak);
 }

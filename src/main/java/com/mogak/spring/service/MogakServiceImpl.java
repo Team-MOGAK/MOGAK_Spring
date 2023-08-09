@@ -3,6 +3,7 @@ package com.mogak.spring.service;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.mogak.MogakPeriod;
@@ -33,6 +34,9 @@ public class MogakServiceImpl implements MogakService {
 
     private final JogakRepository jogakRepository;
 
+    /**
+     * 모각 생성
+     * */
     @Transactional
     @Override
     public Mogak create(MogakRequestDto.CreateDto request) {
@@ -105,7 +109,7 @@ public class MogakServiceImpl implements MogakService {
     }
 
     /**
-     * 모각 달성 메소드
+     * 모각 미리 달성 메소드
      * */
     @Transactional
     @Override
@@ -147,6 +151,9 @@ public class MogakServiceImpl implements MogakService {
         return mogak;
     }
 
+    /**
+     * 모각 조회(페이징)
+     * */
     @Override
     public List<Mogak> getMogakList(Long userId, int cursor, int size) {
         User user = userRepository.findById(userId).orElseThrow(RuntimeException::new);
@@ -162,6 +169,35 @@ public class MogakServiceImpl implements MogakService {
         return mogakRepository.findAllOngoingToday(State.ONGOING.name(), today);
     }
 
+    /**
+     * 모각 결과 내리기
+     * 12시랑 4시에 돌려야 할 듯
+     * 12시는 원래 하는 게 맞고, 4시는 자정 전에 시작했던 조각들 때문
+     * */
+    @Transactional
+    @Override
+    public void judgeMogak() {
+        List<Mogak> mogaks = mogakRepository.findAllByEndAt(LocalDate.now());
+        for (Mogak mogak: mogaks) {
+            int success = 0;
+            List<Jogak> jogaks = jogakRepository.findAllByMogak(mogak);
+            for (Jogak jogak: jogaks) {
+                if (jogak.getState().equals(JogakState.SUCCESS.name())) {
+                    success += 1;
+                }
+            }
+            long achievementRate = success / jogaks.size();
+            if (achievementRate >= 80.0) {
+                mogak.updateState(State.COMPLETE.name());
+            } else {
+                mogak.updateState(State.FAIL.name());
+            }
+        }
+    }
+
+    /**
+     * 모각 삭제 API
+     * */
     @Transactional
     @Override
     public void deleteMogak(Long mogakId) {
