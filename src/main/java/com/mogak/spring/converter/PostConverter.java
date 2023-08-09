@@ -3,15 +3,18 @@ package com.mogak.spring.converter;
 import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
+import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.web.dto.PostRequestDto;
 import com.mogak.spring.web.dto.PostResponseDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PostConverter {
 
+    //이미지까지 업로드 잘 되어있는지 확인
     public static PostResponseDto.CreatePostDto toCreatePostDto(Post post){
         return PostResponseDto.CreatePostDto.builder()
                 .id(post.getId())
@@ -19,6 +22,10 @@ public class PostConverter {
                 .userId(post.getUser().getId())
                 .contents(post.getContents())
                 .createdAt(post.getCreatedAt())
+                .imgUrls(post.getPostImgs().stream()
+                        .map(m -> m.getImgUrl())
+                        .collect(Collectors.toList())
+                )
                 .build();
     }
 
@@ -32,14 +39,19 @@ public class PostConverter {
                 .validation(Validation.ACTIVE.toString())
                 .build();
     }
-
-    public static PostResponseDto.PostDto toPostDto(Post post, List<String> imgUrls){
+    //상세 조회
+    public static PostResponseDto.PostDto toPostDto(Post post){
         return PostResponseDto.PostDto.builder()
                 .postId(post.getId())
                 .mogakId(post.getMogak().getId())
                 .userId(post.getUser().getId())
                 .contents(post.getContents())
-                .imgUrls(imgUrls)
+                .imgUrls(post.getPostImgs().stream()
+                        .map(m -> m.getImgUrl())
+                        .collect(Collectors.toList()))
+                .commentId(post.getPostComments().stream()
+                        .map(m -> m.getId())
+                        .collect(Collectors.toList())) //일단 comment id로 조회하는 것으로 함
                 .build();
     }
 

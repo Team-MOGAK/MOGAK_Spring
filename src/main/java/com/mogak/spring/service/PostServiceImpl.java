@@ -37,8 +37,11 @@ public class PostServiceImpl implements PostService{
         List<String> imgUrlList = new ArrayList<>();
         for(PostImgRequestDto.CreatePostImgDto postImgDto : postImgDtoList){
             PostImg postImg = PostImgConverter.toPostImg(postImgDto, post);
+            post.putPostImg(postImg);
+            imgUrlList.add(postImg.getImgUrl());
             postImgRepository.save(postImg);
         }
+
         return postRepository.save(post);
     }
 

@@ -22,6 +22,7 @@ public class PostResponseDto {
         private Long userId; //추후 로그인 구현후 수정 필요할듯
         private String contents;
         private List<String> imgUrls;
+        private List<Long> commentId;
         //추후 좋아요수, 조회수 추가
     }
     //list 만들어야하나?
@@ -35,7 +36,8 @@ public class PostResponseDto {
         private Long mogakId;
         private Long userId;
         private String contents;
-        //private String validation; -> validation 처리?
+        private String validation;
+        private List<String> imgUrls;
         private LocalDateTime createdAt;
     }
 

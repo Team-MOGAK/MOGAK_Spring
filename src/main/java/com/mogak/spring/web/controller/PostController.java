@@ -43,8 +43,7 @@ public class PostController {
     @GetMapping("/mogaks/posts/{postId}")
     public ResponseEntity<PostResponseDto.PostDto> getPostDetail(@PathVariable Long postId){
         Post post= postService.findById(postId);
-        List<String> imgUrls = postImgService.findUrlByPost(postId);
-        return ResponseEntity.ok(PostConverter.toPostDto(post, imgUrls));
+        return ResponseEntity.ok(PostConverter.toPostDto(post));
     }
 
     //update - 권한 설정 필요

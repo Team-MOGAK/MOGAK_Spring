@@ -30,6 +30,7 @@ public class PostCommentServiceImpl implements PostCommentService {
         Post post = postRepository.findById(postId).get();
         User user = userRepository.findById(request.getUserId()).get();
         PostComment comment = CommentConverter.toComment(request,post,user);
+        post.putComment(comment);
         return postCommentRepository.save(comment);
     }
 
