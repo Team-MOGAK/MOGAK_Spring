@@ -42,7 +42,7 @@ class MogakRepositoryTest {
                         .build();
         mogakService.create(req1);
 
-        List<Mogak> mogaks =  mogakRepository.findAllOngoingToday(State.ONGOING.toString(), dayNum);
+        List<Mogak> mogaks =  mogakRepository.findAllOngoingToday(State.ONGOING.name(), dayNum);
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(mogaks.size()).isEqualTo(1);
 

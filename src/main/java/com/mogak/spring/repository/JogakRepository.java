@@ -12,4 +12,11 @@ public interface JogakRepository extends JpaRepository<Jogak, Long> {
     @Query(value = "SELECT j FROM Jogak j WHERE j.mogak.user = :user " +
             "AND j.createdAt >= CURRENT_DATE AND j.createdAt < CURRENT_DATE + 1")
     List<Jogak> findDailyJogak(@Param(value = "user") User user);
+
+    @Query(value = "SELECT j FROM Jogak j WHERE :state Is NULL or j.state = :state")
+    List<Jogak> findJogakByState(@Param(value = "state") String state);
+
+    @Query(value = "SELECT j FROM Jogak j WHERE j.state = :state " +
+            "AND j.startTime < CURRENT_DATE AND j.createdAt >= CURRENT_DATE - 1")
+    List<Jogak> findJogakIsOngoingYesterday(@Param(value = "state") String state);
 }

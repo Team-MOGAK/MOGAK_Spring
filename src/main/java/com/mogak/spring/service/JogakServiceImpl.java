@@ -3,6 +3,7 @@ package com.mogak.spring.service;
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.JogakRepository;
@@ -29,11 +30,9 @@ public class JogakServiceImpl implements JogakService {
 
     /**
      * 자정에 Ongoing인 모든 모각 생성
-     * TimeZone에 맞게 시간을 조정할 필요있음
      * */
     @Transactional
-    @Scheduled(cron = "1 0 0 * * *")
-    public void createJogakByScheduler() {
+    public void createJogakToday() {
         LocalDate today = LocalDate.now();
         DayOfWeek dayOfWeek = today.getDayOfWeek();
         int dayNum = dayOfWeek.getValue();
@@ -44,11 +43,34 @@ public class JogakServiceImpl implements JogakService {
         }
     }
 
+    /**
+     * 자정 1분까지 시작하지 않은 조각 실패 처리
+     * +) 자정엔 조각 생성 스케줄이 있어서 1분 이후에 처리
+     * */
+    @Transactional
+    public void failJogakAtMidnight() {
+        List<Jogak> jogaks = jogakRepository.findJogakByState(null);
+        for (Jogak jogak: jogaks) {
+            jogak.updateState(JogakState.FAIL);
+        }
+    }
+
+    /**
+     * 새벽 4시까지 종료를 누르지 않은 조각 실패 처리
+     * */
+    @Transactional
+    public void failJogakAtFour() {
+        List<Jogak> jogaks = jogakRepository.findJogakIsOngoingYesterday(JogakState.ONGOING.name());
+        for (Jogak jogak: jogaks) {
+            jogak.updateState(JogakState.FAIL);
+        }
+    }
+
     @Override
     public Jogak createJogak(Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(IllegalArgumentException::new);
-        if (!mogak.getState().equals(State.ONGOING.toString())) {
+        if (!mogak.getState().equals(State.ONGOING.name())) {
             throw new RuntimeException("진행중인 모각만 조각을 생성할 수 있습니다");
         }
         return jogakRepository.save(JogakConverter.toJogak(mogak));
