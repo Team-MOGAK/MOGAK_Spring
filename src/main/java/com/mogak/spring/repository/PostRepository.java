@@ -1,5 +1,6 @@
 package com.mogak.spring.repository;
 
+import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Slice<Post> findAllById(Long id);
 
 
+    void deleteAllByMogak(Mogak mogak);
+
+    List<Post> findAllByMogak(Mogak mogak);
 }

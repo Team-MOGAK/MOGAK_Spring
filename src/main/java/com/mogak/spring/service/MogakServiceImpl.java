@@ -8,10 +8,12 @@ import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.mogak.MogakPeriod;
 import com.mogak.spring.domain.mogak.Period;
+import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class MogakServiceImpl implements MogakService {
     private final UserRepository userRepository;
@@ -31,8 +33,11 @@ public class MogakServiceImpl implements MogakService {
     private final MogakPeriodRepository mogakPeriodRepository;
     private final PeriodRepository periodRepository;
     private final MogakCategoryRepository categoryRepository;
-
     private final JogakRepository jogakRepository;
+    private final PostRepository postRepository;
+    private final PostImgRepository postImgRepository;
+    private final PostCommentRepository postCommentRepository;
+
 
     /**
      * 모각 생성
@@ -216,7 +221,12 @@ public class MogakServiceImpl implements MogakService {
         // 조각 삭제 필요
         jogakRepository.deleteAll(mogak.getJogaks());
         // 회고록 삭제 + 회고록 삭제에서 댓글 삭제도 같이 구현 필요
-
+        List<Post> posts = postRepository.findAllByMogak(mogak);
+        for (Post post: posts) {
+            postImgRepository.deleteAllByPost(post);
+            postCommentRepository.deleteAllByPost(post);
+        }
+        postRepository.deleteAllByMogak(mogak);
         mogakRepository.deleteById(mogakId);
     }
 
