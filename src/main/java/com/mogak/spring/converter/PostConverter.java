@@ -7,6 +7,7 @@ import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.web.dto.PostRequestDto;
 import com.mogak.spring.web.dto.PostResponseDto;
+import org.springframework.data.domain.Slice;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,6 +53,7 @@ public class PostConverter {
                 .commentId(post.getPostComments().stream()
                         .map(m -> m.getId())
                         .collect(Collectors.toList())) //일단 comment id로 조회하는 것으로 함
+                .thumbnailUrl(post.getPostThumbnailUrl())
                 .build();
     }
 
@@ -68,6 +70,28 @@ public class PostConverter {
                 .validation(Validation.INACTIVE.toString())
                 .build();
     }
-
+    //전체조회
+    public static PostResponseDto.GetPostDto toGetPostDto(Post post){
+        return PostResponseDto.GetPostDto.builder()
+                .postId(post.getId())
+                .mogakId(post.getMogak().getId())
+                .contents(post.getContents())
+                .thumbnailUrl(post.getPostThumbnailUrl())
+                .build();
+    }
+    public static List<PostResponseDto.GetPostDto> toPostDtoList(List<Post> postList){
+        return postList.stream()
+                .map(post -> toGetPostDto(post))
+                .collect(Collectors.toList());
+    }
+    public static PostResponseDto.PostListDto toPostListDto(List<Post> postList){
+        return PostResponseDto.PostListDto.builder()
+                .postDtoList(toPostDtoList(postList))
+                .size(postList.size())
+                .build();
+    }
+    public static Slice<PostResponseDto.GetPostDto> toPostPagingDto(Slice<Post> posts){
+        return posts.map(post -> toGetPostDto(post));
+    }
 
 }

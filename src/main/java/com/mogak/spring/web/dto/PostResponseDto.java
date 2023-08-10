@@ -22,11 +22,30 @@ public class PostResponseDto {
         private Long userId; //추후 로그인 구현후 수정 필요할듯
         private String contents;
         private List<String> imgUrls;
+        private String thumbnailUrl;
         private List<Long> commentId;
         //추후 좋아요수, 조회수 추가
     }
-    //list 만들어야하나?
-
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    //리스트를 위한 post dto
+    public static class GetPostDto {
+        private Long postId;
+        private Long mogakId;
+        private String contents;
+        private String thumbnailUrl;
+    }
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class PostListDto {
+        private List<PostResponseDto.GetPostDto> postDtoList;
+        private boolean hasNext; //다음페이지 존재하는지의 여부
+        private Integer size;
+    }
     @Getter
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)

@@ -10,6 +10,10 @@ import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,14 +51,21 @@ public class PostServiceImpl implements PostService{
         }
         return postRepository.save(post);
     }
-
+    //회고록 조회 - 무한 스크롤
+    @Override
+    public Slice<Post> getAllPosts(Long lastPostId, Long mogakId, int size){
+        Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(()->{return new IllegalArgumentException("mogak id 없음");
+        });
+        Pageable pageable = Pageable.ofSize(size);
+        Slice<Post> posts = postRepository.findAllPosts(lastPostId!=null?lastPostId:Long.MAX_VALUE, mogakId, pageable);
+        return posts;
+    }
     //회고록 상세 조회 + 댓글, 이미지 같이 보이게
     @Override
     public Post findById(Long postId){
         return postRepository.findById(postId).get();
     }
 
-    //회고록 조회 - 무한 스크롤
 
     //회고록 수정
     @Transactional
