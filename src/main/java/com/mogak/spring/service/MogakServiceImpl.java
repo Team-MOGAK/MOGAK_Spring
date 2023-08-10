@@ -3,14 +3,17 @@ package com.mogak.spring.service;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.mogak.MogakPeriod;
 import com.mogak.spring.domain.mogak.Period;
+import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -22,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class MogakServiceImpl implements MogakService {
     private final UserRepository userRepository;
@@ -30,9 +33,15 @@ public class MogakServiceImpl implements MogakService {
     private final MogakPeriodRepository mogakPeriodRepository;
     private final PeriodRepository periodRepository;
     private final MogakCategoryRepository categoryRepository;
-
     private final JogakRepository jogakRepository;
+    private final PostRepository postRepository;
+    private final PostImgRepository postImgRepository;
+    private final PostCommentRepository postCommentRepository;
 
+
+    /**
+     * 모각 생성
+     * */
     @Transactional
     @Override
     public Mogak create(MogakRequestDto.CreateDto request) {
@@ -105,7 +114,7 @@ public class MogakServiceImpl implements MogakService {
     }
 
     /**
-     * 모각 달성 메소드
+     * 모각 미리 달성 메소드
      * */
     @Transactional
     @Override
@@ -147,6 +156,9 @@ public class MogakServiceImpl implements MogakService {
         return mogak;
     }
 
+    /**
+     * 모각 조회(페이징)
+     * */
     @Override
     public List<Mogak> getMogakList(Long userId, int cursor, int size) {
         User user = userRepository.findById(userId).orElseThrow(RuntimeException::new);
@@ -162,6 +174,43 @@ public class MogakServiceImpl implements MogakService {
         return mogakRepository.findAllOngoingToday(State.ONGOING.name(), today);
     }
 
+    /**
+     * 모각 결과 내리기
+     * 4시에 동작
+     * 자정 전에 시작했던 조각들 때문
+     * */
+    @Transactional
+    @Override
+    public void judgeMogakByDay(LocalDate day) {
+        List<Mogak> mogaks = mogakRepository.findAllByEndAt(day);
+        for (Mogak mogak: mogaks) {
+            List<Jogak> jogaks = jogakRepository.findAllByMogak(mogak);
+            double achievementRate = getAcheiveRate(jogaks);
+            judgeMogak(mogak, achievementRate);
+        }
+    }
+
+    private double getAcheiveRate(List<Jogak> jogaks) {
+        int success = 0;
+        for (Jogak jogak: jogaks) {
+            if (jogak.getState().equals(JogakState.SUCCESS.name())) {
+                success += 1;
+            }
+        }
+        return (double) success / jogaks.size() * 100;
+    }
+
+    private void judgeMogak(Mogak mogak, double rate) {
+        if (rate >= 80.0) {
+            mogak.updateState(State.COMPLETE.name());
+        } else {
+            mogak.updateState(State.FAIL.name());
+        }
+    }
+
+    /**
+     * 모각 삭제 API
+     * */
     @Transactional
     @Override
     public void deleteMogak(Long mogakId) {
@@ -172,7 +221,12 @@ public class MogakServiceImpl implements MogakService {
         // 조각 삭제 필요
         jogakRepository.deleteAll(mogak.getJogaks());
         // 회고록 삭제 + 회고록 삭제에서 댓글 삭제도 같이 구현 필요
-
+        List<Post> posts = postRepository.findAllByMogak(mogak);
+        for (Post post: posts) {
+            postImgRepository.deleteAllByPost(post);
+            postCommentRepository.deleteAllByPost(post);
+        }
+        postRepository.deleteAllByMogak(mogak);
         mogakRepository.deleteById(mogakId);
     }
 
