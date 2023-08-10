@@ -12,6 +12,8 @@ import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
 import com.mogak.spring.web.dto.PostResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,8 +38,13 @@ public class PostController {
         return ResponseEntity.ok(PostConverter.toCreatePostDto(post));
     }
 
-    //read - 무한 스크롤로 구현
-    //@GetMapping("/mogaks/posts")
+    //read-전체 조회
+    @GetMapping("/mogaks/{mogakId}/posts")
+    public ResponseEntity<Slice<PostResponseDto.GetPostDto>> getPostList(@PathVariable Long mogakId, @RequestParam(value = "lastPostId") Long lastPostId, @RequestParam(value = "size") int size){
+        Slice<Post> posts = postService.getAllPosts(lastPostId, mogakId, size);
+        //다음페이지 존재 여부 전달 필요
+        return ResponseEntity.ok(PostConverter.toPostPagingDto(posts));
+    }
 
     //read-상세 조회
     @GetMapping("/mogaks/posts/{postId}")
