@@ -171,27 +171,35 @@ public class MogakServiceImpl implements MogakService {
 
     /**
      * 모각 결과 내리기
-     * 12시랑 4시에 돌려야 할 듯
-     * 12시는 원래 하는 게 맞고, 4시는 자정 전에 시작했던 조각들 때문
+     * 4시에 동작
+     * 자정 전에 시작했던 조각들 때문
      * */
     @Transactional
     @Override
-    public void judgeMogak() {
-        List<Mogak> mogaks = mogakRepository.findAllByEndAt(LocalDate.now());
+    public void judgeMogakByDay(LocalDate day) {
+        List<Mogak> mogaks = mogakRepository.findAllByEndAt(day);
         for (Mogak mogak: mogaks) {
-            int success = 0;
             List<Jogak> jogaks = jogakRepository.findAllByMogak(mogak);
-            for (Jogak jogak: jogaks) {
-                if (jogak.getState().equals(JogakState.SUCCESS.name())) {
-                    success += 1;
-                }
+            double achievementRate = getAcheiveRate(jogaks);
+            judgeMogak(mogak, achievementRate);
+        }
+    }
+
+    private double getAcheiveRate(List<Jogak> jogaks) {
+        int success = 0;
+        for (Jogak jogak: jogaks) {
+            if (jogak.getState().equals(JogakState.SUCCESS.name())) {
+                success += 1;
             }
-            long achievementRate = success / jogaks.size();
-            if (achievementRate >= 80.0) {
-                mogak.updateState(State.COMPLETE.name());
-            } else {
-                mogak.updateState(State.FAIL.name());
-            }
+        }
+        return (double) success / jogaks.size() * 100;
+    }
+
+    private void judgeMogak(Mogak mogak, double rate) {
+        if (rate >= 80.0) {
+            mogak.updateState(State.COMPLETE.name());
+        } else {
+            mogak.updateState(State.FAIL.name());
         }
     }
 

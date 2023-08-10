@@ -3,6 +3,7 @@ package com.mogak.spring.service;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.web.dto.MogakRequestDto;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface MogakService {
@@ -12,5 +13,5 @@ public interface MogakService {
     List<Mogak> getMogakList(Long userId, int cursor, int size);
     void deleteMogak(Long mogakId);
     List<Mogak> getOngoingTodayMogakList(int name);
-    void judgeMogak();
+    void judgeMogakByDay(LocalDate day);
 }
