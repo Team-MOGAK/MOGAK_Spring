@@ -22,7 +22,7 @@ public class Scheduler {
         jogakService.createJogakToday();
     }
 
-    @Scheduled(zone = "Asia/Seoul", cron = "0 1 0 * * *", fixedDelay = 5000)
+    @Scheduled(zone = "Asia/Seoul", cron = "0 1 0 * * *")
     public void failJogakMidnightByScheduler() {
         jogakService.failJogakAtMidnight();
     }
@@ -32,7 +32,7 @@ public class Scheduler {
         jogakService.failJogakAtFour();
     }
 
-    @Scheduled(zone = "Asia/Seoul", cron = "0 0 4 * * *", fixedDelay = 5000)
+    @Scheduled(zone = "Asia/Seoul", cron = "0 0 4 * * *")
     public void judgeMogakAtFourByScheduler() {
         mogakService.judgeMogakByDay(LocalDate.now());
     }
