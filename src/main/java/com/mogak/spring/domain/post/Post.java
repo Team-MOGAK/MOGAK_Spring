@@ -43,13 +43,16 @@ public class Post extends BaseEntity {
     private String validation;
     @Column(nullable = false)
     private int viewCnt;
+    @Builder.Default
     @Column(nullable = false)
-    private int likeCnt;
+    private int likeCnt = 0;
 
     //setter 대신
     public void updatePost(String contents){
         this.contents=contents;
     }
+
+    public void updatePostLike(){ this.likeCnt= this.likeCnt+1; }
 
     public void putComment(PostComment postComment){
         this.postComments.add(postComment);

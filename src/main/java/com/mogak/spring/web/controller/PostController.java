@@ -7,6 +7,7 @@ import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.PostImgService;
+import com.mogak.spring.service.PostService;
 import com.mogak.spring.service.PostServiceImpl;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
@@ -24,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostController {
 
-    private final PostServiceImpl postService;
+    private final PostService postService;
     private final AwsS3Service awsS3Service;
     private final PostImgService postImgService;
     private static String dirName = "img";
@@ -69,4 +70,5 @@ public class PostController {
         postService.delete(postId);
         return ResponseEntity.ok(PostConverter.toDeletePostDto());
     }
+
 }

@@ -79,8 +79,8 @@ public class AwsS3Service {
                 }
                 //imgdto 저장
                 postImgRequestDtoList.add(PostImgRequestDto.CreatePostImgDto.builder()
-                        .imgName(imgName)
-                        .imgUrl(amazonS3.getUrl(bucket, imgName).toString())
+                        .imgName(thumbnailImgName)
+                        .imgUrl(amazonS3.getUrl(bucket, thumbnailImgName).toString())
                         .thumbnail(true)
                         .build());
             }
