@@ -24,7 +24,8 @@ public class PostResponseDto {
         private List<String> imgUrls;
         private String thumbnailUrl;
         private List<Long> commentId;
-        //추후 좋아요수, 조회수 추가
+        private int likeCnt;
+        //추후 조회수 추가
     }
     @Getter
     @Builder
@@ -36,6 +37,7 @@ public class PostResponseDto {
         private Long mogakId;
         private String contents;
         private String thumbnailUrl;
+        private int likeCnt;
     }
     @Getter
     @Builder
@@ -43,7 +45,7 @@ public class PostResponseDto {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class PostListDto {
         private List<PostResponseDto.GetPostDto> postDtoList;
-        private boolean hasNext; //다음페이지 존재하는지의 여부
+        private boolean hasNext; //다음페이지 존재하는지의 여부 + 추가 구현 필요
         private Integer size;
     }
     @Getter
@@ -77,4 +79,5 @@ public class PostResponseDto {
     public static class DeletePostDto {
         private String validation;
     }
+
 }

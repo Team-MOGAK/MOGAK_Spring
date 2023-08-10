@@ -35,8 +35,7 @@ public class PostConverter {
                 .mogak(mogak)
                 .user(user)
                 .contents(request.getContents())
-                .likeCnt(1) //더미데이터
-                .viewCnt(10) //더미데이터
+                .viewCnt(0)  //조회수 초기화
                 .validation(Validation.ACTIVE.toString())
                 .build();
     }
@@ -94,4 +93,10 @@ public class PostConverter {
         return posts.map(post -> toGetPostDto(post));
     }
 
+    //좋아요 생성
+    public static PostResponseDto.PostDto toCreateLikePostDto(Post post){
+        return PostResponseDto.PostDto.builder()
+                .likeCnt(post.getLikeCnt())
+                .build();
+    }
 }

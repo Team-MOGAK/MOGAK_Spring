@@ -11,6 +11,8 @@ public class PostRequestDto {
         private String contents;
     }
 
+
+
     @Getter
     public static class UpdatePostDto{
         public String contents;

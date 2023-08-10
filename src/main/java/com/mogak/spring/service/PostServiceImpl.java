@@ -2,12 +2,15 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.converter.PostConverter;
 import com.mogak.spring.converter.PostImgConverter;
+import com.mogak.spring.converter.PostLIkeConverter;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
+import com.mogak.spring.domain.post.PostLike;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.PostImgRequestDto;
+import com.mogak.spring.web.dto.PostLikeRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,7 +35,7 @@ public class PostServiceImpl implements PostService{
     private final PostCommentRepository postCommentRepository;
 
     //회고록 & 회고록 이미지 생성 => 리팩토링 필요
-    @Transactional
+    @Transactional(readOnly = false)
     @Override
     public Post create(PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, /*User user,*/Long mogakId){
         Mogak mogak = mogakRepository.findById(mogakId).get();
