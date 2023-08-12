@@ -22,7 +22,6 @@ public class PostResponseDto {
         private Long userId; //추후 로그인 구현후 수정 필요할듯
         private String contents;
         private List<String> imgUrls;
-        private String thumbnailUrl;
         private List<Long> commentId;
         private int likeCnt;
         //추후 조회수 추가
