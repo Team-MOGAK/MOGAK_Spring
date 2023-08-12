@@ -22,7 +22,7 @@ public class UserController {
     
     @PostMapping("/{nickname}/verify")
     public ResponseEntity<Object> verifyNickname(@PathVariable String nickname) {
-        if (userService.findUserByNickname(nickname)) {
+        if (userService.verifyNickname(nickname) && userService.findUserByNickname(nickname)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } else {
             return new ResponseEntity<>(HttpStatus.OK);

@@ -35,14 +35,24 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public Boolean findUserByNickname(String nickname) {
-        return userRepository.findOneByNickname(nickname).isPresent();
+        if (userRepository.findOneByNickname(nickname).isPresent()) {
+            throw new UserException(ErrorCode.ALEADY_EXIST_USER);
+        }
+        return false;
     }
 
-    private void inputVerify(UserRequestDto.CreateUserDto response) {
-        if (!Regex.USER_NICKNAME_REGEX.matchRegex(response.getNickname()))
+    protected void inputVerify(UserRequestDto.CreateUserDto response) {
+        if (!Regex.USER_NICKNAME_REGEX.matchRegex(response.getNickname(), "NICKNAME"))
             throw new UserException(ErrorCode.NOT_VALID_NICKNAME);
-        if (!Regex.EMAIL_REGEX.matchRegex(response.getEmail()))
+        if (!Regex.EMAIL_REGEX.matchRegex(response.getEmail(), "EMAIL"))
             throw new UserException(ErrorCode.NOT_VALID_EMAIL);
+        findUserByNickname(response.getNickname());
+    }
+
+    public Boolean verifyNickname(String nickname) {
+        if (!Regex.USER_NICKNAME_REGEX.matchRegex(nickname, "NICKNAME"))
+            throw new UserException(ErrorCode.NOT_VALID_NICKNAME);
+        return true;
     }
 
 }

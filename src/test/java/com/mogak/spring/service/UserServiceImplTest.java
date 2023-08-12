@@ -24,10 +24,10 @@ class UserServiceImplTest {
         String rightNick = "hyun1234!";
 
         //when
-        Boolean res1 = Regex.USER_NICKNAME_REGEX.matchRegex(nick1);
-        Boolean res2 = Regex.USER_NICKNAME_REGEX.matchRegex(nick2);
-        Boolean res3 = Regex.USER_NICKNAME_REGEX.matchRegex(nick3);
-        Boolean rightRes = Regex.USER_NICKNAME_REGEX.matchRegex(rightNick);
+        Boolean res1 = Regex.USER_NICKNAME_REGEX.matchRegex(nick1, "NICKNAME");
+        Boolean res2 = Regex.USER_NICKNAME_REGEX.matchRegex(nick2, "NICKNAME");
+        Boolean res3 = Regex.USER_NICKNAME_REGEX.matchRegex(nick3, "NICKNAME");
+        Boolean rightRes = Regex.USER_NICKNAME_REGEX.matchRegex(rightNick, "NICKNAME");
 
         //then
         SoftAssertions softly = new SoftAssertions();
@@ -35,6 +35,7 @@ class UserServiceImplTest {
         softly.assertThat(res2).isFalse();
         softly.assertThat(res3).isFalse();
         softly.assertThat(rightRes).isTrue();
+        softly.assertAll();
     }
 
     @Test
