@@ -4,6 +4,8 @@ import com.mogak.spring.domain.base.BaseEntity;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.*;
 
@@ -71,7 +73,7 @@ public class Mogak extends BaseEntity {
         });
         Optional.ofNullable(updateDto.getStartAt()).ifPresent(startDay -> {
             if (!this.state.equals(State.BEFORE.toString())) {
-                throw new IllegalArgumentException("시작 날짜는 시작하기 전에만 수정 가능합니다");
+                throw new MogakException(ErrorCode.CAN_MODIFIED_BEFORE_START_MOGAK);
             }
             this.state = State.registerState(startDay, endAt, LocalDate.now()).toString();
             this.startAt = startDay;

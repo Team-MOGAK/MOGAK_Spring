@@ -5,6 +5,7 @@ import com.mogak.spring.web.dto.UserRequestDto;
 
 public interface UserService {
 
-    User create(UserRequestDto.CreateUserDto response);
+    User create(UserRequestDto.CreateUserDto request);
     Boolean findUserByNickname(String nickname);
+    Boolean verifyNickname(String request);
 }
