@@ -6,6 +6,9 @@ import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.exception.JogakException;
+import com.mogak.spring.exception.UserException;
 import com.mogak.spring.repository.JogakRepository;
 import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -71,21 +74,23 @@ public class JogakServiceImpl implements JogakService {
         Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(IllegalArgumentException::new);
         if (!mogak.getState().equals(State.ONGOING.name())) {
-            throw new RuntimeException("진행중인 모각만 조각을 생성할 수 있습니다");
+            throw new JogakException(ErrorCode.WRONG_CREATE_JOGAK);
         }
         return jogakRepository.save(JogakConverter.toJogak(mogak));
     }
 
     @Override
     public List<Jogak> getDailyJogaks(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(RuntimeException::new);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return jogakRepository.findDailyJogak(user);
     }
 
     @Transactional
     @Override
     public Jogak startJogak(Long jogakId) {
-        Jogak jogak = jogakRepository.findById(jogakId).orElseThrow(IllegalArgumentException::new);
+        Jogak jogak = jogakRepository.findById(jogakId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOGAK));
         jogak.start(LocalDateTime.now());
         return jogak;
     }
@@ -93,7 +98,8 @@ public class JogakServiceImpl implements JogakService {
     @Transactional
     @Override
     public Jogak endJogak(Long jogakId) {
-        Jogak jogak = jogakRepository.findById(jogakId).orElseThrow(IllegalArgumentException::new);
+        Jogak jogak = jogakRepository.findById(jogakId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOGAK));
         jogak.end(LocalDateTime.now());
         return jogak;
     }

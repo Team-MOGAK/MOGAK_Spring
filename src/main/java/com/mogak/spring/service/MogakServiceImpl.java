@@ -10,11 +10,12 @@ import com.mogak.spring.domain.mogak.MogakPeriod;
 import com.mogak.spring.domain.mogak.Period;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.exception.MogakException;
+import com.mogak.spring.exception.UserException;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,12 +47,12 @@ public class MogakServiceImpl implements MogakService {
     @Override
     public Mogak create(MogakRequestDto.CreateDto request) {
         User user = userRepository.findById(request.getUserId())
-                 .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다"));
+                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String otherCategory = request.getOtherCategory();
         MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory())
-                .orElseThrow(() -> new RuntimeException("카테고리가 존재하지 않습니다"));
+                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
         if (category.getName().equals("기타") && otherCategory == null) {
-            throw new RuntimeException("기타 카테고리가 존재하지 않습니다");
+            throw new MogakException(ErrorCode.NOT_EXIST_OTHER_CATEGORY);
         }
         State state = State.registerState(request.getStartAt(), request.getEndAt(), LocalDate.now());
         Mogak result = mogakRepository.save(MogakConverter.toMogak(request, category, otherCategory, user, state));
@@ -65,7 +66,8 @@ public class MogakServiceImpl implements MogakService {
     private void saveMogakPeriod(List<String> days, Mogak mogak) {
         List<Period> periods = new ArrayList<>();
         for (String day: days) {
-            periods.add(periodRepository.findOneByDays(day).orElseThrow(IllegalArgumentException::new));
+            periods.add(periodRepository.findOneByDays(day)
+                    .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_DAY)));
         }
         for (Period period: periods) {
             MogakPeriod mogakPeriod = MogakPeriod.builder()
@@ -83,7 +85,8 @@ public class MogakServiceImpl implements MogakService {
 
         List<Period> periods = new ArrayList<>();
         for (String day : days) {
-            periods.add(periodRepository.findOneByDays(day).orElseThrow(IllegalAccessError::new));
+            periods.add(periodRepository.findOneByDays(day)
+                    .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_DAY)));
         }
         List<MogakPeriod> mogakPeriods = mogakPeriodRepository.findAllByMogak_Id(mogak.getId());
 
@@ -120,9 +123,9 @@ public class MogakServiceImpl implements MogakService {
     @Override
     public Mogak achieveMogak(Long id) {
         Mogak mogak = mogakRepository.findById(id)
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         if (!mogak.getState().equals("ONGOING")) {
-            throw new RuntimeException("잘못된 상태 변경입니다");
+            throw new MogakException(ErrorCode.WRONG_STATE_CHANGE);
         }
         mogak.updateState(State.COMPLETE.toString());
         return mogak;
@@ -136,12 +139,12 @@ public class MogakServiceImpl implements MogakService {
     public Mogak updateMogak(MogakRequestDto.UpdateDto request) {
         List<String> days = request.getDays();
         Mogak mogak = mogakRepository.findById(request.getMogakId())
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         if (Optional.ofNullable(request.getCategory()).isPresent()) {
             MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory())
-                    .orElseThrow(() -> new IllegalArgumentException("카테고리가 존재하지 않습니다"));
+                    .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
             if (category.getName().equals("기타") && request.getOtherCategory() == null) {
-                throw new IllegalArgumentException("기타 카테고리가 존재하지 않습니다");
+                throw new MogakException(ErrorCode.NOT_EXIST_OTHER_CATEGORY);
             }
             if (category.getName().equals("기타")) {
                 mogak.updateOtherCategory(request.getOtherCategory());
@@ -161,7 +164,8 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Override
     public List<Mogak> getMogakList(Long userId, int cursor, int size) {
-        User user = userRepository.findById(userId).orElseThrow(RuntimeException::new);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         PageRequest pageRequest = PageRequest.of(cursor, size);
         return mogakRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId(), pageRequest);
     }
@@ -215,7 +219,8 @@ public class MogakServiceImpl implements MogakService {
     @Override
     public void deleteMogak(Long mogakId) {
         //모각 존재 확인
-        Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(IllegalArgumentException::new);
+        Mogak mogak = mogakRepository.findById(mogakId)
+                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         // 모각 주기 삭제
         mogakPeriodRepository.deleteAllByMogakId(mogakId);
         // 조각 삭제 필요

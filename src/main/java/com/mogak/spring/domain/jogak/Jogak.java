@@ -2,6 +2,8 @@ package com.mogak.spring.domain.jogak;
 
 import com.mogak.spring.domain.base.BaseEntity;
 import com.mogak.spring.domain.mogak.Mogak;
+import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.exception.JogakException;
 import lombok.*;
 
 import javax.persistence.*;
@@ -28,10 +30,10 @@ public class Jogak extends BaseEntity {
 
     public void start(LocalDateTime now) {
         if (this.startTime != null) {
-            throw new RuntimeException("이미 시작한 조각입니다.");
+            throw new JogakException(ErrorCode.ALREADY_START_JOGAK);
         }
         if (!this.getCreatedAt().toLocalDate().equals(LocalDate.now())) {
-            throw new RuntimeException("자정을 넘긴 조각입니다");
+            throw new JogakException(ErrorCode.WRONG_START_MIDNIGHT_JOGAK);
         }
 
         this.startTime = now;
@@ -41,16 +43,16 @@ public class Jogak extends BaseEntity {
     public void end(LocalDateTime now) {
        if (this.startTime == null ||
                !this.state.equals(JogakState.ONGOING.name())) {
-           throw new RuntimeException("시작하지 않은 조각입니다");
+           throw new JogakException(ErrorCode.NOT_START_JOGAK);
        }
        if (this.endTime != null) {
-           throw new RuntimeException("이미 종료한 조각입니다");
+           throw new JogakException(ErrorCode.ALREADY_END_JOGAK);
        }
 
        LocalDateTime startOfDay = getCreatedAt().toLocalDate().atStartOfDay();
        LocalDateTime deadLine = getCreatedAt().toLocalDate().atStartOfDay().plusDays(1).plusHours(4);
        if (now.isBefore(startOfDay) || now.isAfter(deadLine)) {
-           throw new RuntimeException("기한을 넘긴 조각입니다");
+           throw new JogakException(ErrorCode.OVERDUE_DEADLINE_JOGAK);
        }
 
        this.endTime = now;

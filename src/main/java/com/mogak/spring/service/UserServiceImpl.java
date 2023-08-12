@@ -4,6 +4,8 @@ import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.exception.UserException;
 import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -26,9 +28,9 @@ public class UserServiceImpl implements UserService {
     public User create(UserRequestDto.CreateUserDto response) {
         inputVerify(response);
         Job job = jobRepository.findJobByName(response.getJob())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 직업입니다"));
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Address address = addressRepository.findAddressByName(response.getAddress())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 지역입니다"));
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_ADDRESS));
         return userRepository.save(UserConverter.toUser(response, job, address));
     }
     @Override
@@ -36,11 +38,11 @@ public class UserServiceImpl implements UserService {
         return userRepository.findOneByNickname(nickname).isPresent();
     }
 
-    private void inputVerify(UserRequestDto.CreateUserDto response) throws RuntimeException {
+    private void inputVerify(UserRequestDto.CreateUserDto response) {
         if (!Regex.USER_NICKNAME_REGEX.matchRegex(response.getNickname()))
-            throw new RuntimeException("올바른 닉네임이 아닙니다");
+            throw new UserException(ErrorCode.NOT_VALID_NICKNAME);
         if (!Regex.EMAIL_REGEX.matchRegex(response.getEmail()))
-            throw new RuntimeException("올바른 이메일 형식이 아닙니다");
+            throw new UserException(ErrorCode.NOT_VALID_EMAIL);
     }
 
 }
