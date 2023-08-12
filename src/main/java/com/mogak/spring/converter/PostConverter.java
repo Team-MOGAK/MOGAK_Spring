@@ -40,15 +40,13 @@ public class PostConverter {
                 .build();
     }
     //상세 조회
-    public static PostResponseDto.PostDto toPostDto(Post post){
+    public static PostResponseDto.PostDto toPostDto(Post post, List<String> imgUrls){
         return PostResponseDto.PostDto.builder()
                 .postId(post.getId())
                 .mogakId(post.getMogak().getId())
                 .userId(post.getUser().getId())
                 .contents(post.getContents())
-                .imgUrls(post.getPostImgs().stream()
-                        .map(m -> m.getImgUrl())
-                        .collect(Collectors.toList()))
+                .imgUrls(imgUrls)
                 .commentId(post.getPostComments().stream()
                         .map(m -> m.getId())
                         .collect(Collectors.toList())) //일단 comment id로 조회하는 것으로 함

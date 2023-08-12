@@ -47,7 +47,7 @@ public class PostServiceImpl implements PostService{
             if(postImgDto.isThumbnail()==true){
                 post.putPostThumbnailUrl(postImg.getImgUrl());
             }
-            else{
+            else{//이미지 업로드 체크
                 post.putPostImg(postImg);
             }
             postImgRepository.save(postImg);
@@ -66,7 +66,8 @@ public class PostServiceImpl implements PostService{
     //회고록 상세 조회 + 댓글, 이미지 같이 보이게
     @Override
     public Post findById(Long postId){
-        return postRepository.findById(postId).get();
+     Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("post가 존재하지 않습니다"));
+     return post;
     }
 
 

@@ -32,10 +32,26 @@ public class PostImgServiceImpl implements PostImgService{
         return imgUrlList;
     }
 
+    //이미지 상세조회를 위한
+    @Override
+    public List<String> findNotThumbnailImg(Post post){
+        String thumbnailUrl = post.getPostThumbnailUrl();
+        List<PostImg> postImgList = post.getPostImgs();
+        List<String> imgUrls = new ArrayList<>();
+        for(PostImg postImg : postImgList){
+            if(thumbnailUrl != postImg.getImgUrl()){
+                imgUrls.add(postImg.getImgUrl());
+            }
+        }
+        return imgUrls;
+    }
+
     @Override
     public List<PostImg> findAllByPost(Post post){
         return postImgRepository.findAllByPost(post);
     }
+
+
 
 
 }
