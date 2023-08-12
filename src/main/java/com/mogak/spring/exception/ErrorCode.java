@@ -46,7 +46,8 @@ public enum ErrorCode {
 
     NOT_SUPPORTED_METHOD_ERROR(HttpStatus.METHOD_NOT_ALLOWED, "지원하지 않는 HTTP Method 요청입니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버와의 연결에 실패했습니다"),
-    NOT_EXIST_DAY(HttpStatus.BAD_REQUEST, "존재하지 않는 요일입니다")
+    NOT_EXIST_DAY(HttpStatus.BAD_REQUEST, "존재하지 않는 요일입니다"),
+    ALEADY_EXIST_USER(HttpStatus.BAD_REQUEST, "이미 존재하는 유저입니다")
     ;
 
     private final HttpStatus status;
