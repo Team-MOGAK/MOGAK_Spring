@@ -51,7 +51,8 @@ public class PostController {
     @GetMapping("/mogaks/posts/{postId}")
     public ResponseEntity<PostResponseDto.PostDto> getPostDetail(@PathVariable Long postId){
         Post post= postService.findById(postId);
-        return ResponseEntity.ok(PostConverter.toPostDto(post));
+        List<String> imgUrls = postImgService.findNotThumbnailImg(post);
+        return ResponseEntity.ok(PostConverter.toPostDto(post, imgUrls));
     }
 
     //update - 권한 설정 필요
