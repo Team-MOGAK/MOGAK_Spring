@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 @RequiredArgsConstructor
 public class PostCommentServiceImpl implements PostCommentService {
 
@@ -27,8 +27,11 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public PostComment create(CommentRequestDto.CreateCommentDto request, Long postId){
-        Post post = postRepository.findById(postId).get();
-        User user = userRepository.findById(request.getUserId()).get();
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("post가 존재하지 않습니다"));
+        User user = userRepository.findById(request.getUserId()).orElseThrow(() -> new IllegalArgumentException("user가 존재하지 않습니다"));
+        if(request.getContents().length() > 200 ){
+            throw new IllegalArgumentException("최대 글자수 200자를 초과하였습니다");
+        }
         PostComment comment = CommentConverter.toComment(request,post,user);
         post.putComment(comment);
         return postCommentRepository.save(comment);
@@ -45,6 +48,12 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Override
     public PostComment update(CommentRequestDto.UpdateCommentDto request, Long postId, Long commentId){
         PostComment comment = postCommentRepository.findByPostAndId(postId,commentId);
+        if(comment == null){
+            throw new IllegalArgumentException("존재하지 않는 댓글입니다");
+        }
+        if(request.getContents().length() > 200 ){
+            throw new IllegalArgumentException("최대 글자수 200자를 초과하였습니다");
+        }
         comment.updateComment(request.getContents());
         return comment;
     }
@@ -54,6 +63,7 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public void delete(Long postId, Long commentId){
+        PostComment postComment = postCommentRepository.findById(commentId).orElseThrow(() -> new IllegalArgumentException("comment가 존재하지 않습니다"));
         postCommentRepository.deleteByPostAndId(postId, commentId);
         return;
     }

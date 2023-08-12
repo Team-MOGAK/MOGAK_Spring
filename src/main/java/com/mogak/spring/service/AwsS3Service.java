@@ -43,6 +43,9 @@ public class AwsS3Service {
     public List<PostImgRequestDto.CreatePostImgDto> uploadImg(List<MultipartFile> multipartFile, String dirName) {
 
         List<PostImgRequestDto.CreatePostImgDto> postImgRequestDtoList = new ArrayList<>();
+        if(multipartFile.isEmpty() == true){
+            throw new IllegalArgumentException("이미지가 존재하지 않습니다");
+        }
         //multifle을 따로 file로 만드는 것이 아니라 inputstream을 받는 방식
         multipartFile.forEach(img -> {
             String imgName = createImgName(img.getOriginalFilename(), dirName);
@@ -53,7 +56,7 @@ public class AwsS3Service {
             try(InputStream inputStream = img.getInputStream()) {
                 amazonS3.putObject(new PutObjectRequest(bucket, imgName, inputStream, objectMetadata)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
-                log.info("s3 업로드 성공!");
+                //log.info("s3 업로드 성공!");
             } catch(IOException e){
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
             }
@@ -73,7 +76,7 @@ public class AwsS3Service {
                 try(InputStream inputThumbnailStream = thumbnailImg.getInputStream()) {
                     amazonS3.putObject(new PutObjectRequest(bucket, thumbnailImgName, inputThumbnailStream, objectThumbnailMetadata)
                             .withCannedAcl(CannedAccessControlList.PublicRead));
-                    log.info("s3 썸네일 업로드 성공!");
+                    //log.info("s3 썸네일 업로드 성공!");
                 } catch(IOException e){
                     throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 썸네일 업로드 실패했습니다");
                 }
@@ -116,6 +119,9 @@ public class AwsS3Service {
 
     //s3 이미지객체 delete
     public void deleteImg(List<PostImg> postImgList, String dirName){
+        if(postImgList.isEmpty() == true){
+            throw new IllegalArgumentException("삭제할 이미지가 없습니다");
+        }
         for(PostImg postImg : postImgList){
             String imgName = postImg.getImgName();
             amazonS3.deleteObject(new DeleteObjectRequest(bucket, imgName));
