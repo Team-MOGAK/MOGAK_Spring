@@ -1,19 +1,15 @@
 package com.mogak.spring.web.controller;
 
 import com.mogak.spring.converter.PostConverter;
-import com.mogak.spring.converter.PostImgConverter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
-import com.mogak.spring.domain.user.User;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.PostImgService;
 import com.mogak.spring.service.PostService;
-import com.mogak.spring.service.PostServiceImpl;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
 import com.mogak.spring.web.dto.PostResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

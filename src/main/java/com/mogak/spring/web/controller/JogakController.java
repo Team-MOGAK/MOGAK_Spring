@@ -4,14 +4,14 @@ import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.web.dto.JogakResponseDto;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/mogaks/jogaks")
 public class JogakController {

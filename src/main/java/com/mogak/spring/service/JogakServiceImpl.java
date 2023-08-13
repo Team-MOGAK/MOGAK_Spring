@@ -12,8 +12,7 @@ import com.mogak.spring.exception.UserException;
 import com.mogak.spring.repository.JogakRepository;
 import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.UserRepository;
-import lombok.AllArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class JogakServiceImpl implements JogakService {
 
