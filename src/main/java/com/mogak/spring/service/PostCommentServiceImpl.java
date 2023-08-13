@@ -40,14 +40,16 @@ public class PostCommentServiceImpl implements PostCommentService {
     //댓글 조회
     @Override
     public List<PostComment> findByPostId(Long postId){
-        return postCommentRepository.findAllByPost(postId);
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 post 입니다"));
+        return postCommentRepository.findAllByPost(post);
     }
 
     //댓글 수정
     @Transactional
     @Override
     public PostComment update(CommentRequestDto.UpdateCommentDto request, Long postId, Long commentId){
-        PostComment comment = postCommentRepository.findByPostAndId(postId,commentId);
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("post가 존재하지 않습니다"));
+        PostComment comment = postCommentRepository.findByPostAndId(post,commentId);
         if(comment == null){
             throw new IllegalArgumentException("존재하지 않는 댓글입니다");
         }
@@ -63,8 +65,9 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public void delete(Long postId, Long commentId){
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("post가 존재하지 않습니다"));
         PostComment postComment = postCommentRepository.findById(commentId).orElseThrow(() -> new IllegalArgumentException("comment가 존재하지 않습니다"));
-        postCommentRepository.deleteByPostAndId(postId, commentId);
+        postCommentRepository.deleteByPostAndId(post, commentId);
         return;
     }
 

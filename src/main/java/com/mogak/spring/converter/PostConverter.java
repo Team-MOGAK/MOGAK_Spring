@@ -22,6 +22,7 @@ public class PostConverter {
                 .mogakId(post.getMogak().getId())
                 .userId(post.getUser().getId())
                 .contents(post.getContents())
+                .validation(Validation.ACTIVE.toString())
                 .createdAt(post.getCreatedAt())
                 .imgUrls(post.getPostImgs().stream()
                         .map(m -> m.getImgUrl())
