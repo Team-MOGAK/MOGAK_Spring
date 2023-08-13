@@ -5,12 +5,14 @@ import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.service.PostCommentServiceImpl;
 import com.mogak.spring.web.dto.CommentRequestDto;
 import com.mogak.spring.web.dto.CommentResponseDto;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "댓글 API", description = "댓글 API 명세서")
 @RestController
 @RequiredArgsConstructor
 public class CommentController {

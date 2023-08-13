@@ -5,6 +5,7 @@ import com.mogak.spring.domain.post.PostLike;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.web.dto.PostLikeRequestDto;
 import com.mogak.spring.web.dto.PostLikeResponseDto;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "네트워킹 API", description = "네트워킹 API 명세서")
 @RestController
 @RequiredArgsConstructor
 public class NetworkController {

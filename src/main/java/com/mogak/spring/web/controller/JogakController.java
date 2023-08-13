@@ -4,6 +4,7 @@ import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.web.dto.JogakResponseDto;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "조각 API", description = "조각 API 명세서")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/mogaks/jogaks")
