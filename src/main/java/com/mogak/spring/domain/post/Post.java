@@ -52,7 +52,11 @@ public class Post extends BaseEntity {
         this.contents=contents;
     }
 
-    public void updatePostLike(){ this.likeCnt= this.likeCnt+1; }
+    public void addPostLike(){ this.likeCnt= this.likeCnt+1; }
+
+    public void subtractPostLike(){
+        this.likeCnt=this.likeCnt-1;
+    }
 
     public void putComment(PostComment postComment){
         this.postComments.add(postComment);

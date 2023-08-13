@@ -16,21 +16,10 @@ import org.springframework.web.bind.annotation.*;
 public class NetworkController {
 
     private final PostLikeService postLikeService;
-    //좋아요 생성
-    @PostMapping("/posts/{postId}/like")
-    public ResponseEntity<PostLikeResponseDto.CreatePostLikeDto> createLike(@PathVariable Long postId, @RequestBody PostLikeRequestDto.CreateLikeDto request){
-        PostLike postLike = postLikeService.createLike(postId, request);
-        return ResponseEntity.ok(PostLIkeConverter.toCreatePostLikeDto(postLike));
+    //좋아요 생성&삭제
+    @PostMapping("/posts/like")
+    public ResponseEntity<String> updateLike(@RequestBody PostLikeRequestDto.LikeDto request){
+        String message = postLikeService.updateLike(request);
+        return ResponseEntity.ok(message);
     }
-
-    @GetMapping("/test")
-    public void test(){
-        log.debug("DEBUG");
-        log.info("INFO");
-        log.warn("WARN");
-        log.error("ERROR");
-    }
-    //좋아요 삭제
-    //@DeleteMapping("/posts/{postId}/like")
-    //public ResponseEntity
 }
