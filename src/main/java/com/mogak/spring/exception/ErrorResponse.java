@@ -11,18 +11,18 @@ import java.time.LocalDateTime;
 public class ErrorResponse {
     private final LocalDateTime now = LocalDateTime.now();
     private int status;
-    private String errorCode;
+    private String code;
     private String message;
 
     public ErrorResponse(ErrorCode errorCode) {
         this.status = errorCode.getStatus().value();
-        this.errorCode = errorCode.name();
+        this.code = errorCode.name();
         this.message = errorCode.getMessage();
     }
 
-    public ErrorResponse(int status, String errorCode, String message) {
+    public ErrorResponse(int status, String code, String message) {
         this.status = status;
-        this.errorCode = errorCode;
+        this.code = code;
         this.message = message;
     }
 

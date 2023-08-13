@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Boolean findUserByNickname(String nickname) {
         if (userRepository.findOneByNickname(nickname).isPresent()) {
-            throw new UserException(ErrorCode.ALEADY_EXIST_USER);
+            throw new UserException(ErrorCode.ALREADY_EXIST_USER);
         }
         return false;
     }

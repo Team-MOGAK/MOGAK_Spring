@@ -4,6 +4,10 @@ import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.exception.PostCommentException;
+import com.mogak.spring.exception.PostException;
+import com.mogak.spring.exception.UserException;
 import com.mogak.spring.repository.PostCommentRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -26,11 +30,13 @@ public class PostCommentServiceImpl implements PostCommentService {
     //댓글 생성 - dto
     @Transactional
     @Override
-    public PostComment create(CommentRequestDto.CreateCommentDto request, Long postId){
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("post가 존재하지 않습니다"));
-        User user = userRepository.findById(request.getUserId()).orElseThrow(() -> new IllegalArgumentException("user가 존재하지 않습니다"));
-        if(request.getContents().length() > 200 ){
-            throw new IllegalArgumentException("최대 글자수 200자를 초과하였습니다");
+    public PostComment create(CommentRequestDto.CreateCommentDto request, Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        if (request.getContents().length() > 200) {
+            throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
         }
         PostComment comment = CommentConverter.toComment(request,post,user);
         post.putComment(comment);
@@ -39,20 +45,20 @@ public class PostCommentServiceImpl implements PostCommentService {
 
     //댓글 조회
     @Override
-    public List<PostComment> findByPostId(Long postId){
+    public List<PostComment> findByPostId(Long postId) {
         return postCommentRepository.findAllByPost(postId);
     }
 
     //댓글 수정
     @Transactional
     @Override
-    public PostComment update(CommentRequestDto.UpdateCommentDto request, Long postId, Long commentId){
+    public PostComment update(CommentRequestDto.UpdateCommentDto request, Long postId, Long commentId) {
         PostComment comment = postCommentRepository.findByPostAndId(postId,commentId);
-        if(comment == null){
-            throw new IllegalArgumentException("존재하지 않는 댓글입니다");
+        if (comment == null) {
+            throw new PostCommentException(ErrorCode.NOT_EXIST_COMMENT);
         }
-        if(request.getContents().length() > 200 ){
-            throw new IllegalArgumentException("최대 글자수 200자를 초과하였습니다");
+        if (request.getContents().length() > 200 ) {
+            throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
         }
         comment.updateComment(request.getContents());
         return comment;
@@ -62,10 +68,10 @@ public class PostCommentServiceImpl implements PostCommentService {
     //댓글 삭제
     @Transactional
     @Override
-    public void delete(Long postId, Long commentId){
-        PostComment postComment = postCommentRepository.findById(commentId).orElseThrow(() -> new IllegalArgumentException("comment가 존재하지 않습니다"));
+    public void delete(Long postId, Long commentId) {
+        PostComment postComment = postCommentRepository.findById(commentId)
+                .orElseThrow(() -> new PostCommentException(ErrorCode.NOT_EXIST_COMMENT));
         postCommentRepository.deleteByPostAndId(postId, commentId);
-        return;
     }
 
 }
