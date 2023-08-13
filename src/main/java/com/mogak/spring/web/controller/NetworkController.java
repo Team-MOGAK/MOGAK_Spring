@@ -6,13 +6,12 @@ import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.web.dto.PostLikeRequestDto;
 import com.mogak.spring.web.dto.PostLikeResponseDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Slf4j
 @RequiredArgsConstructor
 public class NetworkController {
 
@@ -24,6 +23,13 @@ public class NetworkController {
         return ResponseEntity.ok(PostLIkeConverter.toCreatePostLikeDto(postLike));
     }
 
+    @GetMapping("/test")
+    public void test(){
+        log.debug("DEBUG");
+        log.info("INFO");
+        log.warn("WARN");
+        log.error("ERROR");
+    }
     //좋아요 삭제
     //@DeleteMapping("/posts/{postId}/like")
     //public ResponseEntity
