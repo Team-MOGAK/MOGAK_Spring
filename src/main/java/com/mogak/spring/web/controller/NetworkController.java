@@ -1,15 +1,10 @@
 package com.mogak.spring.web.controller;
 
-import com.mogak.spring.converter.PostConverter;
 import com.mogak.spring.converter.PostLIkeConverter;
-import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostLike;
 import com.mogak.spring.service.PostLikeService;
-import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.PostLikeRequestDto;
 import com.mogak.spring.web.dto.PostLikeResponseDto;
-import com.mogak.spring.web.dto.PostRequestDto;
-import com.mogak.spring.web.dto.PostResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;

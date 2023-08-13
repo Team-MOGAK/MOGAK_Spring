@@ -12,10 +12,11 @@ import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.util.Regex;
 import com.mogak.spring.web.dto.UserRequestDto;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -36,7 +37,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Boolean findUserByNickname(String nickname) {
         if (userRepository.findOneByNickname(nickname).isPresent()) {
-            throw new UserException(ErrorCode.ALEADY_EXIST_USER);
+            throw new UserException(ErrorCode.ALREADY_EXIST_USER);
         }
         return false;
     }

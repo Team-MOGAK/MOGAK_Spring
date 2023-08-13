@@ -2,25 +2,23 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.converter.PostConverter;
 import com.mogak.spring.converter.PostImgConverter;
-import com.mogak.spring.converter.PostLIkeConverter;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
-import com.mogak.spring.domain.post.PostLike;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.exception.MogakException;
+import com.mogak.spring.exception.PostException;
+import com.mogak.spring.exception.UserException;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.PostImgRequestDto;
-import com.mogak.spring.web.dto.PostLikeRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -38,22 +36,24 @@ public class PostServiceImpl implements PostService{
     @Transactional
     @Override
     public Post create(PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, /*User user,*/Long mogakId){
-        Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new IllegalArgumentException("mogak이 존재하지 않습니다"));
-        User user = userRepository.findById(request.getUserId()).orElseThrow(() -> new IllegalArgumentException("user가 존재하지 않습니다"));
-        if(request.getContents().length() > 350){
-            throw new IllegalArgumentException("최대 글자수 350자를 초과하였습니다");
+        Mogak mogak = mogakRepository.findById(mogakId)
+                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        if (request.getContents().length() > 350) {
+            throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
         }
         Post post= PostConverter.toPost(request, user, mogak);
-        if(postImgDtoList.isEmpty() == true){
-            throw new IllegalArgumentException("이미지가 존재하지 않습니다");
+        if (postImgDtoList.isEmpty()) {
+            throw new PostException(ErrorCode.NOT_EXIST_IMAGE);
         }
         for(PostImgRequestDto.CreatePostImgDto postImgDto : postImgDtoList){
             PostImg postImg = PostImgConverter.toPostImg(postImgDto, post);
             //썸네일이미지인지 체크 필요
-            if(postImgDto.isThumbnail()==true){
+            if (postImgDto.isThumbnail()) {
                 post.putPostThumbnailUrl(postImg.getImgUrl()); //썸네일 이미지는 thumbnailurl에 추가
             }
-            else{//이미지 업로드 체크
+            else {//이미지 업로드 체크
                 post.putPostImg(postImg);
             }
             postImgRepository.save(postImg);
@@ -62,9 +62,10 @@ public class PostServiceImpl implements PostService{
     }
     //회고록 조회 - 무한 스크롤
     @Override
-    public Slice<Post> getAllPosts(Long lastPostId, Long mogakId, int size){
-        Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(()->{return new IllegalArgumentException("mogak이 존재하지 않습니다");
-        });
+    public Slice<Post> getAllPosts(Long lastPostId, Long mogakId, int size) {
+        Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() ->
+            new MogakException(ErrorCode.NOT_EXIST_MOGAK)
+        );
         Pageable pageable = Pageable.ofSize(size);
         Slice<Post> posts = postRepository.findAllPosts(lastPostId!=null?lastPostId:Long.MAX_VALUE, mogakId, pageable);
         return posts;
@@ -72,7 +73,8 @@ public class PostServiceImpl implements PostService{
     //회고록 상세 조회 + 댓글, 이미지 같이 보이게
     @Override
     public Post findById(Long postId){
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("post가 존재하지 않습니다"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         return post;
     }
 
@@ -80,10 +82,11 @@ public class PostServiceImpl implements PostService{
     //회고록 수정
     @Transactional
     @Override
-    public Post update(Long postId, PostRequestDto.UpdatePostDto request){
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("post가 존재하지 않습니다"));
-        if(request.getContents().length() > 350){
-            throw new IllegalArgumentException("최대 글자수 350자를 초과하였습니다");
+    public Post update(Long postId, PostRequestDto.UpdatePostDto request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
+        if (request.getContents().length() > 350) {
+            throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
         }
         post.updatePost(request.getContents());
         return post;
@@ -93,7 +96,8 @@ public class PostServiceImpl implements PostService{
     @Transactional
     @Override
     public void delete(Long postId){
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("post가 존재하지 않습니다"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         //이미지 삭제
         postImgRepository.deleteAllByPost(post);
         //댓글 삭제

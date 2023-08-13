@@ -41,17 +41,25 @@ public enum ErrorCode {
     OVERDUE_DEADLINE_JOGAK(HttpStatus.BAD_REQUEST, "기한을 넘긴 조각입니다"),
     WRONG_CREATE_JOGAK(HttpStatus.BAD_REQUEST, "진행중인 모각만 조각을 생성할 수 있습니다"),
 
+    NOT_EXIST_DAY(HttpStatus.BAD_REQUEST, "존재하지 않는 요일입니다"),
+    ALREADY_EXIST_USER(HttpStatus.BAD_REQUEST, "이미 존재하는 유저입니다"),
+
+    EXCEED_MAX_NUM_POST(HttpStatus.BAD_REQUEST, "최대 글자수 350자를 초과하였습니다"),
+    NOT_EXIST_IMAGE(HttpStatus.BAD_REQUEST, "이미지가 존재하지 않습니다"),
+    NOT_EXIST_POST(HttpStatus.BAD_REQUEST, "존재하지 않는 게시물입니다"),
+    ALREADY_CREATE_LIKE(HttpStatus.INTERNAL_SERVER_ERROR, "이미 좋아요를 누른 게시물입니다"),
+
+    EXCEED_MAX_NUM_COMMENT(HttpStatus.BAD_REQUEST, "최대 글자수 200자를 초과하였습니다"),
+    NOT_EXIST_COMMENT(HttpStatus.BAD_REQUEST, "존재하지 않는 댓글입니다"),
+
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다"),
     NOT_FOUND(HttpStatus.NOT_FOUND, "찾을 수 없습니다"),
-
     NOT_SUPPORTED_METHOD_ERROR(HttpStatus.METHOD_NOT_ALLOWED, "지원하지 않는 HTTP Method 요청입니다."),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버와의 연결에 실패했습니다"),
-    NOT_EXIST_DAY(HttpStatus.BAD_REQUEST, "존재하지 않는 요일입니다"),
-    ALEADY_EXIST_USER(HttpStatus.BAD_REQUEST, "이미 존재하는 유저입니다")
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버와의 연결에 실패했습니다")
     ;
 
     private final HttpStatus status;
-//    private final String errorCode;
+//    private final String code;
     private final String message;
 
     public static ErrorCode findByMessage(String message) {

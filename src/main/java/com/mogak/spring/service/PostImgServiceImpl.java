@@ -3,6 +3,8 @@ package com.mogak.spring.service;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.post.PostImg;
+import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.exception.PostException;
 import com.mogak.spring.repository.PostCommentRepository;
 import com.mogak.spring.repository.PostImgRepository;
 import com.mogak.spring.repository.PostRepository;
@@ -23,10 +25,11 @@ public class PostImgServiceImpl implements PostImgService{
 
     @Override
     public List<String> findUrlByPost(Long postId){
-        Post post = postRepository.findById(postId).get();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         List<PostImg> postImgList = postImgRepository.findAllByPost(post);
-        List<String> imgUrlList =new ArrayList<>();
-        for(PostImg postImg :postImgList){
+        List<String> imgUrlList = new ArrayList<>();
+        for (PostImg postImg :postImgList) {
             imgUrlList.add(postImg.getImgUrl());
         }
         return imgUrlList;
@@ -34,12 +37,12 @@ public class PostImgServiceImpl implements PostImgService{
 
     //이미지 상세조회를 위한
     @Override
-    public List<String> findNotThumbnailImg(Post post){
+    public List<String> findNotThumbnailImg(Post post) {
         String thumbnailUrl = post.getPostThumbnailUrl();
         List<PostImg> postImgList = post.getPostImgs();
         List<String> imgUrls = new ArrayList<>();
-        for(PostImg postImg : postImgList){
-            if(thumbnailUrl != postImg.getImgUrl()){
+        for (PostImg postImg : postImgList) {
+            if (!thumbnailUrl.equals(postImg.getImgUrl())) {
                 imgUrls.add(postImg.getImgUrl());
             }
         }

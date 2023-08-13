@@ -4,15 +4,16 @@ import com.mogak.spring.converter.PostLIkeConverter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostLike;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.exception.PostException;
+import com.mogak.spring.exception.UserException;
 import com.mogak.spring.repository.PostLikeRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.web.dto.PostLikeRequestDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Transactional
@@ -27,11 +28,13 @@ public class PostLikeServiceImpl implements PostLikeService{
     @Transactional
     @Override
     public PostLike createLike(Long postId, PostLikeRequestDto.CreateLikeDto request){
-        Post post = postRepository.findById(postId).get();
-        User user = userRepository.findById(request.getUserId()).orElseThrow(() -> new IllegalArgumentException("user가 존재하지 않습니다"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         //이미 좋아요를 누른 게시물에 대한 처리
-        if(postLikeRepository.findByPostAndUser(post,user).isPresent()){
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"이미 좋아요를 누른 게시물입니다");
+        if (postLikeRepository.findByPostAndUser(post,user).isPresent()) {
+            throw new PostException(ErrorCode.ALREADY_CREATE_LIKE);
         }
         PostLike postLike = PostLIkeConverter.toPostLike(post, user);
         post.updatePostLike();
