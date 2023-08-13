@@ -14,4 +14,7 @@ public class PostLikeResponseDto {
         private Long userId;
         private Long postId;
     }
+
+
+
 }
