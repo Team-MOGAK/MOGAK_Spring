@@ -21,9 +21,8 @@ public enum ErrorCode {
 
     NOT_EXIST_JOB(HttpStatus.BAD_REQUEST, "존재하지 않는 직업입니다"),
     NOT_EXIST_ADDRESS(HttpStatus.BAD_REQUEST, "존재하지 않는 지역입니다"),
-    NOT_VALID_NICKNAME(HttpStatus.BAD_REQUEST, "올바른 닉네임이 아닙니다"),
-    NOT_VALID_EMAIL(HttpStatus.BAD_REQUEST, "올바른 이메일 형식이 아닙니다"),
-
+    NOT_VALID_NICKNAME(HttpStatus.CONFLICT, "올바른 닉네임이 아닙니다"),
+    NOT_VALID_EMAIL(HttpStatus.CONFLICT, "올바른 이메일 형식이 아닙니다"),
     NOT_EXIST_USER(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다"),
     NOT_EXIST_CATEGORY(HttpStatus.BAD_REQUEST, "존재하지 않는 카테고리입니다"),
     NOT_EXIST_OTHER_CATEGORY(HttpStatus.BAD_REQUEST, "기타 카테고리가 존재하지 않습니다"),
@@ -34,15 +33,15 @@ public enum ErrorCode {
     INVERSE_START_END(HttpStatus.BAD_REQUEST, "시작 날짜와 종료 날짜가 역전 되었습니다"),
 
     NOT_START_JOGAK(HttpStatus.BAD_REQUEST, "시작하지 않은 조각입니다"),
-    ALREADY_START_JOGAK(HttpStatus.BAD_REQUEST, "이미 시작한 조각입니다"),
-    ALREADY_END_JOGAK(HttpStatus.BAD_REQUEST, "이미 종료한 조각입니다"),
+    ALREADY_START_JOGAK(HttpStatus.CONFLICT, "이미 시작한 조각입니다"),
+    ALREADY_END_JOGAK(HttpStatus.CONFLICT, "이미 종료한 조각입니다"),
     WRONG_START_MIDNIGHT_JOGAK(HttpStatus.BAD_REQUEST, "자정을 넘어서 조각을 시작할 수 없습니다"),
     NOT_EXIST_JOGAK(HttpStatus.BAD_REQUEST, "존재하지 않는 조각입니다"),
     OVERDUE_DEADLINE_JOGAK(HttpStatus.BAD_REQUEST, "기한을 넘긴 조각입니다"),
     WRONG_CREATE_JOGAK(HttpStatus.BAD_REQUEST, "진행중인 모각만 조각을 생성할 수 있습니다"),
 
     NOT_EXIST_DAY(HttpStatus.BAD_REQUEST, "존재하지 않는 요일입니다"),
-    ALREADY_EXIST_USER(HttpStatus.BAD_REQUEST, "이미 존재하는 유저입니다"),
+    ALREADY_EXIST_USER(HttpStatus.CONFLICT, "이미 존재하는 유저입니다"),
 
     EXCEED_MAX_NUM_POST(HttpStatus.BAD_REQUEST, "최대 글자수 350자를 초과하였습니다"),
     NOT_EXIST_IMAGE(HttpStatus.BAD_REQUEST, "이미지가 존재하지 않습니다"),
