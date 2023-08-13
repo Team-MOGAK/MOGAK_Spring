@@ -46,6 +46,8 @@ public class PostCommentServiceImpl implements PostCommentService {
     //댓글 조회
     @Override
     public List<PostComment> findByPostId(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         return postCommentRepository.findAllByPost(postId);
     }
 
@@ -53,6 +55,8 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public PostComment update(CommentRequestDto.UpdateCommentDto request, Long postId, Long commentId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         PostComment comment = postCommentRepository.findByPostAndId(postId,commentId);
         if (comment == null) {
             throw new PostCommentException(ErrorCode.NOT_EXIST_COMMENT);
@@ -69,6 +73,8 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public void delete(Long postId, Long commentId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         PostComment postComment = postCommentRepository.findById(commentId)
                 .orElseThrow(() -> new PostCommentException(ErrorCode.NOT_EXIST_COMMENT));
         postCommentRepository.deleteByPostAndId(postId, commentId);
