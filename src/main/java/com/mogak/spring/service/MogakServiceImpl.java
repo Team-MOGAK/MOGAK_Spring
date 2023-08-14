@@ -10,10 +10,7 @@ import com.mogak.spring.domain.mogak.MogakPeriod;
 import com.mogak.spring.domain.mogak.Period;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.ErrorCode;
-import com.mogak.spring.exception.ErrorResponse;
-import com.mogak.spring.exception.MogakException;
-import com.mogak.spring.exception.UserException;
+import com.mogak.spring.exception.*;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -229,14 +226,23 @@ public class MogakServiceImpl implements MogakService {
         // 모각 주기 삭제
         mogakPeriodRepository.deleteAllByMogakId(mogakId);
         // 조각 삭제 필요
-        jogakRepository.deleteAll(mogak.getJogaks());
+        List<Jogak> jogaks = mogak.getJogaks();
+        if (!jogaks.isEmpty()) {
+            jogakRepository.deleteAll(mogak.getJogaks());
+        }
         // 회고록 삭제 + 회고록 삭제에서 댓글 삭제도 같이 구현 필요
         List<Post> posts = postRepository.findAllByMogak(mogak);
-        for (Post post: posts) {
-            postImgRepository.deleteAllByPost(post);
-            postCommentRepository.deleteAllByPost(post);
+        if (!posts.isEmpty()) {
+            for (Post post : posts) {
+                if (!postImgRepository.findAllByPost(post).isEmpty()) {
+                    postImgRepository.deleteAllByPost(post);
+                }
+                if (!postCommentRepository.findAllByPost(post).isEmpty()) {
+                    postCommentRepository.deleteAllByPost(post);
+                }
+            }
+            postRepository.deleteAllByMogak(mogak);
         }
-        postRepository.deleteAllByMogak(mogak);
         mogakRepository.deleteById(mogakId);
     }
 
