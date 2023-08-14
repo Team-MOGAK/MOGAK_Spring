@@ -8,6 +8,7 @@ import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.ErrorCode;
 import com.mogak.spring.exception.JogakException;
+import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.repository.JogakRepository;
 import com.mogak.spring.repository.MogakRepository;
@@ -71,7 +72,7 @@ public class JogakServiceImpl implements JogakService {
     @Override
     public Jogak createJogak(Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId)
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         if (!mogak.getState().equals(State.ONGOING.name())) {
             throw new JogakException(ErrorCode.WRONG_CREATE_JOGAK);
         }
@@ -89,7 +90,7 @@ public class JogakServiceImpl implements JogakService {
     @Override
     public Jogak startJogak(Long jogakId) {
         Jogak jogak = jogakRepository.findById(jogakId)
-                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOGAK));
+                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         jogak.start(LocalDateTime.now());
         return jogak;
     }
@@ -98,13 +99,15 @@ public class JogakServiceImpl implements JogakService {
     @Override
     public Jogak endJogak(Long jogakId) {
         Jogak jogak = jogakRepository.findById(jogakId)
-                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOGAK));
+                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         jogak.end(LocalDateTime.now());
         return jogak;
     }
 
     @Override
     public void deleteJogak(Long jogakId) {
+        Jogak jogak = jogakRepository.findById(jogakId)
+                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         jogakRepository.deleteById(jogakId);
     }
 
