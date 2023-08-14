@@ -43,7 +43,7 @@ public class AwsS3Service {
     public List<PostImgRequestDto.CreatePostImgDto> uploadImg(List<MultipartFile> multipartFile, String dirName) {
 
         List<PostImgRequestDto.CreatePostImgDto> postImgRequestDtoList = new ArrayList<>();
-        if(multipartFile.isEmpty() == true){
+        if(multipartFile.isEmpty()){
             throw new IllegalArgumentException("이미지가 존재하지 않습니다");
         }
         //multifle을 따로 file로 만드는 것이 아니라 inputstream을 받는 방식
@@ -119,7 +119,7 @@ public class AwsS3Service {
 
     //s3 이미지객체 delete
     public void deleteImg(List<PostImg> postImgList, String dirName){
-        if(postImgList.isEmpty() == true){
+        if(postImgList.isEmpty()){
             throw new IllegalArgumentException("삭제할 이미지가 없습니다");
         }
         for(PostImg postImg : postImgList){

@@ -45,7 +45,7 @@ public class PostServiceImpl implements PostService{
         }
         Post post= PostConverter.toPost(request, user, mogak);
         if (postImgDtoList.isEmpty()) {
-            throw new PostException(ErrorCode.NOT_EXIST_IMAGE);
+            throw new PostException(ErrorCode.NOT_HAVE_IMAGE);
         }
         for(PostImgRequestDto.CreatePostImgDto postImgDto : postImgDtoList){
             PostImg postImg = PostImgConverter.toPostImg(postImgDto, post);
@@ -72,10 +72,9 @@ public class PostServiceImpl implements PostService{
     }
     //회고록 상세 조회 + 댓글, 이미지 같이 보이게
     @Override
-    public Post findById(Long postId){
-        Post post = postRepository.findById(postId)
+    public Post findById(Long postId) {
+        return postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        return post;
     }
 
 

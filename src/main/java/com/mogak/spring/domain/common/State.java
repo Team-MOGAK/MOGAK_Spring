@@ -26,7 +26,7 @@ public enum State {
         else if (start.isEqual(end)) {
             return;
         }
-        throw new RuntimeException("시작 날짜와 끝 날짜 역전");
+        throw new MogakException(ErrorCode.INVERSE_START_END);
     }
 
     /**
