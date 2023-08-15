@@ -1,6 +1,6 @@
 package com.mogak.spring.service;
 
-import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -36,7 +36,7 @@ public class AwsS3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    private final AmazonS3 amazonS3;
+    private final AmazonS3Client amazonS3Client;
     private final PostImgRepository postImgRepository;
 
     // 이미지 파일&썸네일 s3 업로드
@@ -54,7 +54,7 @@ public class AwsS3Service {
             objectMetadata.setContentType(img.getContentType());
             //s3 업로드
             try(InputStream inputStream = img.getInputStream()) {
-                amazonS3.putObject(new PutObjectRequest(bucket, imgName, inputStream, objectMetadata)
+                amazonS3Client.putObject(new PutObjectRequest(bucket, imgName, inputStream, objectMetadata)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
                 //log.info("s3 업로드 성공!");
             } catch(IOException e){
@@ -62,7 +62,7 @@ public class AwsS3Service {
             }
             postImgRequestDtoList.add(PostImgRequestDto.CreatePostImgDto.builder()
                     .imgName(imgName)
-                    .imgUrl(amazonS3.getUrl(bucket, imgName).toString())
+                    .imgUrl(amazonS3Client.getUrl(bucket, imgName).toString())
                     .thumbnail(false)
                     .build());
             //첫번째 이미지 썸네일 업로드
@@ -74,7 +74,7 @@ public class AwsS3Service {
                 objectThumbnailMetadata.setContentLength(thumbnailImg.getSize());
                 objectThumbnailMetadata.setContentType("image/"+format);
                 try(InputStream inputThumbnailStream = thumbnailImg.getInputStream()) {
-                    amazonS3.putObject(new PutObjectRequest(bucket, thumbnailImgName, inputThumbnailStream, objectThumbnailMetadata)
+                    amazonS3Client.putObject(new PutObjectRequest(bucket, thumbnailImgName, inputThumbnailStream, objectThumbnailMetadata)
                             .withCannedAcl(CannedAccessControlList.PublicRead));
                     //log.info("s3 썸네일 업로드 성공!");
                 } catch(IOException e){
@@ -83,7 +83,7 @@ public class AwsS3Service {
                 //imgdto 저장
                 postImgRequestDtoList.add(PostImgRequestDto.CreatePostImgDto.builder()
                         .imgName(thumbnailImgName)
-                        .imgUrl(amazonS3.getUrl(bucket, thumbnailImgName).toString())
+                        .imgUrl(amazonS3Client.getUrl(bucket, thumbnailImgName).toString())
                         .thumbnail(true)
                         .build());
             }
@@ -124,7 +124,7 @@ public class AwsS3Service {
         }
         for(PostImg postImg : postImgList){
             String imgName = postImg.getImgName();
-            amazonS3.deleteObject(new DeleteObjectRequest(bucket, imgName));
+            amazonS3Client.deleteObject(new DeleteObjectRequest(bucket, imgName));
         }
     }
     //파일 업로드할 시 파일명 난수화를 위해 uuid 생성

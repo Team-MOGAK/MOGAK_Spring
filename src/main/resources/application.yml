@@ -1,29 +1,6 @@
 spring:
   profiles:
-    include:
-      - aws
-    servlet:
-      multipart:
-        enabled: true
-        max-file-size: 10MB
-        max-request-size: 10MB
-
-  datasource:
-    url: jdbc:h2:tcp://localhost/~/test
-    username: sa
-    password: 1111
-    driver-class-name: org.h2.Driver
-  devtools:
-    livereload:
-      enabled: true
-
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-#        show_sql: true
-        format_sql: true
-logging.level:
-  org.hibernate.SQL: debug
-  org.hibernate.type: trace
+    active: ${profile}
+    group:
+      local: local, aws
+      dev: dev

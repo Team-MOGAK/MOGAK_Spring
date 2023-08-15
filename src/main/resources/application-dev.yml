@@ -1,0 +1,39 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+  cloud:
+    aws:
+      s3:
+        bucket: ${bucket}
+      region:
+        static: ap-northeast-2
+      stack:
+        auto: false
+      credentials: #aws의 instanceProfile을 사용함
+        instanceProfile: true
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${url}
+    username: ${rds-username}
+    password: ${rds-password}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        #        show_sql: true
+        format_sql: true
+
+logging.level:
+  org.hibernate.SQL: debug
+  org.hibernate.type: trace
