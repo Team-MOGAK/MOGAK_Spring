@@ -4,16 +4,6 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 }
 
-ext {
-	set('springCloudVersion', "2022.0.1")
-}
-
-dependencyManagement {
-	imports {
-		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-	}
-}
-
 group = 'com.mogak'
 version = '0.0.1-SNAPSHOT'
 
@@ -33,7 +23,6 @@ repositories {
 
 dependencies {
 	implementation 'io.jsonwebtoken:jjwt:0.9.1'
-	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 	implementation 'org.springdoc:springdoc-openapi-ui:1.6.9'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 //	implementation 'org.springframework.boot:spring-boot-starter-security'

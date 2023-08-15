@@ -12,4 +12,12 @@ public class UserResponseDto {
         private Long userId;
         private String nickname;
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class LoginDto {
+        private String token;
+    }
 }

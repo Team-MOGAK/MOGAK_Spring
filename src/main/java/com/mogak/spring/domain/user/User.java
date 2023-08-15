@@ -26,7 +26,6 @@ public class User extends BaseEntity {
     @JoinColumn(name = "address_id")
     private Address address;
     private String profileImg;
-    @Column(nullable = false)
     private String email;
     private Double weekRate;
     @Column(nullable = false)

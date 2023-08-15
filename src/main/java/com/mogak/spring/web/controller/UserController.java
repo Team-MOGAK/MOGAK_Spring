@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @Tag(name = "유저 API", description = "유저 API 명세서")
 @RequiredArgsConstructor
 @RestController
@@ -61,5 +63,20 @@ public class UserController {
         User user = userService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(UserConverter.toCreateDto(user));
+    }
+
+    /**
+     * 임시 계정 로그인 or 생성 API
+     * */
+    @PostMapping("/login/{email}")
+    public ResponseEntity<UserResponseDto.LoginDto> login(@PathVariable String email) {
+        Optional<User> optionalUser = userService.findUserByEmail(email);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            // 로그인
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(userService.getLoginDto(user));
+        }
+        return null;
     }
 }

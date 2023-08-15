@@ -26,4 +26,10 @@ public class UserConverter {
                 .nickname(user.getNickname())
                 .build();
     }
+
+    public static UserResponseDto.LoginDto toLoginDto(String jwtToken) {
+        return UserResponseDto.LoginDto.builder()
+                .token(jwtToken)
+                .build();
+    }
 }
