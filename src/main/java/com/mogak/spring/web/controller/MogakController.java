@@ -57,9 +57,9 @@ public class MogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자, 존재하지 않는 카테고리",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("/{id}/complete")
-    public ResponseEntity<MogakResponseDto.UpdateStateDto> achieveMogak(@PathVariable Long id) {
-        Mogak mogak = mogakService.achieveMogak(id);
+    @PutMapping("/{mogakId}/complete")
+    public ResponseEntity<MogakResponseDto.UpdateStateDto> achieveMogak(@PathVariable Long mogakId) {
+        Mogak mogak = mogakService.achieveMogak(mogakId);
         return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toUpdateDto(mogak));
     }
 

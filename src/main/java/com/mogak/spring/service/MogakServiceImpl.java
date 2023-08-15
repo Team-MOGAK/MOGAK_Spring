@@ -13,10 +13,6 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.*;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -41,13 +37,13 @@ public class MogakServiceImpl implements MogakService {
     private final PostImgRepository postImgRepository;
     private final PostCommentRepository postCommentRepository;
 
-
     /**
      * 모각 생성
      * */
     @Transactional
     @Override
     public Mogak create(MogakRequestDto.CreateDto request) {
+        System.out.println("request.getUserId() = " + request.getUserId());
         User user = userRepository.findById(request.getUserId())
                  .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String otherCategory = request.getOtherCategory();

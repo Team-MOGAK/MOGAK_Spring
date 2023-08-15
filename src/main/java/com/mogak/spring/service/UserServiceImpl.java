@@ -75,7 +75,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto.LoginDto getLoginDto(User user) {
-        return UserConverter.toLoginDto(jwtTokenProvider.createJwtToken(user.getId().toString()));
+        String token = "Bearer " + jwtTokenProvider.createJwtToken(user.getId().toString());
+        return UserConverter.toLoginDto(token);
     }
 
 }

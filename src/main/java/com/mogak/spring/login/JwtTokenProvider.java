@@ -1,11 +1,12 @@
 package com.mogak.spring.login;
 
+import com.mogak.spring.exception.CommonException;
+import com.mogak.spring.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.WebUtils;
@@ -26,7 +27,7 @@ public class JwtTokenProvider {
         Date now = new Date();
         return Jwts.builder()
                 .setHeaderParam("type","jwt")
-                .claim("userPK", userPk)
+                .claim("userPk", userPk)
                 .setIssuedAt(now)
                 .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALID_TIME))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
@@ -40,7 +41,8 @@ public class JwtTokenProvider {
 //    }
 
     public String getUserPk(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
+                .getBody().get("userPk", String.class);
     }
 
     public String resolveAccessToken(HttpServletRequest request) {
@@ -63,7 +65,7 @@ public class JwtTokenProvider {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
             return !claims.getBody().getExpiration().before(new Date());
         } catch (Exception e) {
-            return false;
+            throw new CommonException(ErrorCode.WRONG_TOKEN);
         }
     }
 
