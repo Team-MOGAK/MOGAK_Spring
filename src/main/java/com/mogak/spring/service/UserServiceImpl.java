@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
     public User create(UserRequestDto.CreateUserDto response) {
         inputVerify(response);
         Job job = jobRepository.findJobByName(response.getJob())
-                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
         Address address = addressRepository.findAddressByName(response.getAddress())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_ADDRESS));
         return userRepository.save(UserConverter.toUser(response, job, address));

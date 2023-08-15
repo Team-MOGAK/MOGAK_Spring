@@ -57,7 +57,7 @@ public class PostCommentServiceImpl implements PostCommentService {
     public PostComment update(CommentRequestDto.UpdateCommentDto request, Long postId, Long commentId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        PostComment comment = postCommentRepository.findByPostAndId(post,commentId);
+        PostComment comment = postCommentRepository.findByPostAndId(post, commentId);
         if (comment == null) {
             throw new PostCommentException(ErrorCode.NOT_EXIST_COMMENT);
         }
