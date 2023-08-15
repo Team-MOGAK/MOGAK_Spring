@@ -12,5 +12,5 @@ public interface UserService {
     Boolean findUserByNickname(String nickname);
     Boolean verifyNickname(String request);
     UserResponseDto.LoginDto getLoginDto(User user);
-    Optional<User> findUserByEmail(String email);
+    User findUserByEmail(String email);
 }

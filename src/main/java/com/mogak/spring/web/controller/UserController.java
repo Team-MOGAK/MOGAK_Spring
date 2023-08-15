@@ -61,22 +61,23 @@ public class UserController {
     @PostMapping("/join")
     public ResponseEntity<UserResponseDto.toCreateDto> createUser(@RequestBody UserRequestDto.CreateUserDto request) {
         User user = userService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(UserConverter.toCreateDto(user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserConverter.toCreateDto(user));
     }
 
     /**
-     * 임시 계정 로그인 or 생성 API
+     * 임시 계정 로그인 API
      * */
+    @Operation(summary = "로그인", description = "입력한 이메일로 로그인을 시도합니다",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "로그인 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 계정",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "올바르지 않은 이메일 형식",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
     @PostMapping("/login/{email}")
     public ResponseEntity<UserResponseDto.LoginDto> login(@PathVariable String email) {
-        Optional<User> optionalUser = userService.findUserByEmail(email);
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            // 로그인
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(userService.getLoginDto(user));
-        }
-        return null;
+        User user = userService.findUserByEmail(email);
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getLoginDto(user));
     }
 }

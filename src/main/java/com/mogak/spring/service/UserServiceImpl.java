@@ -62,8 +62,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public User findUserByEmail(String email) {
+        verifyEmail(email);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    }
+
+    protected void verifyEmail(String email) {
+        if (!Regex.EMAIL_REGEX.matchRegex(email, "EMAIL"))
+            throw new UserException(ErrorCode.NOT_VALID_EMAIL);
     }
 
     @Override
