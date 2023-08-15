@@ -1,6 +1,7 @@
 package com.mogak.spring.domain.post;
 
 import com.mogak.spring.domain.base.BaseEntity;
+import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.user.User;
 import lombok.*;
 
@@ -25,7 +26,6 @@ public class PostComment extends BaseEntity {
     private User user;
     @Column(nullable = false)
     private String contents;
-
     @Column(nullable = false)
     private String validation;
 
