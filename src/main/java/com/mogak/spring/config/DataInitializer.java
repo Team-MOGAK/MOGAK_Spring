@@ -1,7 +1,6 @@
 package com.mogak.spring.config;
 
 import com.mogak.spring.domain.common.Validation;
-import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.mogak.Period;
@@ -11,7 +10,6 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.service.MogakService;
-import com.mogak.spring.web.dto.JogakRequestDto;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.ApplicationArguments;

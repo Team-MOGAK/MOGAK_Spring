@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Tag(name = "댓글 API", description = "댓글 API 명세서")
@@ -37,8 +38,9 @@ public class CommentController {
             })
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<CommentResponseDto.CreateCommentDto> createComment(@PathVariable Long postId,
-                                                                             @RequestBody CommentRequestDto.CreateCommentDto request) {
-        PostComment comment = postCommentService.create(request, postId);
+                                                                             @RequestBody CommentRequestDto.CreateCommentDto request,
+                                                                             HttpServletRequest req) {
+        PostComment comment = postCommentService.create(request, postId, req);
         return ResponseEntity.ok(CommentConverter.toCreateCommentDto(comment));
     }
 

@@ -15,9 +15,11 @@ import com.mogak.spring.web.dto.UserRequestDto;
 import com.mogak.spring.web.dto.UserResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -74,9 +76,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto.LoginDto getLoginDto(User user) {
-        String token = "Bearer " + jwtTokenProvider.createJwtToken(user.getId().toString());
-        return UserConverter.toLoginDto(token);
+    public HttpHeaders getHeader(User user) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + jwtTokenProvider.createJwtToken(user.getId().toString()));
+        return headers;
     }
 
 }

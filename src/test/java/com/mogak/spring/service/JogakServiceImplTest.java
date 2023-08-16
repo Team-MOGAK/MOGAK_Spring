@@ -5,12 +5,10 @@ import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.repository.JogakRepository;
 import com.mogak.spring.web.dto.MogakRequestDto;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.assertj.core.api.SoftAssertions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -59,8 +57,8 @@ class JogakServiceImplTest {
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
-        mogakService.create(req1);
-        mogakService.create(req2);
+        mogakService.create(req1, req);
+        mogakService.create(req2, req);
 
         //when
 //        jogakService.createJogakByScheduler();
@@ -88,7 +86,7 @@ class JogakServiceImplTest {
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
-        mogakService.create(req);
+        mogakService.create(req, req);
         jogakService.createJogak(1L);
 
         List<Jogak> jogaks = jogakRepository.findJogakByState(null);
@@ -107,7 +105,7 @@ class JogakServiceImplTest {
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
-        Mogak mogak = mogakService.create(req);
+        Mogak mogak = mogakService.create(req, req);
         Jogak jogak = Jogak.builder()
                 .mogak(mogak)
                 .state(JogakState.ONGOING.name())
@@ -145,7 +143,7 @@ class JogakServiceImplTest {
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
-        Mogak mogak = mogakService.create(req);
+        Mogak mogak = mogakService.create(req, req);
         Jogak jogak = Jogak.builder()
                 .mogak(mogak)
                 .state(JogakState.ONGOING.name())

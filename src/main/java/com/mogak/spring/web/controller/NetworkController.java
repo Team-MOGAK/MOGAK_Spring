@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Tag(name = "네트워킹 API", description = "네트워킹 API 명세서")
 @RestController
 @Slf4j
@@ -34,8 +36,8 @@ public class NetworkController {
                     @ApiResponse(responseCode = "500", description = "이미 좋아요를 누른 케이스 Or 서버 오류"),
             })
     @PostMapping("/posts/like")
-    public ResponseEntity<String> updateLike(@RequestBody PostLikeRequestDto.LikeDto request){
-        String message = postLikeService.updateLike(request);
+    public ResponseEntity<String> updateLike(@RequestBody PostLikeRequestDto.LikeDto request, HttpServletRequest req){
+        String message = postLikeService.updateLike(request, req);
         return ResponseEntity.ok(message);
     }
 }

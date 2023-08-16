@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.WebUtils;
@@ -14,12 +15,15 @@ import org.springframework.web.util.WebUtils;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.Enumeration;
 
 @Component
 public class JwtTokenProvider {
 
     @Value("${jwt.secret}")
     private String secretKey;
+
+    public static final String AUTHORIZATION = "Authorization";
 
     private final long TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 365; // 24시간 * 30 => 한달
 
@@ -43,6 +47,17 @@ public class JwtTokenProvider {
     public String getUserPk(String token) {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
                 .getBody().get("userPk", String.class);
+    }
+
+    public String extract(HttpServletRequest request, String type) {
+        Enumeration<String> headers = request.getHeaders(AUTHORIZATION);
+        while (headers.hasMoreElements()) {
+            String value = headers.nextElement();
+            if (value.toLowerCase().startsWith(type.toLowerCase())) {
+                return value.substring(type.length()).trim();
+            }
+        }
+        return Strings.EMPTY;
     }
 
     public String resolveAccessToken(HttpServletRequest request) {

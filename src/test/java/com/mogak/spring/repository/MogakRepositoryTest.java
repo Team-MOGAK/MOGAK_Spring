@@ -14,8 +14,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.assertj.core.api.SoftAssertions.*;
-
 @SpringBootTest
 class MogakRepositoryTest {
 
@@ -40,7 +38,7 @@ class MogakRepositoryTest {
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
-        mogakService.create(req1);
+        mogakService.create(req1, req);
 
         List<Mogak> mogaks =  mogakRepository.findAllOngoingToday(State.ONGOING.name(), dayNum);
         SoftAssertions softly = new SoftAssertions();

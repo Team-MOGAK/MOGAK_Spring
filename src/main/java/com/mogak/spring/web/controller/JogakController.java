@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Tag(name = "조각 API", description = "조각 API 명세서")
@@ -54,9 +55,9 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/{userId}")
-    public ResponseEntity<JogakResponseDto.GetJogakListDto> getDailyJogaks(@PathVariable Long userId) {
-        List<Jogak> jogakList = jogakService.getDailyJogaks(userId);
+    @GetMapping("")
+    public ResponseEntity<JogakResponseDto.GetJogakListDto> getDailyJogaks(HttpServletRequest req) {
+        List<Jogak> jogakList = jogakService.getDailyJogaks(req);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(JogakConverter.toGetJogakListResponseDto(jogakList));
     }

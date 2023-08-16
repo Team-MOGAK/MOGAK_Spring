@@ -25,14 +25,14 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String jwtToken = request.getHeader("Authorization");
         RequestModifyParameter req = new RequestModifyParameter(request);
-        req.setParameter("userId", 1L);
+        req.setParameter("userId", "1");
         if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
             jwtToken = jwtToken.substring("Bearer ".length());
             if (jwtTokenProvider.validateToken(jwtToken)) {
                 String userPk = jwtTokenProvider.getUserPk(jwtToken);
                 RequestModifyParameter fixedReq = new RequestModifyParameter(request);
-//                fixedReq.setParameter("userId", Long.valueOf(userPk));
-//                req = fixedReq;
+                fixedReq.setParameter("userId", userPk);
+                req = fixedReq;
             }
         }
         filterChain.doFilter(req, response);

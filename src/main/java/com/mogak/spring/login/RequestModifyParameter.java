@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class RequestModifyParameter extends HttpServletRequestWrapper {
 
-    Map<String, Long> params;
+    Map<String, String[]> params;
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public RequestModifyParameter(HttpServletRequest request) {
@@ -38,26 +38,26 @@ public class RequestModifyParameter extends HttpServletRequestWrapper {
         return Collections.enumeration(params.keySet());
     }
 
-//    @Override
-//    public String[] getParameterValues(String name) {
-//
-//        String[] result = null;
-//        String[] temp = params.get(name);
-//
-//        if (temp != null) {
-//            result = new String[temp.length];
-//            System.arraycopy(temp, 0, result, 0, temp.length);
-//        }
-//
-//        return result;
-//    }
+    @Override
+    public String[] getParameterValues(String name) {
 
-//    public void setParameter(String name, String value) {
-//        String[] oneParam = {value};
-//        setParameter(name, oneParam);
-//    }
+        String[] result = null;
+        String[] temp = params.get(name);
 
-    public void setParameter(String name, Long value) {
+        if (temp != null) {
+            result = new String[temp.length];
+            System.arraycopy(temp, 0, result, 0, temp.length);
+        }
+
+        return result;
+    }
+
+    public void setParameter(String name, String value) {
+        String[] oneParam = {value};
+        setParameter(name, oneParam);
+    }
+
+    public void setParameter(String name, String[] value) {
         params.put(name, value);
     }
 

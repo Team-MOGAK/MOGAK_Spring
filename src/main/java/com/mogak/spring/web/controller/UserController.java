@@ -78,6 +78,6 @@ public class UserController {
     @PostMapping("/login/{email}")
     public ResponseEntity<UserResponseDto.LoginDto> login(@PathVariable String email) {
         User user = userService.findUserByEmail(email);
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getLoginDto(user));
+        return ResponseEntity.status(HttpStatus.OK).headers(userService.getHeader(user)).build();
     }
 }

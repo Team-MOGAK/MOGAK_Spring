@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +43,28 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Transactional
     @Override
+    public Mogak create(MogakRequestDto.CreateDto request, HttpServletRequest req) {
+        System.out.println("request.getUserId() = " + req.getParameter("userId"));
+        Long userId = Long.valueOf(req.getParameter("userId"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        String otherCategory = request.getOtherCategory();
+        MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory())
+                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
+        if (category.getName().equals("기타") && otherCategory == null) {
+            throw new MogakException(ErrorCode.NOT_EXIST_OTHER_CATEGORY);
+        }
+        State state = State.registerState(request.getStartAt(), request.getEndAt(), LocalDate.now());
+        Mogak result = mogakRepository.save(MogakConverter.toMogak(request, category, otherCategory, user, state));
+        saveMogakPeriod(request.getDays(), result);
+        return result;
+    }
+
+    @Transactional
+    @Override
     public Mogak create(MogakRequestDto.CreateDto request) {
-        System.out.println("request.getUserId() = " + request.getUserId());
         User user = userRepository.findById(request.getUserId())
-                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String otherCategory = request.getOtherCategory();
         MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
@@ -161,7 +180,8 @@ public class MogakServiceImpl implements MogakService {
      * 모각 조회(페이징)
      * */
     @Override
-    public List<Mogak> getMogakList(Long userId, int cursor, int size) {
+    public List<Mogak> getMogakList(HttpServletRequest req, int cursor, int size) {
+        Long userId = Long.valueOf(req.getParameter("userId"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         PageRequest pageRequest = PageRequest.of(cursor, size);

@@ -3,6 +3,7 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.exception.ErrorResponse;
+import com.mogak.spring.login.JwtTokenProvider;
 import com.mogak.spring.service.MogakService;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import com.mogak.spring.web.dto.MogakResponseDto;
@@ -18,6 +19,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.List;
 
 @Tag(name = "모각 API", description = "모각 API 명세서")
@@ -26,6 +30,7 @@ import java.util.List;
 @RequestMapping("/api/mogaks")
 public class MogakController {
     private final MogakService mogakService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 모각 생성 API
@@ -39,8 +44,8 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
-    public ResponseEntity<MogakResponseDto.CreateDto> createMogak(@RequestBody MogakRequestDto.CreateDto request) {
-        Mogak mogak = mogakService.create(request);
+    public ResponseEntity<MogakResponseDto.CreateDto> createMogak(@RequestBody MogakRequestDto.CreateDto request, HttpServletRequest req) {
+        Mogak mogak = mogakService.create(request, req);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(MogakConverter.toCreateDto(mogak));
     }
@@ -49,7 +54,6 @@ public class MogakController {
      * 모각 달성하기 API
      * */
     @Operation(summary = "모각 달성", description = "해당하는 모각을 달성합니다",
-            parameters = @Parameter(name = "id", description = "모각 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 달성"),
                     @ApiResponse(responseCode = "400", description = "기타 카테고리 X",
@@ -99,10 +103,10 @@ public class MogakController {
             })
     @GetMapping("")
     public ResponseEntity<MogakResponseDto.GetMogakListDto> getMogakList(
-            @RequestParam(value = "user") Long userId,
             @RequestParam(value = "cursor") int cursor,
-            @RequestParam(value = "size") int size) {
-            List<Mogak> mogaks = mogakService.getMogakList(userId, cursor, size);
+            @RequestParam(value = "size") int size,
+            HttpServletRequest req) {
+            List<Mogak> mogaks = mogakService.getMogakList(req, cursor, size);
             return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toGetMogakListDto(mogaks));
     }
 
