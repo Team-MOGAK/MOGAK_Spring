@@ -6,7 +6,7 @@ public class CommentRequestDto {
 
     @Getter
     public static class CreateCommentDto{
-        private Long userId; //추후 수정 필요할듯
+//        private Long userId; //추후 수정 필요할듯
         private String contents;
     }
 

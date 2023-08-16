@@ -6,7 +6,7 @@ public class PostLikeRequestDto {
 
     @Getter
     public static class LikeDto{
-        private Long userId;
+//        private Long userId;
         private Long postId;
     }
 

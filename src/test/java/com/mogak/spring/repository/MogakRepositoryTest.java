@@ -38,7 +38,7 @@ class MogakRepositoryTest {
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
-        mogakService.create(req1, req);
+        mogakService.create(req1);
 
         List<Mogak> mogaks =  mogakRepository.findAllOngoingToday(State.ONGOING.name(), dayNum);
         SoftAssertions softly = new SoftAssertions();

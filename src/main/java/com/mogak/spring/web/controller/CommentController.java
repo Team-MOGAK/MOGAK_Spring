@@ -28,7 +28,10 @@ public class CommentController {
 
     //create
     @Operation(summary = "댓글 생성", description = "댓글을 생성합니다",
-            parameters = @Parameter(name = "postId", description = "게시물 ID"),
+            parameters = {
+                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
+                    @Parameter(name = "postId", description = "게시물 ID")
+            },
             responses = {
                     @ApiResponse(responseCode = "200", description = "댓글 생성"),
                     @ApiResponse(responseCode = "400", description = "200자 제한 초과",

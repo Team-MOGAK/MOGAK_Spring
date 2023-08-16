@@ -29,6 +29,7 @@ public class NetworkController {
 
     //좋아요 생성&삭제
     @Operation(summary = "좋아요 생성/삭제", description = "게시물에 좋아요를 생성/삭제합니다",
+            parameters = @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "좋아요 생성/삭제"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 회고록, 존재하지 않는 유저",

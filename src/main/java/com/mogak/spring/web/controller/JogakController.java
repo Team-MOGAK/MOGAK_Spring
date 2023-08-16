@@ -49,7 +49,10 @@ public class JogakController {
      * 당일 조각 조회 API
      * */
     @Operation(summary = "당일 조각 조회", description = "당일 조각을 조회합니다",
-            parameters = @Parameter(name = "userId", description = "유저 ID"),
+            parameters = {
+                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
+                    @Parameter(name = "userId", description = "유저 ID")
+            },
             responses = {
                     @ApiResponse(responseCode = "200", description = "조회 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",

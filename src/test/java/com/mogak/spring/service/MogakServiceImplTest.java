@@ -45,7 +45,7 @@ class MogakServiceImplTest {
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
-        Mogak mogak = mogakService.create(req, req);
+        Mogak mogak = mogakService.create(req);
         Jogak jogak1 = Jogak.builder()
                 .mogak(mogak)
                 .state(JogakState.ONGOING.name())
@@ -104,7 +104,7 @@ class MogakServiceImplTest {
                         .endAt(LocalDate.now().plusDays(3))
                         .build();
 
-        Mogak mogak = mogakService.create(req, req);
+        Mogak mogak = mogakService.create(req);
 
         Jogak jogak1 = Jogak.builder()
                 .mogak(mogak)

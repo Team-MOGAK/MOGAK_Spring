@@ -57,8 +57,8 @@ class JogakServiceImplTest {
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
-        mogakService.create(req1, req);
-        mogakService.create(req2, req);
+        mogakService.create(req1);
+        mogakService.create(req2);
 
         //when
 //        jogakService.createJogakByScheduler();
@@ -86,7 +86,7 @@ class JogakServiceImplTest {
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
-        mogakService.create(req, req);
+        mogakService.create(req);
         jogakService.createJogak(1L);
 
         List<Jogak> jogaks = jogakRepository.findJogakByState(null);
@@ -105,7 +105,7 @@ class JogakServiceImplTest {
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
-        Mogak mogak = mogakService.create(req, req);
+        Mogak mogak = mogakService.create(req);
         Jogak jogak = Jogak.builder()
                 .mogak(mogak)
                 .state(JogakState.ONGOING.name())
@@ -143,7 +143,7 @@ class JogakServiceImplTest {
                         .startAt(LocalDate.now())
                         .endAt(LocalDate.now().plusDays(7))
                         .build();
-        Mogak mogak = mogakService.create(req, req);
+        Mogak mogak = mogakService.create(req);
         Jogak jogak = Jogak.builder()
                 .mogak(mogak)
                 .state(JogakState.ONGOING.name())

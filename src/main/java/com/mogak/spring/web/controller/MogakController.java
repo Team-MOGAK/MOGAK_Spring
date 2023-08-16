@@ -3,13 +3,11 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.exception.ErrorResponse;
-import com.mogak.spring.login.JwtTokenProvider;
 import com.mogak.spring.service.MogakService;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import com.mogak.spring.web.dto.MogakResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,9 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.List;
 
 @Tag(name = "모각 API", description = "모각 API 명세서")
@@ -30,7 +26,6 @@ import java.util.List;
 @RequestMapping("/api/mogaks")
 public class MogakController {
     private final MogakService mogakService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 모각 생성 API
@@ -92,7 +87,7 @@ public class MogakController {
      * */
     @Operation(summary = "모각 조회", description = "입력값을 이용해 모각을 페이징 조회합니다",
             parameters = {
-                    @Parameter(name = "userId", description = "유저 PK"),
+                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
                     @Parameter(name = "cursor", description = "페이징 커서"),
                     @Parameter(name = "size", description = "페이징 개수")
             },
@@ -114,15 +109,17 @@ public class MogakController {
      * 모각 삭제 API
      * */
     @Operation(summary = "모각 삭제", description = "모각을 삭제합니다",
-            parameters = @Parameter(name = "mogakId", description = "모각 ID"),
+            parameters = {
+                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
+                    @Parameter(name = "mogakId", description = "모각 ID"),
+            },
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 삭제 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @DeleteMapping("/{mogakId}")
-    public ResponseEntity<Void> deleteMogak(
-            @PathVariable Long mogakId) {
+    public ResponseEntity<Void> deleteMogak(@PathVariable Long mogakId) {
         mogakService.deleteMogak(mogakId);
         return ResponseEntity.noContent().build();
     }

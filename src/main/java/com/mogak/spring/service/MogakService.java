@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface MogakService {
     Mogak create(MogakRequestDto.CreateDto createDto, HttpServletRequest req);
-    Mogak create(MogakRequestDto.CreateDto createDto);
     Mogak achieveMogak(Long id);
     Mogak updateMogak(MogakRequestDto.UpdateDto request);
     List<Mogak> getMogakList(HttpServletRequest req, int cursor, int size);
