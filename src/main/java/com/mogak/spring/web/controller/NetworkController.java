@@ -4,6 +4,7 @@ import com.mogak.spring.converter.PostLIkeConverter;
 import com.mogak.spring.domain.post.PostLike;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.service.PostLikeService;
+import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.PostLikeRequestDto;
 import com.mogak.spring.web.dto.PostLikeResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 public class NetworkController {
 
     private final PostLikeService postLikeService;
+    private final PostService postService;
 
     //좋아요 생성&삭제
     @Operation(summary = "좋아요 생성/삭제", description = "게시물에 좋아요를 생성/삭제합니다",
@@ -41,4 +43,6 @@ public class NetworkController {
         String message = postLikeService.updateLike(request, req);
         return ResponseEntity.ok(message);
     }
+
+
 }

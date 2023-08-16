@@ -1,47 +1,7 @@
 spring:
   profiles:
-    include:
-      - aws
-    servlet:
-      multipart:
-        enabled: true
-        max-file-size: 10MB
-        max-request-size: 10MB
+    active: ${profile}
+    group:
+      local: local, aws
+      dev: dev
 
-  datasource:
-    url: jdbc:h2:tcp://localhost/~/test
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-  devtools:
-    livereload:
-      enabled: true
-
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-#        show_sql: true
-        format_sql: true
-logging.level:
-  org.hibernate.SQL: debug
-  org.hibernate.type: trace
-
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-    groups-order: DESC
-    operationsSorter: method
-    disable-swagger-default-url: true
-    display-request-duration: true
-  api-docs:
-    path: /api-docs
-  show-actuator: true
-  default-consumes-media-type: application/json
-  default-produces-media-type: application/json
-  paths-to-match:
-    - /**
-
-jwt:
-  secret: ${JWT_SECRET_KEY}
