@@ -2,6 +2,8 @@ package com.mogak.spring.repository;
 
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.mogak.Mogak;
+import com.mogak.spring.domain.mogak.MogakCategory;
+import com.mogak.spring.domain.user.User;
 import com.mogak.spring.service.MogakService;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import org.assertj.core.api.SoftAssertions;
@@ -18,8 +20,6 @@ import java.util.List;
 class MogakRepositoryTest {
 
     @Autowired
-    private MogakService mogakService;
-    @Autowired
     private MogakRepository mogakRepository;
 
     @Test
@@ -29,18 +29,28 @@ class MogakRepositoryTest {
         DayOfWeek dayOfWeek = today.getDayOfWeek();
         int dayNum = dayOfWeek.getValue();
 
-        MogakRequestDto.CreateDto req1 =
-                MogakRequestDto.CreateDto.builder()
-                        .userId(1L)
-                        .title("스프링 해야딩")
-                        .category("직무공부")
-                        .days(List.of("MONDAY", "TUESDAY", "SATURDAY", "SUNDAY"))
-                        .startAt(LocalDate.now())
-                        .endAt(LocalDate.now().plusDays(7))
-                        .build();
-        mogakService.create(req1);
+        User user = User.builder()
+                .id(1L)
+                .nickname("hyun1234!@")
+                .validation("VALID")
+                .build();
 
-        List<Mogak> mogaks =  mogakRepository.findAllOngoingToday(State.ONGOING.name(), dayNum);
+        MogakCategory mogakCategory = MogakCategory.builder()
+                .id(1)
+                .name("고옹부")
+                .build();
+
+        Mogak mogak1 = Mogak.builder()
+                .user(user)
+                .title("스프링 해야딩")
+                .category(mogakCategory)
+                .state("ONGOING")
+                .startAt(LocalDate.now())
+                .endAt(LocalDate.now().plusDays(7))
+                .validation("VALID")
+                .build();
+
+        List<Mogak> mogaks = mogakRepository.findAllOngoingToday(State.ONGOING.name(), dayNum);
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(mogaks.size()).isEqualTo(1);
 

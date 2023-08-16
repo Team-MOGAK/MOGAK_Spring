@@ -1,16 +1,12 @@
 package com.mogak.spring.login;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
@@ -25,7 +21,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String jwtToken = request.getHeader("Authorization");
         RequestModifyParameter req = new RequestModifyParameter(request);
-        req.setParameter("userId", "1");
         if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
             jwtToken = jwtToken.substring("Bearer ".length());
             if (jwtTokenProvider.validateToken(jwtToken)) {

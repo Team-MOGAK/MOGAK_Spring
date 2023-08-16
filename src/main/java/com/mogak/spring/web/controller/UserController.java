@@ -31,7 +31,7 @@ public class UserController {
 
     /**
      * 닉네임 검증 API
-     * */
+     */
     @Operation(summary = "닉네임 검증", description = "PathVariable로 입력받은 닉네임을 검증합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "사용 가능한 닉네임"),
@@ -47,9 +47,9 @@ public class UserController {
         }
     }
 
-   /**
-    * 임시 계정 생성 API
-    * */
+    /**
+     * 임시 계정 생성 API
+     */
     @Operation(summary = "(임시)계정 생성", description = "계정 생성을 한다",
             responses = {
                     @ApiResponse(responseCode = "201", description = "계정 생성 완료"),
@@ -66,7 +66,7 @@ public class UserController {
 
     /**
      * 임시 계정 로그인 API
-     * */
+     */
     @Operation(summary = "로그인", description = "입력한 이메일로 로그인을 시도합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "로그인 성공"),
