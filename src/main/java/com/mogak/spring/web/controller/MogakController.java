@@ -8,7 +8,6 @@ import com.mogak.spring.web.dto.MogakRequestDto;
 import com.mogak.spring.web.dto.MogakResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Tag(name = "모각 API", description = "모각 API 명세서")
@@ -39,8 +39,8 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
-    public ResponseEntity<MogakResponseDto.CreateDto> createMogak(@RequestBody MogakRequestDto.CreateDto request) {
-        Mogak mogak = mogakService.create(request);
+    public ResponseEntity<MogakResponseDto.CreateDto> createMogak(@RequestBody MogakRequestDto.CreateDto request, HttpServletRequest req) {
+        Mogak mogak = mogakService.create(request, req);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(MogakConverter.toCreateDto(mogak));
     }
@@ -49,7 +49,6 @@ public class MogakController {
      * 모각 달성하기 API
      * */
     @Operation(summary = "모각 달성", description = "해당하는 모각을 달성합니다",
-            parameters = @Parameter(name = "id", description = "모각 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 달성"),
                     @ApiResponse(responseCode = "400", description = "기타 카테고리 X",
@@ -57,9 +56,9 @@ public class MogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자, 존재하지 않는 카테고리",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("/{id}/complete")
-    public ResponseEntity<MogakResponseDto.UpdateStateDto> achieveMogak(@PathVariable Long id) {
-        Mogak mogak = mogakService.achieveMogak(id);
+    @PutMapping("/{mogakId}/complete")
+    public ResponseEntity<MogakResponseDto.UpdateStateDto> achieveMogak(@PathVariable Long mogakId) {
+        Mogak mogak = mogakService.achieveMogak(mogakId);
         return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toUpdateDto(mogak));
     }
 
@@ -88,7 +87,7 @@ public class MogakController {
      * */
     @Operation(summary = "모각 조회", description = "입력값을 이용해 모각을 페이징 조회합니다",
             parameters = {
-                    @Parameter(name = "userId", description = "유저 PK"),
+                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
                     @Parameter(name = "cursor", description = "페이징 커서"),
                     @Parameter(name = "size", description = "페이징 개수")
             },
@@ -99,10 +98,10 @@ public class MogakController {
             })
     @GetMapping("")
     public ResponseEntity<MogakResponseDto.GetMogakListDto> getMogakList(
-            @RequestParam(value = "user") Long userId,
             @RequestParam(value = "cursor") int cursor,
-            @RequestParam(value = "size") int size) {
-            List<Mogak> mogaks = mogakService.getMogakList(userId, cursor, size);
+            @RequestParam(value = "size") int size,
+            HttpServletRequest req) {
+            List<Mogak> mogaks = mogakService.getMogakList(req, cursor, size);
             return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toGetMogakListDto(mogaks));
     }
 
@@ -110,15 +109,17 @@ public class MogakController {
      * 모각 삭제 API
      * */
     @Operation(summary = "모각 삭제", description = "모각을 삭제합니다",
-            parameters = @Parameter(name = "mogakId", description = "모각 ID"),
+            parameters = {
+                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
+                    @Parameter(name = "mogakId", description = "모각 ID"),
+            },
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 삭제 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @DeleteMapping("/{mogakId}")
-    public ResponseEntity<Void> deleteMogak(
-            @PathVariable Long mogakId) {
+    public ResponseEntity<Void> deleteMogak(@PathVariable Long mogakId) {
         mogakService.deleteMogak(mogakId);
         return ResponseEntity.noContent().build();
     }

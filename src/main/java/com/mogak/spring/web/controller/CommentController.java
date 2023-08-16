@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Tag(name = "댓글 API", description = "댓글 API 명세서")
@@ -27,7 +28,10 @@ public class CommentController {
 
     //create
     @Operation(summary = "댓글 생성", description = "댓글을 생성합니다",
-            parameters = @Parameter(name = "postId", description = "게시물 ID"),
+            parameters = {
+                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
+                    @Parameter(name = "postId", description = "게시물 ID")
+            },
             responses = {
                     @ApiResponse(responseCode = "200", description = "댓글 생성"),
                     @ApiResponse(responseCode = "400", description = "200자 제한 초과",
@@ -37,8 +41,9 @@ public class CommentController {
             })
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<CommentResponseDto.CreateCommentDto> createComment(@PathVariable Long postId,
-                                                                             @RequestBody CommentRequestDto.CreateCommentDto request) {
-        PostComment comment = postCommentService.create(request, postId);
+                                                                             @RequestBody CommentRequestDto.CreateCommentDto request,
+                                                                             HttpServletRequest req) {
+        PostComment comment = postCommentService.create(request, postId, req);
         return ResponseEntity.ok(CommentConverter.toCreateCommentDto(comment));
     }
 

@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Service
@@ -30,15 +31,16 @@ public class PostCommentServiceImpl implements PostCommentService {
     //댓글 생성 - dto
     @Transactional
     @Override
-    public PostComment create(CommentRequestDto.CreateCommentDto request, Long postId) {
+    public PostComment create(CommentRequestDto.CreateCommentDto request, Long postId, HttpServletRequest req) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        User user = userRepository.findById(request.getUserId())
+        Long userId = Long.valueOf(req.getParameter("userId"));
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (request.getContents().length() > 200) {
             throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
         }
-        PostComment comment = CommentConverter.toComment(request,post,user);
+        PostComment comment = CommentConverter.toComment(request,post, user);
         post.putComment(comment);
         return postCommentRepository.save(comment);
     }

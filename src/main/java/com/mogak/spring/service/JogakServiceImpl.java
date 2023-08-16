@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -80,7 +81,8 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public List<Jogak> getDailyJogaks(Long userId) {
+    public List<Jogak> getDailyJogaks(HttpServletRequest req) {
+        Long userId = Long.valueOf(req.getParameter("userId"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return jogakRepository.findDailyJogak(user);

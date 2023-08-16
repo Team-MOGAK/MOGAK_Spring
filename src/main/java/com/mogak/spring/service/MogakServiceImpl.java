@@ -13,15 +13,12 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.*;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,18 +38,18 @@ public class MogakServiceImpl implements MogakService {
     private final PostImgRepository postImgRepository;
     private final PostCommentRepository postCommentRepository;
 
-
     /**
      * 모각 생성
      * */
+    // throw 추상화, 공통으로 뽑아내거나 private으로 고유하게 구현
     @Transactional
     @Override
-    public Mogak create(MogakRequestDto.CreateDto request) {
-        User user = userRepository.findById(request.getUserId())
-                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    public Mogak create(MogakRequestDto.CreateDto request, HttpServletRequest req) {
+        System.out.println("request.getUserId() = " + req.getParameter("userId"));
+        Long userId = Long.valueOf(req.getParameter("userId"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String otherCategory = request.getOtherCategory();
-        MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory())
-                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
+        MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory()).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
         if (category.getName().equals("기타") && otherCategory == null) {
             throw new MogakException(ErrorCode.NOT_EXIST_OTHER_CATEGORY);
         }
@@ -84,7 +81,6 @@ public class MogakServiceImpl implements MogakService {
      * 모각주기 업데이트 메소드
      * */
     private void updateMogakPeriod(List<String> days, Mogak mogak) {
-
         List<Period> periods = new ArrayList<>();
         for (String day : days) {
             periods.add(periodRepository.findOneByDays(day)
@@ -101,9 +97,7 @@ public class MogakServiceImpl implements MogakService {
             IntStream.range(0, periodSize)
                     .forEach(i -> mogakPeriods.get(i).updatePeriod(periods.get(i)));
             IntStream.range(periodSize, mpSize)
-                    .forEach(i -> {
-                        mogakPeriodRepository.delete(mogakPeriods.get(i));
-                    });
+                    .forEach(i -> mogakPeriodRepository.delete(mogakPeriods.get(i)));
         } else {
             IntStream.range(0, mpSize)
                     .forEach(i -> mogakPeriods.get(i).updatePeriod(periods.get(i)));
@@ -123,8 +117,8 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Transactional
     @Override
-    public Mogak achieveMogak(Long id) {
-        Mogak mogak = mogakRepository.findById(id)
+    public Mogak achieveMogak(Long mogakId) {
+        Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         if (!mogak.getState().equals("ONGOING")) {
             throw new MogakException(ErrorCode.WRONG_STATE_CHANGE);
@@ -165,7 +159,8 @@ public class MogakServiceImpl implements MogakService {
      * 모각 조회(페이징)
      * */
     @Override
-    public List<Mogak> getMogakList(Long userId, int cursor, int size) {
+    public List<Mogak> getMogakList(HttpServletRequest req, int cursor, int size) {
+        Long userId = Long.valueOf(req.getParameter("userId"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         PageRequest pageRequest = PageRequest.of(cursor, size);

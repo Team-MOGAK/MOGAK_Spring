@@ -5,8 +5,7 @@ import lombok.Getter;
 public class PostLikeRequestDto {
 
     @Getter
-    public static class LikeDto{
-        private Long userId;
+    public static class LikeDto {
         private Long postId;
     }
 

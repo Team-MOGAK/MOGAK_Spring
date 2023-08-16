@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @Tag(name = "유저 API", description = "유저 API 명세서")
 @RequiredArgsConstructor
 @RestController
@@ -29,7 +31,7 @@ public class UserController {
 
     /**
      * 닉네임 검증 API
-     * */
+     */
     @Operation(summary = "닉네임 검증", description = "PathVariable로 입력받은 닉네임을 검증합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "사용 가능한 닉네임"),
@@ -45,9 +47,9 @@ public class UserController {
         }
     }
 
-   /**
-    * 임시 계정 생성 API
-    * */
+    /**
+     * 임시 계정 생성 API
+     */
     @Operation(summary = "(임시)계정 생성", description = "계정 생성을 한다",
             responses = {
                     @ApiResponse(responseCode = "201", description = "계정 생성 완료"),
@@ -59,7 +61,23 @@ public class UserController {
     @PostMapping("/join")
     public ResponseEntity<UserResponseDto.toCreateDto> createUser(@RequestBody UserRequestDto.CreateUserDto request) {
         User user = userService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(UserConverter.toCreateDto(user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserConverter.toCreateDto(user));
+    }
+
+    /**
+     * 임시 계정 로그인 API
+     */
+    @Operation(summary = "로그인", description = "입력한 이메일로 로그인을 시도합니다",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "로그인 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 계정",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "올바르지 않은 이메일 형식",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
+    @PostMapping("/login/{email}")
+    public ResponseEntity<UserResponseDto.LoginDto> login(@PathVariable String email) {
+        User user = userService.findUserByEmail(email);
+        return ResponseEntity.status(HttpStatus.OK).headers(userService.getHeader(user)).build();
     }
 }

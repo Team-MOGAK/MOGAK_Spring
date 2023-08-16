@@ -6,15 +6,21 @@ import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.ErrorCode;
 import com.mogak.spring.exception.UserException;
+import com.mogak.spring.login.JwtTokenProvider;
 import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.util.Regex;
 import com.mogak.spring.web.dto.UserRequestDto;
+import com.mogak.spring.web.dto.UserResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -23,6 +29,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final JobRepository jobRepository;
     private final AddressRepository addressRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     @Override
@@ -54,6 +61,25 @@ public class UserServiceImpl implements UserService {
         if (!Regex.USER_NICKNAME_REGEX.matchRegex(nickname, "NICKNAME"))
             throw new UserException(ErrorCode.NOT_VALID_NICKNAME);
         return true;
+    }
+
+    @Override
+    public User findUserByEmail(String email) {
+        verifyEmail(email);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    }
+
+    protected void verifyEmail(String email) {
+        if (!Regex.EMAIL_REGEX.matchRegex(email, "EMAIL"))
+            throw new UserException(ErrorCode.NOT_VALID_EMAIL);
+    }
+
+    @Override
+    public HttpHeaders getHeader(User user) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + jwtTokenProvider.createJwtToken(user.getId().toString()));
+        return headers;
     }
 
 }

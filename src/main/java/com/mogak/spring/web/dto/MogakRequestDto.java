@@ -12,7 +12,6 @@ public class MogakRequestDto {
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class CreateDto {
-        private Long userId;
         private String title;
         private String category;
         private String otherCategory;

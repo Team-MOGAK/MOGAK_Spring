@@ -7,7 +7,6 @@ public class PostRequestDto {
 
     @Getter
     public static class CreatePostDto{
-        private Long userId;
         private String contents;
     }
 

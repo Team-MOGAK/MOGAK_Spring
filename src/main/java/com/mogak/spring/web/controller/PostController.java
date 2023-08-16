@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Tag(name = "회고록 API", description = "회고록 API 명세서")
@@ -46,10 +47,11 @@ public class PostController {
     @PostMapping("/mogaks/{mogakId}/posts")
     public ResponseEntity<PostResponseDto.CreatePostDto> createPost(@PathVariable Long mogakId,
                                                                     @RequestPart PostRequestDto.CreatePostDto request,
-                                                                    @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/){
+                                                                    @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/,
+                                                                    HttpServletRequest req){
         //에러핸들링 필요
         List<PostImgRequestDto.CreatePostImgDto> postImgDtoList = awsS3Service.uploadImg(multipartFile, dirName);
-        Post post = postService.create(request, postImgDtoList, mogakId);
+        Post post = postService.create(request, postImgDtoList, mogakId, req);
         return ResponseEntity.ok(PostConverter.toCreatePostDto(post));
     }
 

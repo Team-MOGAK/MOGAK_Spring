@@ -3,14 +3,15 @@ package com.mogak.spring.service;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
+import com.mogak.spring.domain.mogak.MogakCategory;
+import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.JogakRepository;
+import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.web.dto.MogakRequestDto;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.assertj.core.api.SoftAssertions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -31,7 +32,7 @@ class JogakServiceImplTest {
     private JogakRepository jogakRepository;
 
     @Autowired
-    private MogakService mogakService;
+    private MogakRepository mogakRepository;
 
     @Autowired
     private JogakService jogakService;
@@ -40,27 +41,39 @@ class JogakServiceImplTest {
     @DisplayName("스케줄러를 통해서 조각생성 확인")
     void 스케줄러_조각생성_테스트() {
         //given
-        MogakRequestDto.CreateDto req1 =
-                MogakRequestDto.CreateDto.builder()
-                        .userId(1L)
-                        .title("스프링 해야딩")
-                        .category("직무공부")
-                        .days(List.of("SATURDAY", "SUNDAY"))
-                        .startAt(LocalDate.now())
-                        .endAt(LocalDate.now().plusDays(7))
-                        .build();
+        User user = User.builder()
+                .id(1L)
+                .nickname("hyun1234!@")
+                .validation("VALID")
+                .build();
 
-        MogakRequestDto.CreateDto req2 =
-                MogakRequestDto.CreateDto.builder()
-                        .userId(1L)
-                        .title("스프링가링가링")
-                        .category("직무공부")
-                        .days(List.of("MONDAY", "TUESDAY"))
-                        .startAt(LocalDate.now())
-                        .endAt(LocalDate.now().plusDays(7))
-                        .build();
-        mogakService.create(req1);
-        mogakService.create(req2);
+        MogakCategory mogakCategory = MogakCategory.builder()
+                .id(1)
+                .name("고옹부")
+                .build();
+
+        Mogak mogak1 = Mogak.builder()
+                .user(user)
+                .title("스프링 해야딩")
+                .category(mogakCategory)
+                .state("ONGOING")
+                .startAt(LocalDate.now())
+                .endAt(LocalDate.now().plusDays(7))
+                .validation("VALID")
+                .build();
+
+        Mogak mogak2 = Mogak.builder()
+                .user(user)
+                .title("스프링가링가링")
+                .category(mogakCategory)
+                .state("ONGOING")
+                .startAt(LocalDate.now())
+                .endAt(LocalDate.now().plusDays(30))
+                .validation("VALID")
+                .build();
+
+        mogakRepository.save(mogak1);
+        mogakRepository.save(mogak2);
 
         //when
 //        jogakService.createJogakByScheduler();
@@ -79,16 +92,28 @@ class JogakServiceImplTest {
     @Test
     @DisplayName("시작하지_않은_조각_불러오기")
     void 시작하지_않은_조각_불러오기_테스트() {
-        MogakRequestDto.CreateDto req =
-                MogakRequestDto.CreateDto.builder()
-                        .userId(1L)
-                        .title("슈우웅")
-                        .category("직무공부")
-                        .days(List.of("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"))
-                        .startAt(LocalDate.now())
-                        .endAt(LocalDate.now().plusDays(7))
-                        .build();
-        mogakService.create(req);
+        User user = User.builder()
+                .id(1L)
+                .nickname("hyun1234!@")
+                .validation("VALID")
+                .build();
+
+        MogakCategory mogakCategory = MogakCategory.builder()
+                .id(1)
+                .name("고옹부")
+                .build();
+
+        Mogak mogak1 = Mogak.builder()
+                .user(user)
+                .title("스프링 해야딩")
+                .category(mogakCategory)
+                .state("ONGOING")
+                .startAt(LocalDate.now())
+                .endAt(LocalDate.now().plusDays(7))
+                .validation("VALID")
+                .build();
+
+        mogakRepository.save(mogak1);
         jogakService.createJogak(1L);
 
         List<Jogak> jogaks = jogakRepository.findJogakByState(null);
@@ -98,21 +123,35 @@ class JogakServiceImplTest {
     @Test
     @DisplayName("어제_시작한_조각_불러오기")
     void 어제_시작한_조각_불러오기_테스트() {
-        MogakRequestDto.CreateDto req =
-                MogakRequestDto.CreateDto.builder()
-                        .userId(1L)
-                        .title("슈우웅")
-                        .category("직무공부")
-                        .days(List.of("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"))
-                        .startAt(LocalDate.now())
-                        .endAt(LocalDate.now().plusDays(7))
-                        .build();
-        Mogak mogak = mogakService.create(req);
+        User user = User.builder()
+                .id(1L)
+                .nickname("hyun1234!@")
+                .validation("VALID")
+                .build();
+
+        MogakCategory mogakCategory = MogakCategory.builder()
+                .id(1)
+                .name("고옹부")
+                .build();
+
+        Mogak mogak1 = Mogak.builder()
+                .user(user)
+                .title("스프링 해야딩")
+                .category(mogakCategory)
+                .state("ONGOING")
+                .startAt(LocalDate.now())
+                .endAt(LocalDate.now().plusDays(7))
+                .validation("VALID")
+                .build();
+
+        mogakRepository.save(mogak1);
+
         Jogak jogak = Jogak.builder()
-                .mogak(mogak)
+                .mogak(mogak1)
                 .state(JogakState.ONGOING.name())
                 .startTime(LocalDateTime.now().minusDays(1))
                 .build();
+
         jogakRepository.save(jogak);
 
         int size = jogakRepository.findJogakIsOngoingYesterday(JogakState.ONGOING.name()).size();
@@ -123,7 +162,6 @@ class JogakServiceImplTest {
     @DisplayName("조각_실패_업데이트")
     void 조각_상태_실패처리_테스트() {
         jogakService.failJogakAtMidnight();
-
         SoftAssertions softly = new SoftAssertions();
         List<Jogak> jogaks = jogakRepository.findAll();
         jogaks.forEach(
@@ -136,21 +174,34 @@ class JogakServiceImplTest {
     @DisplayName("어졔_시작한_조각_실패_업데이트")
     void 어제_시작한_조각_실패처리_테스트() {
         //given
-        MogakRequestDto.CreateDto req =
-                MogakRequestDto.CreateDto.builder()
-                        .userId(1L)
-                        .title("슈우웅")
-                        .category("직무공부")
-                        .days(List.of("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"))
-                        .startAt(LocalDate.now())
-                        .endAt(LocalDate.now().plusDays(7))
-                        .build();
-        Mogak mogak = mogakService.create(req);
+        User user = User.builder()
+                .id(1L)
+                .nickname("hyun1234!@")
+                .validation("VALID")
+                .build();
+
+        MogakCategory mogakCategory = MogakCategory.builder()
+                .id(1)
+                .name("고옹부")
+                .build();
+
+        Mogak mogak1 = Mogak.builder()
+                .user(user)
+                .title("스프링 해야딩")
+                .category(mogakCategory)
+                .state("ONGOING")
+                .startAt(LocalDate.now())
+                .endAt(LocalDate.now().plusDays(7))
+                .validation("VALID")
+                .build();
+
         Jogak jogak = Jogak.builder()
-                .mogak(mogak)
+                .mogak(mogak1)
                 .state(JogakState.ONGOING.name())
                 .startTime(LocalDateTime.now().minusDays(1))
                 .build();
+
+        mogakRepository.save(mogak1);
         jogakRepository.save(jogak);
 
         //when

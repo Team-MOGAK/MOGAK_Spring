@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Tag(name = "네트워킹 API", description = "네트워킹 API 명세서")
 @RestController
 @Slf4j
@@ -29,6 +31,7 @@ public class NetworkController {
 
     //좋아요 생성&삭제
     @Operation(summary = "좋아요 생성/삭제", description = "게시물에 좋아요를 생성/삭제합니다",
+            parameters = @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "좋아요 생성/삭제"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 회고록, 존재하지 않는 유저",
@@ -36,8 +39,8 @@ public class NetworkController {
                     @ApiResponse(responseCode = "500", description = "이미 좋아요를 누른 케이스 Or 서버 오류"),
             })
     @PostMapping("/posts/like")
-    public ResponseEntity<String> updateLike(@RequestBody PostLikeRequestDto.LikeDto request){
-        String message = postLikeService.updateLike(request);
+    public ResponseEntity<String> updateLike(@RequestBody PostLikeRequestDto.LikeDto request, HttpServletRequest req){
+        String message = postLikeService.updateLike(request, req);
         return ResponseEntity.ok(message);
     }
 

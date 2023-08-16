@@ -1,9 +1,9 @@
 package com.mogak.spring.config;
 
 import com.mogak.spring.domain.common.Validation;
-import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
+import com.mogak.spring.domain.mogak.MogakPeriod;
 import com.mogak.spring.domain.mogak.Period;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
@@ -11,9 +11,7 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.service.MogakService;
-import com.mogak.spring.web.dto.JogakRequestDto;
-import com.mogak.spring.web.dto.MogakRequestDto;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -24,11 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Component
 public class DataInitializer implements ApplicationRunner {
 
+    private final MogakRepository mogakRepository;
     private final MogakCategoryRepository mogakCategoryRepository;
+    private final MogakPeriodRepository mogakPeriodRepository;
     private final AddressRepository addressRepository;
     private final PeriodRepository periodRepository;
     private final JobRepository jobRepository;
@@ -178,49 +178,79 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void insertMogak() {
-        MogakRequestDto.CreateDto req1 =
-                MogakRequestDto.CreateDto.builder()
-                        .userId(1L)
-                        .title("스프링 해야딩")
-                        .category("직무공부")
-                        .days(List.of("SATURDAY", "SUNDAY"))
-                        .startAt(LocalDate.now())
-                        .endAt(LocalDate.now().plusDays(7))
-                        .build();
+        User user1 = userRepository.findById(1L).orElseThrow(RuntimeException::new);
+        MogakCategory category1 = mogakCategoryRepository.findMogakCategoryByName("직무공부")
+                .orElseThrow(RuntimeException::new);
 
-        MogakRequestDto.CreateDto req2 =
-                MogakRequestDto.CreateDto.builder()
-                        .userId(1L)
-                        .title("스프링가링가링")
-                        .category("직무공부")
-                        .days(List.of("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"))
-                        .startAt(LocalDate.now())
-                        .endAt(LocalDate.now().plusDays(30))
-                        .build();
-        MogakRequestDto.CreateDto req3 =
-                MogakRequestDto.CreateDto.builder()
-                        .userId(1L)
-                        .title("스프링딩동링딩동")
-                        .category("직무공부")
-                        .days(List.of("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"))
-                        .startAt(LocalDate.now())
-                        .endAt(LocalDate.now().plusDays(7))
-                        .build();
+        Mogak mogak1 = Mogak.builder()
+                .user(user1)
+                .title("스프링 해야딩")
+                .category(category1)
+                .state("ONGOING")
+                .startAt(LocalDate.now())
+                .endAt(LocalDate.now().plusDays(7))
+                .validation("VALID")
+                .build();
 
-        MogakRequestDto.CreateDto req4 =
-                MogakRequestDto.CreateDto.builder()
-                        .userId(1L)
-                        .title("스프링딩동링딩동기기기기딩딩딩")
-                        .category("직무공부")
-                        .days(List.of("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"))
-                        .startAt(LocalDate.now().plusDays(5))
-                        .endAt(LocalDate.now().plusDays(7))
-                        .build();
+        Mogak mogak2 = Mogak.builder()
+                .user(user1)
+                .title("스프링가링가링")
+                .category(category1)
+                .state("ONGOING")
+                .startAt(LocalDate.now())
+                .endAt(LocalDate.now().plusDays(30))
+                .validation("VALID")
+                .build();
 
-        mogakService.create(req1);
-        mogakService.create(req2);
-        mogakService.create(req3);
-        mogakService.create(req4);
+        Mogak mogak3 = Mogak.builder()
+                .user(user1)
+                .title("스프링딩동링딩동")
+                .category(category1)
+                .state("ONGOING")
+                .startAt(LocalDate.now())
+                .endAt(LocalDate.now().plusDays(7))
+                .validation("VALID")
+                .build();
+
+        Mogak mogak4 = Mogak.builder()
+                .user(user1)
+                .title("스프링딩동링딩동기기기기딩딩딩")
+                .category(category1)
+                .state("BEFORE")
+                .startAt(LocalDate.now().plusDays(5))
+                .endAt(LocalDate.now().plusDays(7))
+                .validation("VALID")
+                .build();
+
+        mogakRepository.save(mogak1);
+        mogakRepository.save(mogak2);
+        mogakRepository.save(mogak3);
+        mogakRepository.save(mogak4);
+
+        Period monday = periodRepository.findOneByDays("MONDAY").orElseThrow(RuntimeException::new);
+        Period tuesday = periodRepository.findOneByDays("TUESDAY").orElseThrow(RuntimeException::new);
+        Period thursday = periodRepository.findOneByDays("THURSDAY").orElseThrow(RuntimeException::new);
+        Period friday = periodRepository.findOneByDays("FRIDAY").orElseThrow(RuntimeException::new);
+
+        saveMogakPeriod(mogak1, monday);
+        saveMogakPeriod(mogak1, tuesday);
+        saveMogakPeriod(mogak1, thursday);
+        saveMogakPeriod(mogak1, friday);
+
+        saveMogakPeriod(mogak2, thursday);
+        saveMogakPeriod(mogak2, friday);
+
+        saveMogakPeriod(mogak3, monday);
+        saveMogakPeriod(mogak3, tuesday);
+        saveMogakPeriod(mogak3, thursday);
+        saveMogakPeriod(mogak3, friday);
+    }
+
+    private void saveMogakPeriod(Mogak mogak, Period day) {
+        mogakPeriodRepository.save(MogakPeriod.builder()
+                .mogak(mogak)
+                .period(day)
+                .build());
     }
 
     private void insertJogak() {
