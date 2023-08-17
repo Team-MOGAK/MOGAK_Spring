@@ -24,8 +24,7 @@ import static org.assertj.core.api.Assertions.*;
 
 @EnableScheduling
 @SpringBootTest(properties = {
-        "schedules.cron.reward.publish=0/3 * * * * *",
-        "spring.profiles.active=local"
+        "schedules.cron.reward.publish=0/3 * * * * *"
 })
 class JogakServiceImplTest {
 
