@@ -1,6 +1,7 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.converter.FollowConverter;
+import com.mogak.spring.domain.user.Follow;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.ErrorCode;
 import com.mogak.spring.exception.UserException;
@@ -26,9 +27,20 @@ public class FollowServiceImpl implements FollowService {
         User fromUser = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 
-        if (followRepository.isExistAlreadyFollow(fromUser, toUser)) {
+        if (followRepository.findByFromAndTo(fromUser, toUser).isPresent()) {
             throw new UserException(ErrorCode.ALREADY_CREATE_FOLLOW);
         }
         followRepository.save(FollowConverter.toFollow(fromUser, toUser));
+    }
+
+    @Transactional
+    @Override
+    public void unfollow(String nickname, HttpServletRequest req) {
+        Long userId = Long.valueOf(req.getParameter("userId"));
+        User fromUser = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+
+        Follow follow = followRepository.findByFromAndTo(fromUser, toUser).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_FOLLOW));
+        followRepository.delete(follow);
     }
 }

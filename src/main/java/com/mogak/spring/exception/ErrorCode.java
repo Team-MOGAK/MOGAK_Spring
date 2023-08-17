@@ -57,7 +57,9 @@ public enum ErrorCode {
     NOT_FOUND(HttpStatus.NOT_FOUND, "찾을 수 없습니다"),
     NOT_SUPPORTED_METHOD_ERROR(HttpStatus.METHOD_NOT_ALLOWED, "지원하지 않는 HTTP Method 요청입니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버와의 연결에 실패했습니다"),
-    ALREADY_CREATE_FOLLOW(HttpStatus.CONFLICT, "이미 존재하는 팔로우입니다");
+    ALREADY_CREATE_FOLLOW(HttpStatus.CONFLICT, "이미 존재하는 팔로우입니다"),
+    NOT_EXIST_FOLLOW(HttpStatus.NOT_FOUND, "존재하지 않는 팔로우입니다"),
+    ;
 
     private final HttpStatus status;
 //    private final String code;
