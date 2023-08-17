@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+
 @DataJpaTest
 class DataInitializerTest {
 
@@ -51,6 +52,7 @@ class DataInitializerTest {
         softly.assertThat(certificationInJPA.get().getName()).isEqualTo("자격증");
         softly.assertThat(jobStudyInJPA.get().getName()).isEqualTo("직무공부");
         softly.assertThatThrownBy(noDataInJPA::get).isInstanceOf(NoSuchElementException.class);
+        softly.assertAll();
     }
 
 }
