@@ -10,8 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@Component
 @RequiredArgsConstructor
+@Component
 public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
