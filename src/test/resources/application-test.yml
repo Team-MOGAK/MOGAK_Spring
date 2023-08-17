@@ -1,7 +1,7 @@
 spring:
   config:
     activate:
-      on-profile: local
+      on-profile: test
   servlet:
     multipart:
       enabled: true
@@ -13,9 +13,6 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
-  devtools:
-    livereload:
-      enabled: true
 
   jpa:
     hibernate:
@@ -24,9 +21,10 @@ spring:
       hibernate:
         #        show_sql: true
         format_sql: true
-logging.level:
-  org.hibernate.SQL: debug
-  org.hibernate.type: trace
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace
 
 springdoc:
   swagger-ui:
