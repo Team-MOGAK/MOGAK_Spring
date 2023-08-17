@@ -1,46 +1,52 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
-    <springProperty name="profile" source="spring.profiles.active" defaultValue=""/>
-    <property resource="logback-${profile}.properties"/>
-    <property name="PATH" value="${log.config.path}"/>
-
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%green(%d{yyyy-MM-dd HH:mm:ss.SSS}) %magenta([%thread]) %highlight(%5level) %white(%logger) - %msg%n</pattern>
-        </encoder>
-    </appender>
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %5level %logger - %msg%n</pattern>
-        </encoder>
-        <!--여러 파일에 나눠 로그 저장-->
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${PATH}/%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>10MB</maxFileSize> <!-- 로그파일 크기제한 -->
-            <maxHistory>30</maxHistory> <!-- 30일 넘으면 해당 파일 삭제 -->
-        </rollingPolicy>
-    </appender>
-    <!-- 에러 관련 로그는 따로 파일을 빼 처리 -->
-    <appender name="Error" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>error</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %5level %logger - %msg%n</pattern>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${PATH}/err_log.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>10MB</maxFileSize> <!-- 로그파일 크기제한 -->
-            <maxHistory>60</maxHistory> <!-- 30일 넘으면 해당 파일 삭제 -->
-        </rollingPolicy>
-    </appender>
+    <springProfile name="local">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%green(%d{yyyy-MM-dd HH:mm:ss.SSS}) %magenta([%thread]) %highlight(%5level) %white(%logger) - %msg%n</pattern>
+            </encoder>
+        </appender>
+        <logger name="com.mogak.spring" level="DEBUG" />
+        <root level="DEBUG">
+            <appender-ref ref="CONSOLE" />
+        </root>
+    </springProfile>
+    <springProfile name="dev">
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %5level %logger - %msg%n</pattern>
+            </encoder>
+            <!--여러 파일에 나눠 로그 저장-->
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>/home/ec2-user/logs/%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <maxFileSize>10MB</maxFileSize> <!-- 로그파일 크기제한 -->
+                <maxHistory>30</maxHistory> <!-- 30일 넘으면 해당 파일 삭제 -->
+            </rollingPolicy>
+        </appender>
+        <!-- 에러 관련 로그는 따로 파일을 빼 처리 -->
+        <appender name="Error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>error</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </filter>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %5level %logger - %msg%n</pattern>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>/home/ec2-user/logs/err_log.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <maxFileSize>10MB</maxFileSize> <!-- 로그파일 크기제한 -->
+                <maxHistory>60</maxHistory> <!-- 30일 넘으면 해당 파일 삭제 -->
+            </rollingPolicy>
+        </appender>
+        <logger name="com.mogak.spring" level="WARN">
+            <appender-ref ref="File" />
+            <appender-ref ref="Error"/>
+        </logger>
+        <root level="WARN">
+            <appender-ref ref="FILE" />
+            <appender-ref ref="Error" />
+        </root>
+    </springProfile>
     <!--테스트 환경에서 프로젝트의 로그만 디버그 수준으로 출력&추후 운영시 로그 출력다르게 설정 필요할듯 -->
-    <logger name="com.mogak.spring" level="DEBUG" />
-    <root level="DEBUG">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE" />
-        <appender-ref ref="Error" />
-    </root>
 </configuration>
