@@ -11,7 +11,7 @@ spring:
   datasource:
     url: jdbc:h2:tcp://localhost/~/test
     username: sa
-    password: 1111
+    password:
     driver-class-name: org.h2.Driver
   devtools:
     livereload:
@@ -42,3 +42,6 @@ springdoc:
   default-produces-media-type: application/json
   paths-to-match:
     - /**
+
+jwt:
+  secret: ${JWT_SECRET_KEY}

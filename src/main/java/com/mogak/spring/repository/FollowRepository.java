@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface FollowRepository extends JpaRepository<Follow, Long> {
 
-    @Query
-    Boolean isExistAlreadyFollow(User from, User to);
+    @Query("SELECT COUNT(f) > 0 " +
+            "FROM Follow f " +
+            "WHERE f.fromUser = :from and f.toUser = :to")
+    boolean isExistAlreadyFollow(User from, User to);
 }

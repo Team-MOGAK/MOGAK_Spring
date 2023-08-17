@@ -26,9 +26,9 @@ public class FollowServiceImpl implements FollowService {
         User fromUser = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 
-
+        if (followRepository.isExistAlreadyFollow(fromUser, toUser)) {
+            throw new UserException(ErrorCode.ALREADY_CREATE_FOLLOW);
+        }
         followRepository.save(FollowConverter.toFollow(fromUser, toUser));
-
-
     }
 }
