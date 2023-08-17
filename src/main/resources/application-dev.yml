@@ -22,8 +22,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${url}
-    username: ${rds-username}
-    password: ${rds-password}
+    username: ${rds_username}
+    password: ${rds_password}
 
   jpa:
     hibernate:
