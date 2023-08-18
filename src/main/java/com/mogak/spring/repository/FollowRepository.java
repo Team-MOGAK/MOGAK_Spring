@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface FollowRepository extends JpaRepository<Follow, Long> {
@@ -20,4 +21,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     @Query("SELECT COUNT(f) FROM Follow f WHERE f.fromUser = :user")
     int findMentorCntByUser(@Param("user")User user);
+
+    @Query( "SELECT f FROM Follow f JOIN f.toUser tu WHERE tu = :user")
+    List<User> findMotoListByUser(@Param("user") User user);
 }

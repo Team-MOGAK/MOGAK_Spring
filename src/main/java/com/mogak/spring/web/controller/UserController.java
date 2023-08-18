@@ -57,7 +57,7 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PostMapping("/join")
-    public ResponseEntity<UserResponseDto.toCreateDto> createUser(@RequestBody UserRequestDto.CreateUserDto request) {
+    public ResponseEntity<UserResponseDto.ToCreateDto> createUser(@RequestBody UserRequestDto.CreateUserDto request) {
         User user = userService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(UserConverter.toCreateDto(user));
     }

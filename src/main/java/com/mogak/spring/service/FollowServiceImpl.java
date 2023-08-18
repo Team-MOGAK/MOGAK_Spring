@@ -8,11 +8,17 @@ import com.mogak.spring.exception.UserException;
 import com.mogak.spring.repository.FollowRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.web.dto.FollowRequestDto;
+import com.mogak.spring.web.dto.UserResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.mogak.spring.web.dto.UserResponseDto.*;
 
 @RequiredArgsConstructor
 @Service
@@ -52,6 +58,19 @@ public class FollowServiceImpl implements FollowService {
                 .motoCnt(getMotoCount(user))
                 .mentorCnt(getMentorCount(user))
                 .build();
+    }
+
+    @Override
+    public List<UserDto> getMotoList(String nickname) {
+        User user = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        List<User> users = followRepository.findMotoListByUser(user);
+        return users.stream()
+                .map(u -> UserDto.builder()
+                        .nickname(u.getNickname())
+                        .job(u.getJob().getName())
+                        .address(u.getAddress().getName())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private int getMotoCount(User user) {

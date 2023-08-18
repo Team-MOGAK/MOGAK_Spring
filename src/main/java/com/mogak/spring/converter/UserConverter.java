@@ -20,8 +20,8 @@ public class UserConverter {
                 .build();
     }
 
-    public static UserResponseDto.toCreateDto toCreateDto(User user) {
-        return UserResponseDto.toCreateDto.builder()
+    public static UserResponseDto.ToCreateDto toCreateDto(User user) {
+        return UserResponseDto.ToCreateDto.builder()
                 .userId(user.getId())
                 .nickname(user.getNickname())
                 .build();
