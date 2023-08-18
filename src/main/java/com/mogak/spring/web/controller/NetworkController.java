@@ -1,6 +1,7 @@
 package com.mogak.spring.web.controller;
 
 import com.mogak.spring.converter.PostLIkeConverter;
+import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostLike;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.service.PostLikeService;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @Tag(name = "네트워킹 API", description = "네트워킹 API 명세서")
 @RestController
@@ -38,11 +40,15 @@ public class NetworkController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "이미 좋아요를 누른 케이스 Or 서버 오류"),
             })
-    @PostMapping("/posts/like")
+    @PostMapping("/api/posts/like")
     public ResponseEntity<String> updateLike(@RequestBody PostLikeRequestDto.LikeDto request, HttpServletRequest req){
         String message = postLikeService.updateLike(request, req);
         return ResponseEntity.ok(message);
     }
 
+    @PostMapping("/api/posts/pacemakers")
+    public ResponseEntity<List<Post>> getPacemakerPosts(HttpServletRequest req) {
+        List<Post> posts = postService.getPacemakerPosts(req);
+    }
 
 }

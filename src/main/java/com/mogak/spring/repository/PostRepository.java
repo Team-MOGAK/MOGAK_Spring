@@ -23,4 +23,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     void deleteAllByMogak(Mogak mogak);
 
     List<Post> findAllByMogak(Mogak mogak);
+
+    @Query()
+    List<Post> findPacemakerPostsByUserId(@Param("postId") Long userId);
 }

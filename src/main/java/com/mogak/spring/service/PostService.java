@@ -15,4 +15,5 @@ public interface PostService {
     Post findById(Long postId);
     Post update(Long postId, PostRequestDto.UpdatePostDto request);
     void delete(Long postId);
+    List<Post> getPacemakerPosts(HttpServletRequest req);
 }

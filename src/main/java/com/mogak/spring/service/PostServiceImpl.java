@@ -106,4 +106,11 @@ public class PostServiceImpl implements PostService {
         postRepository.deleteById(postId);
     }
 
+    @Override
+    public List<Post> getPacemakerPosts(HttpServletRequest req) {
+        Long userId = Long.valueOf(req.getParameter("userId"));
+        List<Post> posts = postRepository.findPacemakerPostsByUserId(userId);
+        return null;
+    }
+
 }
