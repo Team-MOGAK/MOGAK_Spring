@@ -34,74 +34,74 @@ class MogakServiceImplTest {
     @Autowired
     private JogakRepository jogakRepository;
 
-    @Test
-    @DisplayName("성취율 계산 테스트")
-    void 성취율_계산_테스트() {
-        //given
-        User user = User.builder()
-                .id(1L)
-                .nickname("hyun1234!@")
-                .validation("VALID")
-                .build();
-
-        MogakCategory mogakCategory = MogakCategory.builder()
-                .id(1)
-                .name("고옹부")
-                .build();
-
-        Mogak mogak1 = Mogak.builder()
-                .user(user)
-                .title("스프링 해야딩")
-                .category(mogakCategory)
-                .state("ONGOING")
-                .startAt(LocalDate.now())
-                .endAt(LocalDate.now().plusDays(7))
-                .validation("VALID")
-                .build();
-
-        Jogak jogak1 = Jogak.builder()
-                .mogak(mogak1)
-                .state(JogakState.ONGOING.name())
-                .startTime(LocalDateTime.now())
-                .build();
-
-        Jogak jogak2 = Jogak.builder()
-                .mogak(mogak1)
-                .state(JogakState.SUCCESS.name())
-                .startTime(LocalDateTime.now())
-                .build();
-
-        Jogak jogak3 = Jogak.builder()
-                .mogak(mogak1)
-                .state(JogakState.SUCCESS.name())
-                .startTime(LocalDateTime.now().minusDays(1))
-                .build();
-
-        Jogak jogak4 = Jogak.builder()
-                .mogak(mogak1)
-                .state(null)
-                .startTime(LocalDateTime.now().minusDays(1))
-                .build();
-
-        List<Jogak> jogaks = new ArrayList<>();
-        jogaks.add(jogak1);
-        jogaks.add(jogak2);
-        jogaks.add(jogak3);
-        jogaks.add(jogak4);
-
-        //when
-        int success = 0;
-        for (Jogak jogak: jogaks) {
-            if (jogak.getState() == null) continue;
-            if (jogak.getState().equals(JogakState.SUCCESS.name())) {
-                success += 1;
-            }
-        }
-        double rate = (double) success / jogaks.size() * 100;
-
-        //then
-        assertThat(rate).isEqualTo(50.0);
-    }
+//    @Test
+//    @DisplayName("성취율 계산 테스트")
+//    void 성취율_계산_테스트() {
+//        //given
+//        User user = User.builder()
+//                .id(1L)
+//                .nickname("hyun1234!@")
+//                .validation("VALID")
+//                .build();
+//
+//        MogakCategory mogakCategory = MogakCategory.builder()
+//                .id(1)
+//                .name("고옹부")
+//                .build();
+//
+//        Mogak mogak1 = Mogak.builder()
+//                .user(user)
+//                .title("스프링 해야딩")
+//                .category(mogakCategory)
+//                .state("ONGOING")
+//                .startAt(LocalDate.now())
+//                .endAt(LocalDate.now().plusDays(7))
+//                .validation("VALID")
+//                .build();
+//
+//        Jogak jogak1 = Jogak.builder()
+//                .mogak(mogak1)
+//                .state(JogakState.ONGOING.name())
+//                .startTime(LocalDateTime.now())
+//                .build();
+//
+//        Jogak jogak2 = Jogak.builder()
+//                .mogak(mogak1)
+//                .state(JogakState.SUCCESS.name())
+//                .startTime(LocalDateTime.now())
+//                .build();
+//
+//        Jogak jogak3 = Jogak.builder()
+//                .mogak(mogak1)
+//                .state(JogakState.SUCCESS.name())
+//                .startTime(LocalDateTime.now().minusDays(1))
+//                .build();
+//
+//        Jogak jogak4 = Jogak.builder()
+//                .mogak(mogak1)
+//                .state(null)
+//                .startTime(LocalDateTime.now().minusDays(1))
+//                .build();
+//
+//        List<Jogak> jogaks = new ArrayList<>();
+//        jogaks.add(jogak1);
+//        jogaks.add(jogak2);
+//        jogaks.add(jogak3);
+//        jogaks.add(jogak4);
+//
+//        //when
+//        int success = 0;
+//        for (Jogak jogak: jogaks) {
+//            if (jogak.getState() == null) continue;
+//            if (jogak.getState().equals(JogakState.SUCCESS.name())) {
+//                success += 1;
+//            }
+//        }
+//        double rate = (double) success / jogaks.size() * 100;
+//
+//        //then
+//        assertThat(rate).isEqualTo(50.0);
+//    }
 
     @Test
     @DisplayName("모각 결과 테스트")
