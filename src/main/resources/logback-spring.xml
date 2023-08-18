@@ -12,6 +12,11 @@
         </root>
     </springProfile>
     <springProfile name="dev">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%green(%d{yyyy-MM-dd HH:mm:ss.SSS}) %magenta([%thread]) %highlight(%5level) %white(%logger) - %msg%n</pattern>
+            </encoder>
+        </appender>
         <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <encoder>
                 <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %5level %logger - %msg%n</pattern>
@@ -24,9 +29,9 @@
             </rollingPolicy>
         </appender>
         <!-- 에러 관련 로그는 따로 파일을 빼 처리 -->
-        <appender name="Error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <filter class="ch.qos.logback.classic.filter.LevelFilter">
-                <level>error</level>
+                <level>ERROR</level>
                 <onMatch>ACCEPT</onMatch>
                 <onMismatch>DENY</onMismatch>
             </filter>
@@ -41,11 +46,12 @@
         </appender>
         <logger name="com.mogak.spring" level="WARN">
             <appender-ref ref="FILE" />
-            <appender-ref ref="Error"/>
+            <appender-ref ref="ERROR"/>
         </logger>
-        <root level="WARN">
+        <root level="INFO">
             <appender-ref ref="FILE" />
-            <appender-ref ref="Error" />
+            <appender-ref ref="ERROR" />
+            <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
     <!--테스트 환경에서 프로젝트의 로그만 디버그 수준으로 출력&추후 운영시 로그 출력다르게 설정 필요할듯 -->

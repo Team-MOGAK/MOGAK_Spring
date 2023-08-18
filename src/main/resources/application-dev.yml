@@ -8,17 +8,6 @@ spring:
       max-file-size: 20MB
       max-request-size: 20MB
 
-  cloud:
-    aws:
-      s3:
-        bucket: ${bucket}
-      region:
-        static: ap-northeast-2
-      stack:
-        auto: false
-      credentials: #aws의 instanceProfile을 사용함
-        instanceProfile: true
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${url}
@@ -34,6 +23,16 @@ spring:
         #        show_sql: true
         format_sql: true
 
+cloud:
+  aws:
+    s3:
+      bucket: ${bucket}
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+    credentials: #aws의 instanceProfile을 사용함
+      instanceProfile: true
 logging.level:
   org.hibernate.SQL: debug
   org.hibernate.type: trace

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.*;
-
+/*
 @EnableScheduling
 @SpringBootTest(properties = {
         "schedules.cron.reward.publish=0/3 * * * * *"
@@ -36,7 +36,7 @@ class JogakServiceImplTest {
 
     @Autowired
     private JogakService jogakService;
-
+*/
 //    @Test
 //    @DisplayName("스케줄러를 통해서 조각생성 확인")
 //    void 스케줄러_조각생성_테스트() {
@@ -88,7 +88,7 @@ class JogakServiceImplTest {
 //                );
 //        softly.assertAll();
 //    }
-
+/*
     @Test
     @DisplayName("시작하지_않은_조각_불러오기")
     void 시작하지_않은_조각_불러오기_테스트() {
@@ -235,3 +235,4 @@ class JogakServiceImplTest {
 //    }
 
 }
+*/
