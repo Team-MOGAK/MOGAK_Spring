@@ -17,10 +17,10 @@ public class Follow extends BaseEntity {
     @Column(name = "follow_id")
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="from_id")
+    @JoinColumn(name = "from_id")
     private User fromUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="to_id")
+    @JoinColumn(name = "to_id")
     private User toUser;
 }

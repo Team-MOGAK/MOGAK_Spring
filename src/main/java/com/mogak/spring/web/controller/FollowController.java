@@ -1,6 +1,7 @@
 package com.mogak.spring.web.controller;
 
 import com.mogak.spring.service.FollowService;
+import com.mogak.spring.web.dto.FollowRequestDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 @Tag(name = "팔로우 API", description = "팔로우 API 명세서")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/follows")
+@RequestMapping("/api/users/follows/")
 public class FollowController {
 
     private final FollowService followService;
@@ -27,5 +28,10 @@ public class FollowController {
     public ResponseEntity<Void> unfollow(@PathVariable String nickname, HttpServletRequest req) {
         followService.unfollow(nickname, req);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @GetMapping("/counts/{user}")
+    public ResponseEntity<FollowRequestDto.CountDto> getFollowCount(@PathVariable String user) {
+        return ResponseEntity.status(HttpStatus.OK).body(followService.getFollowCount(user));
     }
 }

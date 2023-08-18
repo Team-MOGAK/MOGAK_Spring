@@ -7,6 +7,7 @@ import com.mogak.spring.exception.ErrorCode;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.repository.FollowRepository;
 import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.web.dto.FollowRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,5 +43,22 @@ public class FollowServiceImpl implements FollowService {
 
         Follow follow = followRepository.findByFromAndTo(fromUser, toUser).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_FOLLOW));
         followRepository.delete(follow);
+    }
+
+    @Override
+    public FollowRequestDto.CountDto getFollowCount(String nickname) {
+        User user = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        return FollowRequestDto.CountDto.builder()
+                .motoCnt(getMotoCount(user))
+                .mentorCnt(getMentorCount(user))
+                .build();
+    }
+
+    private int getMotoCount(User user) {
+        return followRepository.findMotoCntByUser(user);
+    }
+
+    private int getMentorCount(User user) {
+        return followRepository.findMentorCntByUser(user);
     }
 }
