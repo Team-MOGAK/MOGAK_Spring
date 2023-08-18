@@ -19,4 +19,5 @@ public interface FollowService {
 
     List<UserResponseDto.UserDto> getMotoList(String nickname);
 
+    List<UserResponseDto.UserDto> getMentorList(String nickname);
 }

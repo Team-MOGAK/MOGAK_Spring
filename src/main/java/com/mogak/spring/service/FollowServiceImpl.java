@@ -73,6 +73,19 @@ public class FollowServiceImpl implements FollowService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<UserDto> getMentorList(String nickname) {
+        User user = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        List<User> users = followRepository.findMentorListByUser(user);
+        return users.stream()
+                .map(u -> UserDto.builder()
+                        .nickname(u.getNickname())
+                        .job(u.getJob().getName())
+                        .address(u.getAddress().getName())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     private int getMotoCount(User user) {
         return followRepository.findMotoCntByUser(user);
     }

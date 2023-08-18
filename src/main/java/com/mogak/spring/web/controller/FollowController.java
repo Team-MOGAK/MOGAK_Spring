@@ -43,4 +43,9 @@ public class FollowController {
     public ResponseEntity<List<UserDto>> getMotoList(@PathVariable String nickname) {
         return ResponseEntity.status(HttpStatus.OK).body(followService.getMotoList(nickname));
     }
+
+    @GetMapping("/{nickname}/followers")
+    public ResponseEntity<List<UserDto>> getMentorList(@PathVariable String nickname) {
+        return ResponseEntity.status(HttpStatus.OK).body(followService.getMentorList(nickname));
+    }
 }
