@@ -33,14 +33,15 @@ public class DataInitializer implements ApplicationRunner {
     private final PeriodRepository periodRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
-    private final JogakRepository jogakRepository;
     private final MogakService mogakService;
     private final JogakService jogakService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        insertStaticData();
-        insertDummyData();
+        if (periodRepository.findOneByDays("MONDAY").isEmpty()) {
+            insertStaticData();
+            insertDummyData();
+        }
     }
 
     private void insertStaticData() {
