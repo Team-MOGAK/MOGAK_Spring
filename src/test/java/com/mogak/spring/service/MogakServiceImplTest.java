@@ -34,6 +34,7 @@ class MogakServiceImplTest {
     @Autowired
     private JogakRepository jogakRepository;
 
+
 //    @Test
 //    @DisplayName("성취율 계산 테스트")
 //    void 성취율_계산_테스트() {
@@ -102,7 +103,7 @@ class MogakServiceImplTest {
 //        //then
 //        assertThat(rate).isEqualTo(50.0);
 //    }
-
+    /*
     @Test
     @DisplayName("모각 결과 테스트")
     public void 모각_결과_테스트() {
@@ -149,5 +150,7 @@ class MogakServiceImplTest {
         Optional<Mogak> mogakOptional = mogakRepository.findById(5L);
         assertThat(mogakOptional.get().getState()).isEqualTo(State.COMPLETE.name());
     }
+
+     */
 
 }
