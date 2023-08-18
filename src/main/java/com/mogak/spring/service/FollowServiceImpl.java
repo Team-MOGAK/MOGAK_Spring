@@ -63,7 +63,7 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public List<UserDto> getMotoList(String nickname) {
         User user = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        List<User> users = followRepository.findMotoListByUser(user);
+        List<User> users = followRepository.findMotosByUser(user);
         return users.stream()
                 .map(u -> UserDto.builder()
                         .nickname(u.getNickname())
@@ -76,7 +76,7 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public List<UserDto> getMentorList(String nickname) {
         User user = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        List<User> users = followRepository.findMentorListByUser(user);
+        List<User> users = followRepository.findMentorsByUser(user);
         return users.stream()
                 .map(u -> UserDto.builder()
                         .nickname(u.getNickname())

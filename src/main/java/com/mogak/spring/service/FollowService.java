@@ -1,13 +1,11 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.domain.user.User;
-import com.mogak.spring.web.dto.UserResponseDto;
-
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
 import static com.mogak.spring.web.dto.FollowRequestDto.*;
+import static com.mogak.spring.web.dto.UserResponseDto.*;
 
 public interface FollowService {
 
@@ -17,7 +15,7 @@ public interface FollowService {
 
     CountDto getFollowCount(String nickname);
 
-    List<UserResponseDto.UserDto> getMotoList(String nickname);
+    List<UserDto> getMotoList(String nickname);
 
-    List<UserResponseDto.UserDto> getMentorList(String nickname);
+    List<UserDto> getMentorList(String nickname);
 }

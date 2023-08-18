@@ -39,12 +39,12 @@ public class FollowController {
         return ResponseEntity.status(HttpStatus.OK).body(followService.getFollowCount(user));
     }
 
-    @GetMapping("/{nickname}/followings")
+    @GetMapping("/{nickname}/motos")
     public ResponseEntity<List<UserDto>> getMotoList(@PathVariable String nickname) {
         return ResponseEntity.status(HttpStatus.OK).body(followService.getMotoList(nickname));
     }
 
-    @GetMapping("/{nickname}/followers")
+    @GetMapping("/{nickname}/mentors")
     public ResponseEntity<List<UserDto>> getMentorList(@PathVariable String nickname) {
         return ResponseEntity.status(HttpStatus.OK).body(followService.getMentorList(nickname));
     }
