@@ -11,17 +11,12 @@ import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.util.Regex;
-import com.mogak.spring.web.dto.UserRequestDto;
-import com.mogak.spring.web.dto.UserResponseDto;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
-import java.util.Optional;
 
 import static com.mogak.spring.web.dto.UserRequestDto.*;
 
@@ -80,6 +75,16 @@ public class UserServiceImpl implements UserService {
         Long userId = Long.valueOf(req.getParameter("userId"));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateNickname(nicknameDto.getNickname());
+    }
+
+    @Transactional
+    @Override
+    public void updateJob(UpdateJobDto jobDto, HttpServletRequest req) {
+        Job job = jobRepository.findJobByName(jobDto.getJob())
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
+        Long userId = Long.valueOf(req.getParameter("userId"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        user.updateJob(job);
     }
 
     protected void verifyEmail(String email) {

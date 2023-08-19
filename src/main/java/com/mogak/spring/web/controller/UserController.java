@@ -4,7 +4,6 @@ import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.service.UserService;
-import com.mogak.spring.web.dto.UserRequestDto;
 import com.mogak.spring.web.dto.UserResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -86,6 +85,12 @@ public class UserController {
     @PutMapping("/setting/profile/nickname")
     public ResponseEntity<Void> updateNickname(@RequestBody UpdateNicknameDto nicknameDto, HttpServletRequest req) {
         userService.updateNickname(nicknameDto, req);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PutMapping("/setting/profile/job")
+    public ResponseEntity<Void> updateJob(@RequestBody UpdateJobDto jobDto, HttpServletRequest req) {
+        userService.updateJob(jobDto, req);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

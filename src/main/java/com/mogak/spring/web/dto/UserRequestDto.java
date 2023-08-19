@@ -24,4 +24,9 @@ public class UserRequestDto {
     public static class UpdateNicknameDto {
         private String nickname;
     }
+
+    @Getter
+    public static class UpdateJobDto {
+        private String job;
+    }
 }

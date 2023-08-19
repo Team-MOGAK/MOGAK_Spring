@@ -15,4 +15,6 @@ public interface UserService {
     User findUserByEmail(String email);
 
     void updateNickname(UserRequestDto.UpdateNicknameDto nicknameDto, HttpServletRequest req);
+
+    void updateJob(UserRequestDto.UpdateJobDto jobDto, HttpServletRequest req);
 }
