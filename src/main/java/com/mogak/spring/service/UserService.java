@@ -17,4 +17,6 @@ public interface UserService {
     void updateNickname(UserRequestDto.UpdateNicknameDto nicknameDto, HttpServletRequest req);
 
     void updateJob(UserRequestDto.UpdateJobDto jobDto, HttpServletRequest req);
+
+    void updateImg(UserRequestDto.UpdateImageDto imgDto, HttpServletRequest req);
 }

@@ -29,4 +29,9 @@ public class UserRequestDto {
     public static class UpdateJobDto {
         private String job;
     }
+
+    @Getter
+    public static class UpdateImageDto {
+        private String imgUrl;
+    }
 }

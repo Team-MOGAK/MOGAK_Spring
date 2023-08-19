@@ -94,4 +94,10 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+//    @PutMapping("/profile/image")
+//    public ResponseEntity<Void> updateImage(@RequestBody UpdateImageDto imgDto, HttpServletRequest req) {
+//        userService.updateImg(imgDto, req);
+//        return ResponseEntity.status(HttpStatus.OK).build();
+//    }
+
 }
