@@ -20,6 +20,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+
+import static com.mogak.spring.web.dto.UserRequestDto.*;
+
 @Tag(name = "유저 API", description = "유저 API 명세서")
 @RequiredArgsConstructor
 @RestController
@@ -57,7 +61,7 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PostMapping("/join")
-    public ResponseEntity<UserResponseDto.ToCreateDto> createUser(@RequestBody UserRequestDto.CreateUserDto request) {
+    public ResponseEntity<UserResponseDto.ToCreateDto> createUser(@RequestBody CreateUserDto request) {
         User user = userService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(UserConverter.toCreateDto(user));
     }
@@ -78,4 +82,11 @@ public class UserController {
         User user = userService.findUserByEmail(email);
         return ResponseEntity.status(HttpStatus.OK).headers(userService.getHeader(user)).build();
     }
+
+    @PutMapping("/setting/profile/nickname")
+    public ResponseEntity<Void> updateNickname(@RequestBody UpdateNicknameDto nicknameDto, HttpServletRequest req) {
+        userService.updateNickname(nicknameDto, req);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
 }

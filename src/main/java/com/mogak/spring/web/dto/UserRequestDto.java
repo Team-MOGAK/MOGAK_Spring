@@ -19,4 +19,9 @@ public class UserRequestDto {
     public static class UpdateUserDto{
         public String contents;
     }
+
+    @Getter
+    public static class UpdateNicknameDto {
+        private String nickname;
+    }
 }

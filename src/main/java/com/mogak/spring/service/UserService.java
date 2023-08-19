@@ -2,10 +2,9 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.web.dto.UserRequestDto;
-import com.mogak.spring.web.dto.UserResponseDto;
 import org.springframework.http.HttpHeaders;
 
-import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 
 public interface UserService {
 
@@ -14,4 +13,6 @@ public interface UserService {
     Boolean verifyNickname(String request);
     HttpHeaders getHeader(User user);
     User findUserByEmail(String email);
+
+    void updateNickname(UserRequestDto.UpdateNicknameDto nicknameDto, HttpServletRequest req);
 }

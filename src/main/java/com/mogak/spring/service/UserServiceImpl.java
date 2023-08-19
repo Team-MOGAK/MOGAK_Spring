@@ -19,8 +19,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.Optional;
+
+import static com.mogak.spring.web.dto.UserRequestDto.*;
 
 @RequiredArgsConstructor
 @Service
@@ -33,7 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public User create(UserRequestDto.CreateUserDto response) {
+    public User create(CreateUserDto response) {
         inputVerify(response);
         Job job = jobRepository.findJobByName(response.getJob())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
@@ -49,7 +52,7 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
-    protected void inputVerify(UserRequestDto.CreateUserDto response) {
+    protected void inputVerify(CreateUserDto response) {
         if (!Regex.USER_NICKNAME_REGEX.matchRegex(response.getNickname(), "NICKNAME"))
             throw new UserException(ErrorCode.NOT_VALID_NICKNAME);
         if (!Regex.EMAIL_REGEX.matchRegex(response.getEmail(), "EMAIL"))
@@ -68,6 +71,15 @@ public class UserServiceImpl implements UserService {
         verifyEmail(email);
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    }
+
+    @Transactional
+    @Override
+    public void updateNickname(UpdateNicknameDto nicknameDto, HttpServletRequest req) {
+        verifyNickname(nicknameDto.getNickname());
+        Long userId = Long.valueOf(req.getParameter("userId"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        user.updateNickname(nicknameDto.getNickname());
     }
 
     protected void verifyEmail(String email) {

@@ -30,5 +30,8 @@ public class User extends BaseEntity {
     private Double weekRate;
     @Column(nullable = false)
     private String validation;
-
+    
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
 }
