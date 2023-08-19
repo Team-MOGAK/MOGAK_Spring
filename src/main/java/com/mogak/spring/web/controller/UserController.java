@@ -82,12 +82,26 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).headers(userService.getHeader(user)).build();
     }
 
+    @Operation(summary = "닉네임 변경", description = "유저의 닉네임을 변경합니다",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "닉네임 변경 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "올바르지 않은 닉네임 형식",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
     @PutMapping("/profile/nickname")
     public ResponseEntity<Void> updateNickname(@RequestBody UpdateNicknameDto nicknameDto, HttpServletRequest req) {
         userService.updateNickname(nicknameDto, req);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @Operation(summary = "직무 변경", description = "유저의 직무를 변경합니다",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "직무 변경 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저, 존재하지 않는 직업",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
     @PutMapping("/profile/job")
     public ResponseEntity<Void> updateJob(@RequestBody UpdateJobDto jobDto, HttpServletRequest req) {
         userService.updateJob(jobDto, req);
