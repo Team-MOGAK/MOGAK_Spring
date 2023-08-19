@@ -32,4 +32,13 @@ public class UserConverter {
                 .token(jwtToken)
                 .build();
     }
+
+    public static UserResponseDto.UserDto toUserDto(User user) {
+        return UserResponseDto.UserDto.builder()
+                .nickname(user.getNickname())
+                .job(user.getJob().getName())
+                .address(user.getAddress().getName())
+                .build();
+    }
+
 }

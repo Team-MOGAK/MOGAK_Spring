@@ -79,4 +79,17 @@ public class PostResponseDto {
         private String validation;
     }
 
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class NetworkPostDto {
+        private UserResponseDto.UserDto user;
+        private String contents;
+        private List<String> imgUrls;
+        private List<CommentResponseDto.NetworkCommentDto> comments;
+        private int likeCnt;
+        private int viewCnt;
+    }
+
 }

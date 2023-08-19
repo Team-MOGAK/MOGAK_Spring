@@ -2,15 +2,14 @@ package com.mogak.spring.repository;
 
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
+import com.mogak.spring.domain.user.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
@@ -24,6 +23,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findAllByMogak(Mogak mogak);
 
-    @Query()
-    List<Post> findPacemakerPostsByUserId(@Param("postId") Long userId);
+    @Query( "SELECT p " +
+            "FROM Post p JOIN Follow f ON p.user = f.toUser " +
+            "WHERE f.fromUser = :user " +
+            "ORDER BY p.id DESC")
+    List<Post> findPacemakerPostsByUser(@Param("user") User user, Pageable pageable);
 }
