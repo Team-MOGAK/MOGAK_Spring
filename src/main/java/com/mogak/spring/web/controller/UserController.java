@@ -82,13 +82,13 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).headers(userService.getHeader(user)).build();
     }
 
-    @PutMapping("/setting/profile/nickname")
+    @PutMapping("/profile/nickname")
     public ResponseEntity<Void> updateNickname(@RequestBody UpdateNicknameDto nicknameDto, HttpServletRequest req) {
         userService.updateNickname(nicknameDto, req);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @PutMapping("/setting/profile/job")
+    @PutMapping("/profile/job")
     public ResponseEntity<Void> updateJob(@RequestBody UpdateJobDto jobDto, HttpServletRequest req) {
         userService.updateJob(jobDto, req);
         return ResponseEntity.status(HttpStatus.OK).build();
