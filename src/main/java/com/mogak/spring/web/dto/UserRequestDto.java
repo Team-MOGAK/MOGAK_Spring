@@ -19,4 +19,19 @@ public class UserRequestDto {
     public static class UpdateUserDto{
         public String contents;
     }
+
+    @Getter
+    public static class UpdateNicknameDto {
+        private String nickname;
+    }
+
+    @Getter
+    public static class UpdateJobDto {
+        private String job;
+    }
+
+    @Getter
+    public static class UpdateImageDto {
+        private String imgUrl;
+    }
 }
