@@ -1,5 +1,6 @@
 package com.mogak.spring.service;
 
+import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,16 +56,28 @@ public class MogakServiceImpl implements MogakService {
         }
         State state = State.registerState(request.getStartAt(), request.getEndAt(), LocalDate.now());
         Mogak result = mogakRepository.save(MogakConverter.toMogak(request, category, otherCategory, user, state));
-        saveMogakPeriod(request.getDays(), result);
+        List<Period> periods = saveMogakPeriod(request.getDays(), result);
+        LocalDate today = LocalDate.now();
+        DayOfWeek dayOfWeek = today.getDayOfWeek();
+        int dayNum = dayOfWeek.getValue();
+
+        createTodayJogak(result, periods, dayNum);
         return result;
+    }
+
+    private void createTodayJogak(Mogak result, List<Period> periods, int dayNum) {
+        if (periods.stream().anyMatch(day -> day.getId() == dayNum) &&
+                result.getState().equals(State.ONGOING.name())) {
+            jogakRepository.save(JogakConverter.toJogak(result));
+        }
     }
 
     /**
      * 모각주기 저장 메소드
      * */
-    private void saveMogakPeriod(List<String> days, Mogak mogak) {
+    private List<Period> saveMogakPeriod(List<String> days, Mogak mogak) {
         List<Period> periods = new ArrayList<>();
-        for (String day: days) {
+        for (String day : days) {
             periods.add(periodRepository.findOneByDays(day)
                     .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_DAY)));
         }
@@ -74,6 +88,7 @@ public class MogakServiceImpl implements MogakService {
                     .build();
             mogakPeriodRepository.save(mogakPeriod);
         }
+        return periods;
     }
 
     /**
