@@ -72,8 +72,7 @@ public class JogakServiceImpl implements JogakService {
 
     @Override
     public Jogak createJogak(Long mogakId) {
-        Mogak mogak = mogakRepository.findById(mogakId)
-                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
+        Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         if (!mogak.getState().equals(State.ONGOING.name())) {
             throw new JogakException(ErrorCode.WRONG_CREATE_JOGAK);
         }

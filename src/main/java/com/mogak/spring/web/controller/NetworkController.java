@@ -1,12 +1,11 @@
 package com.mogak.spring.web.controller;
 
-import com.mogak.spring.converter.PostLIkeConverter;
-import com.mogak.spring.domain.post.PostLike;
+
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.PostLikeRequestDto;
-import com.mogak.spring.web.dto.PostLikeResponseDto;
+import com.mogak.spring.web.dto.PostResponseDto.NetworkPostDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,10 +14,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @Tag(name = "네트워킹 API", description = "네트워킹 API 명세서")
 @RestController
@@ -38,11 +39,29 @@ public class NetworkController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "이미 좋아요를 누른 케이스 Or 서버 오류"),
             })
-    @PostMapping("/posts/like")
+    @PostMapping("/api/posts/like")
     public ResponseEntity<String> updateLike(@RequestBody PostLikeRequestDto.LikeDto request, HttpServletRequest req){
         String message = postLikeService.updateLike(request, req);
         return ResponseEntity.ok(message);
     }
 
+    @Operation(summary = "페이스 메이커 게시물 조회", description = "팔로우 중인 페이스 메이커의 게시물을 페이징 조회 합니다",
+            parameters = {
+                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
+                    @Parameter(name = "cursor", description = "페이징 커서(시작점)"),
+                    @Parameter(name = "size", description = "페이징 게시물 개수")
+            },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "게시물 조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "서버 오류"),
+            })
+    @GetMapping("/api/posts/pacemakers")
+    public ResponseEntity<List<NetworkPostDto>> getPacemakerPosts(@RequestParam int cursor,
+                                                                  @RequestParam int size,
+                                                                  HttpServletRequest req) {
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getPacemakerPosts(cursor, size, req));
+    }
 
 }

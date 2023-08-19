@@ -3,6 +3,7 @@ package com.mogak.spring.service;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
+import com.mogak.spring.web.dto.PostResponseDto;
 import org.springframework.data.domain.Slice;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,4 +16,5 @@ public interface PostService {
     Post findById(Long postId);
     Post update(Long postId, PostRequestDto.UpdatePostDto request);
     void delete(Long postId);
+    List<PostResponseDto.NetworkPostDto> getPacemakerPosts(int cursor, int size, HttpServletRequest req);
 }

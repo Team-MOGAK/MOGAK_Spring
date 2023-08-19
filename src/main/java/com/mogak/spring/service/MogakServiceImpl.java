@@ -45,7 +45,6 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public Mogak create(MogakRequestDto.CreateDto request, HttpServletRequest req) {
-        System.out.println("request.getUserId() = " + req.getParameter("userId"));
         Long userId = Long.valueOf(req.getParameter("userId"));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String otherCategory = request.getOtherCategory();

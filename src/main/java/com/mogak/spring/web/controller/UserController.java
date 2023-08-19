@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
-
 @Tag(name = "유저 API", description = "유저 API 명세서")
 @RequiredArgsConstructor
 @RestController
@@ -59,7 +57,7 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PostMapping("/join")
-    public ResponseEntity<UserResponseDto.toCreateDto> createUser(@RequestBody UserRequestDto.CreateUserDto request) {
+    public ResponseEntity<UserResponseDto.ToCreateDto> createUser(@RequestBody UserRequestDto.CreateUserDto request) {
         User user = userService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(UserConverter.toCreateDto(user));
     }

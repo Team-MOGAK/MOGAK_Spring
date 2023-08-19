@@ -1,9 +1,12 @@
 package com.mogak.spring.service;
 
+import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.converter.PostConverter;
 import com.mogak.spring.converter.PostImgConverter;
+import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
+import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.ErrorCode;
@@ -13,7 +16,11 @@ import com.mogak.spring.exception.UserException;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
+import com.mogak.spring.web.dto.PostResponseDto;
+import com.mogak.spring.web.dto.PostResponseDto.NetworkPostDto;
+import com.mogak.spring.web.dto.PostResponseDto.PostDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -21,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -104,6 +112,28 @@ public class PostServiceImpl implements PostService {
         postCommentRepository.deleteAllByPost(post);
         //회고록 삭제
         postRepository.deleteById(postId);
+    }
+
+    @Override
+    public List<NetworkPostDto> getPacemakerPosts(int cursor, int size, HttpServletRequest req) {
+        Long userId = Long.valueOf(req.getParameter("userId"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        Pageable pageable = PageRequest.of(cursor, size);
+        List<Post> posts = postRepository.findPacemakerPostsByUser(user, pageable);
+        return posts.stream()
+                .map(p -> NetworkPostDto.builder()
+                        .user(UserConverter.toUserDto(p.getUser()))
+                        .contents(p.getContents())
+                        .imgUrls(p.getPostImgs().stream()
+                                .map(PostImg::getImgUrl)
+                                .collect(Collectors.toList()))
+                        .comments(p.getPostComments().stream()
+                                .map(CommentConverter::toNetworkCommentDto)
+                                .collect(Collectors.toList()))
+                        .likeCnt(p.getLikeCnt())
+                        .viewCnt(p.getViewCnt())
+                        .build())
+                .collect(Collectors.toList());
     }
 
 }

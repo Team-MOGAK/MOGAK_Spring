@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+// 기존의 데이터가 존재하는 경우 중복 입력이 안되게 처리 필요
 @RequiredArgsConstructor
 @Component
 public class DataInitializer implements ApplicationRunner {

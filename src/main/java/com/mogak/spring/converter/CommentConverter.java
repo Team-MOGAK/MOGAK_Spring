@@ -65,4 +65,13 @@ public class CommentConverter {
                 .validation(Validation.INACTIVE.toString())
                 .build();
     }
+
+    public static CommentResponseDto.NetworkCommentDto toNetworkCommentDto(PostComment comment) {
+        return CommentResponseDto.NetworkCommentDto.builder()
+                .commentId(comment.getId())
+                .nickname(comment.getUser().getNickname())
+                .contents(comment.getContents())
+                .createdAt(comment.getCreatedAt())
+                .build();
+    }
 }

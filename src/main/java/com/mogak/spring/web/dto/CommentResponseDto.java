@@ -58,4 +58,16 @@ public class CommentResponseDto {
     public static class DeleteCommentDto {
         private String validation;
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class NetworkCommentDto {
+        private Long commentId;
+        private String nickname;
+        private String contents;
+        private LocalDateTime createdAt;
+    }
+
 }
