@@ -1,16 +1,11 @@
 package com.mogak.spring.web.controller;
 
-import com.mogak.spring.converter.PostLIkeConverter;
-import com.mogak.spring.domain.post.Post;
-import com.mogak.spring.domain.post.PostLike;
+
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.PostLikeRequestDto;
-import com.mogak.spring.web.dto.PostLikeResponseDto;
-import com.mogak.spring.web.dto.PostResponseDto;
 import com.mogak.spring.web.dto.PostResponseDto.NetworkPostDto;
-import com.mogak.spring.web.dto.PostResponseDto.PostDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -50,6 +45,18 @@ public class NetworkController {
         return ResponseEntity.ok(message);
     }
 
+    @Operation(summary = "페이스 메이커 게시물 조회", description = "팔로우 중인 페이스 메이커의 게시물을 페이징 조회 합니다",
+            parameters = {
+                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
+                    @Parameter(name = "cursor", description = "페이징 커서(시작점)"),
+                    @Parameter(name = "size", description = "페이징 게시물 개수")
+            },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "게시물 조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "서버 오류"),
+            })
     @GetMapping("/api/posts/pacemakers")
     public ResponseEntity<List<NetworkPostDto>> getPacemakerPosts(@RequestParam int cursor,
                                                                   @RequestParam int size,
