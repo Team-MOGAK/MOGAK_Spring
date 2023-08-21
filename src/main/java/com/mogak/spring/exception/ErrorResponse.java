@@ -1,5 +1,6 @@
 package com.mogak.spring.exception;
 
+import com.mogak.spring.global.ErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

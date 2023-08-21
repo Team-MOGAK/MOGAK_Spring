@@ -28,9 +28,6 @@ import java.util.List;
 public class MogakController {
     private final MogakService mogakService;
 
-    /**
-     * 모각 생성 API
-     * */
     @Operation(summary = "모각 생성", description = "입력값을 이용해 모각을 생성합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
@@ -47,9 +44,6 @@ public class MogakController {
                 .body(MogakConverter.toCreateDto(mogak));
     }
 
-    /**
-     * 모각 달성하기 API
-     * */
     @Operation(summary = "모각 달성", description = "해당하는 모각을 달성합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 달성"),
@@ -61,12 +55,9 @@ public class MogakController {
     @PutMapping("/{mogakId}/complete")
     public ResponseEntity<MogakResponseDto.UpdateStateDto> achieveMogak(@PathVariable Long mogakId) {
         Mogak mogak = mogakService.achieveMogak(mogakId);
-        return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toUpdateDto(mogak));
+        return ResponseEntity.ok(MogakConverter.toUpdateDto(mogak));
     }
 
-    /**
-     * 모각 수정 API
-     * */
     @Operation(summary = "모각 수정", description = "입력값을 이용해 모각을 수정합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 수정 성공"),
@@ -78,15 +69,9 @@ public class MogakController {
     @PutMapping("")
     public ResponseEntity<MogakResponseDto.UpdateStateDto> updateMogak(@RequestBody MogakRequestDto.UpdateDto request) {
         Mogak mogak = mogakService.updateMogak(request);
-        return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toUpdateDto(mogak));
+        return ResponseEntity.ok(MogakConverter.toUpdateDto(mogak));
     }
 
-    /**
-     * 모각 조회 API
-     * user => 유저 PK
-     * cursor => 데이터 조회 시작점
-     * size => 조회할 데이터 개수
-     * */
     @Operation(summary = "모각 조회", description = "입력값을 이용해 모각을 페이징 조회합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
@@ -104,12 +89,9 @@ public class MogakController {
             @RequestParam(value = "size") int size,
             HttpServletRequest req) {
             List<Mogak> mogaks = mogakService.getMogakList(req, cursor, size);
-            return ResponseEntity.status(HttpStatus.OK).body(MogakConverter.toGetMogakListDto(mogaks));
+            return ResponseEntity.ok(MogakConverter.toGetMogakListDto(mogaks));
     }
 
-    /**
-     * 모각 삭제 API
-     * */
     @Operation(summary = "모각 삭제", description = "모각을 삭제합니다",
             parameters = {
                     @Parameter(name = "mogakId", description = "모각 ID")

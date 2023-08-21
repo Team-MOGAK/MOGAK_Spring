@@ -3,6 +3,8 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.exception.ErrorResponse;
+import com.mogak.spring.global.BaseResponse;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.web.dto.JogakResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,8 +64,7 @@ public class JogakController {
     @GetMapping("")
     public ResponseEntity<JogakResponseDto.GetJogakListDto> getDailyJogaks(HttpServletRequest req) {
         List<Jogak> jogakList = jogakService.getDailyJogaks(req);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(JogakConverter.toGetJogakListResponseDto(jogakList));
+        return ResponseEntity.ok(JogakConverter.toGetJogakListResponseDto(jogakList));
     }
 
     /**
@@ -83,8 +84,7 @@ public class JogakController {
     @PutMapping("/{jogakId}/start")
     public ResponseEntity<JogakResponseDto.startJogakDto> startJogak(@PathVariable Long jogakId) {
         Jogak jogak = jogakService.startJogak(jogakId);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(JogakConverter.toGetStartJogakDto(jogak));
+        return ResponseEntity.ok(JogakConverter.toGetStartJogakDto(jogak));
     }
 
     /**
@@ -104,8 +104,7 @@ public class JogakController {
     @PutMapping("/{jogakId}/end")
     public ResponseEntity<JogakResponseDto.endJogakDto> endJogak(@PathVariable Long jogakId) {
         Jogak jogak = jogakService.endJogak(jogakId);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(JogakConverter.toEndJogakDto(jogak));
+        return ResponseEntity.ok(JogakConverter.toEndJogakDto(jogak));
     }
 
     /**
@@ -119,9 +118,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @DeleteMapping("/{jogakId}")
-    public ResponseEntity<Void> deleteJogak(@PathVariable Long jogakId) {
+    public ResponseEntity<BaseResponse<ErrorCode>> deleteJogak(@PathVariable Long jogakId) {
         jogakService.deleteJogak(jogakId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
 }

@@ -1,8 +1,8 @@
 package com.mogak.spring.domain.jogak;
 
-import com.mogak.spring.domain.base.BaseEntity;
+import com.mogak.spring.global.BaseEntity;
 import com.mogak.spring.domain.mogak.Mogak;
-import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.exception.JogakException;
 import lombok.*;
 

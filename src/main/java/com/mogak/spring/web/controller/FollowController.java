@@ -1,6 +1,8 @@
 package com.mogak.spring.web.controller;
 
 import com.mogak.spring.exception.ErrorResponse;
+import com.mogak.spring.global.BaseResponse;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.service.FollowService;
 import com.mogak.spring.web.dto.FollowRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,9 +42,9 @@ public class FollowController {
                     @ApiResponse(responseCode = "409", description = "이미 존재하는 팔로우입니다"),
             })
     @PostMapping("/{nickname}")
-    public ResponseEntity<Void> follow(@PathVariable String nickname, HttpServletRequest req) {
+    public ResponseEntity<BaseResponse<ErrorCode>> follow(@PathVariable String nickname, HttpServletRequest req) {
         followService.follow(nickname, req);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
     @Operation(summary = "언팔로우", description = "팔로우 했던 유저를 언팔로우 합니다",
@@ -57,9 +59,9 @@ public class FollowController {
                     @ApiResponse(responseCode = "409", description = "존재하지 않는 팔로우"),
             })
     @DeleteMapping("/{nickname}")
-    public ResponseEntity<Void> unfollow(@PathVariable String nickname, HttpServletRequest req) {
+    public ResponseEntity<BaseResponse<ErrorCode>> unfollow(@PathVariable String nickname, HttpServletRequest req) {
         followService.unfollow(nickname, req);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
     @Operation(summary = "팔로우,팔로잉 숫자 조회", description = "모토, 멘토 숫자를 조회합니다",
@@ -74,7 +76,7 @@ public class FollowController {
             })
     @GetMapping("/counts/{nickname}")
     public ResponseEntity<FollowRequestDto.CountDto> getFollowCount(@PathVariable String nickname) {
-        return ResponseEntity.status(HttpStatus.OK).body(followService.getFollowCount(nickname));
+        return ResponseEntity.ok(followService.getFollowCount(nickname));
     }
 
     @Operation(summary = "모토 조회", description = "유저를 팔로우 중인 모토들을 조회 합니다",
@@ -89,7 +91,7 @@ public class FollowController {
             })
     @GetMapping("/{nickname}/motos")
     public ResponseEntity<List<UserDto>> getMotoList(@PathVariable String nickname) {
-        return ResponseEntity.status(HttpStatus.OK).body(followService.getMotoList(nickname));
+        return ResponseEntity.ok(followService.getMotoList(nickname));
     }
 
     @Operation(summary = "멘토 조회", description = "유저가 팔로우 중인 멘토들을 조회 합니다",
@@ -104,7 +106,7 @@ public class FollowController {
             })
     @GetMapping("/{nickname}/mentors")
     public ResponseEntity<List<UserDto>> getMentorList(@PathVariable String nickname) {
-        return ResponseEntity.status(HttpStatus.OK).body(followService.getMentorList(nickname));
+        return ResponseEntity.ok(followService.getMentorList(nickname));
     }
     
 }

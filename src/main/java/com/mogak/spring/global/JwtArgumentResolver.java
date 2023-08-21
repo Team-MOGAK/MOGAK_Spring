@@ -1,4 +1,4 @@
-package com.mogak.spring.exception;
+package com.mogak.spring.global;
 
 import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.util.StringUtils;

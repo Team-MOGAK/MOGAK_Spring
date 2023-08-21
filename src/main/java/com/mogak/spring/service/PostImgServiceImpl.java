@@ -1,11 +1,9 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.domain.post.Post;
-import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.post.PostImg;
-import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.exception.PostException;
-import com.mogak.spring.repository.PostCommentRepository;
 import com.mogak.spring.repository.PostImgRepository;
 import com.mogak.spring.repository.PostRepository;
 import lombok.RequiredArgsConstructor;

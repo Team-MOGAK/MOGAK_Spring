@@ -1,7 +1,7 @@
 package com.mogak.spring.login;
 
 import com.mogak.spring.exception.CommonException;
-import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.global.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;

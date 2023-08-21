@@ -1,5 +1,6 @@
 package com.mogak.spring.service;
 
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
@@ -7,6 +8,7 @@ import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.*;
+import com.mogak.spring.global.JwtArgumentResolver;
 import com.mogak.spring.repository.JogakRepository;
 import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.UserRepository;

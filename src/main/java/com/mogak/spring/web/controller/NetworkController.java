@@ -8,12 +8,10 @@ import com.mogak.spring.web.dto.PostLikeRequestDto;
 import com.mogak.spring.web.dto.PostResponseDto.NetworkPostDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +64,7 @@ public class NetworkController {
     public ResponseEntity<List<NetworkPostDto>> getPacemakerPosts(@RequestParam int cursor,
                                                                   @RequestParam int size,
                                                                   HttpServletRequest req) {
-        return ResponseEntity.status(HttpStatus.OK).body(postService.getPacemakerPosts(cursor, size, req));
+        return ResponseEntity.ok(postService.getPacemakerPosts(cursor, size, req));
     }
 
 }

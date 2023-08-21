@@ -1,5 +1,7 @@
 package com.mogak.spring.exception;
 
+import com.mogak.spring.global.BaseException;
+import com.mogak.spring.global.ErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

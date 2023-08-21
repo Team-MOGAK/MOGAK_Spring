@@ -1,5 +1,6 @@
 package com.mogak.spring.service;
 
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
@@ -12,6 +13,7 @@ import com.mogak.spring.domain.mogak.Period;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.*;
+import com.mogak.spring.global.JwtArgumentResolver;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.RequiredArgsConstructor;

@@ -4,19 +4,17 @@ import com.mogak.spring.converter.FollowConverter;
 import com.mogak.spring.domain.user.Follow;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.CommonException;
-import com.mogak.spring.exception.ErrorCode;
-import com.mogak.spring.exception.JwtArgumentResolver;
+import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.global.JwtArgumentResolver;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.repository.FollowRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.web.dto.FollowRequestDto;
-import com.mogak.spring.web.dto.UserResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

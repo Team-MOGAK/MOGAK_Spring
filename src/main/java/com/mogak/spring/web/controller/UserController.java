@@ -2,7 +2,10 @@ package com.mogak.spring.web.controller;
 
 import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.CommonException;
 import com.mogak.spring.exception.ErrorResponse;
+import com.mogak.spring.global.BaseResponse;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.web.dto.UserResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,11 +44,11 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/{nickname}/verify")
-    public ResponseEntity<Object> verifyNickname(@PathVariable String nickname) {
+    public ResponseEntity<BaseResponse<ErrorCode>> verifyNickname(@PathVariable String nickname) {
         if (userService.verifyNickname(nickname) && userService.findUserByNickname(nickname)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw new CommonException(ErrorCode.NOT_VALID_NICKNAME);
         } else {
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
         }
     }
 
@@ -80,7 +83,7 @@ public class UserController {
     @PostMapping("/login/{email}")
     public ResponseEntity<UserResponseDto.LoginDto> login(@PathVariable String email) {
         User user = userService.findUserByEmail(email);
-        return ResponseEntity.status(HttpStatus.OK).headers(userService.getHeader(user)).build();
+        return ResponseEntity.ok().headers(userService.getHeader(user)).build();
     }
 
     @Operation(summary = "닉네임 변경", description = "유저의 닉네임을 변경합니다",
@@ -93,9 +96,9 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/nickname")
-    public ResponseEntity<Void> updateNickname(@RequestBody UpdateNicknameDto nicknameDto, HttpServletRequest req) {
+    public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@RequestBody UpdateNicknameDto nicknameDto, HttpServletRequest req) {
         userService.updateNickname(nicknameDto, req);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
     @Operation(summary = "직무 변경", description = "유저의 직무를 변경합니다",
@@ -106,9 +109,9 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/job")
-    public ResponseEntity<Void> updateJob(@RequestBody UpdateJobDto jobDto, HttpServletRequest req) {
+    public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@RequestBody UpdateJobDto jobDto, HttpServletRequest req) {
         userService.updateJob(jobDto, req);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
 //    @PutMapping("/profile/image")
