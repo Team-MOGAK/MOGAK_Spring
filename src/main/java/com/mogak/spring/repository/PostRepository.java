@@ -19,7 +19,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("select p from Post p join p.mogak m on m.id = :mogakId where p.id < :postId order by p.id desc")
     Slice<Post> findAllPosts(@Param("postId") Long lastPostId, @Param("mogakId")Long mogakId, Pageable pageable);
 
-    Post findTopbyOrderById
     void deleteAllByMogak(Mogak mogak);
 
     List<Post> findAllByMogak(Mogak mogak);

@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.Max;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,7 +76,7 @@ public class PostServiceImpl implements PostService {
         );
         Pageable pageable = Pageable.ofSize(size);
         if(lastPostId == null){
-
+            
         }
         Slice<Post> posts = postRepository.findAllPosts(lastPostId != null ? lastPostId : Long.MAX_VALUE, mogakId, pageable);
         return posts;
