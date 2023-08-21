@@ -4,7 +4,9 @@ import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.CommonException;
 import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.exception.JwtArgumentResolver;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.login.JwtTokenProvider;
 import com.mogak.spring.repository.AddressRepository;
@@ -72,7 +74,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateNickname(UpdateNicknameDto nicknameDto, HttpServletRequest req) {
         verifyNickname(nicknameDto.getNickname());
-        Long userId = Long.valueOf(req.getParameter("userId"));
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateNickname(nicknameDto.getNickname());
     }
@@ -80,9 +82,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void updateJob(UpdateJobDto jobDto, HttpServletRequest req) {
-        Job job = jobRepository.findJobByName(jobDto.getJob())
-                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
-        Long userId = Long.valueOf(req.getParameter("userId"));
+        Job job = jobRepository.findJobByName(jobDto.getJob()).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateJob(job);
     }

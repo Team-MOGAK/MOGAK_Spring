@@ -51,7 +51,9 @@ public enum ErrorCode {
     EXCEED_MAX_NUM_COMMENT(HttpStatus.BAD_REQUEST, "최대 글자수 200자를 초과하였습니다"),
     NOT_EXIST_COMMENT(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다"),
 
-    WRONG_TOKEN(HttpStatus.BAD_REQUEST, "만료되었거나 잘못된 토큰입니다"),
+    WRONG_TOKEN(HttpStatus.UNAUTHORIZED, "만료되었거나 잘못된 토큰입니다"),
+    EMPTY_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 존재하지 않습니다"),
+    INVALID_PERMISSION(HttpStatus.FORBIDDEN, "권한이 부여되지 않았습니다"),
 
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다"),
     NOT_FOUND(HttpStatus.NOT_FOUND, "찾을 수 없습니다"),

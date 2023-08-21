@@ -9,10 +9,7 @@ import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.ErrorCode;
-import com.mogak.spring.exception.MogakException;
-import com.mogak.spring.exception.PostException;
-import com.mogak.spring.exception.UserException;
+import com.mogak.spring.exception.*;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
@@ -46,7 +43,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post create(PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, /*User user,*/Long mogakId, HttpServletRequest req) {
         Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        Long userId = Long.valueOf(req.getParameter("userId"));
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (request.getContents().length() > 350) {
             throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
@@ -82,8 +79,7 @@ public class PostServiceImpl implements PostService {
     //회고록 상세 조회 + 댓글, 이미지 같이 보이게
     @Override
     public Post findById(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
+        return postRepository.findById(postId).orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
     }
 
 
@@ -104,8 +100,7 @@ public class PostServiceImpl implements PostService {
     @Transactional
     @Override
     public void delete(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         //이미지 삭제
         postImgRepository.deleteAllByPost(post);
         //댓글 삭제
@@ -116,7 +111,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<NetworkPostDto> getPacemakerPosts(int cursor, int size, HttpServletRequest req) {
-        Long userId = Long.valueOf(req.getParameter("userId"));
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Pageable pageable = PageRequest.of(cursor, size);
         List<Post> posts = postRepository.findPacemakerPostsByUser(user, pageable);

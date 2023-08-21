@@ -4,10 +4,7 @@ import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.ErrorCode;
-import com.mogak.spring.exception.PostCommentException;
-import com.mogak.spring.exception.PostException;
-import com.mogak.spring.exception.UserException;
+import com.mogak.spring.exception.*;
 import com.mogak.spring.repository.PostCommentRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -34,7 +31,7 @@ public class PostCommentServiceImpl implements PostCommentService {
     public PostComment create(CommentRequestDto.CreateCommentDto request, Long postId, HttpServletRequest req) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        Long userId = Long.valueOf(req.getParameter("userId"));
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (request.getContents().length() > 200) {

@@ -6,10 +6,7 @@ import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.ErrorCode;
-import com.mogak.spring.exception.JogakException;
-import com.mogak.spring.exception.MogakException;
-import com.mogak.spring.exception.UserException;
+import com.mogak.spring.exception.*;
 import com.mogak.spring.repository.JogakRepository;
 import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -81,7 +78,7 @@ public class JogakServiceImpl implements JogakService {
 
     @Override
     public List<Jogak> getDailyJogaks(HttpServletRequest req) {
-        Long userId = Long.valueOf(req.getParameter("userId"));
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return jogakRepository.findDailyJogak(user);
     }

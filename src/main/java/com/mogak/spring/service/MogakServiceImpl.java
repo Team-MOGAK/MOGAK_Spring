@@ -47,7 +47,7 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public Mogak create(MogakRequestDto.CreateDto request, HttpServletRequest req) {
-        Long userId = Long.valueOf(req.getParameter("userId"));
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String otherCategory = request.getOtherCategory();
         MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory()).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
@@ -174,7 +174,7 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Override
     public List<Mogak> getMogakList(HttpServletRequest req, int cursor, int size) {
-        Long userId = Long.valueOf(req.getParameter("userId"));
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         PageRequest pageRequest = PageRequest.of(cursor, size);
@@ -230,8 +230,7 @@ public class MogakServiceImpl implements MogakService {
     @Override
     public void deleteMogak(Long mogakId) {
         //모각 존재 확인
-        Mogak mogak = mogakRepository.findById(mogakId)
-                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
+        Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         // 모각 주기 삭제
         mogakPeriodRepository.deleteAllByMogakId(mogakId);
         // 조각 삭제 필요
