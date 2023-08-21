@@ -36,7 +36,10 @@ public class PostController {
 
     //create
     @Operation(summary = "회고록 생성", description = "회고록을 생성합니다",
-            parameters = @Parameter(name = "mogakId", description = "모각 ID"),
+            parameters = {
+                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
+                    @Parameter(name = "mogakId", description = "모각 ID")
+            },
             responses = {
                     @ApiResponse(responseCode = "200", description = "회고록 생성"),
                     @ApiResponse(responseCode = "400", description = "기타 카테고리 X",
@@ -44,7 +47,7 @@ public class PostController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각, 존재하지 않는 카테고리",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PostMapping("/mogaks/{mogakId}/posts")
+    @PostMapping("/api/mogaks/{mogakId}/posts")
     public ResponseEntity<PostResponseDto.CreatePostDto> createPost(@PathVariable Long mogakId,
                                                                     @RequestPart PostRequestDto.CreatePostDto request,
                                                                     @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/,
@@ -63,7 +66,7 @@ public class PostController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/mogaks/{mogakId}/posts")
+    @GetMapping("/api/mogaks/{mogakId}/posts")
     public ResponseEntity<Slice<PostResponseDto.GetPostDto>> getPostList(@PathVariable Long mogakId,
                                                                          @RequestParam(value = "lastPostId") Long lastPostId,
                                                                          @RequestParam(value = "size") int size){
@@ -80,7 +83,7 @@ public class PostController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 게시물",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/mogaks/posts/{postId}")
+    @GetMapping("/api/mogaks/posts/{postId}")
     public ResponseEntity<PostResponseDto.PostDto> getPostDetail(@PathVariable Long postId) {
         Post post= postService.findById(postId);
         List<String> imgUrls = postImgService.findNotThumbnailImg(post);
@@ -97,7 +100,7 @@ public class PostController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 게시물",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("/mogaks/posts/{postId}")
+    @PutMapping("/api/mogaks/posts/{postId}")
     public ResponseEntity<PostResponseDto.UpdatePostDto> updatePost(@PathVariable Long postId,
                                                                     @RequestBody PostRequestDto.UpdatePostDto request){
         Post post = postService.update(postId, request);
@@ -112,7 +115,7 @@ public class PostController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 회고록",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @DeleteMapping("/mogaks/posts/{postId}")
+    @DeleteMapping("/api/mogaks/posts/{postId}")
     public ResponseEntity<PostResponseDto.DeletePostDto> deletePost(@PathVariable Long postId) {
         Post post = postService.findById(postId);
         List<PostImg> postImgList = postImgService.findAllByPost(post);

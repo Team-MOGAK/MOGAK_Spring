@@ -11,6 +11,7 @@ import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.util.Regex;
+import com.mogak.spring.web.dto.UserRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -31,13 +32,15 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public User create(CreateUserDto response) {
+    public User create(CreateUserDto response, UploadImageDto uploadImageDto) {
         inputVerify(response);
         Job job = jobRepository.findJobByName(response.getJob())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
         Address address = addressRepository.findAddressByName(response.getAddress())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_ADDRESS));
-        return userRepository.save(UserConverter.toUser(response, job, address));
+        String profileImgUrl = uploadImageDto.getImgUrl();
+        String profileImgName = uploadImageDto.getImgName();
+        return userRepository.save(UserConverter.toUser(response, job, address, profileImgUrl, profileImgName));
     }
     @Override
     public Boolean findUserByNickname(String nickname) {
@@ -97,6 +100,22 @@ public class UserServiceImpl implements UserService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + jwtTokenProvider.createJwtToken(user.getId().toString()));
         return headers;
+    }
+    public String getProfileImgName(HttpServletRequest req){
+        Long userId = Long.valueOf(req.getParameter("userId"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        String profileImgName = user.getProfileImgName();
+        return profileImgName;
+    }
+
+    @Transactional
+    @Override
+    public void updateImg(UserRequestDto.UpdateImageDto userImageDto, HttpServletRequest req){
+        Long userId = Long.valueOf(req.getParameter("userId"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        String imgUrl = userImageDto.getImgUrl();
+        String imgName = userImageDto.getImgName();
+        user.updateProfileImg(imgUrl, imgName);
     }
 
 }
