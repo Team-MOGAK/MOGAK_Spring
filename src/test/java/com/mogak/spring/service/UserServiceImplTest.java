@@ -57,9 +57,11 @@ class UserServiceImplTest {
         Address address = Address.builder()
                 .name(response.getAddress())
                 .build();
+        String imgUrl = null;
+        String imgName = null;
 
         //then
-        assertThat(UserConverter.toUser(response, job, address))
+        assertThat(UserConverter.toUser(response, job, address, imgUrl, imgName))
                 .isInstanceOf(User.class);
     }
 

@@ -12,7 +12,12 @@ public class UserRequestDto {
         private String job;
         private String address;
         private String email;
-        private String profileImg;
+    }
+    @Builder
+    @Getter
+    public static class UploadImageDto {
+        private String imgName;
+        private String imgUrl;
     }
 
     @Getter
@@ -30,8 +35,10 @@ public class UserRequestDto {
         private String job;
     }
 
+    @Builder
     @Getter
     public static class UpdateImageDto {
+        private String imgName;
         private String imgUrl;
     }
 }
