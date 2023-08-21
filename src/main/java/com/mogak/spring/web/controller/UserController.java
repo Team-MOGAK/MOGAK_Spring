@@ -34,9 +34,6 @@ import static com.mogak.spring.web.dto.UserRequestDto.*;
 public class UserController {
     private final UserService userService;
 
-    /**
-     * 닉네임 검증 API
-     */
     @Operation(summary = "닉네임 검증", description = "PathVariable로 입력받은 닉네임을 검증합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "사용 가능한 닉네임"),
@@ -52,9 +49,6 @@ public class UserController {
         }
     }
 
-    /**
-     * 임시 계정 생성 API
-     */
     @Operation(summary = "(임시)계정 생성", description = "계정 생성을 한다",
             responses = {
                     @ApiResponse(responseCode = "201", description = "계정 생성 완료"),
@@ -69,10 +63,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(UserConverter.toCreateDto(user));
     }
 
-    /**
-     * 임시 계정 로그인 API
-     */
-    @Operation(summary = "로그인", description = "입력한 이메일로 로그인을 시도합니다",
+    @Operation(summary = "(임시)로그인", description = "입력한 이메일로 로그인을 시도합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "로그인 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 계정",
@@ -81,9 +72,9 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/login/{email}")
-    public ResponseEntity<UserResponseDto.LoginDto> login(@PathVariable String email) {
+    public ResponseEntity<BaseResponse<ErrorCode>> login(@PathVariable String email) {
         User user = userService.findUserByEmail(email);
-        return ResponseEntity.ok().headers(userService.getHeader(user)).build();
+        return ResponseEntity.ok().headers(userService.getHeader(user)).body(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
     @Operation(summary = "닉네임 변경", description = "유저의 닉네임을 변경합니다",

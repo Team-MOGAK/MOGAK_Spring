@@ -231,16 +231,12 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public void deleteMogak(Long mogakId) {
-        //모각 존재 확인
         Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        // 모각 주기 삭제
         mogakPeriodRepository.deleteAllByMogakId(mogakId);
-        // 조각 삭제 필요
         List<Jogak> jogaks = mogak.getJogaks();
         if (!jogaks.isEmpty()) {
             jogakRepository.deleteAll(mogak.getJogaks());
         }
-        // 회고록 삭제 + 회고록 삭제에서 댓글 삭제도 같이 구현 필요
         List<Post> posts = postRepository.findAllByMogak(mogak);
         if (!posts.isEmpty()) {
             for (Post post : posts) {

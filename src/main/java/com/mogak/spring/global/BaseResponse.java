@@ -14,7 +14,7 @@ import static com.mogak.spring.global.ErrorCode.SUCCESS;
 @AllArgsConstructor
 @JsonPropertyOrder({"time", "status", "code", "message", "result"})
 public class BaseResponse<T> {
-    private final LocalDateTime now = LocalDateTime.now();
+    private final LocalDateTime time = LocalDateTime.now();
     private final HttpStatus status;
     private final String code;
     private final String message;

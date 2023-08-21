@@ -29,9 +29,6 @@ import java.util.List;
 public class JogakController {
     private final JogakService jogakService;
 
-    /**
-     * 임시 조각 생성 API
-     * */
     @Operation(summary = "(임시)조각 생성", description = "모각에 대한 조각을 생성합니다",
             parameters = @Parameter(name = "mogakId", description = "모각 ID"),
             responses = {
@@ -48,9 +45,6 @@ public class JogakController {
                 .body(JogakConverter.toCreateJogakResponseDto(jogak));
     }
 
-    /**
-     * 당일 조각 조회 API
-     * */
     @Operation(summary = "당일 조각 조회", description = "당일 조각을 조회합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
@@ -67,9 +61,6 @@ public class JogakController {
         return ResponseEntity.ok(JogakConverter.toGetJogakListResponseDto(jogakList));
     }
 
-    /**
-     *  조각 시작 API
-     * */
     @Operation(summary = "조각 시작", description = "조각을 시작합니다",
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),
             responses = {
@@ -87,9 +78,6 @@ public class JogakController {
         return ResponseEntity.ok(JogakConverter.toGetStartJogakDto(jogak));
     }
 
-    /**
-     *  조각 종료 API
-     * */
     @Operation(summary = "조각 종료", description = "조각을 종료합니다",
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),
             responses = {
@@ -107,9 +95,6 @@ public class JogakController {
         return ResponseEntity.ok(JogakConverter.toEndJogakDto(jogak));
     }
 
-    /**
-     * 임시 조각 삭제 API
-     * */
     @Operation(summary = "(임시)조각 삭제", description = "조각을 삭제합니다",
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),
             responses = {

@@ -1,5 +1,6 @@
 package com.mogak.spring.exception;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.mogak.spring.global.ErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@JsonPropertyOrder({"time", "status", "code", "message", "result"})
 public class ErrorResponse {
     private final LocalDateTime now = LocalDateTime.now();
     private int status;
