@@ -1,12 +1,12 @@
 package com.mogak.spring.service;
 
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.converter.PostLIkeConverter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostLike;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.ErrorCode;
-import com.mogak.spring.exception.PostException;
-import com.mogak.spring.exception.UserException;
+import com.mogak.spring.exception.*;
+import com.mogak.spring.global.JwtArgumentResolver;
 import com.mogak.spring.repository.PostLikeRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -32,7 +32,7 @@ public class PostLikeServiceImpl implements PostLikeService{
     public String updateLike(PostLikeRequestDto.LikeDto request, HttpServletRequest req){
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        Long userId = Long.valueOf(req.getParameter("userId"));
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 

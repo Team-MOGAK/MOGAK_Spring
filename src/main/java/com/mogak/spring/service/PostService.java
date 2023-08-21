@@ -9,6 +9,8 @@ import org.springframework.data.domain.Slice;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+import static com.mogak.spring.web.dto.PostResponseDto.*;
+
 public interface PostService {
 
     Post create(PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList,/*User user*/ Long mogakId, HttpServletRequest req);
@@ -16,5 +18,5 @@ public interface PostService {
     Post findById(Long postId);
     Post update(Long postId, PostRequestDto.UpdatePostDto request);
     void delete(Long postId);
-    List<PostResponseDto.NetworkPostDto> getPacemakerPosts(int cursor, int size, HttpServletRequest req);
+    List<NetworkPostDto> getPacemakerPosts(int cursor, int size, HttpServletRequest req);
 }

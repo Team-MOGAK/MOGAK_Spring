@@ -1,7 +1,6 @@
 package com.mogak.spring.domain.post;
 
-import com.mogak.spring.domain.base.BaseEntity;
-import com.mogak.spring.domain.common.Validation;
+import com.mogak.spring.global.BaseEntity;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
@@ -47,6 +46,9 @@ public class Post extends BaseEntity {
     @Builder.Default
     @Column(nullable = false)
     private int likeCnt = 0;
+    @Builder.Default
+    @Column(nullable = false)
+    private int commentCnt = 0; //데이터 일관성 문제 있을수도
 
     //setter 대신
     public void updatePost(String contents){
@@ -70,5 +72,9 @@ public class Post extends BaseEntity {
     public void putPostThumbnailUrl(String thumbnailUrl){
         this.postThumbnailUrl=thumbnailUrl;
     }
+
+    public void addCommentCnt(){ this.commentCnt+=1;}
+    public void subtractCommentCnt(){ this.commentCnt-=1;}
+
 
 }

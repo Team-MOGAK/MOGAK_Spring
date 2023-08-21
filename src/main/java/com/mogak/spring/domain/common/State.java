@@ -1,6 +1,6 @@
 package com.mogak.spring.domain.common;
 
-import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.exception.MogakException;
 
 import java.time.LocalDate;

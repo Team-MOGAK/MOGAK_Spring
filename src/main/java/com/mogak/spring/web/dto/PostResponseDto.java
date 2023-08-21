@@ -24,7 +24,8 @@ public class PostResponseDto {
         private List<String> imgUrls;
         private List<Long> commentId;
         private int likeCnt;
-        //추후 조회수 추가
+        private int commentCnt;
+
     }
     @Getter
     @Builder

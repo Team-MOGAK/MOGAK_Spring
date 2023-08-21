@@ -1,6 +1,6 @@
 package com.mogak.spring.domain.user;
 
-import com.mogak.spring.domain.base.BaseEntity;
+import com.mogak.spring.global.BaseEntity;
 import lombok.*;
 
 import javax.persistence.*;
@@ -25,7 +25,8 @@ public class User extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id")
     private Address address;
-    private String profileImg;
+    private String profileImgUrl;
+    private String profileImgName;
     private String email;
     private Double weekRate;
     @Column(nullable = false)
@@ -37,5 +38,9 @@ public class User extends BaseEntity {
 
     public void updateJob(Job job) {
         this.job = job;
+    }
+    public void updateProfileImg(String imgUrl, String imgName){
+        this.profileImgUrl = imgUrl;
+        this.profileImgName = imgName;
     }
 }

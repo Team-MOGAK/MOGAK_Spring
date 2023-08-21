@@ -1,6 +1,6 @@
 package com.mogak.spring.domain.post;
 
-import com.mogak.spring.domain.base.BaseEntity;
+import com.mogak.spring.global.BaseEntity;
 import lombok.*;
 
 import javax.persistence.*;

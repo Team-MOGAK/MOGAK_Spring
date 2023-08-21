@@ -1,5 +1,7 @@
 package com.mogak.spring.service;
 
+import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
@@ -11,6 +13,7 @@ import com.mogak.spring.domain.mogak.Period;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.*;
+import com.mogak.spring.global.JwtArgumentResolver;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +49,7 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public Mogak create(MogakRequestDto.CreateDto request, HttpServletRequest req) {
-        Long userId = Long.valueOf(req.getParameter("userId"));
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String otherCategory = request.getOtherCategory();
         MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory()).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
@@ -54,16 +58,28 @@ public class MogakServiceImpl implements MogakService {
         }
         State state = State.registerState(request.getStartAt(), request.getEndAt(), LocalDate.now());
         Mogak result = mogakRepository.save(MogakConverter.toMogak(request, category, otherCategory, user, state));
-        saveMogakPeriod(request.getDays(), result);
+        List<Period> periods = saveMogakPeriod(request.getDays(), result);
+        LocalDate today = LocalDate.now();
+        DayOfWeek dayOfWeek = today.getDayOfWeek();
+        int dayNum = dayOfWeek.getValue();
+
+        createTodayJogak(result, periods, dayNum);
         return result;
+    }
+
+    private void createTodayJogak(Mogak result, List<Period> periods, int dayNum) {
+        if (periods.stream().anyMatch(day -> day.getId() == dayNum) &&
+                result.getState().equals(State.ONGOING.name())) {
+            jogakRepository.save(JogakConverter.toJogak(result));
+        }
     }
 
     /**
      * 모각주기 저장 메소드
      * */
-    private void saveMogakPeriod(List<String> days, Mogak mogak) {
+    private List<Period> saveMogakPeriod(List<String> days, Mogak mogak) {
         List<Period> periods = new ArrayList<>();
-        for (String day: days) {
+        for (String day : days) {
             periods.add(periodRepository.findOneByDays(day)
                     .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_DAY)));
         }
@@ -74,6 +90,7 @@ public class MogakServiceImpl implements MogakService {
                     .build();
             mogakPeriodRepository.save(mogakPeriod);
         }
+        return periods;
     }
 
     /**
@@ -159,7 +176,7 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Override
     public List<Mogak> getMogakList(HttpServletRequest req, int cursor, int size) {
-        Long userId = Long.valueOf(req.getParameter("userId"));
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         PageRequest pageRequest = PageRequest.of(cursor, size);
@@ -214,17 +231,12 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public void deleteMogak(Long mogakId) {
-        //모각 존재 확인
-        Mogak mogak = mogakRepository.findById(mogakId)
-                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        // 모각 주기 삭제
+        Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         mogakPeriodRepository.deleteAllByMogakId(mogakId);
-        // 조각 삭제 필요
         List<Jogak> jogaks = mogak.getJogaks();
         if (!jogaks.isEmpty()) {
             jogakRepository.deleteAll(mogak.getJogaks());
         }
-        // 회고록 삭제 + 회고록 삭제에서 댓글 삭제도 같이 구현 필요
         List<Post> posts = postRepository.findAllByMogak(mogak);
         if (!posts.isEmpty()) {
             for (Post post : posts) {

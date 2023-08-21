@@ -1,10 +1,10 @@
 package com.mogak.spring.domain.mogak;
 
-import com.mogak.spring.domain.base.BaseEntity;
+import com.mogak.spring.global.BaseEntity;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.ErrorCode;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.*;
