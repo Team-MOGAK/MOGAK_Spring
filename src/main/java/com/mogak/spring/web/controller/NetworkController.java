@@ -6,6 +6,7 @@ import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.PostLikeRequestDto;
+import com.mogak.spring.web.dto.PostResponseDto;
 import com.mogak.spring.web.dto.PostResponseDto.NetworkPostDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +17,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.Slice;
+import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,5 +71,11 @@ public class NetworkController {
                                                                   HttpServletRequest req) {
         return ResponseEntity.ok(new BaseResponse<>(postService.getPacemakerPosts(cursor, size, req)));
     }
+
+    //네트워킹 전체조회
+    /*
+    @GetMapping("/api/posts")
+    public ResponseEntity<Slice<PostResponseDto.GetPostDto>> getALlPosts(@RequestParam(value="lastPostId") Long lastPostId, @RequestParam(value = "category", defaultValue="") String category, ,HttpServletRequest req)
+     */
 
 }

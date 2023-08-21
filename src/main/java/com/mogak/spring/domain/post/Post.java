@@ -46,6 +46,9 @@ public class Post extends BaseEntity {
     @Builder.Default
     @Column(nullable = false)
     private int likeCnt = 0;
+    @Builder.Default
+    @Column(nullable = false)
+    private int commentCnt = 0; //데이터 일관성 문제 있을수도
 
     //setter 대신
     public void updatePost(String contents){
@@ -69,5 +72,9 @@ public class Post extends BaseEntity {
     public void putPostThumbnailUrl(String thumbnailUrl){
         this.postThumbnailUrl=thumbnailUrl;
     }
+
+    public void addCommentCnt(){ this.commentCnt+=1;}
+    public void subtractCommentCnt(){ this.commentCnt-=1;}
+
 
 }

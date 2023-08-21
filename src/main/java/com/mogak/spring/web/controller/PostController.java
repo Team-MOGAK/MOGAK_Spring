@@ -50,7 +50,7 @@ public class PostController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각, 존재하지 않는 카테고리",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PostMapping("/mogaks/{mogakId}/posts")
+    @PostMapping("/api/mogaks/{mogakId}/posts")
     public ResponseEntity<BaseResponse<CreatePostDto>> createPost(@PathVariable Long mogakId,
                                                     @RequestPart PostRequestDto.CreatePostDto request,
                                                     @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/,
@@ -68,7 +68,7 @@ public class PostController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/mogaks/{mogakId}/posts")
+    @GetMapping("/api/mogaks/{mogakId}/posts")
     public ResponseEntity<BaseResponse<Slice<GetPostDto>>> getPostList(@PathVariable Long mogakId,
                                                                        @RequestParam(value = "lastPostId") Long lastPostId,
                                                                        @RequestParam(value = "size") int size) {
@@ -85,7 +85,7 @@ public class PostController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 게시물",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/mogaks/posts/{postId}")
+    @GetMapping("/api/mogaks/posts/{postId}")
     public ResponseEntity<BaseResponse<PostDto>> getPostDetail(@PathVariable Long postId) {
         Post post= postService.findById(postId);
         List<String> imgUrls = postImgService.findNotThumbnailImg(post);
@@ -102,9 +102,9 @@ public class PostController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 게시물",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("/mogaks/posts/{postId}")
+    @PutMapping("/api/mogaks/posts/{postId}")
     public ResponseEntity<BaseResponse<UpdatePostDto>> updatePost(@PathVariable Long postId,
-                                                    @RequestBody PostRequestDto.UpdatePostDto request){
+                                                    @RequestBody PostRequestDto.UpdatePostDto request) {
         Post post = postService.update(postId, request);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toUpdatePostDto(post)));
     }
@@ -117,7 +117,7 @@ public class PostController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 회고록",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @DeleteMapping("/mogaks/posts/{postId}")
+    @DeleteMapping("/api/mogaks/posts/{postId}")
     public ResponseEntity<BaseResponse<DeletePostDto>> deletePost(@PathVariable Long postId) {
         Post post = postService.findById(postId);
         List<PostImg> postImgList = postImgService.findAllByPost(post);

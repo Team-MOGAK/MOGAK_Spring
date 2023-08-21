@@ -8,6 +8,10 @@ import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.service.UserService;
+
+import com.mogak.spring.service.AwsS3Service;
+import com.mogak.spring.service.UserService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -34,6 +39,8 @@ import static com.mogak.spring.web.dto.UserResponseDto.*;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
+    private final AwsS3Service awsS3Service;
+    private static String dirName = "profile";
 
     @Operation(summary = "닉네임 검증", description = "PathVariable로 입력받은 닉네임을 검증합니다",
             responses = {
@@ -59,8 +66,18 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PostMapping("/join")
-    public ResponseEntity<BaseResponse<ToCreateDto>> createUser(@RequestBody CreateUserDto request) {
-        User user = userService.create(request);
+    public ResponseEntity<BaseResponse<ToCreateDto>> createUser(@RequestPart CreateUserDto request, @RequestPart(required = false) MultipartFile multipartFile) {
+        UploadImageDto uploadImageDto;
+        if(multipartFile.isEmpty()) {
+            uploadImageDto = UploadImageDto.builder()
+                    .imgUrl(null)
+                    .imgName(null)
+                    .build();
+        }
+        else {
+            uploadImageDto = awsS3Service.uploadProfileImg(multipartFile,dirName);
+        }
+        User user = userService.create(request,uploadImageDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(UserConverter.toCreateDto(user)));
     }
 
@@ -106,10 +123,19 @@ public class UserController {
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
-//    @PutMapping("/profile/image")
-//    public ResponseEntity<Void> updateImage(@RequestBody UpdateImageDto imgDto, HttpServletRequest req) {
-//        userService.updateImg(imgDto, req);
-//        return ResponseEntity.status(HttpStatus.OK).build();
-//    }
+    //프로필 이미지 변경
+    @Operation(summary = "프로필사진 변경", description = "유저의 프로필 사진을 변경합니다",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "프로필 사진 변경 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
+    @PutMapping("/profile/image")
+    public ResponseEntity<Void> updateImage(@RequestPart MultipartFile multipartFile, HttpServletRequest req) {
+        String profileImgName = userService.getProfileImgName(req); //기존 프로필사진받아오기
+        UserRequestDto.UpdateImageDto updateImageDto = awsS3Service.updateProfileImg(multipartFile, profileImgName, dirName);
+        userService.updateImg(updateImageDto, req);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 
 }

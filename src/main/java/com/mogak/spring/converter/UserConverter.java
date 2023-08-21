@@ -9,14 +9,15 @@ import com.mogak.spring.web.dto.UserResponseDto;
 
 public class UserConverter {
 
-    public static User toUser(UserRequestDto.CreateUserDto response, Job job, Address address) {
+    public static User toUser(UserRequestDto.CreateUserDto response, Job job, Address address, String profileImgUrl, String profileImgName) {
         return User.builder()
                 .nickname(response.getNickname())
                 .job(job)
                 .address(address)
-                .profileImg(response.getProfileImg())
                 .email(response.getEmail())
                 .validation(Validation.ACTIVE.toString())
+                .profileImgUrl(profileImgUrl)
+                .profileImgName(profileImgName)
                 .build();
     }
 

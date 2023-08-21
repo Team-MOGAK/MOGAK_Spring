@@ -45,7 +45,7 @@ public class CommentController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 게시물, 존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PostMapping("/posts/{postId}/comments")
+    @PostMapping("/api/posts/{postId}/comments")
     public ResponseEntity<BaseResponse<CreateCommentDto>> createComment(@PathVariable Long postId,
                                                                         @RequestBody CommentRequestDto.CreateCommentDto request,
                                                                         HttpServletRequest req) {
@@ -61,7 +61,7 @@ public class CommentController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 회고록",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/posts/{postId}/comments")
+     @GetMapping("/api/posts/{postId}/comments")
     public ResponseEntity<BaseResponse<CommentListDto>> getCommentList(@PathVariable Long postId) {
         List<PostComment> commentList = postCommentService.findByPostId(postId);
         return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toCommentListDto(commentList)));
@@ -78,10 +78,10 @@ public class CommentController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 회고록",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("/posts/{postId}/comments/{commentId}")
+    @PutMapping("/api/posts/{postId}/comments/{commentId}")
     public ResponseEntity<BaseResponse<UpdateCommentDto>> updateComment(@PathVariable(name = "postId") Long postId,
-                                                          @PathVariable(name = "commentId") Long commentId,
-                                                          @RequestBody CommentRequestDto.UpdateCommentDto request) {
+                                                                        @PathVariable(name = "commentId") Long commentId,
+                                                                        @RequestBody CommentRequestDto.UpdateCommentDto request) {
         PostComment comment = postCommentService.update(request,postId,commentId);
         return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toUpdateCommentDto(comment)));
     }
@@ -97,7 +97,7 @@ public class CommentController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않은 게시물, 존재하지 않은 댓글",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @DeleteMapping("/posts/{postId}/comments/{commentId}")
+    @DeleteMapping("/api/posts/{postId}/comments/{commentId}")
     public ResponseEntity<BaseResponse<DeleteCommentDto>> deleteComment(@PathVariable(name = "postId") Long postId,
                                                                        @PathVariable(name = "commentId") Long commentId) {
         postCommentService.delete(postId,commentId);

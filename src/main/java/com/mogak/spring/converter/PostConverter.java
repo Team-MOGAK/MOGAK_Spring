@@ -51,6 +51,8 @@ public class PostConverter {
                 .commentId(post.getPostComments().stream()
                         .map(m -> m.getId())
                         .collect(Collectors.toList())) //일단 comment id로 조회하는 것으로 함
+                .likeCnt(post.getLikeCnt())
+                .commentCnt(post.getCommentCnt())
                 .build();
     }
 

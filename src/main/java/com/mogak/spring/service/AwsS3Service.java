@@ -6,9 +6,11 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.mogak.spring.domain.post.PostImg;
+import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.PostImgRepository;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostImgResponseDto;
+import com.mogak.spring.web.dto.UserRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import marvin.image.MarvinImage;
@@ -111,6 +113,28 @@ public class AwsS3Service {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Fail to generate thumbnail");
         }
     }
+    //(임시)프로필 이미지 업로드
+    public UserRequestDto.UploadImageDto uploadProfileImg(MultipartFile request, String dirName){
+        if(request.isEmpty()){
+            throw new IllegalArgumentException("이미지가 존재하지 않습니다");
+        }
+        String imgName = createImgName(request.getOriginalFilename(), dirName);
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentLength(request.getSize());
+        objectMetadata.setContentType(request.getContentType());
+        //s3 업로드 - multipartfile 형식으로 업로드 x
+        try(InputStream inputStream = request.getInputStream()) {
+            amazonS3Client.putObject(new PutObjectRequest(bucket, imgName, inputStream, objectMetadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead));
+            log.info("s3 업로드 성공!");
+        } catch(IOException e){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
+        }
+        return UserRequestDto.UploadImageDto.builder()
+                .imgName(imgName)
+                .imgUrl(amazonS3Client.getUrl(bucket, imgName).toString())
+                .build();
+    }
     //이미지포맷 추출
     private String createImgFormat(MultipartFile multipartFile){
         String format = multipartFile.getContentType().substring(multipartFile.getContentType().lastIndexOf("/") + 1);
@@ -126,6 +150,33 @@ public class AwsS3Service {
             String imgName = postImg.getImgName();
             amazonS3Client.deleteObject(new DeleteObjectRequest(bucket, imgName));
         }
+    }
+
+    //프로필 이미지 수정
+    public UserRequestDto.UpdateImageDto updateProfileImg(MultipartFile request, String profileImgName, String dirName){
+        if(request.isEmpty()){
+            throw new IllegalArgumentException("업로드할 이미지가 없습니다");
+        }
+        if(profileImgName != null){
+            amazonS3Client.deleteObject(new DeleteObjectRequest(bucket, profileImgName)); //기존 프로필 이미지 삭제
+        }
+        //프로필 사진 업로드
+        String imgName = createImgName(request.getOriginalFilename(), dirName);
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentLength(request.getSize());
+        objectMetadata.setContentType(request.getContentType());
+        //s3 업로드 - multipartfile 형식으로 업로드 x
+        try(InputStream inputStream = request.getInputStream()) {
+            amazonS3Client.putObject(new PutObjectRequest(bucket, imgName, inputStream, objectMetadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead));
+            log.info("s3 업로드 성공!");
+        } catch(IOException e){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
+        }
+        return UserRequestDto.UpdateImageDto.builder()
+                .imgName(imgName)
+                .imgUrl(amazonS3Client.getUrl(bucket, imgName).toString())
+                .build();
     }
     //파일 업로드할 시 파일명 난수화를 위해 uuid 생성
     private String createImgName(String imgName, String dirName){

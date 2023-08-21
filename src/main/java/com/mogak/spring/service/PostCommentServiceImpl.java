@@ -41,6 +41,7 @@ public class PostCommentServiceImpl implements PostCommentService {
         }
         PostComment comment = CommentConverter.toComment(request,post, user);
         post.putComment(comment);
+        post.addCommentCnt();
         return postCommentRepository.save(comment);
     }
 
@@ -76,6 +77,7 @@ public class PostCommentServiceImpl implements PostCommentService {
     public void delete(Long postId, Long commentId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
+        post.subtractPostLike();
         PostComment postComment = postCommentRepository.findById(commentId)
                 .orElseThrow(() -> new PostCommentException(ErrorCode.NOT_EXIST_COMMENT));
         postCommentRepository.deleteByPostAndId(post, commentId);
