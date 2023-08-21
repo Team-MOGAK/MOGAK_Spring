@@ -10,7 +10,6 @@ import java.util.Optional;
 public interface UserService {
 
     User create(UserRequestDto.CreateUserDto request, UserRequestDto.UploadImageDto uploadImageDto);
-    Boolean findUserByNickname(String nickname);
     Boolean verifyNickname(String request);
   
     HttpHeaders getHeader(User user);
