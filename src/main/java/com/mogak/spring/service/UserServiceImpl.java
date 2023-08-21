@@ -35,10 +35,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public User create(CreateUserDto response) {
         inputVerify(response);
-        Job job = jobRepository.findJobByName(response.getJob())
-                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
-        Address address = addressRepository.findAddressByName(response.getAddress())
-                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_ADDRESS));
+        Job job = jobRepository.findJobByName(response.getJob()).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
+        Address address = addressRepository.findAddressByName(response.getAddress()).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_ADDRESS));
         return userRepository.save(UserConverter.toUser(response, job, address));
     }
     @Override
@@ -96,7 +94,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public HttpHeaders getHeader(User user) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + jwtTokenProvider.createJwtToken(user.getId().toString()));
+        headers.set("Authorization", jwtTokenProvider.createJwtToken(user.getId().toString()));
         return headers;
     }
 

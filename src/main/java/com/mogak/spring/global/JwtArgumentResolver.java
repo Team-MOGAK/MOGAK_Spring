@@ -1,6 +1,5 @@
 package com.mogak.spring.global;
 
-import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
