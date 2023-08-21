@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Max;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,6 +76,9 @@ public class PostServiceImpl implements PostService {
                 new MogakException(ErrorCode.NOT_EXIST_MOGAK)
         );
         Pageable pageable = Pageable.ofSize(size);
+        if(lastPostId == null){
+
+        }
         Slice<Post> posts = postRepository.findAllPosts(lastPostId != null ? lastPostId : Long.MAX_VALUE, mogakId, pageable);
         return posts;
     }
@@ -137,6 +141,14 @@ public class PostServiceImpl implements PostService {
     }
 
     //전체 네트워킹 조회
+    public Slice<Post> getNetworkPosts(Long lastPostId, int size, String sort, List<String> categoryList, HttpServletRequest req ){
+        Long userId = Long.valueOf(req.getParameter("userId"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        String address = user.getAddress().getName();
+        String job = user.getJob().getName();
+
+
+    }
 
 
 }

@@ -1,6 +1,7 @@
 package com.mogak.spring.web.controller;
 
 
+import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
@@ -67,9 +68,14 @@ public class NetworkController {
     }
 
     //네트워킹 전체조회
-    /*
+
     @GetMapping("/api/posts")
-    public ResponseEntity<Slice<PostResponseDto.GetPostDto>> getALlPosts(@RequestParam(value="lastPostId") Long lastPostId, @RequestParam(value = "category", defaultValue="") String category, ,HttpServletRequest req)
-     */
+    public ResponseEntity<Slice<PostResponseDto.GetPostDto>> getALlPosts(@RequestParam(value="lastPostId") Long lastPostId, @RequestParam(value="size") int size,
+                                                                         @RequestParam(value = "sort", defaultValue = "createdAt", required = false) String sort,
+                                                                         @RequestParam(value = "category", defaultValue="all", required = false) List<String> categoryList, HttpServletRequest req){
+        Slice<Post> posts =
+
+    }
+
 
 }

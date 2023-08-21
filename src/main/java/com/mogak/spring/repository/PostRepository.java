@@ -19,6 +19,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("select p from Post p join p.mogak m on m.id = :mogakId where p.id < :postId order by p.id desc")
     Slice<Post> findAllPosts(@Param("postId") Long lastPostId, @Param("mogakId")Long mogakId, Pageable pageable);
 
+    Post findTopbyOrderById
     void deleteAllByMogak(Mogak mogak);
 
     List<Post> findAllByMogak(Mogak mogak);
@@ -28,4 +29,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE f.fromUser = :user " +
             "ORDER BY p.id DESC")
     List<Post> findPacemakerPostsByUser(@Param("user") User user, Pageable pageable);
+
+    //네트워킹 전체 조회
+    @Query("SELECT p from Post p join p.user u on u.address = :address and u.job = :job where p.id < :postId")
+    Slice<Post> findNetworkPosts(@Param("postId") Long lastPostId, @Param("address") String address, @Param("job") String job, Pageable pageable);
 }

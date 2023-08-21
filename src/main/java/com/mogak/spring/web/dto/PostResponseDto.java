@@ -93,4 +93,13 @@ public class PostResponseDto {
         private int viewCnt;
     }
 
+    //전체 네트워크
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class getAllNetworkDto {
+
+    }
+
 }

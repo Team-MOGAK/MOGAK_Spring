@@ -68,7 +68,7 @@ public class PostController {
             })
     @GetMapping("/api/mogaks/{mogakId}/posts")
     public ResponseEntity<Slice<PostResponseDto.GetPostDto>> getPostList(@PathVariable Long mogakId,
-                                                                         @RequestParam(value = "lastPostId") Long lastPostId,
+                                                                         @RequestParam(value = "lastPostId", required = false) Long lastPostId,
                                                                          @RequestParam(value = "size") int size){
         Slice<Post> posts = postService.getAllPosts(lastPostId, mogakId, size);
         //다음페이지 존재 여부 전달 필요
