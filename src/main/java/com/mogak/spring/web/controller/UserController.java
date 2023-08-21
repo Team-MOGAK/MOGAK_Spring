@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -83,6 +84,7 @@ public class UserController {
     }
 
     @Operation(summary = "닉네임 변경", description = "유저의 닉네임을 변경합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "닉네임 변경 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
@@ -97,6 +99,7 @@ public class UserController {
     }
 
     @Operation(summary = "직무 변경", description = "유저의 직무를 변경합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "직무 변경 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저, 존재하지 않는 직업",

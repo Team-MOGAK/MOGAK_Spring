@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -49,8 +50,8 @@ public class JogakController {
      * 당일 조각 조회 API
      * */
     @Operation(summary = "당일 조각 조회", description = "당일 조각을 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
-                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
                     @Parameter(name = "userId", description = "유저 ID")
             },
             responses = {

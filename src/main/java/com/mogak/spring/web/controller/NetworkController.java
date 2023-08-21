@@ -8,9 +8,12 @@ import com.mogak.spring.web.dto.PostLikeRequestDto;
 import com.mogak.spring.web.dto.PostResponseDto.NetworkPostDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +34,9 @@ public class NetworkController {
     private final PostService postService;
 
     //좋아요 생성&삭제
-    @Operation(summary = "좋아요 생성/삭제", description = "게시물에 좋아요를 생성/삭제합니다",
-            parameters = @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
+    @Operation(summary = "좋아요 생성/삭제",
+            description = "게시물에 좋아요를 생성/삭제합니다",
+            security = {@SecurityRequirement(name = "Bearer Authentication")},
             responses = {
                     @ApiResponse(responseCode = "200", description = "좋아요 생성/삭제"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 회고록, 존재하지 않는 유저",
@@ -45,9 +49,10 @@ public class NetworkController {
         return ResponseEntity.ok(message);
     }
 
-    @Operation(summary = "페이스 메이커 게시물 조회", description = "팔로우 중인 페이스 메이커의 게시물을 페이징 조회 합니다",
+    @Operation(summary = "페이스 메이커 게시물 조회",
+            description = "팔로우 중인 페이스 메이커의 게시물을 페이징 조회 합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
-                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
                     @Parameter(name = "cursor", description = "페이징 커서(시작점)"),
                     @Parameter(name = "size", description = "페이징 게시물 개수")
             },

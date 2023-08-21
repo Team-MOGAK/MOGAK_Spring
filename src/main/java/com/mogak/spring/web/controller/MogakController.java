@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ public class MogakController {
      * 모각 생성 API
      * */
     @Operation(summary = "모각 생성", description = "입력값을 이용해 모각을 생성합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "201", description = "모각 생성 성공"),
                     @ApiResponse(responseCode = "400", description = "기타 카테고리 X, 시작,끝 날짜 역전, 잘못 입력된 시작 날짜",
@@ -86,8 +88,8 @@ public class MogakController {
      * size => 조회할 데이터 개수
      * */
     @Operation(summary = "모각 조회", description = "입력값을 이용해 모각을 페이징 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
-                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
                     @Parameter(name = "cursor", description = "페이징 커서"),
                     @Parameter(name = "size", description = "페이징 개수")
             },
@@ -110,8 +112,7 @@ public class MogakController {
      * */
     @Operation(summary = "모각 삭제", description = "모각을 삭제합니다",
             parameters = {
-                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
-                    @Parameter(name = "mogakId", description = "모각 ID"),
+                    @Parameter(name = "mogakId", description = "모각 ID")
             },
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 삭제 성공"),

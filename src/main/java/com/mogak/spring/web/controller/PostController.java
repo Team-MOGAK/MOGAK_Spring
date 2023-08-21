@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
@@ -36,6 +37,7 @@ public class PostController {
 
     //create
     @Operation(summary = "회고록 생성", description = "회고록을 생성합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = @Parameter(name = "mogakId", description = "모각 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "회고록 생성"),
@@ -48,8 +50,7 @@ public class PostController {
     public ResponseEntity<PostResponseDto.CreatePostDto> createPost(@PathVariable Long mogakId,
                                                                     @RequestPart PostRequestDto.CreatePostDto request,
                                                                     @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/,
-                                                                    HttpServletRequest req){
-        //에러핸들링 필요
+                                                                    HttpServletRequest req) {
         List<PostImgRequestDto.CreatePostImgDto> postImgDtoList = awsS3Service.uploadImg(multipartFile, dirName);
         Post post = postService.create(request, postImgDtoList, mogakId, req);
         return ResponseEntity.ok(PostConverter.toCreatePostDto(post));

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,8 +29,8 @@ public class FollowController {
     private final FollowService followService;
 
     @Operation(summary = "팔로우", description = "원하는 유저를 팔로우 합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
-                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
                     @Parameter(name = "nickname", description = "팔로우 할 유저 닉네임")
             },
             responses = {
@@ -45,8 +46,8 @@ public class FollowController {
     }
 
     @Operation(summary = "언팔로우", description = "팔로우 했던 유저를 언팔로우 합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
-                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
                     @Parameter(name = "nickname", description = "팔로우 할 유저 닉네임")
             },
             responses = {
