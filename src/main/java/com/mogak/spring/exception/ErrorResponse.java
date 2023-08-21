@@ -12,14 +12,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @JsonPropertyOrder({"time", "status", "code", "message", "result"})
 public class ErrorResponse {
-    private final LocalDateTime now = LocalDateTime.now();
+    private final LocalDateTime time = LocalDateTime.now();
     private int status;
     private String code;
     private String message;
 
     public ErrorResponse(ErrorCode errorCode) {
         this.status = errorCode.getStatus().value();
-        this.code = errorCode.name();
+        this.code = errorCode.getCode();
         this.message = errorCode.getMessage();
     }
 
@@ -32,7 +32,7 @@ public class ErrorResponse {
     public static ErrorResponse of(ErrorCode e) {
         return new ErrorResponse(
                 e.getStatus().value(),
-                e.name(),
+                e.getCode(),
                 e.getMessage());
     }
 }
