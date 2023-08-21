@@ -2,6 +2,7 @@ package com.mogak.spring.web.controller;
 
 
 import com.mogak.spring.exception.ErrorResponse;
+import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.PostLikeRequestDto;
@@ -15,7 +16,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,9 +42,9 @@ public class NetworkController {
                     @ApiResponse(responseCode = "500", description = "이미 좋아요를 누른 케이스 Or 서버 오류"),
             })
     @PostMapping("/api/posts/like")
-    public ResponseEntity<String> updateLike(@RequestBody PostLikeRequestDto.LikeDto request, HttpServletRequest req){
+    public ResponseEntity<BaseResponse<String>> updateLike(@RequestBody PostLikeRequestDto.LikeDto request, HttpServletRequest req){
         String message = postLikeService.updateLike(request, req);
-        return ResponseEntity.ok(message);
+        return ResponseEntity.ok(new BaseResponse<>(message));
     }
 
     @Operation(summary = "페이스 메이커 게시물 조회",
@@ -61,10 +61,10 @@ public class NetworkController {
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
     @GetMapping("/api/posts/pacemakers")
-    public ResponseEntity<List<NetworkPostDto>> getPacemakerPosts(@RequestParam int cursor,
+    public ResponseEntity<BaseResponse<List<NetworkPostDto>>> getPacemakerPosts(@RequestParam int cursor,
                                                                   @RequestParam int size,
                                                                   HttpServletRequest req) {
-        return ResponseEntity.ok(postService.getPacemakerPosts(cursor, size, req));
+        return ResponseEntity.ok(new BaseResponse<>(postService.getPacemakerPosts(cursor, size, req)));
     }
 
 }

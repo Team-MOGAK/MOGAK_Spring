@@ -7,7 +7,6 @@ import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.service.UserService;
-import com.mogak.spring.web.dto.UserResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 
 import static com.mogak.spring.web.dto.UserRequestDto.*;
+import static com.mogak.spring.web.dto.UserResponseDto.*;
 
 @Tag(name = "유저 API", description = "유저 API 명세서")
 @RequiredArgsConstructor
@@ -58,9 +58,9 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PostMapping("/join")
-    public ResponseEntity<UserResponseDto.ToCreateDto> createUser(@RequestBody CreateUserDto request) {
+    public ResponseEntity<BaseResponse<ToCreateDto>> createUser(@RequestBody CreateUserDto request) {
         User user = userService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserConverter.toCreateDto(user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(UserConverter.toCreateDto(user)));
     }
 
     @Operation(summary = "(임시)로그인", description = "입력한 이메일로 로그인을 시도합니다",

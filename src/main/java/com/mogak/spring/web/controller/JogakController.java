@@ -6,7 +6,8 @@ import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.service.JogakService;
-import com.mogak.spring.web.dto.JogakResponseDto;
+import com.mogak.spring.web.dto.JogakResponseDto.CreateJogakDto;
+import com.mogak.spring.web.dto.JogakResponseDto.GetJogakListDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+
+import static com.mogak.spring.web.dto.JogakResponseDto.*;
 
 @Tag(name = "조각 API", description = "조각 API 명세서")
 @RequiredArgsConstructor
@@ -39,10 +42,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/{mogakId}")
-    public ResponseEntity<Object> create(@PathVariable Long mogakId) {
+    public ResponseEntity<BaseResponse<CreateJogakDto>> create(@PathVariable Long mogakId) {
         Jogak jogak = jogakService.createJogak(mogakId);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(JogakConverter.toCreateJogakResponseDto(jogak));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(JogakConverter.toCreateJogakResponseDto(jogak)));
     }
 
     @Operation(summary = "당일 조각 조회", description = "당일 조각을 조회합니다",
@@ -56,9 +58,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("")
-    public ResponseEntity<JogakResponseDto.GetJogakListDto> getDailyJogaks(HttpServletRequest req) {
+    public ResponseEntity<BaseResponse<GetJogakListDto>> getDailyJogaks(HttpServletRequest req) {
         List<Jogak> jogakList = jogakService.getDailyJogaks(req);
-        return ResponseEntity.ok(JogakConverter.toGetJogakListResponseDto(jogakList));
+        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetJogakListResponseDto(jogakList)));
     }
 
     @Operation(summary = "조각 시작", description = "조각을 시작합니다",
@@ -73,9 +75,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/{jogakId}/start")
-    public ResponseEntity<JogakResponseDto.startJogakDto> startJogak(@PathVariable Long jogakId) {
+    public ResponseEntity<BaseResponse<startJogakDto>> startJogak(@PathVariable Long jogakId) {
         Jogak jogak = jogakService.startJogak(jogakId);
-        return ResponseEntity.ok(JogakConverter.toGetStartJogakDto(jogak));
+        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetStartJogakDto(jogak)));
     }
 
     @Operation(summary = "조각 종료", description = "조각을 종료합니다",
@@ -90,9 +92,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/{jogakId}/end")
-    public ResponseEntity<JogakResponseDto.endJogakDto> endJogak(@PathVariable Long jogakId) {
+    public ResponseEntity<BaseResponse<endJogakDto>> endJogak(@PathVariable Long jogakId) {
         Jogak jogak = jogakService.endJogak(jogakId);
-        return ResponseEntity.ok(JogakConverter.toEndJogakDto(jogak));
+        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toEndJogakDto(jogak)));
     }
 
     @Operation(summary = "(임시)조각 삭제", description = "조각을 삭제합니다",

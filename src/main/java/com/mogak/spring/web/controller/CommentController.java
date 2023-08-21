@@ -3,9 +3,12 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.exception.ErrorResponse;
+import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.service.PostCommentServiceImpl;
 import com.mogak.spring.web.dto.CommentRequestDto;
-import com.mogak.spring.web.dto.CommentResponseDto;
+import com.mogak.spring.web.dto.CommentResponseDto.CommentListDto;
+import com.mogak.spring.web.dto.CommentResponseDto.CreateCommentDto;
+import com.mogak.spring.web.dto.CommentResponseDto.UpdateCommentDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+
+import static com.mogak.spring.web.dto.CommentResponseDto.*;
 
 @Tag(name = "댓글 API", description = "댓글 API 명세서")
 @RestController
@@ -41,11 +46,11 @@ public class CommentController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/posts/{postId}/comments")
-    public ResponseEntity<CommentResponseDto.CreateCommentDto> createComment(@PathVariable Long postId,
-                                                                             @RequestBody CommentRequestDto.CreateCommentDto request,
-                                                                             HttpServletRequest req) {
+    public ResponseEntity<BaseResponse<CreateCommentDto>> createComment(@PathVariable Long postId,
+                                                                        @RequestBody CommentRequestDto.CreateCommentDto request,
+                                                                        HttpServletRequest req) {
         PostComment comment = postCommentService.create(request, postId, req);
-        return ResponseEntity.ok(CommentConverter.toCreateCommentDto(comment));
+        return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toCreateCommentDto(comment)));
     }
 
     //read
@@ -57,9 +62,9 @@ public class CommentController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/posts/{postId}/comments")
-    public ResponseEntity<CommentResponseDto.CommentListDto> getCommentList(@PathVariable Long postId) {
+    public ResponseEntity<BaseResponse<CommentListDto>> getCommentList(@PathVariable Long postId) {
         List<PostComment> commentList = postCommentService.findByPostId(postId);
-        return ResponseEntity.ok(CommentConverter.toCommentListDto(commentList));
+        return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toCommentListDto(commentList)));
     }
 
     //update
@@ -74,11 +79,11 @@ public class CommentController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/posts/{postId}/comments/{commentId}")
-    public ResponseEntity<CommentResponseDto.UpdateCommentDto> updateComment(@PathVariable(name = "postId") Long postId,
-                                                                             @PathVariable(name = "commentId") Long commentId,
-                                                                             @RequestBody CommentRequestDto.UpdateCommentDto request) {
+    public ResponseEntity<BaseResponse<UpdateCommentDto>> updateComment(@PathVariable(name = "postId") Long postId,
+                                                          @PathVariable(name = "commentId") Long commentId,
+                                                          @RequestBody CommentRequestDto.UpdateCommentDto request) {
         PostComment comment = postCommentService.update(request,postId,commentId);
-        return ResponseEntity.ok(CommentConverter.toUpdateCommentDto(comment));
+        return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toUpdateCommentDto(comment)));
     }
 
     //delete
@@ -93,9 +98,9 @@ public class CommentController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @DeleteMapping("/posts/{postId}/comments/{commentId}")
-    public ResponseEntity<CommentResponseDto.DeleteCommentDto> deleteComment(@PathVariable(name = "postId") Long postId,
-                                                                             @PathVariable(name = "commentId") Long commentId) {
+    public ResponseEntity<BaseResponse<DeleteCommentDto>> deleteComment(@PathVariable(name = "postId") Long postId,
+                                                                       @PathVariable(name = "commentId") Long commentId) {
         postCommentService.delete(postId,commentId);
-        return ResponseEntity.ok(CommentConverter.toDeleteCommentDto());
+        return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toDeleteCommentDto()));
     }
 }
