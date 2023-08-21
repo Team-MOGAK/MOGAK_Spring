@@ -4,6 +4,7 @@ import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.CommonException;
 import com.mogak.spring.exception.ErrorResponse;
+import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.service.UserService;
@@ -42,7 +43,7 @@ public class UserController {
             })
     @PostMapping("/{nickname}/verify")
     public ResponseEntity<BaseResponse<ErrorCode>> verifyNickname(@PathVariable String nickname) {
-        if (userService.verifyNickname(nickname) && userService.findUserByNickname(nickname)) {
+        if (userService.verifyNickname(nickname)) {
             throw new CommonException(ErrorCode.NOT_VALID_NICKNAME);
         } else {
             return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
@@ -73,7 +74,7 @@ public class UserController {
             })
     @PostMapping("/login/{email}")
     public ResponseEntity<BaseResponse<ErrorCode>> login(@PathVariable String email) {
-        User user = userService.findUserByEmail(email);
+        User user = userService.getUserByEmail(email);
         return ResponseEntity.ok().headers(userService.getHeader(user)).body(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 

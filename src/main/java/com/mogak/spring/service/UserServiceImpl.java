@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Optional;
+
 import static com.mogak.spring.web.dto.UserRequestDto.*;
 
 @RequiredArgsConstructor
@@ -39,12 +41,9 @@ public class UserServiceImpl implements UserService {
         Address address = addressRepository.findAddressByName(response.getAddress()).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_ADDRESS));
         return userRepository.save(UserConverter.toUser(response, job, address));
     }
-    @Override
-    public Boolean findUserByNickname(String nickname) {
-        if (userRepository.findOneByNickname(nickname).isPresent()) {
-            throw new UserException(ErrorCode.ALREADY_EXIST_USER);
-        }
-        return false;
+
+    private Optional<User> findUserByNickname(String nickname) {
+        return userRepository.findOneByNickname(nickname);
     }
 
     protected void inputVerify(CreateUserDto response) {
@@ -52,20 +51,30 @@ public class UserServiceImpl implements UserService {
             throw new UserException(ErrorCode.NOT_VALID_NICKNAME);
         if (!Regex.EMAIL_REGEX.matchRegex(response.getEmail(), "EMAIL"))
             throw new UserException(ErrorCode.NOT_VALID_EMAIL);
-        findUserByNickname(response.getNickname());
+        if (findUserByNickname(response.getNickname()).isPresent())
+            throw new UserException(ErrorCode.ALREADY_EXIST_USER);
+        if (findUserByEmail(response.getEmail()).isPresent()) {
+            throw new UserException(ErrorCode.ALREADY_EXIST_USER);
+        }
     }
 
     public Boolean verifyNickname(String nickname) {
         if (!Regex.USER_NICKNAME_REGEX.matchRegex(nickname, "NICKNAME"))
             throw new UserException(ErrorCode.NOT_VALID_NICKNAME);
+        if (findUserByNickname(nickname).isPresent()) {
+            throw new UserException(ErrorCode.ALREADY_EXIST_USER);
+        };
         return true;
     }
 
     @Override
-    public User findUserByEmail(String email) {
+    public User getUserByEmail(String email) {
+        return findUserByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    }
+
+    private Optional<User> findUserByEmail(String email) {
         verifyEmail(email);
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        return userRepository.findByEmail(email);
     }
 
     @Transactional
@@ -85,6 +94,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateJob(job);
     }
+
 
     protected void verifyEmail(String email) {
         if (!Regex.EMAIL_REGEX.matchRegex(email, "EMAIL"))
