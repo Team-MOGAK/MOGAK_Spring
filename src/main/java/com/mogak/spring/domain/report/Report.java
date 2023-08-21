@@ -1,6 +1,6 @@
 package com.mogak.spring.domain.report;
 
-import com.mogak.spring.domain.base.BaseEntity;
+import com.mogak.spring.global.BaseEntity;
 import com.mogak.spring.domain.user.User;
 import lombok.*;
 

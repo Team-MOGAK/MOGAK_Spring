@@ -3,13 +3,17 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.exception.ErrorResponse;
+import com.mogak.spring.global.BaseResponse;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.service.JogakService;
-import com.mogak.spring.web.dto.JogakResponseDto;
+import com.mogak.spring.web.dto.JogakResponseDto.CreateJogakDto;
+import com.mogak.spring.web.dto.JogakResponseDto.GetJogakListDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+import static com.mogak.spring.web.dto.JogakResponseDto.*;
+
 @Tag(name = "조각 API", description = "조각 API 명세서")
 @RequiredArgsConstructor
 @RestController
@@ -26,9 +32,6 @@ import java.util.List;
 public class JogakController {
     private final JogakService jogakService;
 
-    /**
-     * 임시 조각 생성 API
-     * */
     @Operation(summary = "(임시)조각 생성", description = "모각에 대한 조각을 생성합니다",
             parameters = @Parameter(name = "mogakId", description = "모각 ID"),
             responses = {
@@ -39,18 +42,14 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/{mogakId}")
-    public ResponseEntity<Object> create(@PathVariable Long mogakId) {
+    public ResponseEntity<BaseResponse<CreateJogakDto>> create(@PathVariable Long mogakId) {
         Jogak jogak = jogakService.createJogak(mogakId);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(JogakConverter.toCreateJogakResponseDto(jogak));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(JogakConverter.toCreateJogakResponseDto(jogak)));
     }
 
-    /**
-     * 당일 조각 조회 API
-     * */
     @Operation(summary = "당일 조각 조회", description = "당일 조각을 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
-                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
                     @Parameter(name = "userId", description = "유저 ID")
             },
             responses = {
@@ -59,15 +58,11 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("")
-    public ResponseEntity<JogakResponseDto.GetJogakListDto> getDailyJogaks(HttpServletRequest req) {
+    public ResponseEntity<BaseResponse<GetJogakListDto>> getDailyJogaks(HttpServletRequest req) {
         List<Jogak> jogakList = jogakService.getDailyJogaks(req);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(JogakConverter.toGetJogakListResponseDto(jogakList));
+        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetJogakListResponseDto(jogakList)));
     }
 
-    /**
-     *  조각 시작 API
-     * */
     @Operation(summary = "조각 시작", description = "조각을 시작합니다",
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),
             responses = {
@@ -80,15 +75,11 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/{jogakId}/start")
-    public ResponseEntity<JogakResponseDto.startJogakDto> startJogak(@PathVariable Long jogakId) {
+    public ResponseEntity<BaseResponse<startJogakDto>> startJogak(@PathVariable Long jogakId) {
         Jogak jogak = jogakService.startJogak(jogakId);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(JogakConverter.toGetStartJogakDto(jogak));
+        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetStartJogakDto(jogak)));
     }
 
-    /**
-     *  조각 종료 API
-     * */
     @Operation(summary = "조각 종료", description = "조각을 종료합니다",
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),
             responses = {
@@ -101,15 +92,11 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/{jogakId}/end")
-    public ResponseEntity<JogakResponseDto.endJogakDto> endJogak(@PathVariable Long jogakId) {
+    public ResponseEntity<BaseResponse<endJogakDto>> endJogak(@PathVariable Long jogakId) {
         Jogak jogak = jogakService.endJogak(jogakId);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(JogakConverter.toEndJogakDto(jogak));
+        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toEndJogakDto(jogak)));
     }
 
-    /**
-     * 임시 조각 삭제 API
-     * */
     @Operation(summary = "(임시)조각 삭제", description = "조각을 삭제합니다",
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),
             responses = {
@@ -118,9 +105,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @DeleteMapping("/{jogakId}")
-    public ResponseEntity<Void> deleteJogak(@PathVariable Long jogakId) {
+    public ResponseEntity<BaseResponse<ErrorCode>> deleteJogak(@PathVariable Long jogakId) {
         jogakService.deleteJogak(jogakId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
 }

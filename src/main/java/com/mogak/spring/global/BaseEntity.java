@@ -1,4 +1,4 @@
-package com.mogak.spring.domain.base;
+package com.mogak.spring.global;
 
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
