@@ -12,6 +12,7 @@ import com.mogak.spring.service.UserService;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.UserService;
 
+import com.mogak.spring.web.dto.UserRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
