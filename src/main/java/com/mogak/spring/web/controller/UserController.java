@@ -51,11 +51,9 @@ public class UserController {
             })
     @PostMapping("/{nickname}/verify")
     public ResponseEntity<BaseResponse<ErrorCode>> verifyNickname(@PathVariable String nickname) {
-        if (userService.verifyNickname(nickname)) {
-            throw new CommonException(ErrorCode.NOT_VALID_NICKNAME);
-        } else {
-            return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
-        }
+        userService.verifyNickname(nickname);
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
+
     }
 
     @Operation(summary = "(임시)계정 생성", description = "계정 생성을 한다",
