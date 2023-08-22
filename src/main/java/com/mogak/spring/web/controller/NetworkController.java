@@ -1,6 +1,7 @@
 package com.mogak.spring.web.controller;
 
 
+import com.mogak.spring.converter.PostConverter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.service.PostLikeService;
@@ -68,13 +69,24 @@ public class NetworkController {
     }
 
     //네트워킹 전체조회
-
+    @Operation(summary = "네트워킹 게시물 조회", description = "네트워킹 게시물을 조건에 맞게 페이징 조회 합니다",
+            parameters = {
+                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
+                    @Parameter(name = "page", description = "page 수"),
+                    @Parameter(name = "size", description = "페이징 게시물 개수(한 페이지에 들어갈 게시물 개수)")
+            },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "게시물 조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "서버 오류"),
+            })
     @GetMapping("/api/posts")
-    public ResponseEntity<Slice<PostResponseDto.GetPostDto>> getALlPosts(@RequestParam(value="lastPostId") Long lastPostId, @RequestParam(value="size") int size,
-                                                                         @RequestParam(value = "sort", defaultValue = "createdAt", required = false) String sort,
-                                                                         @RequestParam(value = "category", defaultValue="all", required = false) List<String> categoryList, HttpServletRequest req){
-        Slice<Post> posts =
-
+    public ResponseEntity<Slice<PostResponseDto.GetAllNetworkDto>> getALlPosts(@RequestParam(value="page", defaultValue = "0", required = false) int page, @RequestParam(value="size") int size,
+                                                                         @RequestParam(value = "sort", defaultValue = "createdAt", required = false) String sort, @RequestParam(value = "address", required = false) String address,
+                                                                         /*@RequestParam(value = "category", defaultValue="all", required = false) List<String> categoryList,*/ HttpServletRequest req){
+        Slice<Post> posts = postService.getNetworkPosts(page, size, sort, address,req);
+        return ResponseEntity.ok(PostConverter.toNetworkPagingDto(posts));
     }
 
 

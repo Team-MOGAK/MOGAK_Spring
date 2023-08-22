@@ -12,9 +12,10 @@ import java.util.List;
 public interface PostService {
 
     Post create(PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList,/*User user*/ Long mogakId, HttpServletRequest req);
-    Slice<Post> getAllPosts(Long cursor, Long mogakId, int size);
+    Slice<Post> getAllPosts(int page, Long mogakId, int size);
     Post findById(Long postId);
     Post update(Long postId, PostRequestDto.UpdatePostDto request);
     void delete(Long postId);
     List<PostResponseDto.NetworkPostDto> getPacemakerPosts(int cursor, int size, HttpServletRequest req);
+    Slice<Post> getNetworkPosts(int page, int size, String sort, String address, HttpServletRequest req);
 }
