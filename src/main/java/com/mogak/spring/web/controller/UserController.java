@@ -2,15 +2,22 @@ package com.mogak.spring.web.controller;
 
 import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.CommonException;
 import com.mogak.spring.exception.ErrorResponse;
+import com.mogak.spring.exception.UserException;
+import com.mogak.spring.global.BaseResponse;
+import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.service.UserService;
+
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.UserService;
+
 import com.mogak.spring.web.dto.UserRequestDto;
-import com.mogak.spring.web.dto.UserResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 
 import static com.mogak.spring.web.dto.UserRequestDto.*;
+import static com.mogak.spring.web.dto.UserResponseDto.*;
 
 @Tag(name = "유저 API", description = "유저 API 명세서")
 @RequiredArgsConstructor
@@ -34,9 +42,7 @@ public class UserController {
     private final UserService userService;
     private final AwsS3Service awsS3Service;
     private static String dirName = "profile";
-    /**
-     * 닉네임 검증 API
-     */
+
     @Operation(summary = "닉네임 검증", description = "PathVariable로 입력받은 닉네임을 검증합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "사용 가능한 닉네임"),
@@ -44,17 +50,14 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/{nickname}/verify")
-    public ResponseEntity<Object> verifyNickname(@PathVariable String nickname) {
-        if (userService.verifyNickname(nickname) && userService.findUserByNickname(nickname)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    public ResponseEntity<BaseResponse<ErrorCode>> verifyNickname(@PathVariable String nickname) {
+        if (userService.verifyNickname(nickname)) {
+            throw new CommonException(ErrorCode.NOT_VALID_NICKNAME);
         } else {
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
         }
     }
 
-    /**
-     * 임시 계정 생성 API
-     */
     @Operation(summary = "(임시)계정 생성", description = "계정 생성을 한다",
             responses = {
                     @ApiResponse(responseCode = "201", description = "계정 생성 완료"),
@@ -64,25 +67,22 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PostMapping("/join")
-    public ResponseEntity<UserResponseDto.ToCreateDto> createUser(@RequestPart CreateUserDto request, @RequestPart(required = false) MultipartFile multipartFile) {
+    public ResponseEntity<BaseResponse<ToCreateDto>> createUser(@RequestPart CreateUserDto request, @RequestPart(required = false) MultipartFile multipartFile) {
         UploadImageDto uploadImageDto;
-        if(multipartFile.isEmpty()){
+        if(multipartFile.isEmpty()) {
             uploadImageDto = UploadImageDto.builder()
                     .imgUrl(null)
                     .imgName(null)
                     .build();
         }
-        else{
+        else {
             uploadImageDto = awsS3Service.uploadProfileImg(multipartFile,dirName);
         }
         User user = userService.create(request,uploadImageDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserConverter.toCreateDto(user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(UserConverter.toCreateDto(user)));
     }
 
-    /**
-     * 임시 계정 로그인 API
-     */
-    @Operation(summary = "로그인", description = "입력한 이메일로 로그인을 시도합니다",
+    @Operation(summary = "(임시)로그인", description = "입력한 이메일로 로그인을 시도합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "로그인 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 계정",
@@ -91,12 +91,13 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/login/{email}")
-    public ResponseEntity<UserResponseDto.LoginDto> login(@PathVariable String email) {
-        User user = userService.findUserByEmail(email);
-        return ResponseEntity.status(HttpStatus.OK).headers(userService.getHeader(user)).build();
+    public ResponseEntity<BaseResponse<ErrorCode>> login(@PathVariable String email) {
+        User user = userService.getUserByEmail(email);
+        return ResponseEntity.ok().headers(userService.getHeader(user)).body(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
     @Operation(summary = "닉네임 변경", description = "유저의 닉네임을 변경합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "닉네임 변경 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
@@ -105,21 +106,22 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/nickname")
-    public ResponseEntity<Void> updateNickname(@RequestBody UpdateNicknameDto nicknameDto, HttpServletRequest req) {
+    public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@RequestBody UpdateNicknameDto nicknameDto, HttpServletRequest req) {
         userService.updateNickname(nicknameDto, req);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
     @Operation(summary = "직무 변경", description = "유저의 직무를 변경합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "직무 변경 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저, 존재하지 않는 직업",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/job")
-    public ResponseEntity<Void> updateJob(@RequestBody UpdateJobDto jobDto, HttpServletRequest req) {
+    public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@RequestBody UpdateJobDto jobDto, HttpServletRequest req) {
         userService.updateJob(jobDto, req);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
     //프로필 이미지 변경

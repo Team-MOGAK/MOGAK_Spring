@@ -4,6 +4,7 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.converter.PostConverter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.exception.ErrorResponse;
+import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.PostLikeRequestDto;
@@ -14,11 +15,14 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,8 +39,9 @@ public class NetworkController {
     private final PostService postService;
 
     //좋아요 생성&삭제
-    @Operation(summary = "좋아요 생성/삭제", description = "게시물에 좋아요를 생성/삭제합니다",
-            parameters = @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
+    @Operation(summary = "좋아요 생성/삭제",
+            description = "게시물에 좋아요를 생성/삭제합니다",
+            security = {@SecurityRequirement(name = "Bearer Authentication")},
             responses = {
                     @ApiResponse(responseCode = "200", description = "좋아요 생성/삭제"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 회고록, 존재하지 않는 유저",
@@ -44,14 +49,15 @@ public class NetworkController {
                     @ApiResponse(responseCode = "500", description = "이미 좋아요를 누른 케이스 Or 서버 오류"),
             })
     @PostMapping("/api/posts/like")
-    public ResponseEntity<String> updateLike(@RequestBody PostLikeRequestDto.LikeDto request, HttpServletRequest req){
+    public ResponseEntity<BaseResponse<String>> updateLike(@RequestBody PostLikeRequestDto.LikeDto request, HttpServletRequest req){
         String message = postLikeService.updateLike(request, req);
-        return ResponseEntity.ok(message);
+        return ResponseEntity.ok(new BaseResponse<>(message));
     }
 
-    @Operation(summary = "페이스 메이커 게시물 조회", description = "팔로우 중인 페이스 메이커의 게시물을 페이징 조회 합니다",
+    @Operation(summary = "페이스 메이커 게시물 조회",
+            description = "팔로우 중인 페이스 메이커의 게시물을 페이징 조회 합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
-                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
                     @Parameter(name = "cursor", description = "페이징 커서(시작점)"),
                     @Parameter(name = "size", description = "페이징 게시물 개수")
             },
@@ -62,10 +68,10 @@ public class NetworkController {
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
     @GetMapping("/api/posts/pacemakers")
-    public ResponseEntity<List<NetworkPostDto>> getPacemakerPosts(@RequestParam int cursor,
+    public ResponseEntity<BaseResponse<List<NetworkPostDto>>> getPacemakerPosts(@RequestParam int cursor,
                                                                   @RequestParam int size,
                                                                   HttpServletRequest req) {
-        return ResponseEntity.status(HttpStatus.OK).body(postService.getPacemakerPosts(cursor, size, req));
+        return ResponseEntity.ok(new BaseResponse<>(postService.getPacemakerPosts(cursor, size, req)));
     }
 
     //네트워킹 전체조회

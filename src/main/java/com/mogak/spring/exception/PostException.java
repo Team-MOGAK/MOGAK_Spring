@@ -1,6 +1,7 @@
 package com.mogak.spring.exception;
 
-import org.springframework.http.HttpStatus;
+import com.mogak.spring.global.BaseException;
+import com.mogak.spring.global.ErrorCode;
 
 public class PostException extends BaseException {
     public PostException(ErrorCode e) {
