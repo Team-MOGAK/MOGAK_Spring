@@ -137,7 +137,7 @@ public class PostServiceImpl implements PostService {
     //전체 네트워킹 조회
     @Override
     public Slice<Post> getNetworkPosts(int page, int size, String sort, String address, /*List<String> categoryList,*/ HttpServletRequest req ){
-        Long userId = Long.valueOf(req.getParameter("userId"));
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if(address == null){
             address = user.getAddress().getName();

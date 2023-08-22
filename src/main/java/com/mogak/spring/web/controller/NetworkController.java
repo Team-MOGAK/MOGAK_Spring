@@ -76,10 +76,12 @@ public class NetworkController {
 
     //네트워킹 전체조회
     @Operation(summary = "네트워킹 게시물 조회", description = "네트워킹 게시물을 조건에 맞게 페이징 조회 합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
-                    @Parameter(name = "JWT 토큰", description = "jwt 토큰"),
                     @Parameter(name = "page", description = "page 수"),
-                    @Parameter(name = "size", description = "페이징 게시물 개수(한 페이지에 들어갈 게시물 개수)")
+                    @Parameter(name = "size", description = "페이징 게시물 개수(한 페이지에 들어갈 게시물 개수)"),
+                    @Parameter(name = "sort", description = "정렬기준 - 들어올 수 있는 값 : createdAt, likeCnt & default 값 : createdAt"),
+                    @Parameter(name = "address", description = "거주지 지역 - default 값: 해당 유저의 거주지")
             },
             responses = {
                     @ApiResponse(responseCode = "200", description = "게시물 조회 성공"),
@@ -88,11 +90,11 @@ public class NetworkController {
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
     @GetMapping("/api/posts")
-    public ResponseEntity<Slice<PostResponseDto.GetAllNetworkDto>> getALlPosts(@RequestParam(value="page", defaultValue = "0", required = false) int page, @RequestParam(value="size") int size,
+    public ResponseEntity<BaseResponse<Slice<PostResponseDto.GetAllNetworkDto>>> getALlPosts(@RequestParam(value="page", defaultValue = "0") int page, @RequestParam(value="size") int size,
                                                                          @RequestParam(value = "sort", defaultValue = "createdAt", required = false) String sort, @RequestParam(value = "address", required = false) String address,
                                                                          /*@RequestParam(value = "category", defaultValue="all", required = false) List<String> categoryList,*/ HttpServletRequest req){
         Slice<Post> posts = postService.getNetworkPosts(page, size, sort, address,req);
-        return ResponseEntity.ok(PostConverter.toNetworkPagingDto(posts));
+        return ResponseEntity.ok(new BaseResponse<>(PostConverter.toNetworkPagingDto(posts)));
     }
 
 
