@@ -15,10 +15,13 @@ import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
 import com.mogak.spring.web.dto.PostResponseDto.NetworkPostDto;
+import com.mogak.spring.web.dto.PostResponseDto.PostDto;
+import com.mogak.spring.web.dto.UserResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,12 +69,13 @@ public class PostServiceImpl implements PostService {
 
     //회고록 조회 - 무한 스크롤
     @Override
-    public Slice<Post> getAllPosts(Long lastPostId, Long mogakId, int size) {
+    public Slice<Post> getAllPosts(int page, Long mogakId, int size) {
         Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() ->
                 new MogakException(ErrorCode.NOT_EXIST_MOGAK)
         );
-        Pageable pageable = Pageable.ofSize(size);
-        Slice<Post> posts = postRepository.findAllPosts(lastPostId != null ? lastPostId : Long.MAX_VALUE, mogakId, pageable);
+        Pageable pageable=PageRequest.of(page, size);
+
+        Slice<Post> posts = postRepository.findAllPosts( mogakId, pageable);
         return posts;
     }
 
@@ -131,6 +135,18 @@ public class PostServiceImpl implements PostService {
     }
 
     //전체 네트워킹 조회
+    @Override
+    public Slice<Post> getNetworkPosts(int page, int size, String sort, String address, /*List<String> categoryList,*/ HttpServletRequest req ){
+        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        if(address == null){
+            address = user.getAddress().getName();
+        }
+        String job = user.getJob().getName();
+        Pageable pageable = PageRequest.of(page, size);
+        Slice<Post> posts = postRepository.findNetworkPosts(address, job, sort, pageable);
+        return posts;
+    }
 
 
 }

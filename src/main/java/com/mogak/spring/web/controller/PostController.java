@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -62,7 +63,11 @@ public class PostController {
 
     //read-전체 조회
     @Operation(summary = "회고록 조회", description = "회고록을 페이징 조회합니다",
-            parameters = @Parameter(name = "mogakId", description = "모각 ID"),
+            parameters = {
+                    @Parameter(name = "mogakId", description = "모각 ID"),
+                    @Parameter(name="page", description = "페이지 수"),
+                    @Parameter(name="size", description = "페이징 게시물 개수")
+            },
             responses = {
                     @ApiResponse(responseCode = "200", description = "회고록 조회 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
@@ -70,9 +75,9 @@ public class PostController {
             })
     @GetMapping("/api/mogaks/{mogakId}/posts")
     public ResponseEntity<BaseResponse<Slice<GetPostDto>>> getPostList(@PathVariable Long mogakId,
-                                                                       @RequestParam(value = "lastPostId") Long lastPostId,
-                                                                       @RequestParam(value = "size") int size) {
-        Slice<Post> posts = postService.getAllPosts(lastPostId, mogakId, size);
+                                                                         @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                         @RequestParam(value = "size") int size){
+        Slice<Post> posts = postService.getAllPosts(page, mogakId, size);
         //다음페이지 존재 여부 전달 필요
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostPagingDto(posts)));
     }
