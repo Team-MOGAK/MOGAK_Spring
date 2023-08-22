@@ -92,6 +92,36 @@ public class PostConverter {
     public static Slice<PostResponseDto.GetPostDto> toPostPagingDto(Slice<Post> posts){
         return posts.map(post -> toGetPostDto(post));
     }
+    //네트워킹전체조회
+    public static PostResponseDto.GetAllNetworkDto toGetNetworkDto(Post post){
+        return PostResponseDto.GetAllNetworkDto.builder()
+                .postId(post.getId())
+                .userName(post.getUser().getNickname())
+                .userJob(post.getUser().getJob().getName())
+                .contents(post.getContents())
+                .imgUrls(post.getPostImgs().stream()
+                        .map(m -> m.getImgUrl())
+                        .collect(Collectors.toList()))
+                .commentCnt(post.getCommentCnt())
+                .likeCnt(post.getLikeCnt())
+                .build();
+
+    }
+    public static List<PostResponseDto.GetAllNetworkDto> toNetworkDtoList(List<Post> postList){
+        return postList.stream()
+                .map(post -> toGetNetworkDto(post))
+                .collect(Collectors.toList());
+    }
+    public static PostResponseDto.NetworkListDto toNetworkListDto (List<Post> postList){
+        return PostResponseDto.NetworkListDto.builder()
+                .postDtoList(toNetworkDtoList(postList))
+                .size(postList.size())
+                .build();
+    }
+
+    public static Slice<PostResponseDto.GetAllNetworkDto> toNetworkPagingDto(Slice<Post> posts){
+        return posts.map(post -> toGetNetworkDto(post));
+    }
 
     //좋아요 생성
     public static PostResponseDto.PostDto toCreateLikePostDto(Post post){

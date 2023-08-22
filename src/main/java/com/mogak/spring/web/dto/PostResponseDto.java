@@ -93,4 +93,28 @@ public class PostResponseDto {
         private int viewCnt;
     }
 
+    //전체 네트워크
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class GetAllNetworkDto {
+        private Long postId;
+        private String userName;
+        private String userJob;
+        private String contents;
+        private List<String> imgUrls;
+        private int commentCnt;
+        private int likeCnt;
+    }
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class NetworkListDto {
+        private List<PostResponseDto.GetAllNetworkDto> postDtoList;
+        private boolean hasNext; //다음페이지 존재하는지의 여부 + 추가 구현 필요
+        private Integer size;
+    }
+
 }

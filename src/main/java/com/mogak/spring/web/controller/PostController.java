@@ -69,10 +69,10 @@ public class PostController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/api/mogaks/{mogakId}/posts")
-    public ResponseEntity<BaseResponse<Slice<GetPostDto>>> getPostList(@PathVariable Long mogakId,
-                                                                       @RequestParam(value = "lastPostId") Long lastPostId,
-                                                                       @RequestParam(value = "size") int size) {
-        Slice<Post> posts = postService.getAllPosts(lastPostId, mogakId, size);
+    public ResponseEntity<Slice<PostResponseDto.GetPostDto>> getPostList(@PathVariable Long mogakId,
+                                                                         @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+                                                                         @RequestParam(value = "size") int size){
+        Slice<Post> posts = postService.getAllPosts(page, mogakId, size);
         //다음페이지 존재 여부 전달 필요
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostPagingDto(posts)));
     }
