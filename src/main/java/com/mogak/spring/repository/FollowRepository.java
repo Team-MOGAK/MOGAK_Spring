@@ -22,9 +22,15 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     @Query("SELECT COUNT(f) FROM Follow f WHERE f.fromUser = :user")
     int findMentorCntByUser(@Param("user")User user);
 
-    @Query("SELECT f.fromUser FROM Follow f JOIN f.toUser tu WHERE tu = :user")
+    @Query("SELECT f.fromUser " +
+            "FROM Follow f " +
+            "JOIN f.toUser JOIN f.fromUser fu JOIN FETCH fu.job " +
+            "WHERE f.toUser = :user")
     List<User> findMotosByUser(@Param("user") User user);
 
-    @Query("SELECT f.toUser FROM Follow f JOIN f.fromUser fu WHERE fu = :user")
+    @Query("SELECT f.toUser " +
+            "FROM Follow f " +
+            "JOIN f.fromUser JOIN f.toUser tu JOIN FETCH tu.job " +
+            "WHERE f.fromUser = :user")
     List<User> findMentorsByUser(@Param("user") User user);
 }
