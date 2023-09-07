@@ -41,7 +41,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PostMapping("/{mogakId}")
+    @PostMapping("{mogakId}")
     public ResponseEntity<BaseResponse<CreateJogakDto>> create(@PathVariable Long mogakId) {
         Jogak jogak = jogakService.createJogak(mogakId);
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(JogakConverter.toCreateJogakResponseDto(jogak)));
@@ -74,7 +74,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "409", description = "이미 시작한 조각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("/{jogakId}/start")
+    @PutMapping("{jogakId}/start")
     public ResponseEntity<BaseResponse<startJogakDto>> startJogak(@PathVariable Long jogakId) {
         Jogak jogak = jogakService.startJogak(jogakId);
         return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetStartJogakDto(jogak)));
@@ -91,7 +91,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "409", description = "이미 종료한 조각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("/{jogakId}/end")
+    @PutMapping("{jogakId}/end")
     public ResponseEntity<BaseResponse<endJogakDto>> endJogak(@PathVariable Long jogakId) {
         Jogak jogak = jogakService.endJogak(jogakId);
         return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toEndJogakDto(jogak)));
@@ -104,7 +104,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 조각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @DeleteMapping("/{jogakId}")
+    @DeleteMapping("{jogakId}")
     public ResponseEntity<BaseResponse<ErrorCode>> deleteJogak(@PathVariable Long jogakId) {
         jogakService.deleteJogak(jogakId);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));

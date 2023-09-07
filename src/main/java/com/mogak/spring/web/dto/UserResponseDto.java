@@ -28,6 +28,5 @@ public class UserResponseDto {
     public static class UserDto {
         private String nickname;
         private String job;
-        private String address;
     }
 }

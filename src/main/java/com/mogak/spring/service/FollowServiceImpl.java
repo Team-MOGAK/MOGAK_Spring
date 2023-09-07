@@ -68,7 +68,6 @@ public class FollowServiceImpl implements FollowService {
                 .map(u -> UserDto.builder()
                         .nickname(u.getNickname())
                         .job(u.getJob().getName())
-                        .address(u.getAddress().getName())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -81,7 +80,6 @@ public class FollowServiceImpl implements FollowService {
                 .map(u -> UserDto.builder()
                         .nickname(u.getNickname())
                         .job(u.getJob().getName())
-                        .address(u.getAddress().getName())
                         .build())
                 .collect(Collectors.toList());
     }

@@ -24,7 +24,7 @@ import static com.mogak.spring.web.dto.UserResponseDto.*;
 @Tag(name = "팔로우 API", description = "팔로우 API 명세서")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/users/follows/")
+@RequestMapping("/api/users/follows")
 public class FollowController {
 
     private final FollowService followService;
@@ -40,7 +40,7 @@ public class FollowController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "409", description = "이미 존재하는 팔로우입니다"),
             })
-    @PostMapping("/{nickname}")
+    @PostMapping("{nickname}")
     public ResponseEntity<BaseResponse<ErrorCode>> follow(@PathVariable String nickname, HttpServletRequest req) {
         followService.follow(nickname, req);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
@@ -57,7 +57,7 @@ public class FollowController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "409", description = "존재하지 않는 팔로우"),
             })
-    @DeleteMapping("/{nickname}")
+    @DeleteMapping("{nickname}")
     public ResponseEntity<BaseResponse<ErrorCode>> unfollow(@PathVariable String nickname, HttpServletRequest req) {
         followService.unfollow(nickname, req);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
@@ -73,7 +73,7 @@ public class FollowController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
-    @GetMapping("/counts/{nickname}")
+    @GetMapping("counts/{nickname}")
     public ResponseEntity<BaseResponse<CountDto>> getFollowCount(@PathVariable String nickname) {
         return ResponseEntity.ok(new BaseResponse<>(followService.getFollowCount(nickname)));
     }
@@ -88,7 +88,7 @@ public class FollowController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
-    @GetMapping("/{nickname}/motos")
+    @GetMapping("{nickname}/motos")
     public ResponseEntity<BaseResponse<List<UserDto>>> getMotoList(@PathVariable String nickname) {
         return ResponseEntity.ok(new BaseResponse<>(followService.getMotoList(nickname)));
     }
@@ -103,7 +103,7 @@ public class FollowController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
-    @GetMapping("/{nickname}/mentors")
+    @GetMapping("{nickname}/mentors")
     public ResponseEntity<BaseResponse<List<UserDto>>> getMentorList(@PathVariable String nickname) {
         return ResponseEntity.ok(new BaseResponse<>(followService.getMentorList(nickname)));
     }

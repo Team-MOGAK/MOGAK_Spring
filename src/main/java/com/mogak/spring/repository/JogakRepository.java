@@ -10,7 +10,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface JogakRepository extends JpaRepository<Jogak, Long> {
-    @Query(value = "SELECT j FROM Jogak j WHERE j.mogak.user = :user " +
+    @Query(value = "SELECT j " +
+            "FROM Jogak j join fetch j.mogak m join fetch m.user " +
+            "where m.user = :user " +
             "AND j.createdAt >= CURRENT_DATE AND j.createdAt < CURRENT_DATE + 1")
     List<Jogak> findDailyJogak(@Param(value = "user") User user);
 
