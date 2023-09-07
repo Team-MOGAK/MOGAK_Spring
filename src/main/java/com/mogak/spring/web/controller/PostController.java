@@ -6,7 +6,6 @@ import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.service.AwsS3Service;
-import com.mogak.spring.service.PostImgService;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.PostRequestDto;
 import com.mogak.spring.web.dto.PostResponseDto.CreatePostDto;
@@ -20,7 +19,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,7 +35,6 @@ import static com.mogak.spring.web.dto.PostResponseDto.*;
 public class PostController {
     private final PostService postService;
     private final AwsS3Service awsS3Service;
-    private final PostImgService postImgService;
     private static String dirName = "img";
 
     //create
@@ -93,7 +90,7 @@ public class PostController {
     @GetMapping("/api/mogaks/posts/{postId}")
     public ResponseEntity<BaseResponse<PostDto>> getPostDetail(@PathVariable Long postId) {
         Post post= postService.findById(postId);
-        List<String> imgUrls = postImgService.findNotThumbnailImg(post);
+        List<String> imgUrls = postService.findNotThumbnailImg(post); //썸네일은 제외하고 보여주기
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostDto(post, imgUrls)));
     }
 
@@ -125,7 +122,7 @@ public class PostController {
     @DeleteMapping("/api/mogaks/posts/{postId}")
     public ResponseEntity<BaseResponse<DeletePostDto>> deletePost(@PathVariable Long postId) {
         Post post = postService.findById(postId);
-        List<PostImg> postImgList = postImgService.findAllByPost(post);
+        List<PostImg> postImgList = postService.findAllImgByPost(post);
         awsS3Service.deleteImg(postImgList,dirName); //s3이미지 객체 삭제
         postService.delete(postId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toDeletePostDto()));

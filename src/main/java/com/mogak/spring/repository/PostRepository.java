@@ -30,10 +30,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findPacemakerPostsByUser(@Param("user") User user, Pageable pageable);
 
     //네트워킹 전체 조회 - 최근순 => 인기순이랑 합치는 쿼리 생각 & 카테고리 선택은 제외
+    /*
     @Query("SELECT p FROM Post p WHERE p.user.address.name = :address AND p.user.job.name = :job ORDER BY " +
             "CASE WHEN :sort = 'createdAt' THEN p.createdAt END DESC, "
             + "CASE WHEN :sort = 'likeCnt' THEN p.likeCnt END DESC")
-    Slice<Post> findNetworkPosts(@Param("address") String address, @Param("job") String job, @Param("sort") String sort, Pageable pageable);
 
+     */
+    @Query("SELECT p FROM Post p JOIN FETCH p.user u WHERE u.address.name = :address and u.job.name = :job ORDER BY "
+            + "CASE WHEN :sort = 'createdAt' THEN p.createdAt END DESC, "
+            + "CASE WHEN :sort = 'likeCnt' THEN p.likeCnt END DESC" )
+    Slice<Post> findNetworkPosts(@Param("address") String address, @Param("job") String job, @Param("sort") String sort, Pageable pageable);
 
 }
