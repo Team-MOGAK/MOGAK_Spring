@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -118,23 +119,29 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Pageable pageable = PageRequest.of(cursor, size);
         List<Post> posts = postRepository.findPacemakerPostsByUser(user, pageable);
+        //postImg 중 썸네일 이미지는 제외
         return posts.stream()
-                .map(p -> NetworkPostDto.builder()
-                        .user(UserConverter.toUserDto(p.getUser()))
-                        .contents(p.getContents())
-                        .imgUrls(p.getPostImgs().stream()
-                                .map(PostImg::getImgUrl)
-                                .collect(Collectors.toList()))
-                        .comments(p.getPostComments().stream()
-                                .map(CommentConverter::toNetworkCommentDto)
-                                .collect(Collectors.toList()))
-                        .likeCnt(p.getLikeCnt())
-                        .viewCnt(p.getViewCnt())
-                        .build())
+                .map(p -> {
+                    List<String> imgUrls = p.getPostImgs().stream()
+                            .filter(img -> img.getImgUrl() != p.getPostThumbnailUrl())
+                            .map(PostImg::getImgUrl)
+                            .collect(Collectors.toList());
+                    NetworkPostDto dto = NetworkPostDto.builder()
+                            .user(UserConverter.toUserDto(p.getUser()))
+                            .contents(p.getContents())
+                            .imgUrls(imgUrls)
+                            .comments(p.getPostComments().stream()
+                                    .map(CommentConverter::toNetworkCommentDto)
+                                    .collect(Collectors.toList()))
+                            .likeCnt(p.getLikeCnt())
+                            .viewCnt(p.getViewCnt())
+                            .build();
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
-    //전체 네트워킹 조회
+    //전체 네트워킹 조회 - 이미지 썸네일 제외 반환
     @Override
     public Slice<Post> getNetworkPosts(int page, int size, String sort, String address, /*List<String> categoryList,*/ HttpServletRequest req ){
         Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
@@ -148,5 +155,36 @@ public class PostServiceImpl implements PostService {
         return posts;
     }
 
+    //postId로 해당 회고록에 대한 이미지 url 반환
+    @Override
+    public List<String> findImgUrlByPost(Long postId){
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
+        List<PostImg> postImgList = postImgRepository.findAllByPost(post);
+        List<String> imgUrlList = new ArrayList<>();
+        for (PostImg postImg :postImgList) {
+            imgUrlList.add(postImg.getImgUrl());
+        }
+        return imgUrlList;
+    }
+
+    //이미지 상세조회를 위한, 썸네일 제외 url 반환
+    @Override
+    public List<String> findNotThumbnailImg(Post post) {
+        String thumbnailUrl = post.getPostThumbnailUrl();
+        List<PostImg> postImgList = post.getPostImgs();
+        List<String> imgUrls = new ArrayList<>();
+        for (PostImg postImg : postImgList) {
+            if (!thumbnailUrl.equals(postImg.getImgUrl())) {
+                imgUrls.add(postImg.getImgUrl());
+            }
+        }
+        return imgUrls;
+    }
+    //회고록에 대한 모든 img 반환
+    @Override
+    public List<PostImg> findAllImgByPost(Post post){
+        return postImgRepository.findAllByPost(post);
+    }
 
 }

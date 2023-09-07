@@ -1,6 +1,7 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.domain.post.Post;
+import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
 import com.mogak.spring.web.dto.PostResponseDto;
@@ -20,4 +21,7 @@ public interface PostService {
     void delete(Long postId);
     List<NetworkPostDto> getPacemakerPosts(int cursor, int size, HttpServletRequest req);
     Slice<Post> getNetworkPosts(int page, int size, String sort, String address, HttpServletRequest req);
+    List<String> findImgUrlByPost(Long postId);
+    List<String> findNotThumbnailImg(Post post);
+    List<PostImg> findAllImgByPost(Post post);
 }
