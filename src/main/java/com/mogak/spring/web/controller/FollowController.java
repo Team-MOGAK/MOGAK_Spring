@@ -3,6 +3,7 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.global.annotation.ExtractUserId;
 import com.mogak.spring.service.FollowService;
 import com.mogak.spring.web.dto.FollowRequestDto.CountDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,10 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static com.mogak.spring.web.dto.UserResponseDto.*;
+import static com.mogak.spring.web.dto.UserResponseDto.UserDto;
 
 @Tag(name = "팔로우 API", description = "팔로우 API 명세서")
 @RequiredArgsConstructor
@@ -41,8 +41,8 @@ public class FollowController {
                     @ApiResponse(responseCode = "409", description = "이미 존재하는 팔로우입니다"),
             })
     @PostMapping("{nickname}")
-    public ResponseEntity<BaseResponse<ErrorCode>> follow(@PathVariable String nickname, HttpServletRequest req) {
-        followService.follow(nickname, req);
+    public ResponseEntity<BaseResponse<ErrorCode>> follow(@ExtractUserId Long userId, @PathVariable String nickname) {
+        followService.follow(userId, nickname);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -58,8 +58,8 @@ public class FollowController {
                     @ApiResponse(responseCode = "409", description = "존재하지 않는 팔로우"),
             })
     @DeleteMapping("{nickname}")
-    public ResponseEntity<BaseResponse<ErrorCode>> unfollow(@PathVariable String nickname, HttpServletRequest req) {
-        followService.unfollow(nickname, req);
+    public ResponseEntity<BaseResponse<ErrorCode>> unfollow(@ExtractUserId Long userId, @PathVariable String nickname) {
+        followService.unfollow(userId, nickname);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 

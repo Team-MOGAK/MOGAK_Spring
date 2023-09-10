@@ -5,6 +5,7 @@ import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.global.annotation.ExtractUserId;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.web.dto.JogakResponseDto.CreateJogakDto;
 import com.mogak.spring.web.dto.JogakResponseDto.GetJogakListDto;
@@ -55,8 +56,8 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("")
-    public ResponseEntity<BaseResponse<GetJogakListDto>> getDailyJogaks(HttpServletRequest req) {
-        List<Jogak> jogakList = jogakService.getDailyJogaks(req);
+    public ResponseEntity<BaseResponse<GetJogakListDto>> getDailyJogaks(@ExtractUserId Long userId) {
+        List<Jogak> jogakList = jogakService.getDailyJogaks(userId);
         return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetJogakListResponseDto(jogakList)));
     }
 

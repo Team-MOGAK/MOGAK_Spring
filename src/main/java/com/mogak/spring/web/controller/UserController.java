@@ -2,16 +2,12 @@ package com.mogak.spring.web.controller;
 
 import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.CommonException;
 import com.mogak.spring.exception.ErrorResponse;
-import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.service.UserService;
-
+import com.mogak.spring.global.annotation.ExtractUserId;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.UserService;
-
 import com.mogak.spring.web.dto.UserRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,16 +19,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 
 import static com.mogak.spring.web.dto.UserRequestDto.*;
-import static com.mogak.spring.web.dto.UserResponseDto.*;
+import static com.mogak.spring.web.dto.UserResponseDto.ToCreateDto;
 
 @Tag(name = "유저 API", description = "유저 API 명세서")
 @RequiredArgsConstructor
@@ -104,8 +96,9 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/nickname")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@RequestBody UpdateNicknameDto nicknameDto, HttpServletRequest req) {
-        userService.updateNickname(nicknameDto, req);
+    public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@ExtractUserId Long userId,
+                                                                  @RequestBody UpdateNicknameDto nicknameDto, HttpServletRequest req) {
+        userService.updateNickname(userId, nicknameDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -117,8 +110,9 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/job")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@RequestBody UpdateJobDto jobDto, HttpServletRequest req) {
-        userService.updateJob(jobDto, req);
+    public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@ExtractUserId Long userId,
+                                                             @RequestBody UpdateJobDto jobDto) {
+        userService.updateJob(userId, jobDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -130,10 +124,10 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/image")
-    public ResponseEntity<Void> updateImage(@RequestPart MultipartFile multipartFile, HttpServletRequest req) {
-        String profileImgName = userService.getProfileImgName(req); //기존 프로필사진받아오기
+    public ResponseEntity<Void> updateImage(@ExtractUserId Long userId, @RequestPart MultipartFile multipartFile) {
+        String profileImgName = userService.getProfileImgName(userId); //기존 프로필사진받아오기
         UserRequestDto.UpdateImageDto updateImageDto = awsS3Service.updateProfileImg(multipartFile, profileImgName, dirName);
-        userService.updateImg(updateImageDto, req);
+        userService.updateImg(userId, updateImageDto);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

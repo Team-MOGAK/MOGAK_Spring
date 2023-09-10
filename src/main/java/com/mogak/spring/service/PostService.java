@@ -4,23 +4,21 @@ import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
-import com.mogak.spring.web.dto.PostResponseDto;
 import org.springframework.data.domain.Slice;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static com.mogak.spring.web.dto.PostResponseDto.*;
+import static com.mogak.spring.web.dto.PostResponseDto.NetworkPostDto;
 
 public interface PostService {
 
-    Post create(PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList,/*User user*/ Long mogakId, HttpServletRequest req);
+    Post create(Long userId, PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList,/*User user*/ Long mogakId);
     Slice<Post> getAllPosts(int page, Long mogakId, int size);
     Post findById(Long postId);
     Post update(Long postId, PostRequestDto.UpdatePostDto request);
     void delete(Long postId);
-    List<NetworkPostDto> getPacemakerPosts(int cursor, int size, HttpServletRequest req);
-    Slice<Post> getNetworkPosts(int page, int size, String sort, String address, HttpServletRequest req);
+    List<NetworkPostDto> getPacemakerPosts(Long userId, int cursor, int size);
+    Slice<Post> getNetworkPosts(Long userId, int page, int size, String sort, String address);
     List<String> findImgUrlByPost(Long postId);
     List<String> findNotThumbnailImg(Post post);
     List<PostImg> findAllImgByPost(Post post);

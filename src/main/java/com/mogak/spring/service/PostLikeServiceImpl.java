@@ -29,10 +29,10 @@ public class PostLikeServiceImpl implements PostLikeService{
     //좋아요 생성 및 삭제
     @Transactional
     @Override
-    public String updateLike(PostLikeRequestDto.LikeDto request, HttpServletRequest req){
+    public String updateLike(Long userId, PostLikeRequestDto.LikeDto request){
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 

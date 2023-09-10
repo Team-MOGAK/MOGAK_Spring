@@ -30,10 +30,10 @@ public class PostCommentServiceImpl implements PostCommentService {
     //댓글 생성 - dto
     @Transactional
     @Override
-    public PostComment create(CommentRequestDto.CreateCommentDto request, Long postId, HttpServletRequest req) {
+    public PostComment create(Long userId, CommentRequestDto.CreateCommentDto request, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (request.getContents().length() > 200) {

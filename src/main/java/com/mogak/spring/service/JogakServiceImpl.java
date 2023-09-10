@@ -6,12 +6,10 @@ import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.CommonException;
 import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.global.JwtArgumentResolver;
 import com.mogak.spring.repository.JogakRepository;
 import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -19,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -82,8 +79,8 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public List<Jogak> getDailyJogaks(HttpServletRequest req) {
-        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+    public List<Jogak> getDailyJogaks(Long userId) {
+//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return jogakRepository.findDailyJogak(user);
     }

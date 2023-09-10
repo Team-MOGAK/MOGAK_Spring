@@ -4,10 +4,8 @@ import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.CommonException;
-import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.global.JwtArgumentResolver;
 import com.mogak.spring.exception.UserException;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.login.JwtTokenProvider;
 import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
@@ -18,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.servlet.http.HttpServletRequest;
 
 import java.util.Optional;
 
@@ -81,18 +77,18 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void updateNickname(UpdateNicknameDto nicknameDto, HttpServletRequest req) {
+    public void updateNickname(Long userId, UpdateNicknameDto nicknameDto) {
         verifyNickname(nicknameDto.getNickname());
-        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateNickname(nicknameDto.getNickname());
     }
 
     @Transactional
     @Override
-    public void updateJob(UpdateJobDto jobDto, HttpServletRequest req) {
+    public void updateJob(Long userId, UpdateJobDto jobDto) {
         Job job = jobRepository.findJobByName(jobDto.getJob()).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
-        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateJob(job);
     }
@@ -109,8 +105,8 @@ public class UserServiceImpl implements UserService {
         headers.set("Authorization", jwtTokenProvider.createJwtToken(user.getId().toString()));
         return headers;
     }
-    public String getProfileImgName(HttpServletRequest req){
-        Long userId = Long.valueOf(req.getParameter("userId"));
+    public String getProfileImgName(Long userId){
+//        Long userId = Long.valueOf(req.getParameter("userId"));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String profileImgName = user.getProfileImgName();
         return profileImgName;
@@ -118,8 +114,8 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void updateImg(UserRequestDto.UpdateImageDto userImageDto, HttpServletRequest req){
-        Long userId = Long.valueOf(req.getParameter("userId"));
+    public void updateImg(Long userId, UserRequestDto.UpdateImageDto userImageDto) {
+//        Long userId = Long.valueOf(req.getParameter("userId"));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String imgUrl = userImageDto.getImgUrl();
         String imgName = userImageDto.getImgName();

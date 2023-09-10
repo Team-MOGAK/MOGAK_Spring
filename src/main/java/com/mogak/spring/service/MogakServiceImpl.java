@@ -1,6 +1,5 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
@@ -12,8 +11,9 @@ import com.mogak.spring.domain.mogak.MogakPeriod;
 import com.mogak.spring.domain.mogak.Period;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.*;
-import com.mogak.spring.global.JwtArgumentResolver;
+import com.mogak.spring.exception.MogakException;
+import com.mogak.spring.exception.UserException;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -48,8 +47,8 @@ public class MogakServiceImpl implements MogakService {
     // throw 추상화, 공통으로 뽑아내거나 private으로 고유하게 구현
     @Transactional
     @Override
-    public Mogak create(MogakRequestDto.CreateDto request, HttpServletRequest req) {
-        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+    public Mogak create(Long userId, MogakRequestDto.CreateDto request) {
+//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String otherCategory = request.getOtherCategory();
         MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory()).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
@@ -175,8 +174,8 @@ public class MogakServiceImpl implements MogakService {
      * 모각 조회(페이징)
      * */
     @Override
-    public List<Mogak> getMogakList(HttpServletRequest req, int cursor, int size) {
-        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+    public List<Mogak> getMogakList(Long userId, int cursor, int size) {
+//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         PageRequest pageRequest = PageRequest.of(cursor, size);

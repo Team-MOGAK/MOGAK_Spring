@@ -5,6 +5,7 @@ import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.global.annotation.ExtractUserId;
 import com.mogak.spring.service.MogakService;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,8 +42,8 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
-    public ResponseEntity<BaseResponse<CreateDto>> createMogak(@RequestBody MogakRequestDto.CreateDto request, HttpServletRequest req) {
-        Mogak mogak = mogakService.create(request, req);
+    public ResponseEntity<BaseResponse<CreateDto>> createMogak(@ExtractUserId Long userId, @RequestBody MogakRequestDto.CreateDto request) {
+        Mogak mogak = mogakService.create(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(MogakConverter.toCreateDto(mogak)));
     }
 
@@ -89,8 +90,8 @@ public class MogakController {
     public ResponseEntity<BaseResponse<GetMogakListDto>> getMogakList(
             @RequestParam(value = "cursor") int cursor,
             @RequestParam(value = "size") int size,
-            HttpServletRequest req) {
-            List<Mogak> mogaks = mogakService.getMogakList(req, cursor, size);
+            @ExtractUserId Long userId) {
+            List<Mogak> mogaks = mogakService.getMogakList(userId, cursor, size);
             return ResponseEntity.ok(new BaseResponse<>(MogakConverter.toGetMogakListDto(mogaks)));
     }
 

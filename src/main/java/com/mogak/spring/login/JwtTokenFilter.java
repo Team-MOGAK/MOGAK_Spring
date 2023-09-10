@@ -1,5 +1,7 @@
 package com.mogak.spring.login;
 
+import com.mogak.spring.exception.CommonException;
+import com.mogak.spring.global.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -20,17 +22,21 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String jwtToken = request.getHeader("Authorization");
-        RequestModifyParameter req = new RequestModifyParameter(request);
+//        RequestModifyParameter req = new RequestModifyParameter(request);
+
         if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
             jwtToken = jwtToken.substring("Bearer ".length());
             if (jwtTokenProvider.validateToken(jwtToken)) {
-                String userPk = jwtTokenProvider.getUserPk(jwtToken);
-                RequestModifyParameter fixedReq = new RequestModifyParameter(request);
-                fixedReq.setParameter("userId", userPk);
-                req = fixedReq;
+//                String userPk = jwtTokenProvider.getUserPk(jwtToken);
+//                RequestModifyParameter fixedReq = new RequestModifyParameter(request);
+//                fixedReq.setParameter("userId", userPk);
+//                req = fixedReq;
+            }
+            else {
+                throw new CommonException(ErrorCode.WRONG_TOKEN);
             }
         }
-        filterChain.doFilter(req, response);
+        filterChain.doFilter(request, response);
     }
 
 }
