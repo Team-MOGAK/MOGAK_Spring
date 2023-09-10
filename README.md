@@ -10,7 +10,9 @@
 ---
 
 ## Service Information
-
+1. 모각
+2. 네트워킹
++ 서비스 소개: https://ivy-soapwort-586.notion.site/MOGAK-658ae1222840406ea9fbca137c1bac5c
 
 
 ## Tech Stacks
@@ -18,6 +20,8 @@
 - JPA
 - AWS EC2 & RDS & S3
 - MySQL
+
+![image](https://github.com/Team-MOGAK/MOGAK_Spring/assets/27052233/d23cf2c1-5cbf-43da-93a2-f5a01728561e)
 
 
 ## Project Information
