@@ -20,14 +20,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.data.domain.Slice;
-import org.springframework.http.HttpStatus;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Tag(name = "네트워킹 API", description = "네트워킹 API 명세서")
@@ -96,8 +92,8 @@ public class NetworkController {
     @GetMapping("/api/posts")
     public ResponseEntity<BaseResponse<Slice<PostResponseDto.GetAllNetworkDto>>> getALlPosts(
             @ExtractUserId Long userId, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size") int size,
-            @RequestParam(value = "sort", defaultValue = "createdAt", required = false) String sort, @RequestParam(value = "address", required = false) String address,
-            /*@RequestParam(value = "category", defaultValue="all", required = false) List<String> categoryList,*/ HttpServletRequest req) {
+            @RequestParam(value = "sort", defaultValue = "createdAt", required = false) String sort, @RequestParam(value = "address", required = false) String address
+            /*@RequestParam(value = "category", defaultValue="all", required = false) List<String> categoryList,*/) {
         Slice<Post> posts = postService.getNetworkPosts(userId, page, size, sort, address);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toNetworkPagingDto(posts)));
     }

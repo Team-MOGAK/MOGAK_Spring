@@ -21,10 +21,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static com.mogak.spring.web.dto.JogakResponseDto.*;
+import static com.mogak.spring.web.dto.JogakResponseDto.endJogakDto;
+import static com.mogak.spring.web.dto.JogakResponseDto.startJogakDto;
 
 @Tag(name = "조각 API", description = "조각 API 명세서")
 @RequiredArgsConstructor

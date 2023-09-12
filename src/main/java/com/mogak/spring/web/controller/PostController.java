@@ -9,8 +9,6 @@ import com.mogak.spring.global.annotation.ExtractUserId;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.PostRequestDto;
-import com.mogak.spring.web.dto.PostResponseDto.CreatePostDto;
-import com.mogak.spring.web.dto.PostResponseDto.GetPostDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,10 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static com.mogak.spring.web.dto.PostImgRequestDto.*;
+import static com.mogak.spring.web.dto.PostImgRequestDto.CreatePostImgDto;
 import static com.mogak.spring.web.dto.PostResponseDto.*;
 
 @Tag(name = "회고록 API", description = "회고록 API 명세서")
@@ -53,8 +50,7 @@ public class PostController {
     public ResponseEntity<BaseResponse<CreatePostDto>> createPost(@ExtractUserId Long userId,
                                                                   @PathVariable Long mogakId,
                                                                   @RequestPart PostRequestDto.CreatePostDto request,
-                                                                  @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/,
-                                                                  HttpServletRequest req) {
+                                                                  @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/) {
         List<CreatePostImgDto> postImgDtoList = awsS3Service.uploadImg(multipartFile, dirName);
         Post post = postService.create(userId, request, postImgDtoList, mogakId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toCreatePostDto(post)));

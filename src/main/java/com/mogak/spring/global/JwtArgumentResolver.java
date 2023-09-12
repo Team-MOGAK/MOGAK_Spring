@@ -6,6 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 public class JwtArgumentResolver {
+    private JwtArgumentResolver() {}
+
     public static Optional<String> extractToken(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         if (isEmptyAuthorizationHeader(token)) {

@@ -12,6 +12,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class ExtractPayloadArgumentResolver implements HandlerMethodArgumentResolver {
@@ -21,7 +22,7 @@ public class ExtractPayloadArgumentResolver implements HandlerMethodArgumentReso
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
-        String jwtToken = JwtArgumentResolver.extractToken(request)
+        String jwtToken = JwtArgumentResolver.extractToken(Objects.requireNonNull(request))
                 .orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         jwtTokenProvider.getUserPk(jwtToken);
         jwtToken = jwtToken.substring("Bearer ".length());

@@ -21,8 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
-
 import static com.mogak.spring.web.dto.UserRequestDto.*;
 import static com.mogak.spring.web.dto.UserResponseDto.ToCreateDto;
 
@@ -97,7 +95,7 @@ public class UserController {
             })
     @PutMapping("/profile/nickname")
     public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@ExtractUserId Long userId,
-                                                                  @RequestBody UpdateNicknameDto nicknameDto, HttpServletRequest req) {
+                                                                  @RequestBody UpdateNicknameDto nicknameDto) {
         userService.updateNickname(userId, nicknameDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
