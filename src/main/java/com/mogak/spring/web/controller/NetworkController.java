@@ -93,7 +93,7 @@ public class NetworkController {
     public ResponseEntity<BaseResponse<Slice<PostResponseDto.GetAllNetworkDto>>> getALlPosts(@RequestParam(value="page", defaultValue = "0") int page, @RequestParam(value="size") int size,
                                                                          @RequestParam(value = "sort", defaultValue = "createdAt", required = false) String sort, @RequestParam(value = "address", required = false) String address,
                                                                          /*@RequestParam(value = "category", defaultValue="all", required = false) List<String> categoryList,*/ HttpServletRequest req){
-        Slice<Post> posts = postService.getNetworkPosts(page, size, sort, address,req);
+        Slice<Post> posts = postService.getNetworkPosts(page, size, sort, address, req);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toNetworkPagingDto(posts)));
     }
 

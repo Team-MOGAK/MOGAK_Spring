@@ -149,12 +149,14 @@ public class PostServiceImpl implements PostService {
         if(address == null){
             address = user.getAddress().getName();
         }
-        String job = user.getJob().getName();
         Pageable pageable = PageRequest.of(page, size);
-        Slice<Post> posts = postRepository.findNetworkPosts(address, job, sort, pageable);
+        Slice<Post> posts = postRepository.findNetworkPosts(address, sort, pageable);
         return posts;
     }
 
+    /*
+    이미지 관련 함수들
+     */
     //postId로 해당 회고록에 대한 이미지 url 반환
     @Override
     public List<String> findImgUrlByPost(Long postId){

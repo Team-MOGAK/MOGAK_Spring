@@ -4,6 +4,7 @@ import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
+import com.mogak.spring.service.PostCommentService;
 import com.mogak.spring.service.PostCommentServiceImpl;
 import com.mogak.spring.web.dto.CommentRequestDto;
 import com.mogak.spring.web.dto.CommentResponseDto.CommentListDto;
@@ -30,7 +31,7 @@ import static com.mogak.spring.web.dto.CommentResponseDto.*;
 @RequiredArgsConstructor
 public class CommentController {
 
-    private final PostCommentServiceImpl postCommentService;
+    private final PostCommentService postCommentService;
 
     //create
     @Operation(summary = "댓글 생성", description = "댓글을 생성합니다",
