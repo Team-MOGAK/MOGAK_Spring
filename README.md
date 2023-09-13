@@ -21,6 +21,7 @@
 
 ## Tech Stacks
 - Spring Boot
+- Spring Security
 - JPA
 - AWS EC2 & RDS & S3
 - MySQL
@@ -31,7 +32,7 @@
 ## Project Information
 - JDK: 11
 - Spring Boot: 2.7.1
-- Gradle: 7.6.1
+- Gradle: 8.1.1
 
 ## REST API Document
 
