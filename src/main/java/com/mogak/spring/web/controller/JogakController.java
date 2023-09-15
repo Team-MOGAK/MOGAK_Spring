@@ -5,7 +5,7 @@ import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.global.annotation.ExtractUserId;
+import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.web.dto.JogakResponseDto.CreateJogakDto;
 import com.mogak.spring.web.dto.JogakResponseDto.GetJogakListDto;
@@ -32,6 +32,7 @@ import static com.mogak.spring.web.dto.JogakResponseDto.startJogakDto;
 @RequestMapping("/api/mogaks/jogaks")
 public class JogakController {
     private final JogakService jogakService;
+    private final AuthHandler authHandler;
 
     @Operation(summary = "(임시)조각 생성", description = "모각에 대한 조각을 생성합니다",
             parameters = @Parameter(name = "mogakId", description = "모각 ID"),
@@ -56,8 +57,8 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("")
-    public ResponseEntity<BaseResponse<GetJogakListDto>> getDailyJogaks(@ExtractUserId Long userId) {
-        List<Jogak> jogakList = jogakService.getDailyJogaks(userId);
+    public ResponseEntity<BaseResponse<GetJogakListDto>> getDailyJogaks() {
+        List<Jogak> jogakList = jogakService.getDailyJogaks(authHandler.getUserId());
         return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetJogakListResponseDto(jogakList)));
     }
 

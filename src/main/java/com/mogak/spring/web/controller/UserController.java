@@ -5,7 +5,7 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.global.annotation.ExtractUserId;
+import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.web.dto.UserRequestDto;
@@ -31,6 +31,7 @@ import static com.mogak.spring.web.dto.UserResponseDto.ToCreateDto;
 public class UserController {
     private final UserService userService;
     private final AwsS3Service awsS3Service;
+    private final AuthHandler authHandler;
     private static String dirName = "profile";
 
     @Operation(summary = "닉네임 검증", description = "PathVariable로 입력받은 닉네임을 검증합니다",
@@ -94,9 +95,8 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/nickname")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@ExtractUserId Long userId,
-                                                                  @RequestBody UpdateNicknameDto nicknameDto) {
-        userService.updateNickname(userId, nicknameDto);
+    public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@RequestBody UpdateNicknameDto nicknameDto) {
+        userService.updateNickname(authHandler.getUserId(), nicknameDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -108,9 +108,8 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/job")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@ExtractUserId Long userId,
-                                                             @RequestBody UpdateJobDto jobDto) {
-        userService.updateJob(userId, jobDto);
+    public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@RequestBody UpdateJobDto jobDto) {
+        userService.updateJob(authHandler.getUserId(), jobDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -122,7 +121,8 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/image")
-    public ResponseEntity<Void> updateImage(@ExtractUserId Long userId, @RequestPart MultipartFile multipartFile) {
+    public ResponseEntity<Void> updateImage(@RequestPart MultipartFile multipartFile) {
+        Long userId = authHandler.getUserId();
         String profileImgName = userService.getProfileImgName(userId); //기존 프로필사진받아오기
         UserRequestDto.UpdateImageDto updateImageDto = awsS3Service.updateProfileImg(multipartFile, profileImgName, dirName);
         userService.updateImg(userId, updateImageDto);

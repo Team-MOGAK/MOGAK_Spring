@@ -79,7 +79,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateNickname(Long userId, UpdateNicknameDto nicknameDto) {
         verifyNickname(nicknameDto.getNickname());
-//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateNickname(nicknameDto.getNickname());
     }
@@ -88,7 +87,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateJob(Long userId, UpdateJobDto jobDto) {
         Job job = jobRepository.findJobByName(jobDto.getJob()).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
-//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateJob(job);
     }
@@ -106,7 +104,6 @@ public class UserServiceImpl implements UserService {
         return headers;
     }
     public String getProfileImgName(Long userId){
-//        Long userId = Long.valueOf(req.getParameter("userId"));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String profileImgName = user.getProfileImgName();
         return profileImgName;
@@ -115,7 +112,6 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void updateImg(Long userId, UserRequestDto.UpdateImageDto userImageDto) {
-//        Long userId = Long.valueOf(req.getParameter("userId"));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String imgUrl = userImageDto.getImgUrl();
         String imgName = userImageDto.getImgName();

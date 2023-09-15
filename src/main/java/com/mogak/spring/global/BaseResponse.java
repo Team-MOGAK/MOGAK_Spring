@@ -18,6 +18,7 @@ public class BaseResponse<T> {
     private final HttpStatus status;
     private final String code;
     private final String message;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T result;
 

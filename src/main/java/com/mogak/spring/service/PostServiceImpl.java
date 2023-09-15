@@ -43,7 +43,6 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post create(Long userId, PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, /*User user,*/Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (request.getContents().length() > 350) {
             throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
@@ -112,7 +111,6 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<NetworkPostDto> getPacemakerPosts(Long userId, int cursor, int size) {
-//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Pageable pageable = PageRequest.of(cursor, size);
         List<Post> posts = postRepository.findPacemakerPostsByUser(user, pageable);
@@ -141,7 +139,6 @@ public class PostServiceImpl implements PostService {
     //전체 네트워킹 조회 - 이미지 썸네일 제외 반환
     @Override
     public Slice<Post> getNetworkPosts(Long userId, int page, int size, String sort, String address /*List<String> categoryList,*/){
-//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if(address == null){
             address = user.getAddress().getName();

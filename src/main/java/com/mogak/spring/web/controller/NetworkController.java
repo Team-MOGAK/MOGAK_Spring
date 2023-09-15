@@ -5,7 +5,7 @@ import com.mogak.spring.converter.PostConverter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
-import com.mogak.spring.global.annotation.ExtractUserId;
+import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.PostLikeRequestDto;
@@ -34,6 +34,7 @@ public class NetworkController {
 
     private final PostLikeService postLikeService;
     private final PostService postService;
+    private final AuthHandler authHandler;
 
     //좋아요 생성&삭제
     @Operation(summary = "좋아요 생성/삭제",
@@ -46,9 +47,8 @@ public class NetworkController {
                     @ApiResponse(responseCode = "500", description = "이미 좋아요를 누른 케이스 Or 서버 오류"),
             })
     @PostMapping("/api/posts/like")
-    public ResponseEntity<BaseResponse<String>> updateLike(@ExtractUserId Long userId,
-                                                           @RequestBody PostLikeRequestDto.LikeDto request) {
-        String message = postLikeService.updateLike(userId, request);
+    public ResponseEntity<BaseResponse<String>> updateLike(@RequestBody PostLikeRequestDto.LikeDto request) {
+        String message = postLikeService.updateLike(authHandler.getUserId(), request);
         return ResponseEntity.ok(new BaseResponse<>(message));
     }
 
@@ -67,11 +67,10 @@ public class NetworkController {
             })
     @GetMapping("/api/posts/pacemakers")
     public ResponseEntity<BaseResponse<List<NetworkPostDto>>> getPacemakerPosts(
-            @ExtractUserId Long userId,
             @RequestParam int cursor,
             @RequestParam int size
     ) {
-        return ResponseEntity.ok(new BaseResponse<>(postService.getPacemakerPosts(userId, cursor, size)));
+        return ResponseEntity.ok(new BaseResponse<>(postService.getPacemakerPosts(authHandler.getUserId(), cursor, size)));
     }
 
     //네트워킹 전체조회
@@ -91,10 +90,10 @@ public class NetworkController {
             })
     @GetMapping("/api/posts")
     public ResponseEntity<BaseResponse<Slice<PostResponseDto.GetAllNetworkDto>>> getALlPosts(
-            @ExtractUserId Long userId, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size") int size,
+            @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size") int size,
             @RequestParam(value = "sort", defaultValue = "createdAt", required = false) String sort, @RequestParam(value = "address", required = false) String address
             /*@RequestParam(value = "category", defaultValue="all", required = false) List<String> categoryList,*/) {
-        Slice<Post> posts = postService.getNetworkPosts(userId, page, size, sort, address);
+        Slice<Post> posts = postService.getNetworkPosts(authHandler.getUserId(), page, size, sort, address);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toNetworkPagingDto(posts)));
     }
 

@@ -5,7 +5,7 @@ import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
-import com.mogak.spring.global.annotation.ExtractUserId;
+import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.PostRequestDto;
@@ -33,6 +33,7 @@ import static com.mogak.spring.web.dto.PostResponseDto.*;
 public class PostController {
     private final PostService postService;
     private final AwsS3Service awsS3Service;
+    private final AuthHandler authHandler;
     private static String dirName = "img";
 
     //create
@@ -47,12 +48,11 @@ public class PostController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/api/mogaks/{mogakId}/posts")
-    public ResponseEntity<BaseResponse<CreatePostDto>> createPost(@ExtractUserId Long userId,
-                                                                  @PathVariable Long mogakId,
+    public ResponseEntity<BaseResponse<CreatePostDto>> createPost(@PathVariable Long mogakId,
                                                                   @RequestPart PostRequestDto.CreatePostDto request,
                                                                   @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/) {
         List<CreatePostImgDto> postImgDtoList = awsS3Service.uploadImg(multipartFile, dirName);
-        Post post = postService.create(userId, request, postImgDtoList, mogakId);
+        Post post = postService.create(authHandler.getUserId(), request, postImgDtoList, mogakId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toCreatePostDto(post)));
     }
 

@@ -80,7 +80,6 @@ public class JogakServiceImpl implements JogakService {
 
     @Override
     public List<Jogak> getDailyJogaks(Long userId) {
-//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return jogakRepository.findDailyJogak(user);
     }

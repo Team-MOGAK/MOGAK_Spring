@@ -48,7 +48,6 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public Mogak create(Long userId, MogakRequestDto.CreateDto request) {
-//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String otherCategory = request.getOtherCategory();
         MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory()).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
@@ -175,7 +174,6 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Override
     public List<Mogak> getMogakList(Long userId, int cursor, int size) {
-//        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         PageRequest pageRequest = PageRequest.of(cursor, size);

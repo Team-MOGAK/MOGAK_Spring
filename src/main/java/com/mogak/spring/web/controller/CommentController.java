@@ -4,7 +4,7 @@ import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
-import com.mogak.spring.global.annotation.ExtractUserId;
+import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.PostCommentServiceImpl;
 import com.mogak.spring.web.dto.CommentRequestDto;
 import com.mogak.spring.web.dto.CommentResponseDto.CommentListDto;
@@ -21,10 +21,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static com.mogak.spring.web.dto.CommentResponseDto.*;
+import static com.mogak.spring.web.dto.CommentResponseDto.DeleteCommentDto;
 
 @Tag(name = "댓글 API", description = "댓글 API 명세서")
 @RestController
@@ -32,6 +31,7 @@ import static com.mogak.spring.web.dto.CommentResponseDto.*;
 public class CommentController {
 
     private final PostCommentServiceImpl postCommentService;
+    private final AuthHandler authHandler;
 
     //create
     @Operation(summary = "댓글 생성", description = "댓글을 생성합니다",
@@ -48,11 +48,10 @@ public class CommentController {
             })
     @PostMapping("/api/posts/{postId}/comments")
     public ResponseEntity<BaseResponse<CreateCommentDto>> createComment(
-            @ExtractUserId Long userId,
             @PathVariable Long postId,
             @RequestBody CommentRequestDto.CreateCommentDto request
             ) {
-        PostComment comment = postCommentService.create(userId, request, postId);
+        PostComment comment = postCommentService.create(authHandler.getUserId(), request, postId);
         return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toCreateCommentDto(comment)));
     }
 

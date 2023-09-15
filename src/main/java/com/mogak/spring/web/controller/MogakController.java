@@ -5,7 +5,7 @@ import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.global.annotation.ExtractUserId;
+import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.MogakService;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +30,7 @@ import static com.mogak.spring.web.dto.MogakResponseDto.*;
 @RequestMapping("/api/mogaks")
 public class MogakController {
     private final MogakService mogakService;
+    private final AuthHandler authHandler;
 
     @Operation(summary = "모각 생성", description = "입력값을 이용해 모각을 생성합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
@@ -41,8 +42,8 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
-    public ResponseEntity<BaseResponse<CreateDto>> createMogak(@ExtractUserId Long userId, @RequestBody MogakRequestDto.CreateDto request) {
-        Mogak mogak = mogakService.create(userId, request);
+    public ResponseEntity<BaseResponse<CreateDto>> createMogak(@RequestBody MogakRequestDto.CreateDto request) {
+        Mogak mogak = mogakService.create(authHandler.getUserId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(MogakConverter.toCreateDto(mogak)));
     }
 
@@ -78,7 +79,7 @@ public class MogakController {
             security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
                     @Parameter(name = "cursor", description = "페이징 커서"),
-                    @Parameter(name = "size", description = "페이징 개수")
+                    @Parameter(name = "size", description = "페이징 개수"),
             },
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 수정 성공"),
@@ -88,9 +89,8 @@ public class MogakController {
     @GetMapping("")
     public ResponseEntity<BaseResponse<GetMogakListDto>> getMogakList(
             @RequestParam(value = "cursor") int cursor,
-            @RequestParam(value = "size") int size,
-            @ExtractUserId Long userId) {
-            List<Mogak> mogaks = mogakService.getMogakList(userId, cursor, size);
+            @RequestParam(value = "size") int size) {
+            List<Mogak> mogaks = mogakService.getMogakList(authHandler.getUserId(), cursor, size);
             return ResponseEntity.ok(new BaseResponse<>(MogakConverter.toGetMogakListDto(mogaks)));
     }
 
