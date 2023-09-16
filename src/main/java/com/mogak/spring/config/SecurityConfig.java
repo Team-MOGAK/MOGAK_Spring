@@ -1,8 +1,6 @@
 package com.mogak.spring.config;
 
 import com.mogak.spring.login.JwtTokenFilter;
-import com.mogak.spring.login.JwtTokenHandler;
-import com.mogak.spring.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
