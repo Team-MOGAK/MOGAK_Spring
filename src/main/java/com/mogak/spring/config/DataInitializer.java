@@ -8,6 +8,7 @@ import com.mogak.spring.domain.mogak.Period;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.fcm.FirebaseProvider;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.service.MogakService;
@@ -27,6 +28,7 @@ import java.util.Optional;
 @Component
 public class DataInitializer implements ApplicationRunner {
 
+    private final FirebaseProvider firebaseProvider;
     private final MogakRepository mogakRepository;
     private final MogakCategoryRepository mogakCategoryRepository;
     private final MogakPeriodRepository mogakPeriodRepository;
@@ -43,6 +45,7 @@ public class DataInitializer implements ApplicationRunner {
             insertStaticData();
             insertDummyData();
         }
+        firebaseProvider.initFirebase();
     }
 
     private void insertStaticData() {
