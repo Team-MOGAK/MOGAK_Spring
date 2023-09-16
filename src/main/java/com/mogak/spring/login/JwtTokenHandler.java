@@ -6,19 +6,20 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.Enumeration;
+import java.util.Optional;
 
 @Component
-public class JwtTokenProvider {
+public class JwtTokenHandler {
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -38,26 +39,9 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-//    public Authentication getAuthentication(String token) {
-//        String email = getUserPk(token);
-//        User user = userService.getUser(email);
-//        return new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
-//    }
-
     public String getUserPk(String token) {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
                 .getBody().get("userPk", String.class);
-    }
-
-    public String extract(HttpServletRequest request, String type) {
-        Enumeration<String> headers = request.getHeaders(AUTHORIZATION);
-        while (headers.hasMoreElements()) {
-            String value = headers.nextElement();
-            if (value.toLowerCase().startsWith(type.toLowerCase())) {
-                return value.substring(type.length()).trim();
-            }
-        }
-        return Strings.EMPTY;
     }
 
     public String resolveAccessToken(HttpServletRequest request) {
@@ -72,16 +56,56 @@ public class JwtTokenProvider {
         return token;
     }
 
+    public void validateToken(String token) {
+        try {
+            token = parseToken(token);
+            if (!validateExpireToken(token)) {
+                throw new CommonException(ErrorCode.WRONG_TOKEN);
+            }
+        } catch (RuntimeException e) {
+            throw new CommonException(ErrorCode.WRONG_TOKEN);
+        }
+    }
+
+    private String parseToken(String token) {
+        if (token.startsWith("Bearer ")) {
+            return token.substring("Bearer ".length());
+        }
+        throw new CommonException(ErrorCode.WRONG_TOKEN);
+    }
+
     /**
-     * 토큰 검증
+     * 토큰 만료 검증
      * */
-    public boolean validateToken(String jwtToken) {
+    private boolean validateExpireToken(String jwtToken) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
             return !claims.getBody().getExpiration().before(new Date());
         } catch (Exception e) {
             throw new CommonException(ErrorCode.WRONG_TOKEN);
         }
+    }
+
+    public Long getUserId() {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        String jwtToken = extractToken(request)
+                .orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+        jwtToken = jwtToken.substring("Bearer ".length());
+        return Long.valueOf(getUserPk(jwtToken));
+    }
+
+
+    public static Optional<String> extractToken(HttpServletRequest request) {
+        String token = request.getHeader(JwtTokenHandler.AUTHORIZATION);
+        if (isEmptyAuthorizationHeader(token)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(token);
+    }
+
+    private static boolean isEmptyAuthorizationHeader(String token) {
+        return !StringUtils.hasText(token);
     }
 
 }

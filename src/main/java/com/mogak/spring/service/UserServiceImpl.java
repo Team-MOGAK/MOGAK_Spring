@@ -6,7 +6,7 @@ import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.login.JwtTokenProvider;
+import com.mogak.spring.login.JwtTokenHandler;
 import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final JobRepository jobRepository;
     private final AddressRepository addressRepository;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenHandler jwtTokenHandler;
 
     @Transactional
     @Override
@@ -100,7 +100,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public HttpHeaders getHeader(User user) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", jwtTokenProvider.createJwtToken(user.getId().toString()));
+        headers.set("Authorization", jwtTokenHandler.createJwtToken(user.getId().toString()));
         return headers;
     }
     public String getProfileImgName(Long userId){

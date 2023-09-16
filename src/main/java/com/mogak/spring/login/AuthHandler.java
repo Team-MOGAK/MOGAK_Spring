@@ -15,14 +15,14 @@ import java.util.Optional;
 @Component
 public class AuthHandler {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenHandler jwtTokenHandler;
 
     public Long getUserId() {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         String jwtToken = extractToken(request)
                 .orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         jwtToken = jwtToken.substring("Bearer ".length());
-        return Long.valueOf(jwtTokenProvider.getUserPk(jwtToken));
+        return Long.valueOf(jwtTokenHandler.getUserPk(jwtToken));
     }
 
 
