@@ -60,7 +60,7 @@ public class JwtTokenHandler {
         try {
             token = parseToken(token);
             if (!validateExpireToken(token)) {
-                throw new CommonException(ErrorCode.WRONG_TOKEN);
+                throw new CommonException(ErrorCode.EXPIRE_TOKEN);
             }
         } catch (RuntimeException e) {
             throw new CommonException(ErrorCode.WRONG_TOKEN);
@@ -82,14 +82,13 @@ public class JwtTokenHandler {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
             return !claims.getBody().getExpiration().before(new Date());
         } catch (Exception e) {
-            throw new CommonException(ErrorCode.WRONG_TOKEN);
+            throw new CommonException(ErrorCode.EXPIRE_TOKEN);
         }
     }
 
     public Long getUserId() {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        String jwtToken = extractToken(request)
-                .orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+        String jwtToken = extractToken(request).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         jwtToken = jwtToken.substring("Bearer ".length());
         return Long.valueOf(getUserPk(jwtToken));
     }
@@ -100,7 +99,6 @@ public class JwtTokenHandler {
         if (isEmptyAuthorizationHeader(token)) {
             return Optional.empty();
         }
-
         return Optional.of(token);
     }
 
