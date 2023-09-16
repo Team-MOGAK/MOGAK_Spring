@@ -1,6 +1,10 @@
 package com.mogak.spring.login;
 
+import com.mogak.spring.exception.CommonException;
+import com.mogak.spring.exception.ErrorResponse;
+import com.mogak.spring.global.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,13 +24,26 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String jwtToken = request.getHeader(JwtTokenHandler.AUTHORIZATION);
-        if (jwtToken != null) {
-            jwtTokenHandler.validateToken(jwtToken);
-//            if (jwtTokenHandler.validateToken(jwtToken)) {
-//                throw new CommonException(ErrorCode.WRONG_TOKEN);
-//            }
+        try {
+            if (jwtToken != null) {
+                jwtTokenHandler.validateToken(jwtToken);
+            }
+            filterChain.doFilter(request, response);
+        } catch (CommonException e) {
+            setErrorResponse(e, response);
         }
-        filterChain.doFilter(request, response);
+    }
+
+    public void setErrorResponse(CommonException e, HttpServletResponse response) throws IOException {
+        response.setStatus(e.getHttpStatus().value());
+        response.setContentType("application/json; charset=UTF-8");
+        response.getWriter().write(
+                new ErrorResponse(
+                        e.getHttpStatus().value(),
+                        e.getCode(),
+                        e.getMessage()
+                ).convertToJson()
+        );
     }
 
 }

@@ -5,6 +5,6 @@ import com.mogak.spring.global.ErrorCode;
 
 public class UserException extends BaseException {
     public UserException(ErrorCode e) {
-        super(e.getStatus(), e.getMessage());
+        super(e.getStatus(), e.getCode(), e.getMessage());
     }
 }
