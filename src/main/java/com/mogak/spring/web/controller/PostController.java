@@ -5,11 +5,10 @@ import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
+import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.PostRequestDto;
-import com.mogak.spring.web.dto.PostResponseDto.CreatePostDto;
-import com.mogak.spring.web.dto.PostResponseDto.GetPostDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,10 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static com.mogak.spring.web.dto.PostImgRequestDto.*;
+import static com.mogak.spring.web.dto.PostImgRequestDto.CreatePostImgDto;
 import static com.mogak.spring.web.dto.PostResponseDto.*;
 
 @Tag(name = "회고록 API", description = "회고록 API 명세서")
@@ -35,6 +33,7 @@ import static com.mogak.spring.web.dto.PostResponseDto.*;
 public class PostController {
     private final PostService postService;
     private final AwsS3Service awsS3Service;
+    private final AuthHandler authHandler;
     private static String dirName = "img";
 
     //create
@@ -50,11 +49,10 @@ public class PostController {
             })
     @PostMapping("/api/mogaks/{mogakId}/posts")
     public ResponseEntity<BaseResponse<CreatePostDto>> createPost(@PathVariable Long mogakId,
-                                                    @RequestPart PostRequestDto.CreatePostDto request,
-                                                    @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/,
-                                                    HttpServletRequest req) {
+                                                                  @RequestPart PostRequestDto.CreatePostDto request,
+                                                                  @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/) {
         List<CreatePostImgDto> postImgDtoList = awsS3Service.uploadImg(multipartFile, dirName);
-        Post post = postService.create(request, postImgDtoList, mogakId, req);
+        Post post = postService.create(authHandler.getUserId(), request, postImgDtoList, mogakId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toCreatePostDto(post)));
     }
 
@@ -62,8 +60,8 @@ public class PostController {
     @Operation(summary = "회고록 조회", description = "회고록을 페이징 조회합니다",
             parameters = {
                     @Parameter(name = "mogakId", description = "모각 ID"),
-                    @Parameter(name="page", description = "페이지 수"),
-                    @Parameter(name="size", description = "페이징 게시물 개수")
+                    @Parameter(name = "page", description = "페이지 수"),
+                    @Parameter(name = "size", description = "페이징 게시물 개수")
             },
             responses = {
                     @ApiResponse(responseCode = "200", description = "회고록 조회 성공"),
@@ -72,8 +70,8 @@ public class PostController {
             })
     @GetMapping("/api/mogaks/{mogakId}/posts")
     public ResponseEntity<BaseResponse<Slice<GetPostDto>>> getPostList(@PathVariable Long mogakId,
-                                                                         @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                         @RequestParam(value = "size") int size){
+                                                                       @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                       @RequestParam(value = "size") int size) {
         Slice<Post> posts = postService.getAllPosts(page, mogakId, size);
         //다음페이지 존재 여부 전달 필요
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostPagingDto(posts)));
@@ -89,7 +87,7 @@ public class PostController {
             })
     @GetMapping("/api/mogaks/posts/{postId}")
     public ResponseEntity<BaseResponse<PostDto>> getPostDetail(@PathVariable Long postId) {
-        Post post= postService.findById(postId);
+        Post post = postService.findById(postId);
         List<String> imgUrls = postService.findNotThumbnailImg(post); //썸네일은 제외하고 보여주기
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostDto(post, imgUrls)));
     }
@@ -106,7 +104,7 @@ public class PostController {
             })
     @PutMapping("/api/mogaks/posts/{postId}")
     public ResponseEntity<BaseResponse<UpdatePostDto>> updatePost(@PathVariable Long postId,
-                                                    @RequestBody PostRequestDto.UpdatePostDto request) {
+                                                                  @RequestBody PostRequestDto.UpdatePostDto request) {
         Post post = postService.update(postId, request);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toUpdatePostDto(post)));
     }
@@ -123,7 +121,7 @@ public class PostController {
     public ResponseEntity<BaseResponse<DeletePostDto>> deletePost(@PathVariable Long postId) {
         Post post = postService.findById(postId);
         List<PostImg> postImgList = postService.findAllImgByPost(post);
-        awsS3Service.deleteImg(postImgList,dirName); //s3이미지 객체 삭제
+        awsS3Service.deleteImg(postImgList, dirName); //s3이미지 객체 삭제
         postService.delete(postId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toDeletePostDto()));
     }

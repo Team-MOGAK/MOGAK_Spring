@@ -9,9 +9,9 @@ import static com.mogak.spring.web.dto.UserResponseDto.*;
 
 public interface FollowService {
 
-    void follow(String nickname, HttpServletRequest req);
+    void follow(Long userId, String nickname);
 
-    void unfollow(String nickname, HttpServletRequest req);
+    void unfollow(Long userId, String nickname);
 
     CountDto getFollowCount(String nickname);
 
