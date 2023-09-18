@@ -2,6 +2,7 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.domain.common.State;
+import com.mogak.spring.domain.common.Weeks;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
@@ -37,16 +38,10 @@ public class JogakServiceImpl implements JogakService {
      */
     @Transactional
     public void createJogakToday() {
-        List<Mogak> mogaks = mogakService.getOngoingTodayMogakList(getTodayNum());
+        List<Mogak> mogaks = mogakService.getOngoingTodayMogakList(Weeks.getTodayNum());
         for (Mogak mogak : mogaks) {
             createJogak(mogak.getId());
         }
-    }
-
-    private int getTodayNum() {
-        LocalDate today = LocalDate.now();
-        DayOfWeek dayOfWeek = today.getDayOfWeek();
-        return dayOfWeek.getValue();
     }
 
     /**

@@ -3,6 +3,7 @@ package com.mogak.spring.service;
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
+import com.mogak.spring.domain.common.Weeks;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
@@ -29,6 +30,7 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class MogakServiceImpl implements MogakService {
     private final UserRepository userRepository;
@@ -49,25 +51,22 @@ public class MogakServiceImpl implements MogakService {
     @Override
     public Mogak create(Long userId, MogakRequestDto.CreateDto request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        String otherCategory = request.getOtherCategory();
         MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory()).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
+
+        String otherCategory = request.getOtherCategory();
         if (category.getName().equals("기타") && otherCategory == null) {
             throw new MogakException(ErrorCode.NOT_EXIST_OTHER_CATEGORY);
         }
         State state = State.registerState(request.getStartAt(), request.getEndAt(), LocalDate.now());
         Mogak result = mogakRepository.save(MogakConverter.toMogak(request, category, otherCategory, user, state));
-        List<Period> periods = saveMogakPeriod(request.getDays(), result);
-        LocalDate today = LocalDate.now();
-        DayOfWeek dayOfWeek = today.getDayOfWeek();
-        int dayNum = dayOfWeek.getValue();
 
-        createTodayJogak(result, periods, dayNum);
+        List<Period> periods = saveMogakPeriod(request.getDays(), result);
+        createTodayJogak(result, periods, Weeks.getTodayNum());
         return result;
     }
 
     private void createTodayJogak(Mogak result, List<Period> periods, int dayNum) {
-        if (periods.stream().anyMatch(day -> day.getId() == dayNum) &&
-                result.getState().equals(State.ONGOING.name())) {
+        if (periods.stream().anyMatch(day -> day.getId() == dayNum) && result.getState().equals(State.ONGOING.name())) {
             jogakRepository.save(JogakConverter.toJogak(result));
         }
     }

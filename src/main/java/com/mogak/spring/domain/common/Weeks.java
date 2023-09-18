@@ -1,5 +1,8 @@
 package com.mogak.spring.domain.common;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+
 public enum Weeks {
     MONDAY("MON", 1),
     TUESDAY("TUE", 2),
@@ -24,4 +27,11 @@ public enum Weeks {
     public int getValue() {
         return this.value;
     }
+
+    public static int getTodayNum() {
+        LocalDate today = LocalDate.now();
+        DayOfWeek dayOfWeek = today.getDayOfWeek();
+        return dayOfWeek.getValue();
+    }
+
 }
