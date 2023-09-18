@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class JogakServiceImpl implements JogakService {
 
@@ -36,14 +37,16 @@ public class JogakServiceImpl implements JogakService {
      */
     @Transactional
     public void createJogakToday() {
-        LocalDate today = LocalDate.now();
-        DayOfWeek dayOfWeek = today.getDayOfWeek();
-        int dayNum = dayOfWeek.getValue();
-
-        List<Mogak> mogaks = mogakService.getOngoingTodayMogakList(dayNum);
+        List<Mogak> mogaks = mogakService.getOngoingTodayMogakList(getTodayNum());
         for (Mogak mogak : mogaks) {
             createJogak(mogak.getId());
         }
+    }
+
+    private int getTodayNum() {
+        LocalDate today = LocalDate.now();
+        DayOfWeek dayOfWeek = today.getDayOfWeek();
+        return dayOfWeek.getValue();
     }
 
     /**
@@ -69,6 +72,7 @@ public class JogakServiceImpl implements JogakService {
         }
     }
 
+    @Transactional
     @Override
     public Jogak createJogak(Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
@@ -100,6 +104,7 @@ public class JogakServiceImpl implements JogakService {
         return jogak;
     }
 
+    @Transactional
     @Override
     public void deleteJogak(Long jogakId) {
         Jogak jogak = jogakRepository.findById(jogakId).orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
