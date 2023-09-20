@@ -6,5 +6,5 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface PostLikeService {
 
-    String updateLike(PostLikeRequestDto.LikeDto request, HttpServletRequest req);
+    String updateLike(Long userId, PostLikeRequestDto.LikeDto request);
 }

@@ -5,6 +5,7 @@ import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.service.PostCommentService;
+import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.PostCommentServiceImpl;
 import com.mogak.spring.web.dto.CommentRequestDto;
 import com.mogak.spring.web.dto.CommentResponseDto.CommentListDto;
@@ -21,10 +22,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static com.mogak.spring.web.dto.CommentResponseDto.*;
+import static com.mogak.spring.web.dto.CommentResponseDto.DeleteCommentDto;
 
 @Tag(name = "댓글 API", description = "댓글 API 명세서")
 @RestController
@@ -32,6 +32,7 @@ import static com.mogak.spring.web.dto.CommentResponseDto.*;
 public class CommentController {
 
     private final PostCommentService postCommentService;
+    private final AuthHandler authHandler;
 
     //create
     @Operation(summary = "댓글 생성", description = "댓글을 생성합니다",
@@ -47,10 +48,11 @@ public class CommentController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/api/posts/{postId}/comments")
-    public ResponseEntity<BaseResponse<CreateCommentDto>> createComment(@PathVariable Long postId,
-                                                                        @RequestBody CommentRequestDto.CreateCommentDto request,
-                                                                        HttpServletRequest req) {
-        PostComment comment = postCommentService.create(request, postId, req);
+    public ResponseEntity<BaseResponse<CreateCommentDto>> createComment(
+            @PathVariable Long postId,
+            @RequestBody CommentRequestDto.CreateCommentDto request
+            ) {
+        PostComment comment = postCommentService.create(authHandler.getUserId(), request, postId);
         return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toCreateCommentDto(comment)));
     }
 
@@ -62,7 +64,7 @@ public class CommentController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 회고록",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-     @GetMapping("/api/posts/{postId}/comments")
+    @GetMapping("/api/posts/{postId}/comments")
     public ResponseEntity<BaseResponse<CommentListDto>> getCommentList(@PathVariable Long postId) {
         List<PostComment> commentList = postCommentService.findByPostId(postId);
         return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toCommentListDto(commentList)));
@@ -83,7 +85,7 @@ public class CommentController {
     public ResponseEntity<BaseResponse<UpdateCommentDto>> updateComment(@PathVariable(name = "postId") Long postId,
                                                                         @PathVariable(name = "commentId") Long commentId,
                                                                         @RequestBody CommentRequestDto.UpdateCommentDto request) {
-        PostComment comment = postCommentService.update(request,postId,commentId);
+        PostComment comment = postCommentService.update(request, postId, commentId);
         return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toUpdateCommentDto(comment)));
     }
 
@@ -100,8 +102,8 @@ public class CommentController {
             })
     @DeleteMapping("/api/posts/{postId}/comments/{commentId}")
     public ResponseEntity<BaseResponse<DeleteCommentDto>> deleteComment(@PathVariable(name = "postId") Long postId,
-                                                                       @PathVariable(name = "commentId") Long commentId) {
-        postCommentService.delete(postId,commentId);
+                                                                        @PathVariable(name = "commentId") Long commentId) {
+        postCommentService.delete(postId, commentId);
         return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toDeleteCommentDto()));
     }
 }

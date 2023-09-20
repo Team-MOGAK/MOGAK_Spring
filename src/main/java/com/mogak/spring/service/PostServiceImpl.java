@@ -1,6 +1,5 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.converter.PostConverter;
 import com.mogak.spring.converter.PostImgConverter;
@@ -9,23 +8,21 @@ import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.*;
-import com.mogak.spring.global.JwtArgumentResolver;
+import com.mogak.spring.exception.MogakException;
+import com.mogak.spring.exception.PostException;
+import com.mogak.spring.exception.UserException;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.PostImgRequestDto;
 import com.mogak.spring.web.dto.PostRequestDto;
 import com.mogak.spring.web.dto.PostResponseDto.NetworkPostDto;
-import com.mogak.spring.web.dto.PostResponseDto.PostDto;
-import com.mogak.spring.web.dto.UserResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,9 +41,8 @@ public class PostServiceImpl implements PostService {
     //회고록 & 회고록 이미지 생성 => 리팩토링 필요
     @Transactional
     @Override
-    public Post create(PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, /*User user,*/Long mogakId, HttpServletRequest req) {
+    public Post create(Long userId, PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, /*User user,*/Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (request.getContents().length() > 350) {
             throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
@@ -114,8 +110,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<NetworkPostDto> getPacemakerPosts(int cursor, int size, HttpServletRequest req) {
-        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+    public List<NetworkPostDto> getPacemakerPosts(Long userId, int cursor, int size) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Pageable pageable = PageRequest.of(cursor, size);
         List<Post> posts = postRepository.findPacemakerPostsByUser(user, pageable);
@@ -143,8 +138,7 @@ public class PostServiceImpl implements PostService {
 
     //전체 네트워킹 조회 - 이미지 썸네일 제외 반환
     @Override
-    public Slice<Post> getNetworkPosts(int page, int size, String sort, String address, /*List<String> categoryList,*/ HttpServletRequest req ){
-        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+    public Slice<Post> getNetworkPosts(Long userId, int page, int size, String sort, String address /*List<String> categoryList,*/){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if(address == null){
             address = user.getAddress().getName();

@@ -64,9 +64,10 @@ public enum ErrorCode {
     /**
      * 토큰 에러
      * */
-    WRONG_TOKEN(HttpStatus.UNAUTHORIZED, "T001", "만료되었거나 잘못된 토큰입니다"),
-    EMPTY_TOKEN(HttpStatus.UNAUTHORIZED, "T002", "토큰이 존재하지 않습니다"),
-    INVALID_PERMISSION(HttpStatus.FORBIDDEN, "T003", "권한이 부여되지 않았습니다"),
+    WRONG_TOKEN(HttpStatus.UNAUTHORIZED, "T001", "잘못된 형식의 토큰입니다"),
+    EXPIRE_TOKEN(HttpStatus.UNAUTHORIZED, "T002", "만료된 토큰입니다"),
+    EMPTY_TOKEN(HttpStatus.UNAUTHORIZED, "T003", "토큰이 존재하지 않습니다"),
+    INVALID_PERMISSION(HttpStatus.FORBIDDEN, "T004", "권한이 부여되지 않았습니다"),
     
     /**
      * 팔로우 에러

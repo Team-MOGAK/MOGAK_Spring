@@ -14,13 +14,13 @@ public interface UserService {
   
     HttpHeaders getHeader(User user);
   
-    void updateNickname(UserRequestDto.UpdateNicknameDto nicknameDto, HttpServletRequest req);
-    String getProfileImgName(HttpServletRequest req);
+    void updateNickname(Long userId, UserRequestDto.UpdateNicknameDto nicknameDto);
+    String getProfileImgName(Long userId);
   
-    void updateJob(UserRequestDto.UpdateJobDto jobDto, HttpServletRequest req);
+    void updateJob(Long userId, UserRequestDto.UpdateJobDto jobDto);
   
     User getUserByEmail(String email);
   
-    void updateImg(UserRequestDto.UpdateImageDto userImageDto, HttpServletRequest req);
+    void updateImg(Long userId, UserRequestDto.UpdateImageDto userImageDto);
 
 }
