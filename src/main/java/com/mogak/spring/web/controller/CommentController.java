@@ -4,6 +4,7 @@ import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
+import com.mogak.spring.service.PostCommentService;
 import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.PostCommentServiceImpl;
 import com.mogak.spring.web.dto.CommentRequestDto;
@@ -30,7 +31,7 @@ import static com.mogak.spring.web.dto.CommentResponseDto.DeleteCommentDto;
 @RequiredArgsConstructor
 public class CommentController {
 
-    private final PostCommentServiceImpl postCommentService;
+    private final PostCommentService postCommentService;
     private final AuthHandler authHandler;
 
     //create
