@@ -23,6 +23,13 @@ public class MogakPeriod {
     @JoinColumn(name="mogak_id")
     private Mogak mogak;
 
+    public static MogakPeriod of(Period period, Mogak mogak) {
+        return MogakPeriod.builder()
+                .period(period)
+                .mogak(mogak)
+                .build();
+    }
+
     public void updatePeriod(Period period) {
         this.period = period;
     }
