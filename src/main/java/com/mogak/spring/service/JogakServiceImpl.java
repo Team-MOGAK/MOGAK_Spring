@@ -2,6 +2,7 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.domain.common.State;
+import com.mogak.spring.domain.common.Weeks;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakState;
 import com.mogak.spring.domain.mogak.Mogak;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class JogakServiceImpl implements JogakService {
 
@@ -36,11 +38,7 @@ public class JogakServiceImpl implements JogakService {
      */
     @Transactional
     public void createJogakToday() {
-        LocalDate today = LocalDate.now();
-        DayOfWeek dayOfWeek = today.getDayOfWeek();
-        int dayNum = dayOfWeek.getValue();
-
-        List<Mogak> mogaks = mogakService.getOngoingTodayMogakList(dayNum);
+        List<Mogak> mogaks = mogakService.getOngoingTodayMogakList(Weeks.getTodayNum());
         for (Mogak mogak : mogaks) {
             createJogak(mogak.getId());
         }
@@ -69,6 +67,7 @@ public class JogakServiceImpl implements JogakService {
         }
     }
 
+    @Transactional
     @Override
     public Jogak createJogak(Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
@@ -100,6 +99,7 @@ public class JogakServiceImpl implements JogakService {
         return jogak;
     }
 
+    @Transactional
     @Override
     public void deleteJogak(Long jogakId) {
         Jogak jogak = jogakRepository.findById(jogakId).orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));

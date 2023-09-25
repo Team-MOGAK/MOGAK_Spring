@@ -1,6 +1,7 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.converter.FollowConverter;
+import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.user.Follow;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.UserException;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import static com.mogak.spring.web.dto.UserResponseDto.UserDto;
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class FollowServiceImpl implements FollowService {
 
@@ -60,10 +62,7 @@ public class FollowServiceImpl implements FollowService {
         User user = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<User> users = followRepository.findMotosByUser(user);
         return users.stream()
-                .map(u -> UserDto.builder()
-                        .nickname(u.getNickname())
-                        .job(u.getJob().getName())
-                        .build())
+                .map(UserConverter::toUserDto)
                 .collect(Collectors.toList());
     }
 
@@ -72,10 +71,7 @@ public class FollowServiceImpl implements FollowService {
         User user = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<User> users = followRepository.findMentorsByUser(user);
         return users.stream()
-                .map(u -> UserDto.builder()
-                        .nickname(u.getNickname())
-                        .job(u.getJob().getName())
-                        .build())
+                .map(UserConverter::toUserDto)
                 .collect(Collectors.toList());
     }
 
