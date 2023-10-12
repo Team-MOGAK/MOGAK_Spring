@@ -1,5 +1,6 @@
-package com.mogak.spring.domain.mogak;
+package com.mogak.spring.domain.jogak;
 
+import com.mogak.spring.domain.jogak.JogakPeriod;
 import lombok.*;
 
 import javax.persistence.*;
@@ -20,5 +21,5 @@ public class Period {
     private String days;
     @Builder.Default
     @OneToMany(mappedBy = "period")
-    private List<MogakPeriod> mogakPeriods = new ArrayList<>();
+    private List<JogakPeriod> jogakPeriods = new ArrayList<>();
 }

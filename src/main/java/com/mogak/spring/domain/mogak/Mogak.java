@@ -1,5 +1,7 @@
 package com.mogak.spring.domain.mogak;
 
+import com.mogak.spring.domain.jogak.JogakPeriod;
+import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.global.BaseEntity;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
@@ -30,13 +32,13 @@ public class Mogak extends BaseEntity {
     @JoinColumn(name="user_id")
     private User user;
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="mogak_category_id")
-    private MogakCategory category;
-    @Column(name = "category_other")
-    private String otherCategory;
+    @JoinColumn(name = "big_category")
+    private MogakCategory bigCategory;
+    @Column(name = "small_category")
+    private String smallCategory;
     @Builder.Default
     @OneToMany(mappedBy = "mogak")
-    private List<MogakPeriod> mogakPeriods = new ArrayList<>();
+    private List<JogakPeriod> jogakPeriods = new ArrayList<>();
     @Builder.Default
     @OneToMany(mappedBy = "mogak")
     private List<Jogak> jogaks = new ArrayList<>();
@@ -47,13 +49,14 @@ public class Mogak extends BaseEntity {
     @Column(nullable = false)
     private LocalDate startAt;
     private LocalDate endAt;
+    private String color;
     @Column(nullable = false)
     private String validation;
 
     public List<String> getPeriod() {
-        return this.getMogakPeriods()
+        return this.getJogakPeriods()
                 .stream()
-                .map(MogakPeriod::getPeriod)
+                .map(JogakPeriod::getPeriod)
                 .map(Period::getDays)
                 .collect(Collectors.toList());
     }
@@ -62,10 +65,10 @@ public class Mogak extends BaseEntity {
         this.state = state;
     }
     public void updateCategory(MogakCategory category) {
-        this.category = category;
+        this.bigCategory = category;
     }
     public void updateOtherCategory(String otherCategory) {
-        this.otherCategory = otherCategory;
+        this.smallCategory = otherCategory;
     }
 
     public void updateFromDto(MogakRequestDto.UpdateDto updateDto) {
