@@ -10,10 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -31,5 +28,11 @@ public class ModaratController {
     public ResponseEntity<BaseResponse<CreateModaratDto>> createModarat(@RequestBody @Valid ModaratRequestDto.CreateModaratDto request) {
         Modarat modarat = modaratService.create(authHandler.getUserId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(ModaratConverter.toCreateDto(modarat)));
+    }
+
+    @DeleteMapping("{modaratId}")
+    public ResponseEntity<BaseResponse<Void>> deleteModarat(@PathVariable Long modaratId) {
+        modaratService.delete(modaratId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

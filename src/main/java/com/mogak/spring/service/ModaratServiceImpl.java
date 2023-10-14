@@ -23,4 +23,10 @@ public class ModaratServiceImpl implements ModaratService {
         return modaratRepository.save(ModaratConverter.toModarat(user, request));
     }
 
+    @Override
+    public void delete(Long modaratId) {
+        modaratRepository.deleteById(modaratId);
+    }
+
+
 }
