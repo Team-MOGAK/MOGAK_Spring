@@ -28,7 +28,8 @@ public enum ErrorCode {
     /**
      * 모다라트 에러
      * */
-    EXCEED_MAX_NUM_MODARAT(HttpStatus.BAD_REQUEST, "A001", "모다라트 최대 글자수 100자를 초과하였습니다"),
+    NOT_EXIST_MODARAT(HttpStatus.BAD_REQUEST, "A001", "존재하지 않는 모다라트입니다"),
+    EXCEED_MAX_NUM_MODARAT(HttpStatus.BAD_REQUEST, "A002", "모다라트 최대 글자수 100자를 초과하였습니다"),
     
     /**
      * 모각 에러
@@ -85,8 +86,7 @@ public enum ErrorCode {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "Z002", "잘못된 요청입니다"),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Z003","찾을 수 없습니다"),
     NOT_SUPPORTED_METHOD_ERROR(HttpStatus.METHOD_NOT_ALLOWED, "Z004", "지원하지 않는 HTTP Method 요청입니다."),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Z500", "서버와의 연결에 실패했습니다"),
-    ;
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Z500", "서버와의 연결에 실패했습니다");
 
     private final HttpStatus status;
     private final String code;
