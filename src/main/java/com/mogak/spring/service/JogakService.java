@@ -11,11 +11,11 @@ public interface JogakService {
 
     List<Jogak> getDailyJogaks(Long userId);
     void failJogakAtMidnight();
-    void failJogakAtFour();
+//    void failJogakAtFour();
 
-    Jogak startJogak(Long jogakId);
+//    Jogak startJogak(Long jogakId);
 
-    Jogak endJogak(Long jogakId);
+//    Jogak endJogak(Long jogakId);
 
     void deleteJogak(Long jogakId);
 }

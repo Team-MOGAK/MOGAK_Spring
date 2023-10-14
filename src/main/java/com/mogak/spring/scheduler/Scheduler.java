@@ -27,13 +27,13 @@ public class Scheduler {
         jogakService.failJogakAtMidnight();
     }
 
-    @Scheduled(zone = "Asia/Seoul", cron = "0 0 4 * * *")
-    public void failJogakAtFourByScheduler() {
-        jogakService.failJogakAtFour();
-    }
+//    @Scheduled(zone = "Asia/Seoul", cron = "0 0 4 * * *")
+//    public void failJogakAtFourByScheduler() {
+//        jogakService.failJogakAtFour();
+//    }
 
-    @Scheduled(zone = "Asia/Seoul", cron = "0 0 4 * * *")
-    public void judgeMogakAtFourByScheduler() {
-        mogakService.judgeMogakByDay(LocalDate.now());
-    }
+//    @Scheduled(zone = "Asia/Seoul", cron = "0 0 4 * * *")
+//    public void judgeMogakAtFourByScheduler() {
+//        mogakService.judgeMogakByDay(LocalDate.now());
+//    }
 }

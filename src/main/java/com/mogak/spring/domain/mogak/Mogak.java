@@ -37,7 +37,7 @@ public class Mogak extends BaseEntity {
     @Column(name = "small_category")
     private String smallCategory;
     @Builder.Default
-    @OneToMany(mappedBy = "mogak")
+    @OneToMany(mappedBy = "jogak")
     private List<JogakPeriod> jogakPeriods = new ArrayList<>();
     @Builder.Default
     @OneToMany(mappedBy = "mogak")

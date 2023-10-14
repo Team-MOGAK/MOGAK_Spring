@@ -13,6 +13,6 @@ public interface MogakService {
     Mogak updateMogak(MogakRequestDto.UpdateDto request);
     List<Mogak> getMogakList(Long userId, int cursor, int size);
     void deleteMogak(Long mogakId);
-    List<Mogak> getOngoingTodayMogakList(int name);
-    void judgeMogakByDay(LocalDate day);
+//    List<Mogak> getOngoingTodayMogakList(int name);
+//    void judgeMogakByDay(LocalDate day);
 }

@@ -1,6 +1,5 @@
 package com.mogak.spring.domain.jogak;
 
-import com.mogak.spring.domain.mogak.Mogak;
 import lombok.*;
 
 import javax.persistence.*;
@@ -14,22 +13,14 @@ import javax.persistence.*;
 public class JogakPeriod {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "mogak_period_id")
+    @Column(name = "jogak_period_id")
     private Long id;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "period_id")
     private Period period;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "jogak_id")
     private Jogak jogak;
-
-    public static JogakPeriod of(Period period, Jogak jogak) {
-        return JogakPeriod.builder()
-                .period(period)
-                .jogak(jogak)
-                .build();
-    }
 
     public void updatePeriod(Period period) {
         this.period = period;

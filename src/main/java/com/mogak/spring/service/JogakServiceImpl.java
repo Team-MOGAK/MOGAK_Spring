@@ -38,10 +38,10 @@ public class JogakServiceImpl implements JogakService {
      */
     @Transactional
     public void createJogakToday() {
-        List<Mogak> mogaks = mogakService.getOngoingTodayMogakList(Weeks.getTodayNum());
-        for (Mogak mogak : mogaks) {
-            createJogak(mogak.getId());
-        }
+//        List<Mogak> mogaks = mogakService.getOngoingTodayMogakList(Weeks.getTodayNum());
+//        for (Mogak mogak : mogaks) {
+//            createJogak(mogak.getId());
+//        }
     }
 
     /**
@@ -59,13 +59,13 @@ public class JogakServiceImpl implements JogakService {
     /**
      * 새벽 4시까지 종료를 누르지 않은 조각 실패 처리
      */
-    @Transactional
-    public void failJogakAtFour() {
-        List<Jogak> jogaks = jogakRepository.findJogakIsOngoingYesterday(JogakState.ONGOING.name());
-        for (Jogak jogak : jogaks) {
-            jogak.updateState(JogakState.FAIL);
-        }
-    }
+//    @Transactional
+//    public void failJogakAtFour() {
+//        List<Jogak> jogaks = jogakRepository.findJogakIsOngoingYesterday(JogakState.ONGOING.name());
+//        for (Jogak jogak : jogaks) {
+//            jogak.updateState(JogakState.FAIL);
+//        }
+//    }
 
     @Transactional
     @Override
@@ -83,21 +83,21 @@ public class JogakServiceImpl implements JogakService {
         return jogakRepository.findDailyJogak(user);
     }
 
-    @Transactional
-    @Override
-    public Jogak startJogak(Long jogakId) {
-        Jogak jogak = jogakRepository.findById(jogakId).orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
-        jogak.start(LocalDateTime.now());
-        return jogak;
-    }
+//    @Transactional
+//    @Override
+//    public Jogak startJogak(Long jogakId) {
+//        Jogak jogak = jogakRepository.findById(jogakId).orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+//        jogak.start(LocalDateTime.now());
+//        return jogak;
+//    }
 
-    @Transactional
-    @Override
-    public Jogak endJogak(Long jogakId) {
-        Jogak jogak = jogakRepository.findById(jogakId).orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
-        jogak.end(LocalDateTime.now());
-        return jogak;
-    }
+//    @Transactional
+//    @Override
+//    public Jogak endJogak(Long jogakId) {
+//        Jogak jogak = jogakRepository.findById(jogakId).orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+//        jogak.end(LocalDateTime.now());
+//        return jogak;
+//    }
 
     @Transactional
     @Override

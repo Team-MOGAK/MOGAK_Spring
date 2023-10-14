@@ -34,67 +34,67 @@ public class JogakController {
     private final JogakService jogakService;
     private final AuthHandler authHandler;
 
-    @Operation(summary = "(임시)조각 생성", description = "모각에 대한 조각을 생성합니다",
-            parameters = @Parameter(name = "mogakId", description = "모각 ID"),
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "조각 생성"),
-                    @ApiResponse(responseCode = "400", description = "진행중인 모각만 조각을 생성",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            })
-    @PostMapping("{mogakId}")
-    public ResponseEntity<BaseResponse<CreateJogakDto>> create(@PathVariable Long mogakId) {
-        Jogak jogak = jogakService.createJogak(mogakId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(JogakConverter.toCreateJogakResponseDto(jogak)));
-    }
+//    @Operation(summary = "(임시)조각 생성", description = "모각에 대한 조각을 생성합니다",
+//            parameters = @Parameter(name = "mogakId", description = "모각 ID"),
+//            responses = {
+//                    @ApiResponse(responseCode = "200", description = "조각 생성"),
+//                    @ApiResponse(responseCode = "400", description = "진행중인 모각만 조각을 생성",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//                    @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//            })
+//    @PostMapping("{mogakId}")
+//    public ResponseEntity<BaseResponse<CreateJogakDto>> create(@PathVariable Long mogakId) {
+//        Jogak jogak = jogakService.createJogak(mogakId);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(JogakConverter.toCreateJogakResponseDto(jogak)));
+//    }
 
-    @Operation(summary = "당일 조각 조회", description = "당일 조각을 조회합니다",
-            security = @SecurityRequirement(name = "Bearer Authentication"),
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "조회 성공"),
-                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            })
-    @GetMapping("")
-    public ResponseEntity<BaseResponse<GetJogakListDto>> getDailyJogaks() {
-        List<Jogak> jogakList = jogakService.getDailyJogaks(authHandler.getUserId());
-        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetJogakListResponseDto(jogakList)));
-    }
+//    @Operation(summary = "당일 조각 조회", description = "당일 조각을 조회합니다",
+//            security = @SecurityRequirement(name = "Bearer Authentication"),
+//            responses = {
+//                    @ApiResponse(responseCode = "200", description = "조회 성공"),
+//                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//            })
+//    @GetMapping("")
+//    public ResponseEntity<BaseResponse<GetJogakListDto>> getDailyJogaks() {
+//        List<Jogak> jogakList = jogakService.getDailyJogaks(authHandler.getUserId());
+//        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetJogakListResponseDto(jogakList)));
+//    }
 
-    @Operation(summary = "조각 시작", description = "조각을 시작합니다",
-            parameters = @Parameter(name = "jogakId", description = "조각 ID"),
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "조각 시작"),
-                    @ApiResponse(responseCode = "400", description = "자정을 넘어서 조각 시작",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "404", description = "존재하지 않는 조각",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "409", description = "이미 시작한 조각",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            })
-    @PutMapping("{jogakId}/start")
-    public ResponseEntity<BaseResponse<startJogakDto>> startJogak(@PathVariable Long jogakId) {
-        Jogak jogak = jogakService.startJogak(jogakId);
-        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetStartJogakDto(jogak)));
-    }
+//    @Operation(summary = "조각 시작", description = "조각을 시작합니다",
+//            parameters = @Parameter(name = "jogakId", description = "조각 ID"),
+//            responses = {
+//                    @ApiResponse(responseCode = "200", description = "조각 시작"),
+//                    @ApiResponse(responseCode = "400", description = "자정을 넘어서 조각 시작",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//                    @ApiResponse(responseCode = "404", description = "존재하지 않는 조각",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//                    @ApiResponse(responseCode = "409", description = "이미 시작한 조각",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//            })
+//    @PutMapping("{jogakId}/start")
+//    public ResponseEntity<BaseResponse<startJogakDto>> startJogak(@PathVariable Long jogakId) {
+//        Jogak jogak = jogakService.startJogak(jogakId);
+//        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetStartJogakDto(jogak)));
+//    }
 
-    @Operation(summary = "조각 종료", description = "조각을 종료합니다",
-            parameters = @Parameter(name = "jogakId", description = "조각 ID"),
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "조각 종료"),
-                    @ApiResponse(responseCode = "400", description = "시작하지 않은 조각, 기한을 넘긴 조각",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "404", description = "존재하지 않는 조각",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "409", description = "이미 종료한 조각",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            })
-    @PutMapping("{jogakId}/end")
-    public ResponseEntity<BaseResponse<endJogakDto>> endJogak(@PathVariable Long jogakId) {
-        Jogak jogak = jogakService.endJogak(jogakId);
-        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toEndJogakDto(jogak)));
-    }
+//    @Operation(summary = "조각 종료", description = "조각을 종료합니다",
+//            parameters = @Parameter(name = "jogakId", description = "조각 ID"),
+//            responses = {
+//                    @ApiResponse(responseCode = "200", description = "조각 종료"),
+//                    @ApiResponse(responseCode = "400", description = "시작하지 않은 조각, 기한을 넘긴 조각",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//                    @ApiResponse(responseCode = "404", description = "존재하지 않는 조각",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//                    @ApiResponse(responseCode = "409", description = "이미 종료한 조각",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//            })
+//    @PutMapping("{jogakId}/end")
+//    public ResponseEntity<BaseResponse<endJogakDto>> endJogak(@PathVariable Long jogakId) {
+//        Jogak jogak = jogakService.endJogak(jogakId);
+//        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toEndJogakDto(jogak)));
+//    }
 
     @Operation(summary = "(임시)조각 삭제", description = "조각을 삭제합니다",
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),

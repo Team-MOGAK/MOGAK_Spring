@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
 
 public class MogakConverter {
 
-    public static Mogak toMogak(MogakRequestDto.CreateDto request, MogakCategory mogakCategory, String otherCategory, User user, State state) {
+    public static Mogak toMogak(MogakRequestDto.CreateDto request, MogakCategory mogakCategory, String smallCategory, User user, State state) {
         return Mogak.builder()
                 .user(user)
-                .category(mogakCategory)
-                .otherCategory(otherCategory)
+                .bigCategory(mogakCategory)
+                .smallCategory(smallCategory)
                 .title(request.getTitle())
                 .state(state.toString())
                 .startAt(request.getStartAt())
@@ -60,8 +60,8 @@ public class MogakConverter {
                 .title(mogak.getTitle())
                 .state(mogak.getState())
                 .periods(mogak.getPeriod())
-                .mogakCategory(mogak.getCategory())
-                .otherCategory(mogak.getOtherCategory())
+                .mogakCategory(mogak.getBigCategory())
+                .otherCategory(mogak.getSmallCategory())
                 .startAt(mogak.getStartAt())
                 .endAt(mogak.getEndAt())
                 .build();

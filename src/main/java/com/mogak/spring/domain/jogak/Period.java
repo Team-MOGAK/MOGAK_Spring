@@ -1,6 +1,5 @@
 package com.mogak.spring.domain.jogak;
 
-import com.mogak.spring.domain.jogak.JogakPeriod;
 import lombok.*;
 
 import javax.persistence.*;
