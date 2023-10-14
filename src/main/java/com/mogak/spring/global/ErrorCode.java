@@ -26,6 +26,11 @@ public enum ErrorCode {
     ALREADY_EXIST_USER(HttpStatus.CONFLICT, "U006",  "이미 존재하는 유저입니다"),
 
     /**
+     * 모다라트 에러
+     * */
+    EXCEED_MAX_NUM_MODARAT(HttpStatus.BAD_REQUEST, "A001", "모다라트 최대 글자수 100자를 초과하였습니다"),
+    
+    /**
      * 모각 에러
      * */
     NOT_EXIST_CATEGORY(HttpStatus.NOT_FOUND, "M001","존재하지 않는 카테고리입니다"),
