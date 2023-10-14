@@ -6,4 +6,5 @@ import com.mogak.spring.web.dto.ModaratDto.ModaratRequestDto;
 public interface ModaratService {
     Modarat create(Long userId, ModaratRequestDto.CreateModaratDto request);
     void delete(Long modaratId);
+    Modarat update(Long modaratId, ModaratRequestDto.UpdateModaratDto request);
 }

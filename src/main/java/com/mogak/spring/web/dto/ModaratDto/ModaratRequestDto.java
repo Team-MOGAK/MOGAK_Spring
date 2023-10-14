@@ -11,7 +11,15 @@ public class ModaratRequestDto {
     public static class CreateModaratDto {
         @NotNull @Max(100)
         private String title;
-        @NotNull
+        @NotNull @Max(100)
+        private String color;
+    }
+
+    @Getter
+    public static class UpdateModaratDto {
+        @Max(100)
+        private String title;
+        @Max(100)
         private String color;
     }
 

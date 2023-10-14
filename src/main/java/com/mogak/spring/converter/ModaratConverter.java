@@ -18,6 +18,7 @@ public class ModaratConverter {
 
     public static ModaratResponseDto.CreateModaratDto toCreateDto(Modarat modarat) {
         return ModaratResponseDto.CreateModaratDto.builder()
+                .id(modarat.getId())
                 .title(modarat.getTitle())
                 .color(modarat.getColor())
                 .build();

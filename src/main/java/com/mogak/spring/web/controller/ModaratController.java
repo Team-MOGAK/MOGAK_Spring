@@ -33,6 +33,12 @@ public class ModaratController {
     @DeleteMapping("{modaratId}")
     public ResponseEntity<BaseResponse<Void>> deleteModarat(@PathVariable Long modaratId) {
         modaratService.delete(modaratId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PutMapping("/{modaratId}")
+    public ResponseEntity<BaseResponse<CreateModaratDto>> updateModarat(@PathVariable Long modaratId, @RequestBody ModaratRequestDto.UpdateModaratDto request) {
+        Modarat modarat = modaratService.update(modaratId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(ModaratConverter.toCreateDto(modarat)));
     }
 }

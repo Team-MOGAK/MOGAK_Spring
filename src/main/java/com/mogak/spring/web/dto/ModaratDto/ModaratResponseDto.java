@@ -8,6 +8,7 @@ public class ModaratResponseDto {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class CreateModaratDto {
+        private Long id;
         private String title;
         private String color;
     }
