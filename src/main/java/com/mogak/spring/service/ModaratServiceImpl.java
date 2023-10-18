@@ -9,6 +9,7 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.ModaratRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.web.dto.ModaratDto.ModaratRequestDto;
+import com.mogak.spring.web.dto.ModaratDto.ModaratResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,12 @@ public class ModaratServiceImpl implements ModaratService {
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
         modarat.update(request);
         return modarat;
+    }
+
+    @Override
+    public ModaratResponseDto.SingleDetailModaratDto getDetailModarat(Long modaratId) {
+         modaratRepository.findOneDetailModarat(modaratId);
+         return null;
     }
 
 }

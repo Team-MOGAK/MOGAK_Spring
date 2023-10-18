@@ -60,8 +60,8 @@ public class MogakConverter {
                 .title(mogak.getTitle())
                 .state(mogak.getState())
                 .periods(mogak.getPeriod())
-                .mogakCategory(mogak.getBigCategory())
-                .otherCategory(mogak.getSmallCategory())
+                .bigCategory(mogak.getBigCategory())
+                .smallCategory(mogak.getSmallCategory())
                 .startAt(mogak.getStartAt())
                 .endAt(mogak.getEndAt())
                 .build();
