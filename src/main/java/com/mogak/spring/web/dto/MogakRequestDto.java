@@ -26,9 +26,10 @@ public class MogakRequestDto {
     public static class UpdateDto {
         private Long mogakId;
         private String title;
-        private String category;
-        private String otherCategory;
+        private String bigCategory;
+        private String smallCategory;
         private LocalDate startAt;
         private LocalDate endAt;
+        private String color;
     }
 }

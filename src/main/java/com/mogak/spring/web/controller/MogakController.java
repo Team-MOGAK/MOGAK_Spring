@@ -54,7 +54,7 @@ public class MogakController {
                     @ApiResponse(responseCode = "200", description = "모각 달성"),
                     @ApiResponse(responseCode = "400", description = "기타 카테고리 X",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자, 존재하지 않는 카테고리",
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/{mogakId}/complete")
@@ -66,15 +66,12 @@ public class MogakController {
     @Operation(summary = "모각 수정", description = "입력값을 이용해 모각을 수정합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 수정 성공"),
-                    @ApiResponse(responseCode = "400", description = "기타 카테고리 X",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각, 존재하지 않는 카테고리",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PutMapping("")
     public ResponseEntity<BaseResponse<UpdateStateDto>> updateMogak(@RequestBody MogakRequestDto.UpdateDto request) {
-        Mogak mogak = mogakService.updateMogak(request);
-        return ResponseEntity.ok(new BaseResponse<>(MogakConverter.toUpdateDto(mogak)));
+        return ResponseEntity.ok(new BaseResponse<>(mogakService.updateMogak(request)));
     }
 
     @Operation(summary = "모각 조회", description = "입력값을 이용해 모각을 페이징 조회합니다",

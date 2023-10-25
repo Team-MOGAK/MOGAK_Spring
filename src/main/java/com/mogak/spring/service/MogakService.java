@@ -9,7 +9,7 @@ import java.util.List;
 public interface MogakService {
     MogakResponseDto.CreateDto create(Long userId, MogakRequestDto.CreateDto createDto);
     Mogak achieveMogak(Long id);
-    Mogak updateMogak(MogakRequestDto.UpdateDto request);
+    MogakResponseDto.UpdateStateDto updateMogak(MogakRequestDto.UpdateDto request);
     List<Mogak> getMogakList(Long userId, int cursor, int size);
     void deleteMogak(Long mogakId);
 //    List<Mogak> getOngoingTodayMogakList(int name);

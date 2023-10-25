@@ -68,17 +68,12 @@ public class Mogak extends BaseEntity {
     public void updateState(String state) {
         this.state = state;
     }
-    public void updateCategory(MogakCategory category) {
+    public void updateBigCategory(MogakCategory category) {
         this.bigCategory = category;
-    }
-    public void updateOtherCategory(String otherCategory) {
-        this.smallCategory = otherCategory;
     }
 
     public void updateFromDto(MogakRequestDto.UpdateDto updateDto) {
-        Optional.ofNullable(updateDto.getTitle()).ifPresent(title -> {
-            this.title = title;
-        });
+        Optional.ofNullable(updateDto.getTitle()).ifPresent(updateTitle -> this.title = updateTitle);
         Optional.ofNullable(updateDto.getStartAt()).ifPresent(startDay -> {
             if (!this.state.equals(State.BEFORE.toString())) {
                 throw new MogakException(ErrorCode.CAN_MODIFIED_BEFORE_START_MOGAK);
@@ -86,8 +81,8 @@ public class Mogak extends BaseEntity {
             this.state = State.registerState(startDay, endAt, LocalDate.now()).toString();
             this.startAt = startDay;
         });
-        Optional.ofNullable(updateDto.getEndAt()).ifPresent(endDay -> {
-            this.endAt = endDay;
-        });
+        Optional.ofNullable(updateDto.getEndAt()).ifPresent(endDay -> this.endAt = endDay);
+        Optional.ofNullable(updateDto.getSmallCategory()).ifPresent(category -> this.smallCategory = category);
+        Optional.ofNullable(updateDto.getColor()).ifPresent(updateColor -> this.color = updateColor);
     }
 }

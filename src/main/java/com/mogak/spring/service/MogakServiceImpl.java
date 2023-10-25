@@ -120,24 +120,17 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Transactional
     @Override
-    public Mogak updateMogak(MogakRequestDto.UpdateDto request) {
+    public MogakResponseDto.UpdateStateDto updateMogak(MogakRequestDto.UpdateDto request) {
         Mogak mogak = mogakRepository.findById(request.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        Optional<String> categoryOptional = Optional.ofNullable(request.getCategory());
+        Optional<String> categoryOptional = Optional.ofNullable(request.getBigCategory());
         if (categoryOptional.isPresent()) {
-            MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory())
+            MogakCategory category = categoryRepository.findMogakCategoryByName(request.getBigCategory())
                     .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
-            if (category.getName().equals("기타")) {
-                if (request.getOtherCategory() == null) {
-                    throw new MogakException(ErrorCode.NOT_EXIST_OTHER_CATEGORY);
-                }
-                mogak.updateOtherCategory(request.getOtherCategory());
-            }
-            mogak.updateCategory(category);
+            mogak.updateBigCategory(category);
         }
         mogak.updateFromDto(request);
-//        Optional.ofNullable(days).ifPresent(d -> updateMogakPeriod(d, mogak));
-        return mogak;
+        return MogakConverter.toUpdateDto(mogak);
     }
 
     /**
