@@ -1,10 +1,6 @@
 package com.mogak.spring.web.dto.ModaratDto;
 
-import com.mogak.spring.repository.query.GetMogakInModaratDto;
-import com.mogak.spring.web.dto.MogakResponseDto;
 import lombok.*;
-
-import java.util.List;
 
 public class ModaratResponseDto {
     @Getter

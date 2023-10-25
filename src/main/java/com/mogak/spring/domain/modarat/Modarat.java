@@ -1,14 +1,11 @@
 package com.mogak.spring.domain.modarat;
 
-import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.BaseEntity;
 import com.mogak.spring.web.dto.ModaratDto.ModaratRequestDto;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Builder
 @Getter

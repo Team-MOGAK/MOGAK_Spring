@@ -2,7 +2,6 @@ package com.mogak.spring.domain.common;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.function.Supplier;
 
 public enum Weeks {
     MONDAY("MON", 1),
