@@ -3,10 +3,9 @@ package com.mogak.spring.service;
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
+import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
-import com.mogak.spring.domain.jogak.JogakPeriod;
-import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.MogakException;
@@ -14,16 +13,15 @@ import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
+import com.mogak.spring.web.dto.MogakResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -42,23 +40,15 @@ public class MogakServiceImpl implements MogakService {
     /**
      * 모각 생성
      * */
-    // throw 추상화, 공통으로 뽑아내거나 private으로 고유하게 구현
     @Transactional
     @Override
-    public Mogak create(Long userId, MogakRequestDto.CreateDto request) {
+    public MogakResponseDto.CreateDto create(Long userId, MogakRequestDto.CreateDto request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        MogakCategory category = categoryRepository.findMogakCategoryByName(request.getCategory()).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
-
-        String otherCategory = request.getOtherCategory();
-        if (category.getName().equals("기타") && otherCategory == null) {
-            throw new MogakException(ErrorCode.NOT_EXIST_OTHER_CATEGORY);
-        }
+        MogakCategory category = categoryRepository.findMogakCategoryByName(request.getBigCategory())
+                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
         State state = State.registerState(request.getStartAt(), request.getEndAt(), LocalDate.now());
-        Mogak result = mogakRepository.save(MogakConverter.toMogak(request, category, otherCategory, user, state));
-
-//        List<Period> periods = saveMogakPeriod(request.getDays(), result);
-//        createTodayJogak(result, periods, Weeks.getTodayNum());
-        return result;
+        Mogak result = mogakRepository.save(MogakConverter.toMogak(request, category, request.getSmallCategory(), user, state));
+        return MogakConverter.toCreateDto(result);
     }
 
     private void createTodayJogak(Mogak result, List<Period> periods, int dayNum) {
@@ -131,7 +121,6 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public Mogak updateMogak(MogakRequestDto.UpdateDto request) {
-        List<String> days = request.getDays();
         Mogak mogak = mogakRepository.findById(request.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         Optional<String> categoryOptional = Optional.ofNullable(request.getCategory());

@@ -38,13 +38,15 @@ public class MogakController {
                     @ApiResponse(responseCode = "201", description = "모각 생성 성공"),
                     @ApiResponse(responseCode = "400", description = "기타 카테고리 X, 시작,끝 날짜 역전, 잘못 입력된 시작 날짜",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자, 존재하지 않는 카테고리, 존재하지 않는 요일",
+                    @ApiResponse(responseCode = "401", description = "토큰 문제",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자, 존재하지 않는 카테고리",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
     public ResponseEntity<BaseResponse<CreateDto>> createMogak(@RequestBody MogakRequestDto.CreateDto request) {
-        Mogak mogak = mogakService.create(authHandler.getUserId(), request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(MogakConverter.toCreateDto(mogak)));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new BaseResponse<>(mogakService.create(authHandler.getUserId(), request)));
     }
 
     @Operation(summary = "모각 달성", description = "해당하는 모각을 달성합니다",

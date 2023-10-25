@@ -3,7 +3,6 @@ package com.mogak.spring.web.dto;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public class MogakRequestDto {
 
@@ -13,11 +12,11 @@ public class MogakRequestDto {
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class CreateDto {
         private String title;
-        private String category;
-        private String otherCategory;
-        private List<String> days;
+        private String bigCategory;
+        private String smallCategory;
         private LocalDate startAt;
         private LocalDate endAt;
+        private String color;
     }
 
     @Builder
@@ -29,7 +28,6 @@ public class MogakRequestDto {
         private String title;
         private String category;
         private String otherCategory;
-        private List<String> days;
         private LocalDate startAt;
         private LocalDate endAt;
     }
