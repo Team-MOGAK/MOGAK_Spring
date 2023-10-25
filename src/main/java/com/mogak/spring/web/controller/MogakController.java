@@ -20,14 +20,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 import static com.mogak.spring.web.dto.MogakResponseDto.*;
 
 @Tag(name = "모각 API", description = "모각 API 명세서")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/mogaks")
+@RequestMapping("/api")
 public class MogakController {
     private final MogakService mogakService;
     private final AuthHandler authHandler;
@@ -43,7 +41,7 @@ public class MogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자, 존재하지 않는 카테고리",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PostMapping("")
+    @PostMapping("/mogaks")
     public ResponseEntity<BaseResponse<CreateDto>> createMogak(@RequestBody MogakRequestDto.CreateDto request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new BaseResponse<>(mogakService.create(authHandler.getUserId(), request)));
@@ -57,7 +55,7 @@ public class MogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("/{mogakId}/complete")
+    @PutMapping("/mogaks/{mogakId}/complete")
     public ResponseEntity<BaseResponse<UpdateStateDto>> achieveMogak(@PathVariable Long mogakId) {
         Mogak mogak = mogakService.achieveMogak(mogakId);
         return ResponseEntity.ok(new BaseResponse<>(MogakConverter.toUpdateDto(mogak)));
@@ -69,28 +67,21 @@ public class MogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각, 존재하지 않는 카테고리",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
-    @PutMapping("")
+    @PutMapping("/mogaks")
     public ResponseEntity<BaseResponse<UpdateStateDto>> updateMogak(@RequestBody MogakRequestDto.UpdateDto request) {
         return ResponseEntity.ok(new BaseResponse<>(mogakService.updateMogak(request)));
     }
 
-    @Operation(summary = "모각 조회", description = "입력값을 이용해 모각을 페이징 조회합니다",
+    @Operation(summary = "모각 조회", description = "입력값을 이용해 모각을 조회합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
-            parameters = {
-                    @Parameter(name = "cursor", description = "페이징 커서"),
-                    @Parameter(name = "size", description = "페이징 개수"),
-            },
             responses = {
-                    @ApiResponse(responseCode = "200", description = "모각 수정 성공"),
+                    @ApiResponse(responseCode = "200", description = "모각 조회 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("")
-    public ResponseEntity<BaseResponse<GetMogakListDto>> getMogakList(
-            @RequestParam(value = "cursor") int cursor,
-            @RequestParam(value = "size") int size) {
-            List<Mogak> mogaks = mogakService.getMogakList(authHandler.getUserId(), cursor, size);
-            return ResponseEntity.ok(new BaseResponse<>(MogakConverter.toGetMogakListDto(mogaks)));
+    @GetMapping("/modarats/{modaratId}/mogaks")
+    public ResponseEntity<BaseResponse<GetMogakListDto>> getMogakList(@PathVariable Long modaratId) {
+            return ResponseEntity.ok(new BaseResponse<>(mogakService.getMogakDtoList(authHandler.getUserId(), modaratId)));
     }
 
     @Operation(summary = "모각 삭제", description = "모각을 삭제합니다",
@@ -102,7 +93,7 @@ public class MogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @DeleteMapping("/{mogakId}")
+    @DeleteMapping("/mogaks/{mogakId}")
     public ResponseEntity<BaseResponse<ErrorCode>> deleteMogak(@PathVariable Long mogakId) {
         mogakService.deleteMogak(mogakId);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));

@@ -43,7 +43,6 @@ public class MogakResponseDto {
     public static class GetMogakDto {
         private String title;
         private String state;
-        private List<String> periods;
         private MogakCategory bigCategory;
         private String smallCategory;
         private String color;

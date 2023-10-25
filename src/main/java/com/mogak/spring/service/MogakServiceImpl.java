@@ -15,7 +15,6 @@ import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.MogakRequestDto;
 import com.mogak.spring.web.dto.MogakResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -134,14 +133,13 @@ public class MogakServiceImpl implements MogakService {
     }
 
     /**
-     * 모각 조회(페이징)
+     * 모각 리스트 조회
      * */
     @Override
-    public List<Mogak> getMogakList(Long userId, int cursor, int size) {
+    public MogakResponseDto.GetMogakListDto getMogakDtoList(Long userId, Long modaratId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        PageRequest pageRequest = PageRequest.of(cursor, size);
-        return mogakRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId(), pageRequest);
+        return MogakConverter.toGetMogakListDto(mogakRepository.findAllByModaratId(modaratId));
     }
 
     /**

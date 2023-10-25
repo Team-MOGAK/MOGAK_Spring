@@ -59,7 +59,6 @@ public class MogakConverter {
         return MogakResponseDto.GetMogakDto.builder()
                 .title(mogak.getTitle())
                 .state(mogak.getState())
-                .periods(mogak.getPeriod())
                 .bigCategory(mogak.getBigCategory())
                 .smallCategory(mogak.getSmallCategory())
                 .startAt(mogak.getStartAt())
