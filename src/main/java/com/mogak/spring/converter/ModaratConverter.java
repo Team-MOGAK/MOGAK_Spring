@@ -24,4 +24,11 @@ public class ModaratConverter {
                 .build();
     }
 
+    public static ModaratResponseDto.GetModaratTitleDto toGetModaratTitleDto(Modarat modarat) {
+        return ModaratResponseDto.GetModaratTitleDto.builder()
+                .id(modarat.getId())
+                .title(modarat.getTitle())
+                .build();
+    }
+
 }

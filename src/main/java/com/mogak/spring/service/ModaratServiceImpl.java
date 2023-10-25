@@ -11,11 +11,13 @@ import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.repository.query.GetMogakInModaratDto;
 import com.mogak.spring.repository.query.SingleDetailModaratDto;
 import com.mogak.spring.web.dto.ModaratDto.ModaratRequestDto;
+import com.mogak.spring.web.dto.ModaratDto.ModaratResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -54,4 +56,10 @@ public class ModaratServiceImpl implements ModaratService {
         return modaratDto;
     }
 
+    @Override
+    public List<ModaratResponseDto.GetModaratTitleDto> getModaratTitleList(Long userId) {
+        return modaratRepository.findModaratsByUserId(userId).stream()
+                .map(ModaratConverter::toGetModaratTitleDto)
+                .collect(Collectors.toList());
+    }
 }

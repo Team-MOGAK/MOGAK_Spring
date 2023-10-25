@@ -14,8 +14,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
-import static com.mogak.spring.web.dto.ModaratDto.ModaratResponseDto.*;
+import static com.mogak.spring.web.dto.ModaratDto.ModaratResponseDto.CreateModaratDto;
+import static com.mogak.spring.web.dto.ModaratDto.ModaratResponseDto.GetModaratTitleDto;
 
 @Tag(name = "모다라트 API", description = "모다라트 API 명세서")
 @RequiredArgsConstructor
@@ -46,6 +48,11 @@ public class ModaratController {
     @GetMapping("/{modaratId}")
     public ResponseEntity<BaseResponse<SingleDetailModaratDto>> getSingleDetailModarat(@PathVariable Long modaratId) {
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(modaratService.getDetailModarat(modaratId)));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<BaseResponse<List<GetModaratTitleDto>>> getModaratTitleList() {
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(modaratService.getModaratTitleList(authHandler.getUserId())));
     }
 
 }

@@ -13,4 +13,13 @@ public class ModaratResponseDto {
         private String color;
     }
 
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class GetModaratTitleDto {
+        private Long id;
+        private String title;
+    }
+
 }

@@ -11,11 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ModaratRepository extends JpaRepository<Modarat, Long> {
-//    @Query("SELECT NEW com.mogak.spring.web.dto.ModaratDto.ModaratResponseDto.SingleDetailModaratDto(m.id, m.title, m.color, " +
-//            "(SELECT NEW com.mogak.spring.web.dto.MogakResponseDto.GetMogakInModaratDto()) " +
-//            "FROM Modarat m")
-//    ModaratResponseDto.SingleDetailModaratDto findOneDetailModarat(Long modaratId);
-
     @Query("SELECT NEW com.mogak.spring.repository.query.SingleDetailModaratDto(m.id, m.title, m.color) " +
             "FROM Modarat m " +
             "WHERE m.id = :modaratId")
@@ -26,4 +21,6 @@ public interface ModaratRepository extends JpaRepository<Modarat, Long> {
             "FROM Mogak m join m.modarat mt " +
             "WHERE mt.id = :modaratId")
     Optional<List<GetMogakInModaratDto>> findMogakDtoListByModaratId(@Param("modaratId") Long modaratId);
+
+    List<Modarat> findModaratsByUserId(Long userId);
 }
