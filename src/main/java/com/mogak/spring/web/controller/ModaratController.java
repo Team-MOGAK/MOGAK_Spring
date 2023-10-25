@@ -4,6 +4,7 @@ import com.mogak.spring.converter.ModaratConverter;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.login.AuthHandler;
+import com.mogak.spring.repository.query.SingleDetailModaratDto;
 import com.mogak.spring.service.ModaratService;
 import com.mogak.spring.web.dto.ModaratDto.ModaratRequestDto;
 import io.swagger.v3.oas.annotations.tags.Tag;

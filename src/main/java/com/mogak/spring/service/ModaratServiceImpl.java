@@ -8,11 +8,14 @@ import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.ModaratRepository;
 import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.repository.query.GetMogakInModaratDto;
+import com.mogak.spring.repository.query.SingleDetailModaratDto;
 import com.mogak.spring.web.dto.ModaratDto.ModaratRequestDto;
-import com.mogak.spring.web.dto.ModaratDto.ModaratResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -44,9 +47,11 @@ public class ModaratServiceImpl implements ModaratService {
     }
 
     @Override
-    public ModaratResponseDto.SingleDetailModaratDto getDetailModarat(Long modaratId) {
-         modaratRepository.findOneDetailModarat(modaratId);
-         return null;
+    public SingleDetailModaratDto getDetailModarat(Long modaratId) {
+        List<GetMogakInModaratDto> mogakDtoList = modaratRepository.findMogakDtoListByModaratId(modaratId).orElse(null);
+        SingleDetailModaratDto modaratDto = modaratRepository.findOneDetailModarat(modaratId);
+        modaratDto.updateMogakList(mogakDtoList);
+        return modaratDto;
     }
 
 }

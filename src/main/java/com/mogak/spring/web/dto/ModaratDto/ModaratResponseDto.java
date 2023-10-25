@@ -1,5 +1,6 @@
 package com.mogak.spring.web.dto.ModaratDto;
 
+import com.mogak.spring.repository.query.GetMogakInModaratDto;
 import com.mogak.spring.web.dto.MogakResponseDto;
 import lombok.*;
 
@@ -14,17 +15,6 @@ public class ModaratResponseDto {
         private Long id;
         private String title;
         private String color;
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class SingleDetailModaratDto {
-        private Long id;
-        private String title;
-        private String color;
-        private List<MogakResponseDto.GetMogakInModaratDto> mogakDtoList;
     }
 
 }

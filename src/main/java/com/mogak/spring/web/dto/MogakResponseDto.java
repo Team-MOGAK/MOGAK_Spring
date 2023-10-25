@@ -51,14 +51,14 @@ public class MogakResponseDto {
         private LocalDate endAt;
     }
 
-    @Builder
-    @Getter
-    @AllArgsConstructor(access = AccessLevel.PROTECTED)
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class GetMogakInModaratDto {
-        private String title;
-        private MogakCategory bigCategory;
-        private String smallCategory;
-        private String color;
-    }
+//    @Builder
+//    @Getter
+//    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+//    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+//    public static class GetMogakInModaratDto {
+//        private String title;
+//        private MogakCategory bigCategory;
+//        private String smallCategory;
+//        private String color;
+//    }
 }

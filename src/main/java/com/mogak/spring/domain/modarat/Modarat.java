@@ -18,13 +18,13 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Modarat extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "mogak_id")
+    @Column(name = "modarat_id")
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-    @OneToMany(mappedBy = "mogak")
-    private List<Mogak> mogakList = new ArrayList<>();
+//    @OneToMany(mappedBy = "mogak")
+//    private List<Mogak> mogaks = new ArrayList<>();
     @Column(nullable = false)
     private String title;
     @Column(nullable = false)

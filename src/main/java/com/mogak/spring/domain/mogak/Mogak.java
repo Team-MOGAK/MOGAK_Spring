@@ -2,6 +2,7 @@ package com.mogak.spring.domain.mogak;
 
 import com.mogak.spring.domain.jogak.JogakPeriod;
 import com.mogak.spring.domain.jogak.Period;
+import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.global.BaseEntity;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
@@ -29,8 +30,11 @@ public class Mogak extends BaseEntity {
     @Column(name = "mogak_id")
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id")
+    @JoinColumn(name = "user_id")
     private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "modarat_id")
+    private Modarat modarat;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "big_category")
     private MogakCategory bigCategory;
