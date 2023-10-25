@@ -4,10 +4,12 @@ import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Period;
+import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
@@ -27,9 +29,8 @@ import java.util.Optional;
 @Service
 public class MogakServiceImpl implements MogakService {
     private final UserRepository userRepository;
+    private final ModaratRepository modaratRepository;
     private final MogakRepository mogakRepository;
-//    private final MogakPeriodRepository mogakPeriodRepository;
-    private final PeriodRepository periodRepository;
     private final MogakCategoryRepository categoryRepository;
     private final JogakRepository jogakRepository;
     private final PostRepository postRepository;
@@ -42,11 +43,14 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public MogakResponseDto.CreateDto create(Long userId, MogakRequestDto.CreateDto request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        Modarat modarat = modaratRepository.findById(request.getModaratId())
+                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
         MogakCategory category = categoryRepository.findMogakCategoryByName(request.getBigCategory())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
         State state = State.registerState(request.getStartAt(), request.getEndAt(), LocalDate.now());
-        Mogak result = mogakRepository.save(MogakConverter.toMogak(request, category, request.getSmallCategory(), user, state));
+        Mogak result = mogakRepository.save(MogakConverter.toMogak(request, modarat, category, request.getSmallCategory(), user, state));
         return MogakConverter.toCreateDto(result);
     }
 
