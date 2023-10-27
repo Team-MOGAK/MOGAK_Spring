@@ -29,9 +29,9 @@ public class Modarat extends BaseEntity {
     @Column(nullable = false)
     private String validation;
 
-    public void update(ModaratRequestDto.UpdateModaratDto request) {
-        this.title = request.getTitle();
-        this.color = request.getColor();
+    public void update(String title, String color) {
+        this.title = title;
+        this.color = color;
     }
 
 }

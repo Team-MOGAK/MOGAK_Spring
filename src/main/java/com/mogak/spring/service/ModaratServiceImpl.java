@@ -44,7 +44,7 @@ public class ModaratServiceImpl implements ModaratService {
     public Modarat update(Long modaratId, ModaratRequestDto.UpdateModaratDto request) {
         Modarat modarat = modaratRepository.findById(modaratId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
-        modarat.update(request);
+        modarat.update(request.getTitle(), request.getColor());
         return modarat;
     }
 

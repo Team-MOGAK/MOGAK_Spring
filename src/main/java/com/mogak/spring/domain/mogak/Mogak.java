@@ -9,7 +9,6 @@ import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.exception.MogakException;
-import com.mogak.spring.web.dto.MogakRequestDto;
 import lombok.*;
 
 import javax.persistence.*;
@@ -72,17 +71,21 @@ public class Mogak extends BaseEntity {
         this.bigCategory = category;
     }
 
-    public void updateFromDto(MogakRequestDto.UpdateDto updateDto) {
-        Optional.ofNullable(updateDto.getTitle()).ifPresent(updateTitle -> this.title = updateTitle);
-        Optional.ofNullable(updateDto.getStartAt()).ifPresent(startDay -> {
+    public void update(String title,
+                       String smallCategory,
+                       LocalDate startAt,
+                       LocalDate endAt,
+                       String color) {
+        Optional.ofNullable(title).ifPresent(updateTitle -> this.title = updateTitle);
+        Optional.ofNullable(smallCategory).ifPresent(category -> this.smallCategory = category);
+        Optional.ofNullable(startAt).ifPresent(startDay -> {
             if (!this.state.equals(State.BEFORE.toString())) {
                 throw new MogakException(ErrorCode.CAN_MODIFIED_BEFORE_START_MOGAK);
             }
             this.state = State.registerState(startDay, endAt, LocalDate.now()).toString();
             this.startAt = startDay;
         });
-        Optional.ofNullable(updateDto.getEndAt()).ifPresent(endDay -> this.endAt = endDay);
-        Optional.ofNullable(updateDto.getSmallCategory()).ifPresent(category -> this.smallCategory = category);
-        Optional.ofNullable(updateDto.getColor()).ifPresent(updateColor -> this.color = updateColor);
+        Optional.ofNullable(endAt).ifPresent(endDay -> this.endAt = endDay);
+        Optional.ofNullable(color).ifPresent(updateColor -> this.color = updateColor);
     }
 }

@@ -127,12 +127,12 @@ public class MogakServiceImpl implements MogakService {
         Mogak mogak = mogakRepository.findById(request.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         Optional<String> categoryOptional = Optional.ofNullable(request.getBigCategory());
-        if (categoryOptional.isPresent()) {
-            MogakCategory category = categoryRepository.findMogakCategoryByName(request.getBigCategory())
+        categoryOptional.ifPresent(categoryValue -> {
+            MogakCategory category = categoryRepository.findMogakCategoryByName(categoryValue)
                     .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
             mogak.updateBigCategory(category);
-        }
-        mogak.updateFromDto(request);
+        });
+        mogak.update(request.getTitle(), request.getSmallCategory(), request.getStartAt(), request.getEndAt(), request.getColor());
         return MogakConverter.toUpdateDto(mogak);
     }
 
