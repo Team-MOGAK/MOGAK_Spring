@@ -87,6 +87,20 @@ public class JogakController {
 //        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toEndJogakDto(jogak)));
 //    }
 
+    @Operation(summary = "조각 수정", description = "입력값을 이용해 조각을 수정합니다",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조각 수정 성공"),
+                    @ApiResponse(responseCode = "400", description = "기타 카테고리 X",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 조각, 존재하지 않는 카테고리",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
+    @PutMapping("/{jogakId}")
+    public ResponseEntity<BaseResponse<ErrorCode>> updateJogak(@PathVariable Long jogakId, @RequestBody JogakRequestDto.UpdateJogakDto updateJogakDto) {
+        jogakService.updateJogak(jogakId, updateJogakDto);
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
+    }
+
     @Operation(summary = "조각 삭제", description = "조각을 삭제합니다",
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),
             responses = {

@@ -15,4 +15,12 @@ public class JogakRequestDto {
         private LocalDate endDate;
     }
 
+    @Getter
+    public static class UpdateJogakDto {
+        private String title;
+        private Boolean isRoutine;
+        private List<String> days;
+        private LocalDate endDate;
+    }
+
 }

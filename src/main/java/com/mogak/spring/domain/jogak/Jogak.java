@@ -9,6 +9,7 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Builder
@@ -47,6 +48,12 @@ public class Jogak extends BaseEntity {
                 .map(JogakPeriod::getPeriod)
                 .map(Period::getDays)
                 .collect(Collectors.toList());
+    }
+
+    public void update(String title, Boolean isRoutine, LocalDate endAt) {
+        Optional.ofNullable(title).ifPresent(updateTitle -> this.title = updateTitle);
+        Optional.ofNullable(isRoutine).ifPresent(routine -> this.isRoutine = routine);
+        Optional.ofNullable(endAt).ifPresent(endDate -> this.endAt = endDate);
     }
 
 //    public void start(LocalDateTime now) {

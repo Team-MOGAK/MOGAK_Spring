@@ -1,6 +1,7 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.converter.JogakConverter;
+import com.mogak.spring.converter.JogakPeriodConverter;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakPeriod;
 import com.mogak.spring.domain.jogak.JogakState;
@@ -20,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -73,6 +76,7 @@ public class JogakServiceImpl implements JogakService {
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         Jogak jogak = jogakRepository.save(JogakConverter.toJogak(mogak, mogak.getBigCategory(),
                 createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getEndDate()));
+        validatePeriod(Optional.ofNullable(createJogakDto.getIsRoutine()), Optional.ofNullable(createJogakDto.getDays()));
 
         List<Period> periods = new ArrayList<>();
         List<String> requestDays = createJogakDto.getDays();
@@ -91,6 +95,53 @@ public class JogakServiceImpl implements JogakService {
             );
         }
         return JogakConverter.toCreateJogakResponseDto(jogak);
+    }
+
+    @Transactional
+    @Override
+    public void updateJogak(Long jogakId, JogakRequestDto.UpdateJogakDto updateJogakDto) {
+        Jogak jogak = jogakRepository.findById(jogakId)
+                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        validatePeriod(Optional.ofNullable(updateJogakDto.getIsRoutine()), Optional.ofNullable(updateJogakDto.getDays()));
+        jogak.update(updateJogakDto.getTitle(), updateJogakDto.getIsRoutine(), updateJogakDto.getEndDate());
+        updateJogakPeriod(jogak, updateJogakDto.getDays());
+    }
+
+    private void validatePeriod(Optional<Boolean> isRoutineOptional, Optional<List<String>> daysOptional) {
+        isRoutineOptional.ifPresent(isRoutine -> {
+            if (isRoutine && daysOptional.isEmpty()) {
+                throw new JogakException(ErrorCode.NOT_VALID_UPDATE_JOGAK);
+            }
+        });
+        daysOptional.ifPresent(days -> {
+            if (isRoutineOptional.isEmpty()) {
+                throw new JogakException(ErrorCode.NOT_VALID_UPDATE_JOGAK);
+            }
+        });
+    }
+
+    /**
+     * 모각주기 업데이트 메소드
+     * */
+    private void updateJogakPeriod(Jogak jogak, List<String> days) {
+        List<Period> periods = new ArrayList<>();
+        for (String day : days) {
+            periods.add(periodRepository.findOneByDays(day)
+                    .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_DAY)));
+        }
+        List<JogakPeriod> mogakPeriods = jogakPeriodRepository.findAllByJogak_Id(jogak.getId());
+        int periodSize = periods.size();
+        int mpSize = mogakPeriods.size();
+
+        IntStream.range(0, Math.min(mpSize, periodSize))
+                .forEach(i -> mogakPeriods.get(i).updatePeriod(periods.get(i)));
+        if (mpSize > periodSize) {
+            IntStream.range(periodSize, mpSize)
+                    .forEach(i -> jogakPeriodRepository.delete(mogakPeriods.get(i)));
+        } else {
+            IntStream.range(mpSize, periodSize)
+                    .forEach(i -> jogakPeriodRepository.save(JogakPeriodConverter.toJogakPeriod(periods.get(i), jogak)));
+        }
     }
 
     @Override
