@@ -29,25 +29,25 @@ import static com.mogak.spring.web.dto.JogakResponseDto.startJogakDto;
 @Tag(name = "조각 API", description = "조각 API 명세서")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/mogaks/jogaks")
+@RequestMapping("/api/modarats/mogaks/jogaks")
 public class JogakController {
     private final JogakService jogakService;
     private final AuthHandler authHandler;
 
-//    @Operation(summary = "(임시)조각 생성", description = "모각에 대한 조각을 생성합니다",
-//            parameters = @Parameter(name = "mogakId", description = "모각 ID"),
-//            responses = {
-//                    @ApiResponse(responseCode = "200", description = "조각 생성"),
-//                    @ApiResponse(responseCode = "400", description = "진행중인 모각만 조각을 생성",
-//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//                    @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
-//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//            })
-//    @PostMapping("{mogakId}")
-//    public ResponseEntity<BaseResponse<CreateJogakDto>> create(@PathVariable Long mogakId) {
-//        Jogak jogak = jogakService.createJogak(mogakId);
-//        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(JogakConverter.toCreateJogakResponseDto(jogak)));
-//    }
+    @Operation(summary = "조각 생성", description = "조각을 생성합니다",
+            parameters = @Parameter(name = "mogakId", description = "모각 ID"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조각 생성"),
+                    @ApiResponse(responseCode = "400", description = "진행중인 모각만 조각을 생성",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
+    @PostMapping("{mogakId}")
+    public ResponseEntity<BaseResponse<CreateJogakDto>> create(@PathVariable Long mogakId) {
+        Jogak jogak = jogakService.createJogak(mogakId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(JogakConverter.toCreateJogakResponseDto(jogak)));
+    }
 
 //    @Operation(summary = "당일 조각 조회", description = "당일 조각을 조회합니다",
 //            security = @SecurityRequirement(name = "Bearer Authentication"),

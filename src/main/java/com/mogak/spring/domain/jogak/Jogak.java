@@ -5,6 +5,7 @@ import com.mogak.spring.global.BaseEntity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Builder
@@ -20,10 +21,12 @@ public class Jogak extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mogak_id")
     private Mogak mogak;
+    @Column(nullable = false)
+    private String title;
     @Column(name = "start_at", nullable = false)
-    private LocalDateTime startAt;
+    private LocalDate startAt;
     @Column(name = "end_at", nullable = false)
-    private LocalDateTime endAt;
+    private LocalDate endAt;
     private String state;
 
 //    public void start(LocalDateTime now) {
