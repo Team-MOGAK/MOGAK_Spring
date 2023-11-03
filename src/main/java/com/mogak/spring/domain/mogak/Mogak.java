@@ -1,14 +1,12 @@
 package com.mogak.spring.domain.mogak;
 
-import com.mogak.spring.domain.jogak.JogakPeriod;
-import com.mogak.spring.domain.jogak.Period;
-import com.mogak.spring.domain.modarat.Modarat;
-import com.mogak.spring.global.BaseEntity;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.exception.MogakException;
+import com.mogak.spring.global.BaseEntity;
+import com.mogak.spring.global.ErrorCode;
 import lombok.*;
 
 import javax.persistence.*;
@@ -16,7 +14,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Builder
 @Getter
@@ -40,9 +37,6 @@ public class Mogak extends BaseEntity {
     @Column(name = "small_category")
     private String smallCategory;
     @Builder.Default
-    @OneToMany(mappedBy = "jogak")
-    private List<JogakPeriod> jogakPeriods = new ArrayList<>();
-    @Builder.Default
     @OneToMany(mappedBy = "mogak")
     private List<Jogak> jogaks = new ArrayList<>();
     @Column(nullable = false)
@@ -55,14 +49,6 @@ public class Mogak extends BaseEntity {
     private String color;
     @Column(nullable = false)
     private String validation;
-
-    public List<String> getPeriod() {
-        return this.getJogakPeriods()
-                .stream()
-                .map(JogakPeriod::getPeriod)
-                .map(Period::getDays)
-                .collect(Collectors.toList());
-    }
 
     public void updateState(String state) {
         this.state = state;

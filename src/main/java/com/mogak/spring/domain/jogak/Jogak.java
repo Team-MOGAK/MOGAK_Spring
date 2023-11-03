@@ -6,7 +6,9 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Builder
 @Getter
@@ -23,11 +25,25 @@ public class Jogak extends BaseEntity {
     private Mogak mogak;
     @Column(nullable = false)
     private String title;
-    @Column(name = "start_at", nullable = false)
+    @OneToMany(mappedBy = "jogak")
+    private List<JogakPeriod> jogakPeriods = new ArrayList<>();
+    @Column(nullable = false)
+    private Boolean isRoutine;
+    @Column(name = "number_achievements")
+    private Integer numberAchievements;
+    @Column(name = "start_at")
     private LocalDate startAt;
-    @Column(name = "end_at", nullable = false)
+    @Column(name = "end_at")
     private LocalDate endAt;
     private String state;
+
+    public List<String> getPeriods() {
+        return this.getJogakPeriods()
+                .stream()
+                .map(JogakPeriod::getPeriod)
+                .map(Period::getDays)
+                .collect(Collectors.toList());
+    }
 
 //    public void start(LocalDateTime now) {
 //        if (this.startTime != null) {
