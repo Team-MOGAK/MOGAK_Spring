@@ -87,14 +87,14 @@ public class JogakController {
 //        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toEndJogakDto(jogak)));
 //    }
 
-    @Operation(summary = "(임시)조각 삭제", description = "조각을 삭제합니다",
+    @Operation(summary = "조각 삭제", description = "조각을 삭제합니다",
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조각 삭제"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 조각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @DeleteMapping("{jogakId}")
+    @DeleteMapping("/{jogakId}")
     public ResponseEntity<BaseResponse<ErrorCode>> deleteJogak(@PathVariable Long jogakId) {
         jogakService.deleteJogak(jogakId);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
