@@ -1,10 +1,8 @@
 package com.mogak.spring.config;
 
 import com.mogak.spring.domain.common.Validation;
-import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
-import com.mogak.spring.domain.jogak.JogakPeriod;
 import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
@@ -30,7 +28,7 @@ public class DataInitializer implements ApplicationRunner {
 
     private final MogakRepository mogakRepository;
     private final MogakCategoryRepository mogakCategoryRepository;
-//    private final MogakPeriodRepository mogakPeriodRepository;
+    private final JogakPeriodRepository jogakPeriodRepository;
     private final AddressRepository addressRepository;
     private final PeriodRepository periodRepository;
     private final JobRepository jobRepository;

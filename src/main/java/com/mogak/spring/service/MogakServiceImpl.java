@@ -1,9 +1,7 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
-import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
@@ -54,11 +52,11 @@ public class MogakServiceImpl implements MogakService {
         return MogakConverter.toCreateDto(result);
     }
 
-    private void createTodayJogak(Mogak result, List<Period> periods, int dayNum) {
-        if (periods.stream().anyMatch(day -> day.getId() == dayNum) && result.getState().equals(State.ONGOING.name())) {
-            jogakRepository.save(JogakConverter.toJogak(result));
-        }
-    }
+//    private void createTodayJogak(Mogak result, List<Period> periods, int dayNum) {
+//        if (periods.stream().anyMatch(day -> day.getId() == dayNum) && result.getState().equals(State.ONGOING.name())) {
+//            jogakRepository.save(JogakConverter.toJogak(result));
+//        }
+//    }
 
 //    /**
 //     * 모각주기 저장 메소드

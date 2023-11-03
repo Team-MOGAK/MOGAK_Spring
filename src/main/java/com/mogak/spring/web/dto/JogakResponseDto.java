@@ -11,7 +11,10 @@ public class JogakResponseDto {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class CreateJogakDto {
-        private LocalDateTime startTime;
+        private Long jogakId;
+        private String category;
+        private String title;
+        private Boolean isRoutine;
     }
 
     @Getter

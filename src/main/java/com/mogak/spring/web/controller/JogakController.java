@@ -1,30 +1,22 @@
 package com.mogak.spring.web.controller;
 
-import com.mogak.spring.converter.JogakConverter;
-import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.JogakService;
-import com.mogak.spring.web.dto.JogakResponseDto.CreateJogakDto;
-import com.mogak.spring.web.dto.JogakResponseDto.GetJogakListDto;
+import com.mogak.spring.web.dto.JogakRequestDto;
+import com.mogak.spring.web.dto.JogakResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
-import static com.mogak.spring.web.dto.JogakResponseDto.endJogakDto;
-import static com.mogak.spring.web.dto.JogakResponseDto.startJogakDto;
 
 @Tag(name = "조각 API", description = "조각 API 명세서")
 @RequiredArgsConstructor
@@ -43,10 +35,9 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PostMapping("{mogakId}")
-    public ResponseEntity<BaseResponse<CreateJogakDto>> create(@PathVariable Long mogakId) {
-        Jogak jogak = jogakService.createJogak(mogakId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(JogakConverter.toCreateJogakResponseDto(jogak)));
+    @PostMapping("")
+    public ResponseEntity<BaseResponse<JogakResponseDto.CreateJogakDto>> create(@RequestBody JogakRequestDto.CreateJogakDto createJogakDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(jogakService.createJogak(createJogakDto)));
     }
 
 //    @Operation(summary = "당일 조각 조회", description = "당일 조각을 조회합니다",

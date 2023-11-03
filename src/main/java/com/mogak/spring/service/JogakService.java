@@ -1,13 +1,15 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.web.dto.JogakRequestDto;
+import com.mogak.spring.web.dto.JogakResponseDto;
 
 import java.util.List;
 
 public interface JogakService {
 
     void createJogakToday();
-    Jogak createJogak(Long mogakId);
+    JogakResponseDto.CreateJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto);
 
     List<Jogak> getDailyJogaks(Long userId);
     void failJogakAtMidnight();

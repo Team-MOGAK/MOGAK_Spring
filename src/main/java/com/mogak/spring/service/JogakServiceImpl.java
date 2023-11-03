@@ -1,26 +1,24 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.converter.JogakConverter;
-import com.mogak.spring.domain.common.State;
-import com.mogak.spring.domain.common.Weeks;
 import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.jogak.JogakPeriod;
 import com.mogak.spring.domain.jogak.JogakState;
+import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.repository.JogakRepository;
-import com.mogak.spring.repository.MogakRepository;
-import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.repository.*;
+import com.mogak.spring.web.dto.JogakRequestDto;
+import com.mogak.spring.web.dto.JogakResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -29,9 +27,10 @@ import java.util.List;
 public class JogakServiceImpl implements JogakService {
 
     private final UserRepository userRepository;
-    private final MogakService mogakService;
     private final MogakRepository mogakRepository;
     private final JogakRepository jogakRepository;
+    private final JogakPeriodRepository jogakPeriodRepository;
+    private final PeriodRepository periodRepository;
 
     /**
      * 자정에 Ongoing인 모든 모각 생성
@@ -69,12 +68,29 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public Jogak createJogak(Long mogakId) {
-        Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        if (!mogak.getState().equals(State.ONGOING.name())) {
-            throw new JogakException(ErrorCode.WRONG_CREATE_JOGAK);
+    public JogakResponseDto.CreateJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
+        Mogak mogak = mogakRepository.findById(createJogakDto.getMogakId())
+                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
+        Jogak jogak = jogakRepository.save(JogakConverter.toJogak(mogak, mogak.getBigCategory(),
+                createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getEndDate()));
+
+        List<Period> periods = new ArrayList<>();
+        List<String> requestDays = createJogakDto.getDays();
+        // 반복주기 추출
+        for (String day: requestDays) {
+            periods.add(periodRepository.findOneByDays(day)
+                    .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_DAY)));
         }
-        return jogakRepository.save(JogakConverter.toJogak(mogak));
+        // 다대다-조각주기 저장
+        for (Period period: periods) {
+            jogakPeriodRepository.save(
+                    JogakPeriod.builder()
+                            .period(period)
+                            .jogak(jogak)
+                    .build()
+            );
+        }
+        return JogakConverter.toCreateJogakResponseDto(jogak);
     }
 
     @Override
