@@ -20,6 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 import static com.mogak.spring.web.dto.MogakResponseDto.*;
 
 @Tag(name = "모각 API", description = "모각 API 명세서")
@@ -42,7 +44,7 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/mogaks")
-    public ResponseEntity<BaseResponse<CreateDto>> createMogak(@RequestBody MogakRequestDto.CreateDto request) {
+    public ResponseEntity<BaseResponse<CreateDto>> createMogak(@Valid @RequestBody MogakRequestDto.CreateDto request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new BaseResponse<>(mogakService.create(authHandler.getUserId(), request)));
     }
@@ -68,7 +70,7 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PutMapping("/mogaks")
-    public ResponseEntity<BaseResponse<UpdateStateDto>> updateMogak(@RequestBody MogakRequestDto.UpdateDto request) {
+    public ResponseEntity<BaseResponse<UpdateStateDto>> updateMogak(@Valid @RequestBody MogakRequestDto.UpdateDto request) {
         return ResponseEntity.ok(new BaseResponse<>(mogakService.updateMogak(request)));
     }
 

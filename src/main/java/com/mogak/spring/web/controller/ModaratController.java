@@ -43,7 +43,7 @@ public class ModaratController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
-    public ResponseEntity<BaseResponse<CreateModaratDto>> createModarat(@RequestBody @Valid ModaratRequestDto.CreateModaratDto request) {
+    public ResponseEntity<BaseResponse<CreateModaratDto>> createModarat(@Valid @RequestBody ModaratRequestDto.CreateModaratDto request) {
         Modarat modarat = modaratService.create(authHandler.getUserId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(ModaratConverter.toCreateDto(modarat)));
     }
@@ -63,7 +63,8 @@ public class ModaratController {
                     @ApiResponse(responseCode = "201", description = "모각 수정 성공"),
             })
     @PutMapping("/{modaratId}")
-    public ResponseEntity<BaseResponse<CreateModaratDto>> updateModarat(@PathVariable Long modaratId, @RequestBody ModaratRequestDto.UpdateModaratDto request) {
+    public ResponseEntity<BaseResponse<CreateModaratDto>> updateModarat(@PathVariable Long modaratId,
+                                                                        @Valid @RequestBody ModaratRequestDto.UpdateModaratDto request) {
         Modarat modarat = modaratService.update(modaratId, request);
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(ModaratConverter.toCreateDto(modarat)));
     }

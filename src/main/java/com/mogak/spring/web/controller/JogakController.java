@@ -19,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @Tag(name = "조각 API", description = "조각 API 명세서")
 @RequiredArgsConstructor
 @RestController
@@ -36,7 +38,7 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
-    public ResponseEntity<BaseResponse<JogakResponseDto.CreateJogakDto>> create(@RequestBody JogakRequestDto.CreateJogakDto createJogakDto) {
+    public ResponseEntity<BaseResponse<JogakResponseDto.CreateJogakDto>> create(@Valid @RequestBody JogakRequestDto.CreateJogakDto createJogakDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(jogakService.createJogak(createJogakDto)));
     }
 
@@ -99,7 +101,8 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/{jogakId}")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateJogak(@PathVariable Long jogakId, @RequestBody JogakRequestDto.UpdateJogakDto updateJogakDto) {
+    public ResponseEntity<BaseResponse<ErrorCode>> updateJogak(@PathVariable Long jogakId,
+                                                               @Valid @RequestBody JogakRequestDto.UpdateJogakDto updateJogakDto) {
         jogakService.updateJogak(jogakId, updateJogakDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
