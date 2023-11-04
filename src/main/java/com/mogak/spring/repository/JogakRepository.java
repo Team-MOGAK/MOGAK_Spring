@@ -10,11 +10,10 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface JogakRepository extends JpaRepository<Jogak, Long> {
-    @Query(value = "SELECT j " +
-            "FROM Jogak j join fetch j.mogak m join fetch m.user " +
-            "where m.user = :user " +
-            "AND j.createdAt >= CURRENT_DATE AND j.createdAt < CURRENT_DATE + 1")
-    List<Jogak> findDailyJogak(@Param(value = "user") User user);
+    @Query("SELECT j from Jogak j " +
+            "JOIN FETCH j.mogak jm JOIN FETCH jm.user JOIN FETCH j.jogakPeriods jp JOIN FETCH jp.period " +
+            "WHERE jm.user = :user and jp.period.id = :today")
+    List<Jogak> findDailyRoutineJogak(@Param(value = "user") User user, @Param(value = "today") int todayNum);
 
     @Query(value = "SELECT j FROM Jogak j WHERE :state Is NULL or j.state = :state")
     List<Jogak> findJogakByState(@Param(value = "state") String state);

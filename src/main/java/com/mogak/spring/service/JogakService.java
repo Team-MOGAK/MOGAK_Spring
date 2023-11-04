@@ -9,6 +9,7 @@ public interface JogakService {
     JogakResponseDto.CreateJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto);
     void updateJogak(Long jogakId, JogakRequestDto.UpdateJogakDto updateJogakDto);
     JogakResponseDto.GetJogakListDto getDailyJogaks(Long userId);
+    JogakResponseDto.GetJogakListDto getRoutineTodayJogaks(Long userId);
     void failJogakAtMidnight();
 //    void failJogakAtFour();
 

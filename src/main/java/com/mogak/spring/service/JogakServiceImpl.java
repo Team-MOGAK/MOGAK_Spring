@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -157,6 +159,20 @@ public class JogakServiceImpl implements JogakService {
                         )
             .collect(Collectors.toList());
         return JogakConverter.toGetJogakListResponseDto(jogakList);
+    }
+
+    @Override
+    public JogakResponseDto.GetJogakListDto getRoutineTodayJogaks(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        mogakRepository.findAllByUser(user);
+        return JogakConverter.toGetJogakListResponseDto(jogakRepository.findDailyRoutineJogak(user, getTodayNum()));
+    }
+
+    private int getTodayNum() {
+        LocalDate today = LocalDate.now();
+        DayOfWeek dayOfWeek = today.getDayOfWeek();
+        return dayOfWeek.getValue();
     }
 
 //    @Transactional

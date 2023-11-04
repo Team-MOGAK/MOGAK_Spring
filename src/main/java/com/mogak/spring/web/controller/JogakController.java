@@ -42,7 +42,6 @@ public class JogakController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(jogakService.createJogak(createJogakDto)));
     }
 
-    // TODO 금일 루틴 조각 조회
     // TODO 조각 스테이징(오늘 조각 하기로 하는것)
     // TODO 성공한 조각 저장
 
@@ -56,6 +55,18 @@ public class JogakController {
     @GetMapping("/daily")
     public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakListDto>> getDailyJogaks() {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks(authHandler.getUserId())));
+    }
+
+    @Operation(summary = "당일 루틴 조각 조회", description = "오늘의 루틴 조각을 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
+    @GetMapping("/routine")
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakListDto>> getRoutineJogaks() {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineTodayJogaks(authHandler.getUserId())));
     }
 
 //    @Operation(summary = "조각 시작", description = "조각을 시작합니다",
