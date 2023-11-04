@@ -56,6 +56,10 @@ public class Jogak extends BaseEntity {
         Optional.ofNullable(endAt).ifPresent(endDate -> this.endAt = endDate);
     }
 
+    public void updateCategory(MogakCategory category) {
+        this.category = category;
+    }
+
 //    public void start(LocalDateTime now) {
 //        if (this.startTime != null) {
 //            throw new JogakException(ErrorCode.ALREADY_START_JOGAK);

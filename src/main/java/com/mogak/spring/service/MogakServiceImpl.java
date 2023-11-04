@@ -2,6 +2,7 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
+import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
@@ -129,6 +130,9 @@ public class MogakServiceImpl implements MogakService {
             MogakCategory category = categoryRepository.findMogakCategoryByName(categoryValue)
                     .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
             mogak.updateBigCategory(category);
+            // 조각 카테고리 수정
+            List<Jogak> jogakList = jogakRepository.findAllByMogak(mogak);
+            jogakList.forEach(jogak -> jogak.updateCategory(category));
         });
         mogak.update(request.getTitle(), request.getSmallCategory(), request.getStartAt(), request.getEndAt(), request.getColor());
         return MogakConverter.toUpdateDto(mogak);
