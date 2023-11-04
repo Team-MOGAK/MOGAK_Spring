@@ -78,22 +78,24 @@ public class JogakServiceImpl implements JogakService {
         Jogak jogak = jogakRepository.save(JogakConverter.toJogak(mogak, mogak.getBigCategory(),
                 createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getEndDate()));
         validatePeriod(Optional.ofNullable(createJogakDto.getIsRoutine()), Optional.ofNullable(createJogakDto.getDays()));
+        if (createJogakDto.getIsRoutine()) {
+            List<Period> periods = new ArrayList<>();
+            List<String> requestDays = createJogakDto.getDays();
 
-        List<Period> periods = new ArrayList<>();
-        List<String> requestDays = createJogakDto.getDays();
-        // 반복주기 추출
-        for (String day: requestDays) {
-            periods.add(periodRepository.findOneByDays(day)
-                    .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_DAY)));
-        }
-        // 다대다-조각주기 저장
-        for (Period period: periods) {
-            jogakPeriodRepository.save(
-                    JogakPeriod.builder()
-                            .period(period)
-                            .jogak(jogak)
-                    .build()
-            );
+            // 반복주기 추출
+            for (String day: requestDays) {
+                periods.add(periodRepository.findOneByDays(day)
+                        .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_DAY)));
+            }
+            // 다대다-조각주기 저장
+            for (Period period: periods) {
+                jogakPeriodRepository.save(
+                        JogakPeriod.builder()
+                                .period(period)
+                                .jogak(jogak)
+                                .build()
+                );
+            }
         }
         return JogakConverter.toCreateJogakResponseDto(jogak);
     }
@@ -111,12 +113,12 @@ public class JogakServiceImpl implements JogakService {
     private void validatePeriod(Optional<Boolean> isRoutineOptional, Optional<List<String>> daysOptional) {
         isRoutineOptional.ifPresent(isRoutine -> {
             if (isRoutine && daysOptional.isEmpty()) {
-                throw new JogakException(ErrorCode.NOT_VALID_UPDATE_JOGAK);
+                throw new JogakException(ErrorCode.NOT_VALID_PERIOD);
             }
         });
         daysOptional.ifPresent(days -> {
-            if (isRoutineOptional.isEmpty()) {
-                throw new JogakException(ErrorCode.NOT_VALID_UPDATE_JOGAK);
+            if (isRoutineOptional.isEmpty() || !isRoutineOptional.get()) {
+                throw new JogakException(ErrorCode.NOT_VALID_PERIOD);
             }
         });
     }
