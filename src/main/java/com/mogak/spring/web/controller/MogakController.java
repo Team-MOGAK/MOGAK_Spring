@@ -25,7 +25,7 @@ import static com.mogak.spring.web.dto.MogakResponseDto.*;
 @Tag(name = "모각 API", description = "모각 API 명세서")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/modarats")
 public class MogakController {
     private final MogakService mogakService;
     private final AuthHandler authHandler;
@@ -79,7 +79,7 @@ public class MogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/modarats/{modaratId}/mogaks")
+    @GetMapping("/{modaratId}/mogaks")
     public ResponseEntity<BaseResponse<GetMogakListDto>> getMogakList(@PathVariable Long modaratId) {
             return ResponseEntity.ok(new BaseResponse<>(mogakService.getMogakDtoList(authHandler.getUserId(), modaratId)));
     }
