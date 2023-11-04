@@ -1,6 +1,7 @@
 package com.mogak.spring.repository;
 
 import com.mogak.spring.domain.mogak.Mogak;
+import com.mogak.spring.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -15,4 +16,5 @@ public interface MogakRepository extends JpaRepository<Mogak, Long> {
 //            "where m.state = :state and mp.period.id = :today - 1 ")
 //    List<Mogak> findAllOngoingToday(@Param("state") String state, @Param("today") int today);
     List<Mogak> findAllByEndAt(LocalDate now);
+    List<Mogak> findAllByUser(User user);
 }

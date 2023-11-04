@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,6 @@ public class JogakController {
     private final AuthHandler authHandler;
 
     @Operation(summary = "조각 생성", description = "조각을 생성합니다",
-            parameters = @Parameter(name = "mogakId", description = "모각 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조각 생성"),
                     @ApiResponse(responseCode = "400", description = "진행중인 모각만 조각을 생성",
@@ -40,18 +40,21 @@ public class JogakController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(jogakService.createJogak(createJogakDto)));
     }
 
-//    @Operation(summary = "당일 조각 조회", description = "당일 조각을 조회합니다",
-//            security = @SecurityRequirement(name = "Bearer Authentication"),
-//            responses = {
-//                    @ApiResponse(responseCode = "200", description = "조회 성공"),
-//                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
-//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//            })
-//    @GetMapping("")
-//    public ResponseEntity<BaseResponse<GetJogakListDto>> getDailyJogaks() {
-//        List<Jogak> jogakList = jogakService.getDailyJogaks(authHandler.getUserId());
-//        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetJogakListResponseDto(jogakList)));
-//    }
+    // TODO 금일 루틴 조각 조회
+    // TODO 조각 스테이징(오늘 조각 하기로 하는것)
+    // TODO 성공한 조각 저장
+
+    @Operation(summary = "일일 조각 조회", description = "일일 조각을 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
+    @GetMapping("/daily")
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakListDto>> getDailyJogaks() {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks(authHandler.getUserId())));
+    }
 
 //    @Operation(summary = "조각 시작", description = "조각을 시작합니다",
 //            parameters = @Parameter(name = "jogakId", description = "조각 ID"),

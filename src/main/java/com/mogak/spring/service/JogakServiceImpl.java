@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
@@ -145,9 +146,15 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public List<Jogak> getDailyJogaks(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        return jogakRepository.findDailyJogak(user);
+    public JogakResponseDto.GetJogakListDto getDailyJogaks(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        List<Jogak> jogakList = mogakRepository.findAllByUser(user).stream()
+                .flatMap(mogak -> mogak.getJogaks().stream()
+                        .filter(jogak -> !jogak.getIsRoutine())
+                        )
+            .collect(Collectors.toList());
+        return JogakConverter.toGetJogakListResponseDto(jogakList);
     }
 
 //    @Transactional
