@@ -118,4 +118,9 @@ public class UserServiceImpl implements UserService {
         user.updateProfileImg(imgUrl, imgName);
     }
 
+    @Override
+    public String getAuthCode(){
+
+    }
+
 }

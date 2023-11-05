@@ -38,4 +38,5 @@ public class SecurityConfig {
                 //UserNamePasswordAuthenticationFilter 적용하기 전에 JWTTokenFilter를 적용 하라는 뜻.
                 .build();
     }
+
 }
