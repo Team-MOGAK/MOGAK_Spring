@@ -56,7 +56,7 @@ security:
           key-id: ${APPLE_KEY_ID}
           team-id: ${APPLE_TEAM_ID}
          # key-path: #p8key 조합
-          redirect-uri: https://mogak.shop/apple/callback
+          redirect-uri: ${APPLE_REDIRECT_URI}
           client-authentication-method: POST
           client-name: Apple
           scope:
