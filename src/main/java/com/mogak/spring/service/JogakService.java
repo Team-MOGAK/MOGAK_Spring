@@ -13,7 +13,7 @@ public interface JogakService {
     void failJogakAtMidnight();
 //    void failJogakAtFour();
 
-//    Jogak startJogak(Long jogakId);
+    void startJogak(Long jogakId);
 
 //    Jogak endJogak(Long jogakId);
 

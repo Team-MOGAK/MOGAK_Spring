@@ -37,6 +37,7 @@ public class JogakServiceImpl implements JogakService {
     private final JogakRepository jogakRepository;
     private final JogakPeriodRepository jogakPeriodRepository;
     private final PeriodRepository periodRepository;
+    private final DailyJogakRepository dailyJogakRepository;
 
     /**
      * 자정에 Ongoing인 모든 모각 생성
@@ -155,9 +156,8 @@ public class JogakServiceImpl implements JogakService {
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<Jogak> jogakList = mogakRepository.findAllByUser(user).stream()
                 .flatMap(mogak -> mogak.getJogaks().stream()
-                        .filter(jogak -> !jogak.getIsRoutine())
-                        )
-            .collect(Collectors.toList());
+                        .filter(jogak -> !jogak.getIsRoutine()))
+                .collect(Collectors.toList());
         return JogakConverter.toGetJogakListResponseDto(jogakList);
     }
 
@@ -175,13 +175,17 @@ public class JogakServiceImpl implements JogakService {
         return dayOfWeek.getValue();
     }
 
-//    @Transactional
-//    @Override
-//    public Jogak startJogak(Long jogakId) {
-//        Jogak jogak = jogakRepository.findById(jogakId).orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
-//        jogak.start(LocalDateTime.now());
-//        return jogak;
-//    }
+    @Transactional
+    @Override
+    public void startJogak(Long jogakId) {
+        Jogak jogak = jogakRepository.findById(jogakId)
+                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        if (!jogak.getIsRoutine()) {
+            dailyJogakRepository.save(JogakConverter.toDailyJogak(jogak));
+        } else {
+            throw new JogakException(ErrorCode.ALREADY_START_JOGAK);
+        }
+    }
 
 //    @Transactional
 //    @Override

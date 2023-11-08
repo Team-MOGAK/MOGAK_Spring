@@ -1,6 +1,7 @@
 package com.mogak.spring.converter;
 
 import com.mogak.spring.domain.common.Validation;
+import com.mogak.spring.domain.jogak.DailyJogak;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
@@ -21,6 +22,19 @@ public class JogakConverter {
                 .startAt(mogak.getStartAt())
                 .endAt(endAt)
                 .state(Validation.ACTIVE.toString())
+                .build();
+    }
+
+    public static DailyJogak toDailyJogak(Jogak jogak) {
+        return DailyJogak.builder()
+                .mogak(jogak.getMogak())
+                .category(jogak.getCategory())
+                .title(jogak.getTitle())
+                .achievement(false)
+                .jogakPeriods(jogak.getJogakPeriods())
+                .isRoutine(jogak.getIsRoutine())
+                .startAt(jogak.getStartAt())
+                .endAt(jogak.getEndAt())
                 .build();
     }
     public static JogakResponseDto.CreateJogakDto toCreateJogakResponseDto(Jogak jogak) {

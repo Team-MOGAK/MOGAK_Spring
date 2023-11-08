@@ -42,9 +42,6 @@ public class JogakController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(jogakService.createJogak(createJogakDto)));
     }
 
-    // TODO 조각 스테이징(오늘 조각 하기로 하는것)
-    // TODO 성공한 조각 저장
-
     @Operation(summary = "일일 조각 조회", description = "일일 조각을 조회합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
@@ -69,22 +66,23 @@ public class JogakController {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineTodayJogaks(authHandler.getUserId())));
     }
 
-//    @Operation(summary = "조각 시작", description = "조각을 시작합니다",
-//            parameters = @Parameter(name = "jogakId", description = "조각 ID"),
-//            responses = {
-//                    @ApiResponse(responseCode = "200", description = "조각 시작"),
-//                    @ApiResponse(responseCode = "400", description = "자정을 넘어서 조각 시작",
-//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//                    @ApiResponse(responseCode = "404", description = "존재하지 않는 조각",
-//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//                    @ApiResponse(responseCode = "409", description = "이미 시작한 조각",
-//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//            })
-//    @PutMapping("{jogakId}/start")
-//    public ResponseEntity<BaseResponse<startJogakDto>> startJogak(@PathVariable Long jogakId) {
-//        Jogak jogak = jogakService.startJogak(jogakId);
-//        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toGetStartJogakDto(jogak)));
-//    }
+    // TODO 조각 스테이징(오늘 조각 하기로 하는것) + 루틴 조각 스케줄링
+    @Operation(summary = "일일 조각 시작", description = "일일 조각을 시작합니다",
+            parameters = @Parameter(name = "jogakId", description = "조각 ID"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조각 시작"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 조각",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "이미 시작한 조각",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
+    @PostMapping("{jogakId}/start")
+    public ResponseEntity<BaseResponse<ErrorCode>> startJogak(@PathVariable Long jogakId) {
+        jogakService.startJogak(jogakId);
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
+    }
+
+    // TODO 성공한 조각 저장
 
 //    @Operation(summary = "조각 종료", description = "조각을 종료합니다",
 //            parameters = @Parameter(name = "jogakId", description = "조각 ID"),
