@@ -5,12 +5,12 @@ import com.mogak.spring.web.dto.JogakResponseDto;
 
 public interface JogakService {
 
-    void createJogakToday();
+    void createRoutineJogakToday();
     JogakResponseDto.CreateJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto);
     void updateJogak(Long jogakId, JogakRequestDto.UpdateJogakDto updateJogakDto);
     JogakResponseDto.GetJogakListDto getDailyJogaks(Long userId);
     JogakResponseDto.GetJogakListDto getRoutineTodayJogaks(Long userId);
-    void failJogakAtMidnight();
+//    void failRoutineJogakAtMidnight();
 //    void failJogakAtFour();
 
     void startJogak(Long jogakId);

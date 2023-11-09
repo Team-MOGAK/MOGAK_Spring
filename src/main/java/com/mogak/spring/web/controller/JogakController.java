@@ -66,7 +66,6 @@ public class JogakController {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineTodayJogaks(authHandler.getUserId())));
     }
 
-    // TODO 조각 스테이징(오늘 조각 하기로 하는것) + 루틴 조각 스케줄링
     @Operation(summary = "일일 조각 시작", description = "일일 조각을 시작합니다",
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),
             responses = {

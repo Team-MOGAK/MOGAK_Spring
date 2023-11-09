@@ -2,6 +2,7 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.JogakPeriodConverter;
+import com.mogak.spring.domain.common.Weeks;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakPeriod;
 import com.mogak.spring.domain.jogak.JogakState;
@@ -43,24 +44,26 @@ public class JogakServiceImpl implements JogakService {
      * 자정에 Ongoing인 모든 모각 생성
      */
     @Transactional
-    public void createJogakToday() {
-//        List<Mogak> mogaks = mogakService.getOngoingTodayMogakList(Weeks.getTodayNum());
-//        for (Mogak mogak : mogaks) {
-//            createJogak(mogak.getId());
-//        }
-    }
-
-    /**
-     * 자정 1분까지 시작하지 않은 조각 실패 처리
-     * +) 자정엔 조각 생성 스케줄이 있어서 1분 이후에 처리
-     */
-    @Transactional
-    public void failJogakAtMidnight() {
-        List<Jogak> jogaks = jogakRepository.findJogakByState(null);
-        for (Jogak jogak : jogaks) {
-            jogak.updateState(JogakState.FAIL);
+    public void createRoutineJogakToday() {
+        for (User user: userRepository.findAll()) {
+            List<Jogak> jogaks  = jogakRepository.findDailyRoutineJogak(user, Weeks.getTodayNum());
+            for (Jogak jogak : jogaks) {
+                dailyJogakRepository.save(JogakConverter.toDailyJogak(jogak));
+            }
         }
     }
+
+//    /**
+//     * 자정 1분까지 시작하지 않은 조각 실패 처리
+//     * +) 자정엔 조각 생성 스케줄이 있어서 1분 이후에 처리
+//     */
+//    @Transactional
+//    public void failRoutineJogakAtMidnight() {
+//        List<Jogak> jogaks = jogakRepository.findJogakByState(null);
+//        for (Jogak jogak : jogaks) {
+//            jogak.updateState(JogakState.FAIL);
+//        }
+//    }
 
     /**
      * 새벽 4시까지 종료를 누르지 않은 조각 실패 처리

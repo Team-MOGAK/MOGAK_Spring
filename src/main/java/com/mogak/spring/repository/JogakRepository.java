@@ -12,7 +12,7 @@ import java.util.List;
 public interface JogakRepository extends JpaRepository<Jogak, Long> {
     @Query("SELECT j from Jogak j " +
             "JOIN FETCH j.mogak jm JOIN FETCH jm.user JOIN FETCH j.jogakPeriods jp JOIN FETCH jp.period " +
-            "WHERE jm.user = :user and jp.period.id = :today")
+            "WHERE jm.user = :user and jp.period.id = :today and j.isRoutine = true ")
     List<Jogak> findDailyRoutineJogak(@Param(value = "user") User user, @Param(value = "today") int todayNum);
 
     @Query(value = "SELECT j FROM Jogak j WHERE :state Is NULL or j.state = :state")
