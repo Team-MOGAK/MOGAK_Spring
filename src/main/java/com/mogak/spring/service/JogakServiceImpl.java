@@ -177,20 +177,19 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public void startJogak(Long jogakId) {
+    public JogakResponseDto.startDailyJogakDto startJogak(Long jogakId) {
         Jogak jogak = jogakRepository.findById(jogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
-        if (!jogak.getIsRoutine()) {
-            dailyJogakRepository.save(JogakConverter.toDailyJogak(jogak));
-        } else {
+        if (jogak.getIsRoutine()) {
             throw new JogakException(ErrorCode.ALREADY_START_JOGAK);
         }
+        return JogakConverter.toStartJogakDto((dailyJogakRepository.save(JogakConverter.toDailyJogak(jogak))));
     }
 
     @Transactional
     @Override
-    public JogakResponseDto.successJogakDto successJogak(Long jogakId) {
-        DailyJogak dailyjogak = dailyJogakRepository.findById(jogakId)
+    public JogakResponseDto.successJogakDto successJogak(Long dailyJogakId) {
+        DailyJogak dailyjogak = dailyJogakRepository.findById(dailyJogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         dailyjogak.updateSuccess();
         return JogakConverter.toSuccessJogak(JogakConverter.toJogak(dailyjogak));

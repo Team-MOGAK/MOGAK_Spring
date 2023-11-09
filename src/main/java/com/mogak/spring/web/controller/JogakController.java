@@ -76,12 +76,10 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("{jogakId}/start")
-    public ResponseEntity<BaseResponse<ErrorCode>> startJogak(@PathVariable Long jogakId) {
-        jogakService.startJogak(jogakId);
-        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
+    public ResponseEntity<BaseResponse<JogakResponseDto.startDailyJogakDto>> startJogak(@PathVariable Long jogakId) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.startJogak(jogakId)));
     }
 
-    // TODO 성공한 조각 저장
     @Operation(summary = "조각 성공", description = "조각이 성공합니다",
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),
             responses = {

@@ -2,7 +2,6 @@ package com.mogak.spring.web.dto;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class JogakResponseDto {
@@ -41,9 +40,9 @@ public class JogakResponseDto {
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class startJogakDto {
+    public static class startDailyJogakDto {
+        private Long dailyJogakId;
         private String title;
-        private LocalDateTime startTime;
     }
 
     @Getter

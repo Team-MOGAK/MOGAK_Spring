@@ -13,7 +13,7 @@ public interface JogakService {
 //    void failRoutineJogakAtMidnight();
 //    void failJogakAtFour();
 
-    void startJogak(Long jogakId);
+    JogakResponseDto.startDailyJogakDto startJogak(Long jogakId);
 
     JogakResponseDto.successJogakDto successJogak(Long jogakId);
 

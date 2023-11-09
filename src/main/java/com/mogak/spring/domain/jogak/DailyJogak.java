@@ -6,7 +6,6 @@ import com.mogak.spring.global.BaseEntity;
 import lombok.*;
 
 import javax.persistence.*;
-import java.time.LocalDate;
 @Builder
 @Getter
 @Table(name = "daily_jogak")
@@ -16,7 +15,7 @@ import java.time.LocalDate;
 public class DailyJogak extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "jogak_id")
+    @Column(name = "daily_jogak_id")
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mogak_id")
@@ -30,10 +29,6 @@ public class DailyJogak extends BaseEntity {
     private Boolean achievement;
     @Column(nullable = false)
     private Boolean isRoutine;
-    @Column(name = "start_at")
-    private LocalDate startAt;
-    @Column(name = "end_at")
-    private LocalDate endAt;
 
     public void updateSuccess() {
         this.achievement = true;
