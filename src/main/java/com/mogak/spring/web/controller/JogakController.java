@@ -82,23 +82,21 @@ public class JogakController {
     }
 
     // TODO 성공한 조각 저장
-
-//    @Operation(summary = "조각 종료", description = "조각을 종료합니다",
-//            parameters = @Parameter(name = "jogakId", description = "조각 ID"),
-//            responses = {
-//                    @ApiResponse(responseCode = "200", description = "조각 종료"),
-//                    @ApiResponse(responseCode = "400", description = "시작하지 않은 조각, 기한을 넘긴 조각",
-//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//                    @ApiResponse(responseCode = "404", description = "존재하지 않는 조각",
-//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//                    @ApiResponse(responseCode = "409", description = "이미 종료한 조각",
-//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//            })
-//    @PutMapping("{jogakId}/end")
-//    public ResponseEntity<BaseResponse<endJogakDto>> endJogak(@PathVariable Long jogakId) {
-//        Jogak jogak = jogakService.endJogak(jogakId);
-//        return ResponseEntity.ok(new BaseResponse<>(JogakConverter.toEndJogakDto(jogak)));
-//    }
+    @Operation(summary = "조각 성공", description = "조각이 성공합니다",
+            parameters = @Parameter(name = "jogakId", description = "조각 ID"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조각 종료"),
+                    @ApiResponse(responseCode = "400", description = "시작하지 않은 조각, 기한을 넘긴 조각",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 조각",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "이미 종료한 조각",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
+    @PutMapping("{jogakId}/success")
+    public ResponseEntity<BaseResponse<JogakResponseDto.successJogakDto>> successJogak(@PathVariable Long jogakId) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.successJogak(jogakId)));
+    }
 
     @Operation(summary = "조각 수정", description = "입력값을 이용해 조각을 수정합니다",
             responses = {

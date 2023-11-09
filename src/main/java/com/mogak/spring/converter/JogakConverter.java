@@ -25,13 +25,24 @@ public class JogakConverter {
                 .build();
     }
 
+    public static Jogak toJogak(DailyJogak dailyJogak) {
+        return Jogak.builder()
+                .mogak(dailyJogak.getMogak())
+                .category(dailyJogak.getCategory())
+                .title(dailyJogak.getTitle())
+                .isRoutine(dailyJogak.getIsRoutine())
+                .startAt(dailyJogak.getStartAt())
+                .endAt(dailyJogak.getEndAt())
+                .state(Validation.ACTIVE.toString())
+                .build();
+    }
+
     public static DailyJogak toDailyJogak(Jogak jogak) {
         return DailyJogak.builder()
                 .mogak(jogak.getMogak())
                 .category(jogak.getCategory())
                 .title(jogak.getTitle())
                 .achievement(false)
-                .jogakPeriods(jogak.getJogakPeriods())
                 .isRoutine(jogak.getIsRoutine())
                 .startAt(jogak.getStartAt())
                 .endAt(jogak.getEndAt())
@@ -71,11 +82,11 @@ public class JogakConverter {
 //                .build();
 //    }
 
-//    public static JogakResponseDto.endJogakDto toEndJogakDto(Jogak jogak) {
-//        return JogakResponseDto.endJogakDto.builder()
-//                .title(jogak.getMogak().getTitle())
-//                .startTime(jogak.getStartTime())
-//                .endTime(jogak.getEndTime())
-//                .build();
-//    }
+    public static JogakResponseDto.successJogakDto toSuccessJogak(Jogak jogak) {
+        return JogakResponseDto.successJogakDto.builder()
+                .title(jogak.getMogak().getTitle())
+                .mogakTitle(jogak.getMogak().getTitle())
+                .title(jogak.getCategory().getName())
+                .build();
+    }
 }

@@ -50,9 +50,9 @@ public class JogakResponseDto {
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class endJogakDto {
+    public static class successJogakDto {
         private String title;
-        private LocalDateTime startTime;
-        private LocalDateTime endTime;
+        private String mogakTitle;
+        private String category;
     }
 }

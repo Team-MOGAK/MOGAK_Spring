@@ -7,9 +7,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
 @Builder
 @Getter
 @Table(name = "daily_jogak")
@@ -31,12 +28,14 @@ public class DailyJogak extends BaseEntity {
     private String title;
     @Column(nullable = false)
     private Boolean achievement;
-    @OneToMany(mappedBy = "jogak")
-    private List<JogakPeriod> jogakPeriods = new ArrayList<>();
     @Column(nullable = false)
     private Boolean isRoutine;
     @Column(name = "start_at")
     private LocalDate startAt;
     @Column(name = "end_at")
     private LocalDate endAt;
+
+    public void updateSuccess() {
+        this.achievement = true;
+    }
 }

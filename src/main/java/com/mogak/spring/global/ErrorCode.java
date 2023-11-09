@@ -54,6 +54,7 @@ public enum ErrorCode {
     WRONG_CREATE_JOGAK(HttpStatus.BAD_REQUEST, "J007", "진행중인 모각만 조각을 생성할 수 있습니다"),
     NOT_VALID_UPDATE_JOGAK(HttpStatus.BAD_REQUEST, "J008", "유효하지 않은 조각 수정입니다"),
     NOT_VALID_PERIOD(HttpStatus.BAD_REQUEST, "J009", "유효하지 않은 반복주기입니다"),
+    NOT_VALID_DAILY_JOGAK(HttpStatus.BAD_REQUEST, "J010", "유효하지 않은 루틴의 조각입니다"),
 
     /**
      * 게시물 에러

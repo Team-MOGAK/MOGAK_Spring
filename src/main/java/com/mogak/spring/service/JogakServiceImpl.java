@@ -3,10 +3,7 @@ package com.mogak.spring.service;
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.JogakPeriodConverter;
 import com.mogak.spring.domain.common.Weeks;
-import com.mogak.spring.domain.jogak.Jogak;
-import com.mogak.spring.domain.jogak.JogakPeriod;
-import com.mogak.spring.domain.jogak.JogakState;
-import com.mogak.spring.domain.jogak.Period;
+import com.mogak.spring.domain.jogak.*;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.JogakException;
@@ -190,13 +187,14 @@ public class JogakServiceImpl implements JogakService {
         }
     }
 
-//    @Transactional
-//    @Override
-//    public Jogak endJogak(Long jogakId) {
-//        Jogak jogak = jogakRepository.findById(jogakId).orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
-//        jogak.end(LocalDateTime.now());
-//        return jogak;
-//    }
+    @Transactional
+    @Override
+    public JogakResponseDto.successJogakDto successJogak(Long jogakId) {
+        DailyJogak dailyjogak = dailyJogakRepository.findById(jogakId)
+                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        dailyjogak.updateSuccess();
+        return JogakConverter.toSuccessJogak(JogakConverter.toJogak(dailyjogak));
+    }
 
     @Transactional
     @Override
