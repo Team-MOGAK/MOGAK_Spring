@@ -1,6 +1,6 @@
 package com.mogak.spring.login;
 
-import com.mogak.spring.exception.CommonException;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -60,10 +60,10 @@ public class JwtTokenHandler {
         try {
             token = parseToken(token);
             if (!validateExpireToken(token)) {
-                throw new CommonException(ErrorCode.EXPIRE_TOKEN);
+                throw new BaseException(ErrorCode.EXPIRE_TOKEN);
             }
         } catch (RuntimeException e) {
-            throw new CommonException(ErrorCode.WRONG_TOKEN);
+            throw new BaseException(ErrorCode.WRONG_TOKEN);
         }
     }
 
@@ -71,7 +71,7 @@ public class JwtTokenHandler {
         if (token.startsWith("Bearer ")) {
             return token.substring("Bearer ".length());
         }
-        throw new CommonException(ErrorCode.WRONG_TOKEN);
+        throw new BaseException(ErrorCode.WRONG_TOKEN);
     }
 
     /**
@@ -82,13 +82,13 @@ public class JwtTokenHandler {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
             return !claims.getBody().getExpiration().before(new Date());
         } catch (Exception e) {
-            throw new CommonException(ErrorCode.EXPIRE_TOKEN);
+            throw new BaseException(ErrorCode.EXPIRE_TOKEN);
         }
     }
 
     public Long getUserId() {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        String jwtToken = extractToken(request).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+        String jwtToken = extractToken(request).orElseThrow(() -> new BaseException(ErrorCode.EMPTY_TOKEN));
         jwtToken = jwtToken.substring("Bearer ".length());
         return Long.valueOf(getUserPk(jwtToken));
     }

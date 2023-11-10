@@ -43,10 +43,21 @@ public class MogakResponseDto {
     public static class GetMogakDto {
         private String title;
         private String state;
-        private List<String> periods;
-        private MogakCategory mogakCategory;
-        private String otherCategory;
+        private MogakCategory bigCategory;
+        private String smallCategory;
+        private String color;
         private LocalDate startAt;
         private LocalDate endAt;
     }
+
+//    @Builder
+//    @Getter
+//    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+//    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+//    public static class GetMogakInModaratDto {
+//        private String title;
+//        private MogakCategory bigCategory;
+//        private String smallCategory;
+//        private String color;
+//    }
 }

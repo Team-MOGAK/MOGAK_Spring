@@ -1,8 +1,7 @@
 package com.mogak.spring.repository;
 
-import com.mogak.spring.domain.mogak.Period;
+import com.mogak.spring.domain.jogak.Period;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 

@@ -1,6 +1,6 @@
 package com.mogak.spring.login;
 
-import com.mogak.spring.exception.CommonException;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -27,12 +27,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 jwtTokenHandler.validateToken(jwtToken);
             }
             filterChain.doFilter(request, response);
-        } catch (CommonException e) {
+        } catch (BaseException e) {
             setErrorResponse(e, response);
         }
     }
 
-    public void setErrorResponse(CommonException e, HttpServletResponse response) throws IOException {
+    public void setErrorResponse(BaseException e, HttpServletResponse response) throws IOException {
         response.setStatus(e.getHttpStatus().value());
         response.setContentType("application/json; charset=UTF-8");
         response.getWriter().write(

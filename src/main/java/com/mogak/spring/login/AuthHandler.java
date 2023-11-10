@@ -1,6 +1,6 @@
 package com.mogak.spring.login;
 
-import com.mogak.spring.exception.CommonException;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,7 +20,7 @@ public class AuthHandler {
     public Long getUserId() {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         String jwtToken = extractToken(request)
-                .orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+                .orElseThrow(() -> new BaseException(ErrorCode.EMPTY_TOKEN));
         jwtToken = jwtToken.substring("Bearer ".length());
         return Long.valueOf(jwtTokenHandler.getUserPk(jwtToken));
     }
