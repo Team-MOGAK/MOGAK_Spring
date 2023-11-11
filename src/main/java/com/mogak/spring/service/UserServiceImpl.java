@@ -48,8 +48,6 @@ public class UserServiceImpl implements UserService {
     }
 
     protected void inputVerify(CreateUserDto response) {
-        if (!Regex.USER_NICKNAME_REGEX.matchRegex(response.getNickname(), "NICKNAME"))
-            throw new UserException(ErrorCode.NOT_VALID_NICKNAME);
         if (!Regex.EMAIL_REGEX.matchRegex(response.getEmail(), "EMAIL"))
             throw new UserException(ErrorCode.NOT_VALID_EMAIL);
         if (findUserByNickname(response.getNickname()).isPresent())

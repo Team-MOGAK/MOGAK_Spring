@@ -21,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
+
 import static com.mogak.spring.web.dto.userdto.UserRequestDto.*;
 import static com.mogak.spring.web.dto.userdto.UserResponseDto.ToCreateDto;
 
@@ -56,9 +58,10 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PostMapping("/join")
-    public ResponseEntity<BaseResponse<ToCreateDto>> createUser(@RequestPart CreateUserDto request, @RequestPart(required = false) MultipartFile multipartFile) {
+    public ResponseEntity<BaseResponse<ToCreateDto>> createUser(@Valid @RequestPart CreateUserDto request,
+                                                                @RequestPart(required = false) MultipartFile multipartFile) {
         UploadImageDto uploadImageDto;
-        if(multipartFile.isEmpty()) {
+        if (multipartFile.isEmpty()) {
             uploadImageDto = UploadImageDto.builder()
                     .imgUrl(null)
                     .imgName(null)
