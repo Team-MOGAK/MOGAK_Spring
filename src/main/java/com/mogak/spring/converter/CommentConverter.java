@@ -4,8 +4,8 @@ import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.web.dto.CommentRequestDto;
-import com.mogak.spring.web.dto.CommentResponseDto;
+import com.mogak.spring.web.dto.commentdto.CommentRequestDto;
+import com.mogak.spring.web.dto.commentdto.CommentResponseDto;
 
 import java.time.LocalDateTime;
 import java.util.List;

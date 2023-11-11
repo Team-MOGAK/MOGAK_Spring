@@ -1,8 +1,8 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.domain.mogak.Mogak;
-import com.mogak.spring.web.dto.MogakRequestDto;
-import com.mogak.spring.web.dto.MogakResponseDto;
+import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
+import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
 
 public interface MogakService {
     MogakResponseDto.CreateDto create(Long userId, MogakRequestDto.CreateDto createDto);

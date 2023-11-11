@@ -1,4 +1,4 @@
-package com.mogak.spring.web.dto;
+package com.mogak.spring.web.dto.postdto;
 
 import lombok.Getter;
 

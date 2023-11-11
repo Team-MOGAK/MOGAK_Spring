@@ -1,4 +1,4 @@
-package com.mogak.spring.web.dto;
+package com.mogak.spring.web.dto.jogakdto;
 
 import lombok.*;
 

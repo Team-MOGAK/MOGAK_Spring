@@ -2,8 +2,8 @@ package com.mogak.spring.service;
 
 import java.util.List;
 
-import static com.mogak.spring.web.dto.FollowRequestDto.CountDto;
-import static com.mogak.spring.web.dto.UserResponseDto.UserDto;
+import static com.mogak.spring.web.dto.userdto.FollowRequestDto.CountDto;
+import static com.mogak.spring.web.dto.userdto.UserResponseDto.UserDto;
 
 public interface FollowService {
 

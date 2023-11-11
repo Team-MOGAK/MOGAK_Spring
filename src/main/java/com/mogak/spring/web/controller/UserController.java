@@ -8,7 +8,7 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.UserService;
-import com.mogak.spring.web.dto.UserRequestDto;
+import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,8 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import static com.mogak.spring.web.dto.UserRequestDto.*;
-import static com.mogak.spring.web.dto.UserResponseDto.ToCreateDto;
+import static com.mogak.spring.web.dto.userdto.UserRequestDto.*;
+import static com.mogak.spring.web.dto.userdto.UserResponseDto.ToCreateDto;
 
 @Tag(name = "유저 API", description = "유저 API 명세서")
 @RequiredArgsConstructor

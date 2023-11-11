@@ -11,7 +11,7 @@ import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.util.Regex;
-import com.mogak.spring.web.dto.UserRequestDto;
+import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-import static com.mogak.spring.web.dto.UserRequestDto.*;
+import static com.mogak.spring.web.dto.userdto.UserRequestDto.*;
 
 @RequiredArgsConstructor
 @Service

@@ -1,4 +1,4 @@
-package com.mogak.spring.web.dto.ModaratDto;
+package com.mogak.spring.web.dto.modaratdto;
 
 import lombok.Getter;
 

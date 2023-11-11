@@ -4,8 +4,6 @@ import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.service.MogakService;
-import com.mogak.spring.web.dto.MogakRequestDto;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
