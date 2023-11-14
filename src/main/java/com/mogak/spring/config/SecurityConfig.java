@@ -29,7 +29,11 @@ public class SecurityConfig {
 //                .antMatchers(HttpMethod.POST,"/api/v1/**").authenticated()
                 // 모든 post 요청을 인증된 사용자인지 순서 중요. authenticated 🡪 인증된 사용자인지 확인
                 // .antMatchers("/api/**").authenticated() // 다른 api는 인증 필요
-
+//                .oauth2Login()
+//                .userInfoEndpoint()
+//                .userService(oAuthService)
+//                .and()
+//                .successHandler(authenticationSuccessHandler)
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // jwt 사용하는 경우 사용
@@ -38,5 +42,15 @@ public class SecurityConfig {
                 //UserNamePasswordAuthenticationFilter 적용하기 전에 JWTTokenFilter를 적용 하라는 뜻.
                 .build();
     }
+
+    /*
+    @Bean
+    public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient() {
+        DefaultAuthorizationCodeTokenResponseClient accessTokenResponseClient = new DefaultAuthorizationCodeTokenResponseClient();
+        accessTokenResponseClient.setRequestEntityConverter(new CustomRequestEntityConverter());
+
+        return accessTokenResponseClient;
+    }
+     */
 
 }

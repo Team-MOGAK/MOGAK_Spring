@@ -29,6 +29,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client' //OAuth
 	implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.30.1' //for apple login
 	implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.70' //for apple login
+	implementation platform("org.springframework.cloud:spring-cloud-dependencies:2021.0.5") //for feignclient, apple login
+	implementation "org.springframework.cloud:spring-cloud-starter-openfeign" //for feignclient, applelogin
 	implementation 'com.github.downgoon:marvin:1.5.5'
 	implementation 'com.github.downgoon:MarvinPlugins:1.5.5'
 	implementation 'org.springframework:spring-test' //mockmultipartfile을 위함

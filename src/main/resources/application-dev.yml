@@ -70,7 +70,7 @@ security:
           client-id: ${APPLE_CLIENT_ID}
           key-id: ${APPLE_KEY_ID}
           team-id: ${APPLE_TEAM_ID}
-#          key-path: #p8key 조합
+          key-path: ${APPLE_KEY_PATH}
           redirect-uri: ${APPLE_REDIRECT_URI} https://mogak.shop/apple/callback
           client-authentication-method: POST
           client-name: Apple
