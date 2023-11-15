@@ -38,7 +38,6 @@ public class UserConverter {
         return UserResponseDto.UserDto.builder()
                 .nickname(user.getNickname())
                 .job(user.getJob().getName())
-                .address(user.getAddress().getName())
                 .build();
     }
 

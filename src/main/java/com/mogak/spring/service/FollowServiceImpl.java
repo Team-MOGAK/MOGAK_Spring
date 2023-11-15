@@ -1,12 +1,11 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.converter.FollowConverter;
+import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.user.Follow;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.CommonException;
-import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.global.JwtArgumentResolver;
 import com.mogak.spring.exception.UserException;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.FollowRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.web.dto.FollowRequestDto;
@@ -14,13 +13,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.mogak.spring.web.dto.UserResponseDto.*;
+import static com.mogak.spring.web.dto.UserResponseDto.UserDto;
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class FollowServiceImpl implements FollowService {
 
@@ -29,8 +28,7 @@ public class FollowServiceImpl implements FollowService {
 
     @Transactional
     @Override
-    public void follow(String nickname, HttpServletRequest req) {
-        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+    public void follow(Long userId, String nickname) {
         User fromUser = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 
@@ -42,8 +40,7 @@ public class FollowServiceImpl implements FollowService {
 
     @Transactional
     @Override
-    public void unfollow(String nickname, HttpServletRequest req) {
-        Long userId = JwtArgumentResolver.extractToken(req).orElseThrow(() -> new CommonException(ErrorCode.EMPTY_TOKEN));
+    public void unfollow(Long userId, String nickname) {
         User fromUser = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 
@@ -65,11 +62,7 @@ public class FollowServiceImpl implements FollowService {
         User user = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<User> users = followRepository.findMotosByUser(user);
         return users.stream()
-                .map(u -> UserDto.builder()
-                        .nickname(u.getNickname())
-                        .job(u.getJob().getName())
-                        .address(u.getAddress().getName())
-                        .build())
+                .map(UserConverter::toUserDto)
                 .collect(Collectors.toList());
     }
 
@@ -78,11 +71,7 @@ public class FollowServiceImpl implements FollowService {
         User user = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<User> users = followRepository.findMentorsByUser(user);
         return users.stream()
-                .map(u -> UserDto.builder()
-                        .nickname(u.getNickname())
-                        .job(u.getJob().getName())
-                        .address(u.getAddress().getName())
-                        .build())
+                .map(UserConverter::toUserDto)
                 .collect(Collectors.toList());
     }
 

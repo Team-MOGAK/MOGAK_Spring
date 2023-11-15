@@ -2,17 +2,14 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.web.dto.MogakRequestDto;
-
-import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDate;
-import java.util.List;
+import com.mogak.spring.web.dto.MogakResponseDto;
 
 public interface MogakService {
-    Mogak create(MogakRequestDto.CreateDto createDto, HttpServletRequest req);
+    MogakResponseDto.CreateDto create(Long userId, MogakRequestDto.CreateDto createDto);
     Mogak achieveMogak(Long id);
-    Mogak updateMogak(MogakRequestDto.UpdateDto request);
-    List<Mogak> getMogakList(HttpServletRequest req, int cursor, int size);
+    MogakResponseDto.UpdateStateDto updateMogak(MogakRequestDto.UpdateDto request);
+    MogakResponseDto.GetMogakListDto getMogakDtoList(Long userId, Long modaratId);
     void deleteMogak(Long mogakId);
-    List<Mogak> getOngoingTodayMogakList(int name);
-    void judgeMogakByDay(LocalDate day);
+//    List<Mogak> getOngoingTodayMogakList(int name);
+//    void judgeMogakByDay(LocalDate day);
 }

@@ -15,7 +15,7 @@ import java.util.Objects;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
-    public ResponseEntity<ErrorResponse> UserException(BaseException e) {
+    public ResponseEntity<ErrorResponse> BaseException(BaseException e) {
         ErrorCode errorCode = ErrorCode.findByMessage(e.getMessage());
         return ResponseEntity.status(e.getHttpStatus())
                 .body(ErrorResponse.of(Objects.requireNonNull(errorCode)));

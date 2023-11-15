@@ -48,23 +48,13 @@ public class AwsS3Service {
         if(multipartFile.isEmpty()){
             throw new IllegalArgumentException("이미지가 존재하지 않습니다");
         }
-        //multifle을 따로 file로 만드는 것이 아니라 inputstream을 받는 방식
+        //multipartfle을 따로 file로 만드는 것이 아니라 inputstream을 받는 방식
         multipartFile.forEach(img -> {
             String imgName = createImgName(img.getOriginalFilename(), dirName);
-            ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentLength(img.getSize());
-            objectMetadata.setContentType(img.getContentType());
-            //s3 업로드
-            try(InputStream inputStream = img.getInputStream()) {
-                amazonS3Client.putObject(new PutObjectRequest(bucket, imgName, inputStream, objectMetadata)
-                        .withCannedAcl(CannedAccessControlList.PublicRead));
-                //log.info("s3 업로드 성공!");
-            } catch(IOException e){
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
-            }
+            String imgUrl = uploadImgToS3(imgName, img, dirName);
             postImgRequestDtoList.add(PostImgRequestDto.CreatePostImgDto.builder()
                     .imgName(imgName)
-                    .imgUrl(amazonS3Client.getUrl(bucket, imgName).toString())
+                    .imgUrl(imgUrl)
                     .thumbnail(false)
                     .build());
             //첫번째 이미지 썸네일 업로드
@@ -75,7 +65,7 @@ public class AwsS3Service {
                 ObjectMetadata objectThumbnailMetadata = new ObjectMetadata();
                 objectThumbnailMetadata.setContentLength(thumbnailImg.getSize());
                 objectThumbnailMetadata.setContentType("image/"+format);
-                try(InputStream inputThumbnailStream = thumbnailImg.getInputStream()) {
+                try( InputStream inputThumbnailStream = thumbnailImg.getInputStream()) {
                     amazonS3Client.putObject(new PutObjectRequest(bucket, thumbnailImgName, inputThumbnailStream, objectThumbnailMetadata)
                             .withCannedAcl(CannedAccessControlList.PublicRead));
                     //log.info("s3 썸네일 업로드 성공!");
@@ -91,6 +81,22 @@ public class AwsS3Service {
             }
         });
         return postImgRequestDtoList;
+    }
+
+    //s3에 이미지 업로드 함수
+    private String uploadImgToS3(String imgName, MultipartFile multipartFile, String dirName){
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentLength(multipartFile.getSize());
+        objectMetadata.setContentType(multipartFile.getContentType());
+        //s3 업로드
+        try(InputStream inputStream = multipartFile.getInputStream()) {
+            amazonS3Client.putObject(new PutObjectRequest(bucket, imgName, inputStream, objectMetadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead));
+            return amazonS3Client.getUrl(bucket, imgName).toString();
+            //log.info("s3 업로드 성공!");
+        } catch(IOException e){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
+        }
     }
     //썸네일 이미지 생성, 추후 프론트로부터 이미지 사이즈 값 받아오기
     private MultipartFile resizeImage(String thumbnailImgName, String imgFormat, MultipartFile multipartFile, int width, int height){

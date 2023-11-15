@@ -1,5 +1,7 @@
 package com.mogak.spring.login;
 
+import com.mogak.spring.exception.BaseException;
+import com.mogak.spring.exception.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -14,23 +16,32 @@ import java.io.IOException;
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenHandler jwtTokenHandler;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String jwtToken = request.getHeader("Authorization");
-        RequestModifyParameter req = new RequestModifyParameter(request);
-        if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
-            jwtToken = jwtToken.substring("Bearer ".length());
-            if (jwtTokenProvider.validateToken(jwtToken)) {
-                String userPk = jwtTokenProvider.getUserPk(jwtToken);
-                RequestModifyParameter fixedReq = new RequestModifyParameter(request);
-                fixedReq.setParameter("userId", userPk);
-                req = fixedReq;
+        String jwtToken = request.getHeader(JwtTokenHandler.AUTHORIZATION);
+        try {
+            if (jwtToken != null) {
+                jwtTokenHandler.validateToken(jwtToken);
             }
+            filterChain.doFilter(request, response);
+        } catch (BaseException e) {
+            setErrorResponse(e, response);
         }
-        filterChain.doFilter(req, response);
+    }
+
+    public void setErrorResponse(BaseException e, HttpServletResponse response) throws IOException {
+        response.setStatus(e.getHttpStatus().value());
+        response.setContentType("application/json; charset=UTF-8");
+        response.getWriter().write(
+                new ErrorResponse(
+                        e.getHttpStatus().value(),
+                        e.getCode(),
+                        e.getMessage()
+                ).convertToJson()
+        );
     }
 
 }

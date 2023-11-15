@@ -3,6 +3,7 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.FollowService;
 import com.mogak.spring.web.dto.FollowRequestDto.CountDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,18 +17,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static com.mogak.spring.web.dto.UserResponseDto.*;
+import static com.mogak.spring.web.dto.UserResponseDto.UserDto;
 
 @Tag(name = "팔로우 API", description = "팔로우 API 명세서")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/users/follows/")
+@RequestMapping("/api/users/follows")
 public class FollowController {
 
     private final FollowService followService;
+    private final AuthHandler authHandler;
 
     @Operation(summary = "팔로우", description = "원하는 유저를 팔로우 합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
@@ -40,9 +41,9 @@ public class FollowController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "409", description = "이미 존재하는 팔로우입니다"),
             })
-    @PostMapping("/{nickname}")
-    public ResponseEntity<BaseResponse<ErrorCode>> follow(@PathVariable String nickname, HttpServletRequest req) {
-        followService.follow(nickname, req);
+    @PostMapping("{nickname}")
+    public ResponseEntity<BaseResponse<ErrorCode>> follow(@PathVariable String nickname) {
+        followService.follow(authHandler.getUserId(), nickname);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -57,9 +58,9 @@ public class FollowController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "409", description = "존재하지 않는 팔로우"),
             })
-    @DeleteMapping("/{nickname}")
-    public ResponseEntity<BaseResponse<ErrorCode>> unfollow(@PathVariable String nickname, HttpServletRequest req) {
-        followService.unfollow(nickname, req);
+    @DeleteMapping("{nickname}")
+    public ResponseEntity<BaseResponse<ErrorCode>> unfollow(@PathVariable String nickname) {
+        followService.unfollow(authHandler.getUserId(), nickname);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -73,7 +74,7 @@ public class FollowController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
-    @GetMapping("/counts/{nickname}")
+    @GetMapping("counts/{nickname}")
     public ResponseEntity<BaseResponse<CountDto>> getFollowCount(@PathVariable String nickname) {
         return ResponseEntity.ok(new BaseResponse<>(followService.getFollowCount(nickname)));
     }
@@ -88,7 +89,7 @@ public class FollowController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
-    @GetMapping("/{nickname}/motos")
+    @GetMapping("{nickname}/motos")
     public ResponseEntity<BaseResponse<List<UserDto>>> getMotoList(@PathVariable String nickname) {
         return ResponseEntity.ok(new BaseResponse<>(followService.getMotoList(nickname)));
     }
@@ -103,7 +104,7 @@ public class FollowController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
-    @GetMapping("/{nickname}/mentors")
+    @GetMapping("{nickname}/mentors")
     public ResponseEntity<BaseResponse<List<UserDto>>> getMentorList(@PathVariable String nickname) {
         return ResponseEntity.ok(new BaseResponse<>(followService.getMentorList(nickname)));
     }
