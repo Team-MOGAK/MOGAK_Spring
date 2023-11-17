@@ -17,11 +17,13 @@ public class MogakRequestDto {
         private Long modaratId;
         @NotNull @Max(100)
         private String title;
-        @NotNull
+        @NotNull @Max(100)
         private String bigCategory;
+        @Max(200)
         private String smallCategory;
         private LocalDate startAt;
         private LocalDate endAt;
+        @Max(10)
         private String color;
     }
 
@@ -34,11 +36,13 @@ public class MogakRequestDto {
         private Long mogakId;
         @NotNull @Max(100)
         private String title;
-        @NotNull
+        @NotNull @Max(100)
         private String bigCategory;
+        @Max(200)
         private String smallCategory;
         private LocalDate startAt;
         private LocalDate endAt;
+        @Max(10)
         private String color;
     }
 }

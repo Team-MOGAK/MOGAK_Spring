@@ -98,7 +98,7 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/nickname")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@RequestBody UpdateNicknameDto nicknameDto) {
+    public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@Valid @RequestBody UpdateNicknameDto nicknameDto) {
         userService.updateNickname(authHandler.getUserId(), nicknameDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
@@ -111,7 +111,7 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/job")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@RequestBody UpdateJobDto jobDto) {
+    public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@Valid @RequestBody UpdateJobDto jobDto) {
         userService.updateJob(authHandler.getUserId(), jobDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }

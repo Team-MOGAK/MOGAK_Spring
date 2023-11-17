@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
 public class UserRequestDto {
@@ -36,11 +35,13 @@ public class UserRequestDto {
 
     @Getter
     public static class UpdateNicknameDto {
+        @Max(10)
         private String nickname;
     }
 
     @Getter
     public static class UpdateJobDto {
+        @Max(100)
         private String job;
     }
 
