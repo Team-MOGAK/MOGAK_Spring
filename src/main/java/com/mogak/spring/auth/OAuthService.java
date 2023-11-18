@@ -1,4 +1,4 @@
-package com.mogak.spring.auth.service;
+package com.mogak.spring.auth;
 
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.UserRepository;
