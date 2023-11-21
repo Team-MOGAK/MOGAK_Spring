@@ -117,13 +117,4 @@ public class UserServiceImpl implements UserService {
         String imgName = userImageDto.getImgName();
         user.updateProfileImg(imgUrl, imgName);
     }
-
-    /*
-        임시
-     */
-    @Override
-    public String getAuthorizationCode() {
-        return null;
-    }
-
 }

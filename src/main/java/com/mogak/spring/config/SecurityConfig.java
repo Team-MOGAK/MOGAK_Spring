@@ -4,6 +4,7 @@ import com.mogak.spring.login.JwtTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,9 +24,10 @@ public class SecurityConfig {
                 .httpBasic().disable()
                 .csrf().disable()
                 .formLogin().disable()
+                .logout(Customizer.withDefaults()) //로그아웃은 기본 설정으로(/logout으로 인증해제)
                 .cors().and()
-                .authorizeRequests()
-                .antMatchers("**").permitAll() // 우선 모든 권한 허용
+                .authorizeRequests()//권한필요한 부분
+                .antMatchers("**").permitAll() // 우선 모든 권한 허용 - 로그인 안해도 모든 접근 가능
 //                .antMatchers(HttpMethod.POST,"/api/v1/**").authenticated()
                 // 모든 post 요청을 인증된 사용자인지 순서 중요. authenticated 🡪 인증된 사용자인지 확인
                 // .antMatchers("/api/**").authenticated() // 다른 api는 인증 필요
@@ -43,14 +45,6 @@ public class SecurityConfig {
                 .build();
     }
 
-    /*
-    @Bean
-    public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient() {
-        DefaultAuthorizationCodeTokenResponseClient accessTokenResponseClient = new DefaultAuthorizationCodeTokenResponseClient();
-        accessTokenResponseClient.setRequestEntityConverter(new CustomRequestEntityConverter());
 
-        return accessTokenResponseClient;
-    }
-     */
 
 }

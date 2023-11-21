@@ -23,5 +23,4 @@ public interface UserService {
   
     void updateImg(Long userId, UserRequestDto.UpdateImageDto userImageDto);
 
-    String getAuthorizationCode();
 }

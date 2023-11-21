@@ -6,8 +6,10 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @ToString
-public class AppleLoginResponse {
+public class AppleSignUpRequest {
 
-    private Boolean isRegistered; //등록된 유저인지
-    private String token; //jwttoken
+    private String id_token;
+    private String nickname;
+    private String job;
+    private String address;
 }
