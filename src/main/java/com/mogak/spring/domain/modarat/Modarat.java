@@ -5,6 +5,7 @@ import com.mogak.spring.global.BaseEntity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Optional;
 
 @Builder
 @Getter
@@ -29,8 +30,8 @@ public class Modarat extends BaseEntity {
     private String validation;
 
     public void update(String title, String color) {
-        this.title = title;
-        this.color = color;
+        Optional.ofNullable(title).ifPresent(t -> this.title = t);
+        Optional.ofNullable(color).ifPresent(c -> this.color = c);
     }
 
 }
