@@ -1,26 +1,9 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.domain.common.State;
-import com.mogak.spring.domain.jogak.Jogak;
-import com.mogak.spring.domain.jogak.JogakState;
-import com.mogak.spring.domain.mogak.Mogak;
-import com.mogak.spring.domain.mogak.MogakCategory;
-import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.JogakRepository;
 import com.mogak.spring.repository.MogakRepository;
-import com.mogak.spring.web.dto.MogakRequestDto;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 class MogakServiceImplTest {

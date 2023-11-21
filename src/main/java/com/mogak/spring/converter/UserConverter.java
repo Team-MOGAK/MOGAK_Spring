@@ -4,8 +4,8 @@ import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.web.dto.UserRequestDto;
-import com.mogak.spring.web.dto.UserResponseDto;
+import com.mogak.spring.web.dto.userdto.UserRequestDto;
+import com.mogak.spring.web.dto.userdto.UserResponseDto;
 
 public class UserConverter {
 

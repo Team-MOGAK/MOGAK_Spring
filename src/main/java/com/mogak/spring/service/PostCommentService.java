@@ -1,9 +1,8 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.domain.post.PostComment;
-import com.mogak.spring.web.dto.CommentRequestDto;
+import com.mogak.spring.web.dto.commentdto.CommentRequestDto;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface PostCommentService {

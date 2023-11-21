@@ -1,7 +1,7 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.web.dto.JogakRequestDto;
-import com.mogak.spring.web.dto.JogakResponseDto;
+import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
+import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 
 public interface JogakService {
 

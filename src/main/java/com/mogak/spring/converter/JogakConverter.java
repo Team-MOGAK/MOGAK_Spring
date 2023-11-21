@@ -5,7 +5,7 @@ import com.mogak.spring.domain.jogak.DailyJogak;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
-import com.mogak.spring.web.dto.JogakResponseDto;
+import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 
 import java.time.LocalDate;
 import java.util.List;

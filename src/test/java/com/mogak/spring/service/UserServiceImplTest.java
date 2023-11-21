@@ -5,7 +5,7 @@ import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.util.Regex;
-import com.mogak.spring.web.dto.UserRequestDto;
+import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

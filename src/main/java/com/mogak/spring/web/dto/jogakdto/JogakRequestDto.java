@@ -1,9 +1,9 @@
-package com.mogak.spring.web.dto;
+package com.mogak.spring.web.dto.jogakdto;
 
 import lombok.Getter;
 
-import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -12,7 +12,7 @@ public class JogakRequestDto {
     public static class CreateJogakDto {
         @NotNull
         private Long mogakId;
-        @NotNull @Max(100)
+        @NotNull @Size(min = 1, max = 100)
         private String title;
         @NotNull
         private Boolean isRoutine;
@@ -22,7 +22,7 @@ public class JogakRequestDto {
 
     @Getter
     public static class UpdateJogakDto {
-        @NotNull @Max(100)
+        @NotNull @Size(min = 1, max = 100)
         private String title;
         @NotNull
         private Boolean isRoutine;

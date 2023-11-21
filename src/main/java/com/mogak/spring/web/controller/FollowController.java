@@ -5,7 +5,7 @@ import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.FollowService;
-import com.mogak.spring.web.dto.FollowRequestDto.CountDto;
+import com.mogak.spring.web.dto.userdto.FollowRequestDto.CountDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.mogak.spring.web.dto.UserResponseDto.UserDto;
+import static com.mogak.spring.web.dto.userdto.UserResponseDto.UserDto;
 
 @Tag(name = "팔로우 API", description = "팔로우 API 명세서")
 @RequiredArgsConstructor

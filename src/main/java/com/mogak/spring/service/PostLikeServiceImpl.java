@@ -10,7 +10,7 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.PostLikeRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
-import com.mogak.spring.web.dto.PostLikeRequestDto;
+import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

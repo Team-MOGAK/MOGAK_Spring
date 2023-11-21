@@ -3,7 +3,7 @@ package com.mogak.spring.converter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostLike;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.web.dto.PostLikeResponseDto;
+import com.mogak.spring.web.dto.postdto.PostLikeResponseDto;
 
 public class PostLIkeConverter {
 
