@@ -6,8 +6,8 @@ import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.web.dto.MogakRequestDto;
-import com.mogak.spring.web.dto.MogakResponseDto;
+import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
+import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
 
 import java.util.List;
 import java.util.stream.Collectors;

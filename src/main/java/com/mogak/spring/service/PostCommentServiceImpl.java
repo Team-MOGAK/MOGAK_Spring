@@ -11,7 +11,7 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.PostCommentRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
-import com.mogak.spring.web.dto.CommentRequestDto;
+import com.mogak.spring.web.dto.commentdto.CommentRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

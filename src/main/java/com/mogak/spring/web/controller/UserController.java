@@ -8,7 +8,7 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.UserService;
-import com.mogak.spring.web.dto.UserRequestDto;
+import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,8 +21,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import static com.mogak.spring.web.dto.UserRequestDto.*;
-import static com.mogak.spring.web.dto.UserResponseDto.ToCreateDto;
+import javax.validation.Valid;
+
+import static com.mogak.spring.web.dto.userdto.UserRequestDto.*;
+import static com.mogak.spring.web.dto.userdto.UserResponseDto.ToCreateDto;
 
 @Tag(name = "유저 API", description = "유저 API 명세서")
 @RequiredArgsConstructor
@@ -56,9 +58,10 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PostMapping("/join")
-    public ResponseEntity<BaseResponse<ToCreateDto>> createUser(@RequestPart CreateUserDto request, @RequestPart(required = false) MultipartFile multipartFile) {
+    public ResponseEntity<BaseResponse<ToCreateDto>> createUser(@Valid @RequestPart CreateUserDto request,
+                                                                @RequestPart(required = false) MultipartFile multipartFile) {
         UploadImageDto uploadImageDto;
-        if(multipartFile.isEmpty()) {
+        if (multipartFile.isEmpty()) {
             uploadImageDto = UploadImageDto.builder()
                     .imgUrl(null)
                     .imgName(null)
@@ -95,7 +98,7 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/nickname")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@RequestBody UpdateNicknameDto nicknameDto) {
+    public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@Valid @RequestBody UpdateNicknameDto nicknameDto) {
         userService.updateNickname(authHandler.getUserId(), nicknameDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
@@ -108,7 +111,7 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/job")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@RequestBody UpdateJobDto jobDto) {
+    public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@Valid @RequestBody UpdateJobDto jobDto) {
         userService.updateJob(authHandler.getUserId(), jobDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }

@@ -1,7 +1,5 @@
-package com.mogak.spring.web.dto;
+package com.mogak.spring.web.dto.commentdto;
 
-import com.mogak.spring.domain.mogak.Mogak;
-import com.mogak.spring.domain.user.User;
 import lombok.*;
 
 import java.time.LocalDateTime;

@@ -8,7 +8,7 @@ import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.FollowRepository;
 import com.mogak.spring.repository.UserRepository;
-import com.mogak.spring.web.dto.FollowRequestDto;
+import com.mogak.spring.web.dto.userdto.FollowRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.mogak.spring.web.dto.UserResponseDto.UserDto;
+import static com.mogak.spring.web.dto.userdto.UserResponseDto.UserDto;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)

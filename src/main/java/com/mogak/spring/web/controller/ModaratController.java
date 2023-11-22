@@ -7,7 +7,7 @@ import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.repository.query.SingleDetailModaratDto;
 import com.mogak.spring.service.ModaratService;
-import com.mogak.spring.web.dto.ModaratDto.ModaratRequestDto;
+import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 
-import static com.mogak.spring.web.dto.ModaratDto.ModaratResponseDto.CreateModaratDto;
-import static com.mogak.spring.web.dto.ModaratDto.ModaratResponseDto.GetModaratTitleDto;
+import static com.mogak.spring.web.dto.modaratdto.ModaratResponseDto.CreateModaratDto;
+import static com.mogak.spring.web.dto.modaratdto.ModaratResponseDto.GetModaratTitleDto;
 
 @Tag(name = "모다라트 API", description = "모다라트 API 명세서")
 @RequiredArgsConstructor

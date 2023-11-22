@@ -3,8 +3,8 @@ package com.mogak.spring.converter;
 import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.web.dto.ModaratDto.ModaratRequestDto;
-import com.mogak.spring.web.dto.ModaratDto.ModaratResponseDto;
+import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
+import com.mogak.spring.web.dto.modaratdto.ModaratResponseDto;
 
 public class ModaratConverter {
     public static Modarat toModarat(User user, ModaratRequestDto.CreateModaratDto request) {

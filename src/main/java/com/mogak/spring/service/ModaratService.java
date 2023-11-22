@@ -2,8 +2,8 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.repository.query.SingleDetailModaratDto;
-import com.mogak.spring.web.dto.ModaratDto.ModaratRequestDto;
-import com.mogak.spring.web.dto.ModaratDto.ModaratResponseDto;
+import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
+import com.mogak.spring.web.dto.modaratdto.ModaratResponseDto;
 
 import java.util.List;
 

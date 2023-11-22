@@ -7,7 +7,7 @@
 //import com.mogak.spring.domain.user.User;
 //import com.mogak.spring.repository.JogakRepository;
 //import com.mogak.spring.repository.MogakRepository;
-//import com.mogak.spring.web.dto.MogakRequestDto;
+//import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
 //import org.assertj.core.api.SoftAssertions;
 //import org.awaitility.Awaitility;
 //import org.junit.jupiter.api.DisplayName;

@@ -1,4 +1,4 @@
-package com.mogak.spring.web.dto;
+package com.mogak.spring.web.dto.mogakdto;
 
 import com.mogak.spring.domain.mogak.MogakCategory;
 import lombok.*;

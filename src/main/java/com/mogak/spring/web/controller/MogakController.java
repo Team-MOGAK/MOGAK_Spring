@@ -7,7 +7,7 @@ import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.MogakService;
-import com.mogak.spring.web.dto.MogakRequestDto;
+import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-import static com.mogak.spring.web.dto.MogakResponseDto.*;
+import static com.mogak.spring.web.dto.mogakdto.MogakResponseDto.*;
 
 @Tag(name = "모각 API", description = "모각 API 명세서")
 @RequiredArgsConstructor
