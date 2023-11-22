@@ -6,11 +6,10 @@ import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.service.PostCommentService;
 import com.mogak.spring.login.AuthHandler;
-import com.mogak.spring.service.PostCommentServiceImpl;
-import com.mogak.spring.web.dto.CommentRequestDto;
-import com.mogak.spring.web.dto.CommentResponseDto.CommentListDto;
-import com.mogak.spring.web.dto.CommentResponseDto.CreateCommentDto;
-import com.mogak.spring.web.dto.CommentResponseDto.UpdateCommentDto;
+import com.mogak.spring.web.dto.commentdto.CommentRequestDto;
+import com.mogak.spring.web.dto.commentdto.CommentResponseDto.CommentListDto;
+import com.mogak.spring.web.dto.commentdto.CommentResponseDto.CreateCommentDto;
+import com.mogak.spring.web.dto.commentdto.CommentResponseDto.UpdateCommentDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.mogak.spring.web.dto.CommentResponseDto.DeleteCommentDto;
+import static com.mogak.spring.web.dto.commentdto.CommentResponseDto.DeleteCommentDto;
 
 @Tag(name = "댓글 API", description = "댓글 API 명세서")
 @RestController

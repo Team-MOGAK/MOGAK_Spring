@@ -2,22 +2,24 @@ package com.mogak.spring.converter;
 
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.common.Validation;
+import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.web.dto.MogakRequestDto;
-import com.mogak.spring.web.dto.MogakResponseDto;
+import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
+import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MogakConverter {
 
-    public static Mogak toMogak(MogakRequestDto.CreateDto request, MogakCategory mogakCategory, String otherCategory, User user, State state) {
+    public static Mogak toMogak(MogakRequestDto.CreateDto request, Modarat modarat, MogakCategory mogakCategory, String smallCategory, User user, State state) {
         return Mogak.builder()
+                .modarat(modarat)
                 .user(user)
-                .category(mogakCategory)
-                .otherCategory(otherCategory)
+                .bigCategory(mogakCategory)
+                .smallCategory(smallCategory)
                 .title(request.getTitle())
                 .state(state.toString())
                 .startAt(request.getStartAt())
@@ -59,9 +61,8 @@ public class MogakConverter {
         return MogakResponseDto.GetMogakDto.builder()
                 .title(mogak.getTitle())
                 .state(mogak.getState())
-                .periods(mogak.getPeriod())
-                .mogakCategory(mogak.getCategory())
-                .otherCategory(mogak.getOtherCategory())
+                .bigCategory(mogak.getBigCategory())
+                .smallCategory(mogak.getSmallCategory())
                 .startAt(mogak.getStartAt())
                 .endAt(mogak.getEndAt())
                 .build();

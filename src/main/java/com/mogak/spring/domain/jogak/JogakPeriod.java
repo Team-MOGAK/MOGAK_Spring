@@ -1,4 +1,4 @@
-package com.mogak.spring.domain.mogak;
+package com.mogak.spring.domain.jogak;
 
 import lombok.*;
 
@@ -6,22 +6,21 @@ import javax.persistence.*;
 
 @Builder
 @Getter
-@Table(name = "mogak_period")
+@Table(name = "jogak_period")
 @Entity
 @AllArgsConstructor(access= AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MogakPeriod {
+public class JogakPeriod {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "mogak_period_id")
+    @Column(name = "jogak_period_id")
     private Long id;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="period_id")
+    @JoinColumn(name = "period_id")
     private Period period;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="mogak_id")
-    private Mogak mogak;
+    @JoinColumn(name = "jogak_id")
+    private Jogak jogak;
 
     public void updatePeriod(Period period) {
         this.period = period;

@@ -2,13 +2,13 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
-import com.mogak.spring.web.dto.PostImgRequestDto;
-import com.mogak.spring.web.dto.PostRequestDto;
+import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
+import com.mogak.spring.web.dto.postdto.PostRequestDto;
 import org.springframework.data.domain.Slice;
 
 import java.util.List;
 
-import static com.mogak.spring.web.dto.PostResponseDto.NetworkPostDto;
+import static com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkPostDto;
 
 public interface PostService {
 

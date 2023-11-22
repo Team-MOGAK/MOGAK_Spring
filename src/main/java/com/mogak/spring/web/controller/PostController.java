@@ -8,7 +8,7 @@ import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.PostService;
-import com.mogak.spring.web.dto.PostRequestDto;
+import com.mogak.spring.web.dto.postdto.PostRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,8 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-import static com.mogak.spring.web.dto.PostImgRequestDto.CreatePostImgDto;
-import static com.mogak.spring.web.dto.PostResponseDto.*;
+import static com.mogak.spring.web.dto.postdto.PostImgRequestDto.CreatePostImgDto;
+import static com.mogak.spring.web.dto.postdto.PostResponseDto.*;
 
 @Tag(name = "회고록 API", description = "회고록 API 명세서")
 @RestController

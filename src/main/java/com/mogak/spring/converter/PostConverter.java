@@ -5,8 +5,8 @@ import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.web.dto.PostRequestDto;
-import com.mogak.spring.web.dto.PostResponseDto;
+import com.mogak.spring.web.dto.postdto.PostRequestDto;
+import com.mogak.spring.web.dto.postdto.PostResponseDto;
 import org.springframework.data.domain.Slice;
 
 import java.time.LocalDateTime;

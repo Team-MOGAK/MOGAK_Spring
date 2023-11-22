@@ -11,7 +11,7 @@ import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.util.Regex;
-import com.mogak.spring.web.dto.UserRequestDto;
+import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-import static com.mogak.spring.web.dto.UserRequestDto.*;
+import static com.mogak.spring.web.dto.userdto.UserRequestDto.*;
 
 @RequiredArgsConstructor
 @Service
@@ -34,8 +34,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public User create(CreateUserDto response, UploadImageDto uploadImageDto) {
         inputVerify(response);
-        Job job = jobRepository.findJobByName(response.getJob()).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
-        Address address = addressRepository.findAddressByName(response.getAddress()).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_ADDRESS));
+        Job job = jobRepository.findJobByName(response.getJob())
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
+        Address address = addressRepository.findAddressByName(response.getAddress())
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_ADDRESS));
         String profileImgUrl = uploadImageDto.getImgUrl();
         String profileImgName = uploadImageDto.getImgName();
         return userRepository.save(UserConverter.toUser(response, job, address, profileImgUrl, profileImgName));
@@ -46,8 +48,6 @@ public class UserServiceImpl implements UserService {
     }
 
     protected void inputVerify(CreateUserDto response) {
-        if (!Regex.USER_NICKNAME_REGEX.matchRegex(response.getNickname(), "NICKNAME"))
-            throw new UserException(ErrorCode.NOT_VALID_NICKNAME);
         if (!Regex.EMAIL_REGEX.matchRegex(response.getEmail(), "EMAIL"))
             throw new UserException(ErrorCode.NOT_VALID_EMAIL);
         if (findUserByNickname(response.getNickname()).isPresent())
@@ -67,7 +67,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserByEmail(String email) {
-        return findUserByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        return findUserByEmail(email)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
     }
 
     private Optional<User> findUserByEmail(String email) {
@@ -79,15 +80,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateNickname(Long userId, UpdateNicknameDto nicknameDto) {
         verifyNickname(nicknameDto.getNickname());
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateNickname(nicknameDto.getNickname());
     }
 
     @Transactional
     @Override
     public void updateJob(Long userId, UpdateJobDto jobDto) {
-        Job job = jobRepository.findJobByName(jobDto.getJob()).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        Job job = jobRepository.findJobByName(jobDto.getJob())
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateJob(job);
     }
 
@@ -104,7 +108,8 @@ public class UserServiceImpl implements UserService {
         return headers;
     }
     public String getProfileImgName(Long userId){
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String profileImgName = user.getProfileImgName();
         return profileImgName;
     }
@@ -112,7 +117,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void updateImg(Long userId, UserRequestDto.UpdateImageDto userImageDto) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String imgUrl = userImageDto.getImgUrl();
         String imgName = userImageDto.getImgName();
         user.updateProfileImg(imgUrl, imgName);

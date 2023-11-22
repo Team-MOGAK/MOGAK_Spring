@@ -26,6 +26,12 @@ public enum ErrorCode {
     ALREADY_EXIST_USER(HttpStatus.CONFLICT, "U006",  "이미 존재하는 유저입니다"),
 
     /**
+     * 모다라트 에러
+     * */
+    NOT_EXIST_MODARAT(HttpStatus.BAD_REQUEST, "A001", "존재하지 않는 모다라트입니다"),
+    EXCEED_MAX_NUM_MODARAT(HttpStatus.BAD_REQUEST, "A002", "모다라트 최대 글자수 100자를 초과하였습니다"),
+    
+    /**
      * 모각 에러
      * */
     NOT_EXIST_CATEGORY(HttpStatus.NOT_FOUND, "M001","존재하지 않는 카테고리입니다"),
@@ -46,6 +52,9 @@ public enum ErrorCode {
     NOT_EXIST_JOGAK(HttpStatus.NOT_FOUND, "J005", "존재하지 않는 조각입니다"),
     OVERDUE_DEADLINE_JOGAK(HttpStatus.BAD_REQUEST, "J006", "기한을 넘긴 조각입니다"),
     WRONG_CREATE_JOGAK(HttpStatus.BAD_REQUEST, "J007", "진행중인 모각만 조각을 생성할 수 있습니다"),
+    NOT_VALID_UPDATE_JOGAK(HttpStatus.BAD_REQUEST, "J008", "유효하지 않은 조각 수정입니다"),
+    NOT_VALID_PERIOD(HttpStatus.BAD_REQUEST, "J009", "유효하지 않은 반복주기입니다"),
+    NOT_VALID_DAILY_JOGAK(HttpStatus.BAD_REQUEST, "J010", "유효하지 않은 루틴의 조각입니다"),
 
     /**
      * 게시물 에러
@@ -80,8 +89,8 @@ public enum ErrorCode {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "Z002", "잘못된 요청입니다"),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Z003","찾을 수 없습니다"),
     NOT_SUPPORTED_METHOD_ERROR(HttpStatus.METHOD_NOT_ALLOWED, "Z004", "지원하지 않는 HTTP Method 요청입니다."),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Z500", "서버와의 연결에 실패했습니다"),
-    ;
+    INVALID_PARAMETER_ERROR(HttpStatus.BAD_REQUEST, "Z005", "입력값이 유효하지 않습니다"),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Z500", "서버와의 연결에 실패했습니다");
 
     private final HttpStatus status;
     private final String code;

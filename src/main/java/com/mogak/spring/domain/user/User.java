@@ -28,7 +28,6 @@ public class User extends BaseEntity {
     private String profileImgUrl;
     private String profileImgName;
     private String email;
-    private Double weekRate;
     @Column(nullable = false)
     private String validation;
 

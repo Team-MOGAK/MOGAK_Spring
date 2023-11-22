@@ -2,10 +2,7 @@ package com.mogak.spring.converter;
 
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
-import com.mogak.spring.web.dto.PostImgRequestDto;
-import com.mogak.spring.web.dto.PostImgResponseDto;
-
-import java.util.List;
+import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
 
 public class PostImgConverter {
     /*
