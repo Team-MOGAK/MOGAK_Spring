@@ -123,4 +123,6 @@ public class UserServiceImpl implements UserService {
         String imgName = userImageDto.getImgName();
         user.updateProfileImg(imgUrl, imgName);
     }
+
+
 }

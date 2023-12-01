@@ -7,12 +7,15 @@ spring:
       enabled: true
       max-file-size: 20MB
       max-request-size: 20MB
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${url}
     username: ${rds_username}
     password: ${rds_password}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
 
   jpa:
     hibernate:
@@ -54,6 +57,9 @@ springdoc:
 
 jwt:
   secret: ${JWT_SECRET_KEY}
+  access-token-expiry: 7200000 #2시간
+  refresh-token-expiry: 2678400000 #31일
+
 
 server:
   ssl:

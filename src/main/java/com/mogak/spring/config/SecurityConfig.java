@@ -17,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtTokenFilter jwtTokenFilter;
-
+//    private final JwtInterceptor jwtInterceptor;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
@@ -25,7 +25,9 @@ public class SecurityConfig {
                 .csrf().disable()
                 .formLogin().disable()
                 .headers().frameOptions().disable().and()
-                .cors().and()
+                .cors().disable()
+                .build();
+                /*
                 .authorizeRequests()
                 .antMatchers("/h2-console/*").permitAll()
                 .antMatchers("**").permitAll() // 우선 모든 권한 허용
@@ -39,7 +41,10 @@ public class SecurityConfig {
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 //UserNamePasswordAuthenticationFilter 적용하기 전에 JWTTokenFilter를 적용 하라는 뜻.
                 .build();
+                 */
     }
+
+
 
 
 

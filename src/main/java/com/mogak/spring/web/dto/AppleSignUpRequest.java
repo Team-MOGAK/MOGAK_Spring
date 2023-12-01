@@ -5,7 +5,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-@ToString
+@Builder
 public class AppleSignUpRequest {
 
     private String id_token;

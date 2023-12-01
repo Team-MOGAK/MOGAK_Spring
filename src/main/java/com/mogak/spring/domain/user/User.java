@@ -2,6 +2,8 @@ package com.mogak.spring.domain.user;
 
 import com.mogak.spring.global.BaseEntity;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 
@@ -9,6 +11,8 @@ import javax.persistence.*;
 @Getter
 @Table(name = "users")
 @Entity
+@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id=?")
+@Where(clause = "deleted=false")
 @AllArgsConstructor(access= AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
@@ -30,6 +34,8 @@ public class User extends BaseEntity {
     private String email;
     @Column(nullable = false)
     private String validation;
+    private boolean deleted = Boolean.FALSE;
+
 
     public void updateNickname(String nickname) {
         this.nickname = nickname;
@@ -41,5 +47,12 @@ public class User extends BaseEntity {
     public void updateProfileImg(String imgUrl, String imgName){
         this.profileImgUrl = imgUrl;
         this.profileImgName = imgName;
+    }
+    public User(String email){
+        this.email=email;
+    }
+
+    public void updateValidation(String validation){
+        this.validation = validation;
     }
 }
