@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
 
 @Tag(name = "조각 API", description = "조각 API 명세서")
 @RequiredArgsConstructor
@@ -64,6 +65,12 @@ public class JogakController {
     @GetMapping("/routine")
     public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakListDto>> getRoutineJogaks() {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineTodayJogaks(authHandler.getUserId())));
+    }
+
+    @GetMapping("/routine")
+    public ResponseEntity<BaseResponse<Object>> getRoutineJogakss(@RequestParam LocalDate startDay,
+                                                                  @RequestParam LocalDate endDay) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogakss(authHandler.getUserId(), startDay, endDay)));
     }
 
     @Operation(summary = "일일 조각 시작", description = "일일 조각을 시작합니다",

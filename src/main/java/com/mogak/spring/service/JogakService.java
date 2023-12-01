@@ -3,6 +3,9 @@ package com.mogak.spring.service;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 
+import java.time.LocalDate;
+import java.util.List;
+
 public interface JogakService {
 
     void createRoutineJogakToday();
@@ -18,4 +21,6 @@ public interface JogakService {
     JogakResponseDto.successJogakDto successJogak(Long jogakId);
 
     void deleteJogak(Long jogakId);
+
+    List<JogakResponseDto.getRoutineJogakDto> getRoutineJogakss(Long userId, LocalDate startDay, LocalDate endDay);
 }

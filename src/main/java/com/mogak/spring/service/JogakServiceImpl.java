@@ -6,6 +6,7 @@ import com.mogak.spring.domain.common.Weeks;
 import com.mogak.spring.domain.jogak.*;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
@@ -19,9 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -169,6 +168,67 @@ public class JogakServiceImpl implements JogakService {
         return JogakConverter.toGetJogakListResponseDto(jogakRepository.findDailyRoutineJogak(user, getTodayNum()));
     }
 
+    @Override
+    public List<JogakResponseDto.getRoutineJogakDto> getRoutineJogakss(Long userId, LocalDate startDate, LocalDate endDate) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        List<LocalDate> pastDates = getPastDates(startDate, endDate);
+        List<LocalDate> futureDates = getFutureDates(startDate, endDate);
+        List<JogakResponseDto.getRoutineJogakDto> routineJogaks = new ArrayList<>();
+
+        // 오늘 + 이전 가져오기
+        if (!pastDates.isEmpty()) {
+            List<DailyJogak> pastJogaks = dailyJogakRepository.findByDateRange(startDate, endDate);
+            routineJogaks.addAll(pastJogaks.stream()
+                    .map(DailyJogak::getRoutineJogakDto)
+                    .collect(Collectors.toList()));
+        }
+
+        // 미래 가져오기
+        if (!futureDates.isEmpty()) {
+            Map<Integer, List<Jogak>> dailyRoutineJogaks = new HashMap<>();
+            IntStream.rangeClosed(1, 7)
+                    .forEach(i -> {
+                        dailyRoutineJogaks.put(i, jogakRepository.findAllRoutineJogaksWithPeriodsByUser(userId, periodRepository.findById(i)
+                                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_DAY))));
+                    });
+            // 요일 값 대입
+            for (LocalDate date: futureDates) {
+                dailyRoutineJogaks.get(dateToNum(date)).forEach(i -> {
+                        routineJogaks.add(DailyJogak.getFutureRoutineJogakDto(date, i.getTitle()));
+                });
+            }
+        }
+        return routineJogaks;
+    }
+
+    private List<LocalDate> getPastDates(LocalDate startDate, LocalDate endDate) {
+        LocalDate today = LocalDate.now();
+        List<LocalDate> pastDates = new ArrayList<>();
+        for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
+            if (date.isBefore(today)) {
+                pastDates.add(date);
+            }
+        }
+        return pastDates;
+    }
+
+    private List<LocalDate> getFutureDates(LocalDate startDate, LocalDate endDate) {
+        LocalDate today = LocalDate.now();
+        List<LocalDate> futureDates = new ArrayList<>();
+        for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
+            if (date.isAfter(today)) {
+                futureDates.add(date);
+            }
+        }
+        return futureDates;
+    }
+
+    private int dateToNum(LocalDate date) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        return dayOfWeek.getValue();
+    }
+
     private int getTodayNum() {
         LocalDate today = LocalDate.now();
         DayOfWeek dayOfWeek = today.getDayOfWeek();
@@ -204,5 +264,4 @@ public class JogakServiceImpl implements JogakService {
         // TODO: 변경된 코드에 맞춘 회고록 + 댓글 삭제
         jogakRepository.deleteById(jogakId);
     }
-
 }

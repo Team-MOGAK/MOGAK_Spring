@@ -2,6 +2,7 @@ package com.mogak.spring.domain.jogak;
 
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
+import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.BaseEntity;
 import lombok.*;
 
@@ -25,6 +26,9 @@ public class Jogak extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mogak_id")
     private Mogak mogak;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mogak_category")
     private MogakCategory category;
