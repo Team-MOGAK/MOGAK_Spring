@@ -7,6 +7,5 @@ import lombok.*;
 @Getter
 @Builder
 public class AppleLoginRequest {
-
     private String id_token;
 }

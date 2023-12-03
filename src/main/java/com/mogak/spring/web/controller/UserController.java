@@ -57,6 +57,9 @@ public class UserController {
                     @ApiResponse(responseCode = "409", description = "올바르지 않은 닉네임, 올바르지 않은 이메일",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
+    /**
+     * 회원가입
+     */
     @PostMapping("/join")
     public ResponseEntity<BaseResponse<ToCreateDto>> createUser(@Valid @RequestPart CreateUserDto request,
                                                                 @RequestPart(required = false) MultipartFile multipartFile) {
@@ -70,8 +73,8 @@ public class UserController {
         else {
             uploadImageDto = awsS3Service.uploadProfileImg(multipartFile,dirName);
         }
-        User user = userService.create(request,uploadImageDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(UserConverter.toCreateDto(user)));
+        ToCreateDto toCreateDto = userService.create(request,uploadImageDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(toCreateDto));
     }
 
     @Operation(summary = "(임시)로그인", description = "입력한 이메일로 로그인을 시도합니다",

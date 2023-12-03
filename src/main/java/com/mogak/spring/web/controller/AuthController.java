@@ -1,5 +1,6 @@
 package com.mogak.spring.web.controller;
 
+import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.service.AuthService;
 import com.mogak.spring.web.dto.AppleLoginRequest;
 import com.mogak.spring.web.dto.AppleLoginResponse;
@@ -22,34 +23,49 @@ public class AuthController {
 
     private final AuthService authService;
 
-    /*
-    로그인
+    /**
+     * 로그인
      */
     @PostMapping("/login")
-    public ResponseEntity<AppleLoginResponse> loginApple(@RequestHeader("id_token") String id_token, @RequestBody AppleLoginRequest request) {
+    public ResponseEntity<AppleLoginResponse> loginApple(@RequestBody AppleLoginRequest request) {
         AppleLoginResponse response = authService.appleLogin(request);
         return ResponseEntity.ok(response);
     }
 
     /*
-     회원가입
-     */
     @PostMapping("/signup")
     public ResponseEntity<AppleLoginResponse> signupApple(@RequestBody AppleLoginRequest request) {
         //헤더 dto로 바꾸야함
         AppleLoginResponse response = authService.appleLogin(request);
         return ResponseEntity.ok(response);
     }
-    /*
-    로그아웃
      */
-    /*
+
+    /**
+     * 토큰 재발급
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtTokens> refreshToken(@RequestHeader(value = "RefreshToken") String refreshToken){
+
+        JwtTokens jwtTokens = authService.reissue(refreshToken);
+        return ResponseEntity.ok(jwtTokens);
+    }
+
+    /**
+     * 로그아웃
+     */
     @PostMapping("/logout")
-    public ResponseEntity<Optional> logout(){
+    public ResponseEntity<Void> logout(){
 
-    }*/
+        return ResponseEntity.ok().build();
+    }
 
-    /*
-    회원탈퇴
+    /**
+     * 회원탈퇴
      */
+    @PostMapping("/withdraw")
+    public ResponseEntity<Void> withdrawUser(/*수정*/@RequestBody Long userId){
+        boolean isDeleted = authService.deleteUser(userId);
+        return ResponseEntity.ok().build();
+    }
 }

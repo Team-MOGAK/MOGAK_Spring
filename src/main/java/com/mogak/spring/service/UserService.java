@@ -2,11 +2,12 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
+import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import org.springframework.http.HttpHeaders;
 
 public interface UserService {
 
-    User create(UserRequestDto.CreateUserDto request, UserRequestDto.UploadImageDto uploadImageDto);
+    UserResponseDto.ToCreateDto create(UserRequestDto.CreateUserDto request, UserRequestDto.UploadImageDto uploadImageDto);
     Boolean verifyNickname(String request);
   
     HttpHeaders getHeader(User user);

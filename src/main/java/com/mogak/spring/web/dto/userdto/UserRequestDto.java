@@ -20,6 +20,7 @@ public class UserRequestDto {
         private String address;
         @Size(min = 1, max = 100)
         private String email;
+        private Long userId;
     }
     @Builder
     @Getter

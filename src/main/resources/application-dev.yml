@@ -66,7 +66,7 @@ server:
     key-store: ${SSL_KEY_STORE}
     key-store-type: ${SSL_KEY_TYPE}
     key-store-password: ${SSL_KEY_PW}
-
+.
 feign:
   client:
     config:
@@ -78,7 +78,7 @@ oauth:
   apple:
     iss: https://appleid.apple.com
     client-id: ${APPLE_CLIENT_ID}
-    nonce: ${APPLE_NONCE}
+#    nonce: ${APPLE_NONCE}
 
 #security:
 #  oauth2:

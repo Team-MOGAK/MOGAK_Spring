@@ -10,5 +10,6 @@ import lombok.*;
 public class AppleLoginResponse {
 
     private Boolean isRegistered; //등록된 유저인지
+    private Long userId;
     private JwtTokens tokens; //access&refresh
 }

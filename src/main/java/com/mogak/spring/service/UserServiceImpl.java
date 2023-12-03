@@ -12,6 +12,7 @@ import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.util.Regex;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
+import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -32,15 +33,17 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public User create(CreateUserDto response, UploadImageDto uploadImageDto) {
-        inputVerify(response);
+    public UserResponseDto.ToCreateDto create(CreateUserDto response, UploadImageDto uploadImageDto) {
+//        inputVerify(response);
         Job job = jobRepository.findJobByName(response.getJob())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
         Address address = addressRepository.findAddressByName(response.getAddress())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_ADDRESS));
         String profileImgUrl = uploadImageDto.getImgUrl();
         String profileImgName = uploadImageDto.getImgName();
-        return userRepository.save(UserConverter.toUser(response, job, address, profileImgUrl, profileImgName));
+        User user = userRepository.findById(response.getUserId()).get();
+        user.registerUser(response.getNickname(), job, address, profileImgUrl, profileImgName);
+        return UserResponseDto.ToCreateDto.builder().userId(user.getId()).nickname(user.getNickname()).build();
     }
 
     private Optional<User> findUserByNickname(String nickname) {
@@ -107,7 +110,8 @@ public class UserServiceImpl implements UserService {
         headers.set("Authorization", jwtTokenHandler.createJwtToken(user.getId().toString()));
         return headers;
     }
-    public String getProfileImgName(Long userId){
+
+    public String getProfileImgName(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String profileImgName = user.getProfileImgName();
