@@ -1,6 +1,7 @@
 package com.mogak.spring.config;
 
-import com.mogak.spring.login.JwtTokenFilter;
+import com.mogak.spring.jwt.JwtInterceptor;
+//import com.mogak.spring.login.JwtTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,21 +11,21 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtTokenFilter jwtTokenFilter;
-//    private final JwtInterceptor jwtInterceptor;
+//    private final JwtTokenFilter jwtTokenFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .httpBasic().disable()
                 .csrf().disable()
                 .formLogin().disable()
-                .headers().frameOptions().disable().and()
                 .cors().disable()
                 .build();
                 /*
@@ -43,4 +44,5 @@ public class SecurityConfig {
                 .build();
                  */
     }
+
 }
