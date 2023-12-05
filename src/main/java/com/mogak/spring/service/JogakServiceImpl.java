@@ -161,7 +161,7 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public JogakResponseDto.GetJogakListDto getRoutineTodayJogaks(Long userId) {
+    public JogakResponseDto.GetJogakListDto getTodayRoutineJogaks(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         mogakRepository.findAllByUser(user);
@@ -169,7 +169,7 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public List<JogakResponseDto.getRoutineJogakDto> getRoutineJogakss(Long userId, LocalDate startDate, LocalDate endDate) {
+    public List<JogakResponseDto.getRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDate, LocalDate endDate) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<LocalDate> pastDates = getPastDates(startDate, endDate);
@@ -188,15 +188,12 @@ public class JogakServiceImpl implements JogakService {
         if (!futureDates.isEmpty()) {
             Map<Integer, List<Jogak>> dailyRoutineJogaks = new HashMap<>();
             IntStream.rangeClosed(1, 7)
-                    .forEach(i -> {
-                        dailyRoutineJogaks.put(i, jogakRepository.findAllRoutineJogaksWithPeriodsByUser(userId, periodRepository.findById(i)
-                                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_DAY))));
-                    });
+                    .forEach(i -> dailyRoutineJogaks.put(i, jogakRepository.findAllRoutineJogaksWithPeriodsByUser(userId, periodRepository.findById(i)
+                            .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_DAY)))));
             // 요일 값 대입
             for (LocalDate date: futureDates) {
-                dailyRoutineJogaks.get(dateToNum(date)).forEach(i -> {
-                        routineJogaks.add(DailyJogak.getFutureRoutineJogakDto(date, i.getTitle()));
-                });
+                dailyRoutineJogaks.get(dateToNum(date))
+                        .forEach(i -> routineJogaks.add(DailyJogak.getFutureRoutineJogakDto(date, i.getTitle())));
             }
         }
         return routineJogaks;

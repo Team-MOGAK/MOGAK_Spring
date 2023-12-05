@@ -63,14 +63,21 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/routine")
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakListDto>> getRoutineJogaks() {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineTodayJogaks(authHandler.getUserId())));
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakListDto>> getTodayRoutineJogaks() {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getTodayRoutineJogaks(authHandler.getUserId())));
     }
 
+    @Operation(summary = "주간/월간 루틴 조각 조회", description = "주간/월간 루틴 조각을 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
     @GetMapping("/routine")
-    public ResponseEntity<BaseResponse<Object>> getRoutineJogakss(@RequestParam LocalDate startDay,
+    public ResponseEntity<BaseResponse<Object>> getRoutineJogaks(@RequestParam LocalDate startDay,
                                                                   @RequestParam LocalDate endDay) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogakss(authHandler.getUserId(), startDay, endDay)));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogaks(authHandler.getUserId(), startDay, endDay)));
     }
 
     @Operation(summary = "일일 조각 시작", description = "일일 조각을 시작합니다",
