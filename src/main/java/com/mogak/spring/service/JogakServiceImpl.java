@@ -3,10 +3,12 @@ package com.mogak.spring.service;
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.JogakPeriodConverter;
 import com.mogak.spring.domain.common.Weeks;
-import com.mogak.spring.domain.jogak.*;
+import com.mogak.spring.domain.jogak.DailyJogak;
+import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.jogak.JogakPeriod;
+import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
@@ -181,7 +183,7 @@ public class JogakServiceImpl implements JogakService {
 
         // 오늘 + 이전 가져오기
         if (!pastDates.isEmpty()) {
-            List<DailyJogak> pastJogaks = dailyJogakRepository.findByDateRange(startDate, endDate);
+            List<DailyJogak> pastJogaks = dailyJogakRepository.findByDateRange(startDate.atStartOfDay(), endDate.atStartOfDay());
             routineJogaks.addAll(pastJogaks.stream()
                     .map(DailyJogak::getRoutineJogakDto)
                     .collect(Collectors.toList()));
@@ -191,14 +193,29 @@ public class JogakServiceImpl implements JogakService {
         if (!futureDates.isEmpty()) {
             Map<Integer, List<Jogak>> dailyRoutineJogaks = new HashMap<>();
             // 월~금 루틴 조각 가져오기
-            // 기간에 해당하지 않는 조각은 가져오면 안되는 로직 필요
-            IntStream.rangeClosed(1, 7)
-                    .forEach(i -> dailyRoutineJogaks.put(i, jogakRepository.findAllRoutineJogaksWithPeriodsByUser(userId, periodRepository.findById(i)
-                            .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_DAY)))));
+            List<Jogak> userRoutineJogaks = jogakRepository.findAllRoutineJogaksByUser(userId);
+            IntStream.rangeClosed(1, 7).forEach(i -> {
+                List<Jogak> matchingJogaks = userRoutineJogaks.stream()
+                        .flatMap(j -> j.getJogakPeriods().stream())
+                        .filter(k -> i == k.getPeriod().getId())
+                        .map(JogakPeriod::getJogak)  // JogakPeriod에서 Jogak으로 매핑
+                        .distinct()
+                        .collect(Collectors.toList());
+                dailyRoutineJogaks.put(i, matchingJogaks);
+                System.out.println("루틴 " + i + " " + dailyRoutineJogaks.get(i));
+            });
             // 요일 값 대입
             for (LocalDate date: futureDates) {
                 dailyRoutineJogaks.get(dateToNum(date))
-                        .forEach(i -> routineJogaks.add(DailyJogak.getFutureRoutineJogakDto(date, i.getTitle())));
+                        .forEach(i -> {
+                            // 기간에 해당하지 않는 조각은 가져오지 않는 로직
+                            if (i.getEndAt().isBefore(date)) {
+                                routineJogaks.add(DailyJogak.getFutureRoutineJogakDto(date, i.getTitle()));
+                            }
+                        });
+            }
+            for (JogakResponseDto.getRoutineJogakDto dto: routineJogaks) {
+                System.out.println("결과들~ "+ dto.getTitle() + " : " + dto.getDate());
             }
         }
         return routineJogaks;

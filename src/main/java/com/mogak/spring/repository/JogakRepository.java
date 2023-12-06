@@ -1,7 +1,6 @@
 package com.mogak.spring.repository;
 
 import com.mogak.spring.domain.jogak.Jogak;
-import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,7 +24,7 @@ public interface JogakRepository extends JpaRepository<Jogak, Long> {
 
     List<Jogak> findAllByMogak(Mogak mogak);
 
-    @Query("SELECT DISTINCT j FROM Jogak j JOIN FETCH j.jogakPeriods jp " +
-            "WHERE j.user.id = :userId AND j.isRoutine = true AND j.jogakPeriods = :period")
-    List<Jogak> findAllRoutineJogaksWithPeriodsByUser(@Param("userId") Long userId, @Param("period") Period period);
+    @Query("SELECT DISTINCT j FROM Jogak j JOIN FETCH j.jogakPeriods jp JOIN FETCH jp.period p " +
+            "WHERE j.user.id = :userId AND j.isRoutine = true")
+    List<Jogak> findAllRoutineJogaksByUser(@Param("userId") Long userId);
 }
