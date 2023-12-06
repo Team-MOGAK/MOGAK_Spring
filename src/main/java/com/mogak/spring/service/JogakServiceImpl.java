@@ -168,6 +168,9 @@ public class JogakServiceImpl implements JogakService {
         return JogakConverter.toGetJogakListResponseDto(jogakRepository.findDailyRoutineJogak(user, getTodayNum()));
     }
 
+    /**
+     * 주간/월간 루틴 가져오는 API
+     * */
     @Override
     public List<JogakResponseDto.getRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDate, LocalDate endDate) {
         User user = userRepository.findById(userId)
@@ -187,6 +190,8 @@ public class JogakServiceImpl implements JogakService {
         // 미래 가져오기
         if (!futureDates.isEmpty()) {
             Map<Integer, List<Jogak>> dailyRoutineJogaks = new HashMap<>();
+            // 월~금 루틴 조각 가져오기
+            // 기간에 해당하지 않는 조각은 가져오면 안되는 로직 필요
             IntStream.rangeClosed(1, 7)
                     .forEach(i -> dailyRoutineJogaks.put(i, jogakRepository.findAllRoutineJogaksWithPeriodsByUser(userId, periodRepository.findById(i)
                             .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_DAY)))));
