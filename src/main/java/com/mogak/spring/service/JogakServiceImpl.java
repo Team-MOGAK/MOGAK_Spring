@@ -17,6 +17,7 @@ import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service
@@ -196,26 +198,25 @@ public class JogakServiceImpl implements JogakService {
             List<Jogak> userRoutineJogaks = jogakRepository.findAllRoutineJogaksByUser(userId);
             IntStream.rangeClosed(1, 7).forEach(i -> {
                 List<Jogak> matchingJogaks = userRoutineJogaks.stream()
-                        .flatMap(j -> j.getJogakPeriods().stream())
-                        .filter(k -> i == k.getPeriod().getId())
-                        .map(JogakPeriod::getJogak)  // JogakPeriod에서 Jogak으로 매핑
-                        .distinct()
+                        .filter(jogak -> jogak.getJogakPeriods().stream()
+                                .anyMatch(jogakPeriod -> {
+                                    Period period = jogakPeriod.getPeriod();
+                                    return i == period.getId();
+                                }))
                         .collect(Collectors.toList());
                 dailyRoutineJogaks.put(i, matchingJogaks);
-                System.out.println("루틴 " + i + " " + dailyRoutineJogaks.get(i));
+                log.info("루틴 day: " + i + " " + dailyRoutineJogaks.get(i));
             });
             // 요일 값 대입
             for (LocalDate date: futureDates) {
                 dailyRoutineJogaks.get(dateToNum(date))
                         .forEach(i -> {
+                            log.info(i.getEndAt() + " , " + date);
                             // 기간에 해당하지 않는 조각은 가져오지 않는 로직
-                            if (i.getEndAt().isBefore(date)) {
+                            if (i.getEndAt().isAfter(date)) {
                                 routineJogaks.add(DailyJogak.getFutureRoutineJogakDto(date, i.getTitle()));
                             }
                         });
-            }
-            for (JogakResponseDto.getRoutineJogakDto dto: routineJogaks) {
-                System.out.println("결과들~ "+ dto.getTitle() + " : " + dto.getDate());
             }
         }
         return routineJogaks;

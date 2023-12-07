@@ -80,12 +80,7 @@ public class JogakController {
     @GetMapping("/routines")
     public ResponseEntity<BaseResponse<Object>> getRoutineJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate startDay,
                                                                   @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate endDay) {
-        try {
-            jogakService.getRoutineJogaks(authHandler.getUserId(), startDay, endDay);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return ResponseEntity.ok(new BaseResponse<>(null));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogaks(authHandler.getUserId(), startDay, endDay)));
     }
 
     @Operation(summary = "일일 조각 시작", description = "일일 조각을 시작합니다",
