@@ -1,6 +1,7 @@
 package com.mogak.spring.web.dto.mogakdto;
 
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -21,7 +22,9 @@ public class MogakRequestDto {
         private String bigCategory;
         @Size(min = 1, max = 200)
         private String smallCategory;
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate startAt;
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate endAt;
         @Size(min = 4, max = 10)
         private String color;
@@ -40,7 +43,9 @@ public class MogakRequestDto {
         private String bigCategory;
         @Size(min = 1, max = 200)
         private String smallCategory;
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate startAt;
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate endAt;
         @Size(min = 4, max = 10)
         private String color;
