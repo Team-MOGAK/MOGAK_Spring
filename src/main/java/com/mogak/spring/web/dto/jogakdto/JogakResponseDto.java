@@ -2,6 +2,7 @@ package com.mogak.spring.web.dto.jogakdto;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class JogakResponseDto {
@@ -42,6 +43,17 @@ public class JogakResponseDto {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class startDailyJogakDto {
         private Long dailyJogakId;
+        private String title;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class getRoutineJogakDto {
+        private Long dailyJogakId;
+        private LocalDate Date;
+        private Boolean isAchievement;
         private String title;
     }
 
