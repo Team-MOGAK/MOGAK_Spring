@@ -36,9 +36,10 @@ public class SecurityConfig {
                 // .antMatchers("/api/**").authenticated() // 다른 api는 인증 필요
                 //.and()
                 .authorizeRequests()
-                .antMatchers("/swagger-ui/index.html").permitAll()
+                .antMatchers("/swagger-ui/**").permitAll()
                 .antMatchers("/api/auth/login**").permitAll()
                 .antMatchers("/h2-console/*").permitAll()
+                .anyRequest().authenticated()
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // jwt 사용하는 경우 사용

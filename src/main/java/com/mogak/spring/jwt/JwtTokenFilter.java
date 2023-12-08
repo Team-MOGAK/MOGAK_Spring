@@ -18,6 +18,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 
 @Component
@@ -26,6 +28,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
+    private static final List<String> EXCLUDE_URLS= Arrays.asList("/swagger-ui","/api/auth/login");
 
     @Override
     protected void doFilterInternal(HttpServletRequest servletRequest, HttpServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -33,14 +36,14 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
         try {
-            String accessToken = jwtTokenProvider.resolveAccessToken(request);
-            jwtTokenProvider.parseToken(accessToken);
-
-            if(isLogout(accessToken)){
-                throw new IllegalStateException("Invalid Token");
+            if(!shouldExclude(request)){
+                String accessToken = jwtTokenProvider.resolveAccessToken(request);
+                jwtTokenProvider.parseToken(accessToken);
+                if(isLogout(accessToken)){
+                    throw new IllegalStateException("Invalid Token");
+                }
+                setAuthentication(accessToken);
             }
-
-            setAuthentication(accessToken);
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e){//만료기간 체크
             throw new IllegalStateException("Expired token");
@@ -62,6 +65,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return false;
         }
         return true;
+    }
+
+    private boolean shouldExclude(HttpServletRequest request){
+        return EXCLUDE_URLS.stream().anyMatch(url -> request.getRequestURI().contains(url));
     }
 
 }
