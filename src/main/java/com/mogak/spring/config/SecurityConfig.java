@@ -35,6 +35,11 @@ public class SecurityConfig {
                 // 모든 post 요청을 인증된 사용자인지 순서 중요. authenticated 🡪 인증된 사용자인지 확인
                 // .antMatchers("/api/**").authenticated() // 다른 api는 인증 필요
                 //.and()
+                .authorizeRequests()
+                .antMatchers("/swagger-ui/index.html").permitAll()
+                .antMatchers("/api/auth/login**").permitAll()
+                .antMatchers("/h2-console/*").permitAll()
+                .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // jwt 사용하는 경우 사용
                 .and()

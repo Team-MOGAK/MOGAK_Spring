@@ -26,9 +26,9 @@ public class JwtTokenProvider {
 
     @Value("${jwt.secret}")
     private String secretKey;
-    @Value("${jwt.access-token-expiry")
+    @Value("${jwt.access-token-expiry}")
     private Long accessTokenValidTime;
-    @Value("{jwt.refresh-token-expiry")
+    @Value("${jwt.refresh-token-expiry}")
     private Long refreshTokenValidTime;
     private CustomUserDetailsService userDetailsService;
 
