@@ -13,6 +13,7 @@ import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
 import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,9 +30,9 @@ public class AuthService {
     private final RedisService redisService;
     private static final String LOGOUT_ACCESS_TOKEN_PREFIX = "logout";
 
-    @Value("${jwt.access-token-expiry")
+    @Value("${jwt.access-token-expiry}")
     private Long accessTokenExpiry;
-    @Value("${jwt.refresh-token-expiry")
+    @Value("${jwt.refresh-token-expiry}")
     private Long refreshTokenExpiry;
 
     //로그인
@@ -88,11 +89,11 @@ public class AuthService {
      */
     @Transactional
     public JwtTokens reissue(String refreshToken){
-        String email = redisService.getValues("$REFRESH_TOKEN_PREFIX:${refreshToken}");
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User findUser = userRepository.findByEmail(email).get();
         JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), email);
-        storeRefresh( findUser.getEmail(), jwtTokens);
-        redisService.deleteValues(findUser.getEmail());
+        storeRefresh( email, jwtTokens);
+        redisService.deleteValues(email);
         return jwtTokens;
     }
 
@@ -113,6 +114,10 @@ public class AuthService {
 
     @Transactional
     public void logout(){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        //refresh 삭제
+        //access저장
+
 
     }
 

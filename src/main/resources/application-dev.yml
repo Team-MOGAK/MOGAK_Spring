@@ -66,13 +66,13 @@ server:
     key-store: ${SSL_KEY_STORE}
     key-store-type: ${SSL_KEY_TYPE}
     key-store-password: ${SSL_KEY_PW}
-.
+
 feign:
   client:
     config:
       apple-public-key-client:
-        connect-timeout: 5000
-        read-timeout: 3000
+        connectTimeout: 5000
+        readTimeout: 3000
 
 oauth:
   apple:
