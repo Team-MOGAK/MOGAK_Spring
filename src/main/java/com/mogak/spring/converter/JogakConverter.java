@@ -78,8 +78,8 @@ public class JogakConverter {
                 .build();
     }
 
-    public static JogakResponseDto.successJogakDto toSuccessJogak(Jogak jogak) {
-        return JogakResponseDto.successJogakDto.builder()
+    public static JogakResponseDto.JogakSuccessDto toSuccessJogak(Jogak jogak) {
+        return JogakResponseDto.JogakSuccessDto.builder()
                 .title(jogak.getMogak().getTitle())
                 .mogakTitle(jogak.getMogak().getTitle())
                 .title(jogak.getCategory().getName())

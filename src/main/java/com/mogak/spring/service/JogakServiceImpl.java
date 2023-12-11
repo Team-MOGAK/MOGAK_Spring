@@ -176,12 +176,12 @@ public class JogakServiceImpl implements JogakService {
      * 주간/월간 루틴 가져오는 API
      * */
     @Override
-    public List<JogakResponseDto.getRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDate, LocalDate endDate) {
+    public List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDate, LocalDate endDate) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<LocalDate> pastDates = getPastDates(startDate, endDate);
         List<LocalDate> futureDates = getFutureDates(startDate, endDate);
-        List<JogakResponseDto.getRoutineJogakDto> routineJogaks = new ArrayList<>();
+        List<JogakResponseDto.GetRoutineJogakDto> routineJogaks = new ArrayList<>();
 
         // 오늘 + 이전 가져오기
         if (!pastDates.isEmpty()) {
@@ -268,7 +268,7 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.successJogakDto successJogak(Long dailyJogakId) {
+    public JogakResponseDto.JogakSuccessDto successJogak(Long dailyJogakId) {
         DailyJogak dailyjogak = dailyJogakRepository.findById(dailyJogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         dailyjogak.updateSuccess();

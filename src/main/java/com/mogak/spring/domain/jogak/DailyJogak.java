@@ -37,8 +37,8 @@ public class DailyJogak extends BaseEntity {
         this.achievement = true;
     }
 
-    public static JogakResponseDto.getRoutineJogakDto getRoutineJogakDto(DailyJogak dailyJogak) {
-        return JogakResponseDto.getRoutineJogakDto.builder()
+    public static JogakResponseDto.GetRoutineJogakDto getRoutineJogakDto(DailyJogak dailyJogak) {
+        return JogakResponseDto.GetRoutineJogakDto.builder()
                 .dailyJogakId(dailyJogak.getId())
                 .Date(dailyJogak.getCreatedAt().toLocalDate())
                 .isAchievement(dailyJogak.getAchievement())
@@ -46,8 +46,8 @@ public class DailyJogak extends BaseEntity {
                 .build();
     }
 
-    public static JogakResponseDto.getRoutineJogakDto getFutureRoutineJogakDto(LocalDate date, String title) {
-        return JogakResponseDto.getRoutineJogakDto.builder()
+    public static JogakResponseDto.GetRoutineJogakDto getFutureRoutineJogakDto(LocalDate date, String title) {
+        return JogakResponseDto.GetRoutineJogakDto.builder()
                 .dailyJogakId(-1L)
                 .Date(date)
                 .isAchievement(false)

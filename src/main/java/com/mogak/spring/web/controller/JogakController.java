@@ -109,7 +109,7 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("{jogakId}/success")
-    public ResponseEntity<BaseResponse<JogakResponseDto.successJogakDto>> successJogak(@PathVariable Long jogakId) {
+    public ResponseEntity<BaseResponse<JogakResponseDto.JogakSuccessDto>> successJogak(@PathVariable Long jogakId) {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.successJogak(jogakId)));
     }
 
