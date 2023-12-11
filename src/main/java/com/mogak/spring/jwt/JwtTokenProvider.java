@@ -102,7 +102,7 @@ public class JwtTokenProvider {
         String accessToken = createAccessToken(userId, email);
 
         String localRefreshToken = refreshToken;
-        if(isRefreshable(refreshToken)){
+        if(isRefreshable(refreshToken)){ //만료되었으면 재발급
             localRefreshToken = createRefreshToken();
         }
         return JwtTokens.builder()

@@ -78,8 +78,7 @@ public class AuthService {
     private void storeRefresh(String email, JwtTokens jwtTokens){
         redisService.setValues(
                 email,
-                "${jwtTokens.refreshToken}",
-
+                jwtTokens.getRefreshToken(),
                 refreshTokenExpiry
         );
     }
@@ -92,8 +91,8 @@ public class AuthService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User findUser = userRepository.findByEmail(email).get();
         JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), email);
-        storeRefresh( email, jwtTokens);
         redisService.deleteValues(email);
+        storeRefresh(email, jwtTokens);
         return jwtTokens;
     }
 

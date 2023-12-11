@@ -28,7 +28,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
-    private static final List<String> EXCLUDE_URLS= Arrays.asList("/swagger-ui","/api/auth/login");
+    private static final List<String> EXCLUDE_URLS= Arrays.asList("/swagger-ui/index.html","/api/auth/**");
 
     @Override
     protected void doFilterInternal(HttpServletRequest servletRequest, HttpServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -47,8 +47,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e){//만료기간 체크
             throw new IllegalStateException("Expired token");
-        } catch (NullPointerException e){//null 체크
-            throw new IllegalStateException("Null");
         } catch (SignatureException | UnsupportedJwtException e){ //기존서명확인불가&jwt 구조 문제
             throw new IllegalStateException("Invalid token");
         }
@@ -68,7 +66,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     }
 
     private boolean shouldExclude(HttpServletRequest request){
-        return EXCLUDE_URLS.stream().anyMatch(url -> request.getRequestURI().contains(url));
+        return EXCLUDE_URLS.stream()
+                .anyMatch(url -> {
+                    System.out.println(request.getRequestURI() + " / " + url);
+                    return request.getRequestURI().contains(url);
+                });
     }
 
 }
