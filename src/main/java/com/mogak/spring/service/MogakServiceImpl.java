@@ -1,5 +1,6 @@
 package com.mogak.spring.service;
 
+import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.common.State;
 import com.mogak.spring.domain.jogak.Jogak;
@@ -13,6 +14,7 @@ import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
+import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
 import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -216,4 +219,13 @@ public class MogakServiceImpl implements MogakService {
         mogakRepository.deleteById(mogakId);
     }
 
+    @Override
+    public List<JogakResponseDto.GetJogakDto> getJogaks(Long mogakId) {
+        Mogak mogak = mogakRepository.findById(mogakId)
+                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MOGAK));
+        return mogak.getJogaks().stream()
+                .filter(jogak -> jogak.getEndAt().isAfter(LocalDate.now()))
+                .map(JogakConverter::toGetJogakResponseDto)
+                .collect(Collectors.toList());
+    }
 }

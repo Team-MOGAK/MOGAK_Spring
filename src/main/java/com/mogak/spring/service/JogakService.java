@@ -18,9 +18,9 @@ public interface JogakService {
 
     JogakResponseDto.startDailyJogakDto startJogak(Long jogakId);
 
-    JogakResponseDto.successJogakDto successJogak(Long jogakId);
+    JogakResponseDto.JogakSuccessDto successJogak(Long jogakId);
 
     void deleteJogak(Long jogakId);
 
-    List<JogakResponseDto.getRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDay, LocalDate endDay);
+    List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDay, LocalDate endDay);
 }

@@ -50,7 +50,7 @@ public class JogakResponseDto {
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class getRoutineJogakDto {
+    public static class GetRoutineJogakDto {
         private Long dailyJogakId;
         private LocalDate Date;
         private Boolean isAchievement;
@@ -61,7 +61,7 @@ public class JogakResponseDto {
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class successJogakDto {
+    public static class JogakSuccessDto {
         private String title;
         private String mogakTitle;
         private String category;
