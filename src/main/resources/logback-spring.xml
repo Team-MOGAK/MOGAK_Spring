@@ -14,16 +14,16 @@
     <springProfile name="dev">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
-                <pattern>%green(%d{yyyy-MM-dd HH:mm:ss.SSS}) %magenta([%thread]) %highlight(%5level) %white(%logger) - %msg%n</pattern>
+                <pattern>%green(%d{yyyy-MM-dd HH:mm:ss.SSS, Asia/Seoul}) %magenta([%thread]) %highlight(%5level) %white(%logger) - %msg%n</pattern>
             </encoder>
         </appender>
         <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <encoder>
-                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %5level %logger - %msg%n</pattern>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS, Asia/Seoul} [%thread] %5level %logger - %msg%n</pattern>
             </encoder>
             <!--여러 파일에 나눠 로그 저장-->
             <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-                <fileNamePattern>/home/ubuntu/logs/%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <fileNamePattern>/home/ubuntu/logs/%d{yyyy-MM-dd, Asia/Seoul}.%i.log</fileNamePattern>
                 <maxFileSize>10MB</maxFileSize> <!-- 로그파일 크기제한 -->
                 <maxHistory>30</maxHistory> <!-- 30일 넘으면 해당 파일 삭제 -->
             </rollingPolicy>
@@ -36,10 +36,10 @@
                 <onMismatch>DENY</onMismatch>
             </filter>
             <encoder>
-                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %5level %logger - %msg%n</pattern>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS, Asia/Seoul} [%thread] %5level %logger - %msg%n</pattern>
             </encoder>
             <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-                <fileNamePattern>/home/ubuntu/logs/err_log.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <fileNamePattern>/home/ubuntu/logs/err_log.%d{yyyy-MM-dd, Asia/Seoul}.%i.log</fileNamePattern>
                 <maxFileSize>10MB</maxFileSize> <!-- 로그파일 크기제한 -->
                 <maxHistory>60</maxHistory> <!-- 30일 넘으면 해당 파일 삭제 -->
             </rollingPolicy>
