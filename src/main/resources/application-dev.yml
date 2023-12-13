@@ -39,6 +39,10 @@ cloud:
 logging.level:
   org.hibernate.SQL: debug
   org.hibernate.type: trace
+logging:
+  pattern:
+    dateformat: yyyy-MM-dd HH:mm:ss.SSS,Asia/Seoul
+
 
 springdoc:
   swagger-ui:
