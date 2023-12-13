@@ -11,8 +11,8 @@ import javax.persistence.*;
 @Getter
 @Table(name = "users")
 @Entity
-@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id=?")
-@Where(clause = "deleted=false")
+//@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id=?")
+//@Where(clause = "deleted=false")
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {

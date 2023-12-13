@@ -3,10 +3,7 @@ package com.mogak.spring.jwt;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.redis.RedisService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,20 +38,26 @@ public class JwtTokenProvider {
                 .setHeaderParam("type","jwt")
                 .claim("id", userId)
                 .claim("email", email)
+                .setSubject(email)
                 .setIssuedAt(now)
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidTime))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
 
-    public String createRefreshToken(){
+    public String createRefreshToken(String email){
         Date now = new Date();
         return Jwts.builder()
+                .setSubject(email)
                 .setIssuedAt(now)
                 .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidTime))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
+
+    /**
+     * claims 추출
+     */
     public Jws<Claims> parseToken(String token){
         Jws<Claims> jws = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
         return jws;
@@ -81,7 +84,7 @@ public class JwtTokenProvider {
     public CustomUserDetails getSecurityContextHolder(){
         return (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
-
+    //header에서 access token 가져오기
     public String resolveAccessToken(HttpServletRequest request) {
         return request.getHeader(access_header).replace("Bearer","").trim();
     }
@@ -103,12 +106,25 @@ public class JwtTokenProvider {
 
         String localRefreshToken = refreshToken;
         if(isRefreshable(refreshToken)){ //만료되었으면 재발급
-            localRefreshToken = createRefreshToken();
+            localRefreshToken = createRefreshToken(email);
         }
         return JwtTokens.builder()
                 .accessToken(accessToken)
                 .refreshToken(localRefreshToken)
                 .build();
+    }
+
+    /**
+     * refresh 토큰 이메일 추출
+     */
+    public String getEmailByRefresh(String refreshToken) throws JwtException {
+        try{
+            Jws<Claims> claims = parseToken(refreshToken);
+            String email = claims.getBody().getSubject();
+            return email;
+        }catch (JwtException e){
+            throw new JwtException("Invalid Refresh Token");
+        }
     }
 
     /**

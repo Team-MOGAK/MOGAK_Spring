@@ -67,7 +67,7 @@ public class AuthService {
      */
     private JwtTokens issueTokens(User user) {
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getEmail());
-        String refreshToken = jwtTokenProvider.createRefreshToken();
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
         return JwtTokens.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -88,7 +88,8 @@ public class AuthService {
      */
     @Transactional
     public JwtTokens reissue(String refreshToken){
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String email = jwtTokenProvider.getEmailByRefresh(refreshToken);
+        System.out.println(email);
         User findUser = userRepository.findByEmail(email).get();
         JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), email);
         redisService.deleteValues(email);
@@ -128,7 +129,7 @@ public class AuthService {
     public boolean deleteUser(Long userId){
         User deleteUser = userRepository.findById(userId).get();
         deleteUser.updateValidation("INACTIVE");
-        userRepository.deleteById(deleteUser.getId()); //user soft delete
+//        userRepository.deleteById(deleteUser.getId()); //user soft delete
         /*
             추가로 user의 모다라트, 모각, 조각, 회고록, 댓글 삭제
          */
