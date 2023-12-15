@@ -104,6 +104,15 @@ public class MogakController {
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
+    @Operation(summary = "조각 조회", description = "모각의 조각을 조회합니다",
+            parameters = {
+                    @Parameter(name = "mogakId", description = "모각 ID")
+            },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조각 조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
     @GetMapping("/mogaks/{mogakId}/jogaks")
     public ResponseEntity<BaseResponse<List<JogakResponseDto.GetJogakDto>>> getJogaks(@PathVariable Long mogakId) {
         return ResponseEntity.ok(new BaseResponse<>(mogakService.getJogaks(mogakId)));
