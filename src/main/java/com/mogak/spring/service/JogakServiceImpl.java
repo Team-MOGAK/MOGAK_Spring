@@ -165,7 +165,7 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public JogakResponseDto.GetJogakListDto getTodayRoutineJogaks(Long userId) {
+    public JogakResponseDto.GetJogakListDto getTodayJogaks(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         mogakRepository.findAllByUser(user);
