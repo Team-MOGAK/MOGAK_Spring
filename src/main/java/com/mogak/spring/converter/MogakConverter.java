@@ -28,13 +28,6 @@ public class MogakConverter {
                 .build();
     }
 
-    public static MogakResponseDto.CreateDto toCreateDto(Mogak mogak) {
-        return MogakResponseDto.CreateDto.builder()
-                .mogakId(mogak.getId())
-                .title(mogak.getTitle())
-                .build();
-    }
-
     public static MogakResponseDto.UpdateStateDto toUpdateDto(Mogak mogak) {
         return MogakResponseDto.UpdateStateDto.builder()
                 .mogakId(mogak.getId())

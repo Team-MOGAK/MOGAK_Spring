@@ -47,7 +47,7 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/mogaks")
-    public ResponseEntity<BaseResponse<CreateDto>> createMogak(@Valid @RequestBody MogakRequestDto.CreateDto request) {
+    public ResponseEntity<BaseResponse<GetMogakDto>> createMogak(@Valid @RequestBody MogakRequestDto.CreateDto request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new BaseResponse<>(mogakService.create(authHandler.getUserId(), request)));
     }
