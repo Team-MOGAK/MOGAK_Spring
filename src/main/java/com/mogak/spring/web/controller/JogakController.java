@@ -65,7 +65,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/routines/today")
+    @GetMapping("/today")
     public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakListDto>> getTodayJogaks() {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getTodayJogaks(authHandler.getUserId())));
     }
