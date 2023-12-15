@@ -24,6 +24,7 @@ public class MogakConverter {
                 .state(state.toString())
                 .startAt(request.getStartAt())
                 .endAt(request.getEndAt())
+                .color(request.getColor())
                 .validation(Validation.ACTIVE.toString())
                 .build();
     }
