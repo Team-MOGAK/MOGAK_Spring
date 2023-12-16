@@ -46,7 +46,7 @@ public class JogakServiceImpl implements JogakService {
     @Transactional
     public void createRoutineJogakToday() {
         for (User user: userRepository.findAll()) {
-            List<Jogak> jogaks  = jogakRepository.findDailyRoutineJogak(user, Weeks.getTodayNum());
+            List<Jogak> jogaks  = jogakRepository.findDailyRoutineJogaks(user, Weeks.getTodayNum());
             for (Jogak jogak : jogaks) {
                 dailyJogakRepository.save(JogakConverter.toDailyJogak(jogak));
             }
@@ -165,11 +165,10 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public JogakResponseDto.GetJogakListDto getTodayRoutineJogaks(Long userId) {
+    public JogakResponseDto.GetJogakListDto getTodayJogaks(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        mogakRepository.findAllByUser(user);
-        return JogakConverter.toGetJogakListResponseDto(jogakRepository.findDailyRoutineJogak(user, getTodayNum()));
+        return JogakConverter.toGetDailyJogakListResponseDto(jogakRepository.findDailyJogaks(user, Weeks.getTodayMidnight(), Weeks.getTodayMidnight().plusDays(1)));
     }
 
     /**

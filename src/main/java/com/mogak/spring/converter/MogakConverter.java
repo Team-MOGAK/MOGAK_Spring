@@ -24,14 +24,8 @@ public class MogakConverter {
                 .state(state.toString())
                 .startAt(request.getStartAt())
                 .endAt(request.getEndAt())
+                .color(request.getColor())
                 .validation(Validation.ACTIVE.toString())
-                .build();
-    }
-
-    public static MogakResponseDto.CreateDto toCreateDto(Mogak mogak) {
-        return MogakResponseDto.CreateDto.builder()
-                .mogakId(mogak.getId())
-                .title(mogak.getTitle())
                 .build();
     }
 

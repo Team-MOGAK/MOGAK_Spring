@@ -44,7 +44,7 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Transactional
     @Override
-    public MogakResponseDto.CreateDto create(Long userId, MogakRequestDto.CreateDto request) {
+    public MogakResponseDto.GetMogakDto create(Long userId, MogakRequestDto.CreateDto request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Modarat modarat = modaratRepository.findById(request.getModaratId())
@@ -53,7 +53,7 @@ public class MogakServiceImpl implements MogakService {
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
         State state = State.registerState(request.getStartAt(), request.getEndAt(), LocalDate.now());
         Mogak result = mogakRepository.save(MogakConverter.toMogak(request, modarat, category, request.getSmallCategory(), user, state));
-        return MogakConverter.toCreateDto(result);
+        return MogakConverter.toGetMogakDto(result);
     }
 
 //    private void createTodayJogak(Mogak result, List<Period> periods, int dayNum) {
