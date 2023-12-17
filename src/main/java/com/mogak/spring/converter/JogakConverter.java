@@ -59,6 +59,7 @@ public class JogakConverter {
                 .mogakTitle(jogak.getMogak().getTitle())
                 .category(jogak.getCategory().getName())
                 .title(jogak.getTitle())
+                .isRoutine(jogak.getIsRoutine())
                 .build();
     }
 
@@ -68,6 +69,7 @@ public class JogakConverter {
                 .mogakTitle(jogak.getMogak().getTitle())
                 .category(jogak.getCategory().getName())
                 .title(jogak.getTitle())
+                .isRoutine(jogak.getIsRoutine())
                 .build();
     }
 

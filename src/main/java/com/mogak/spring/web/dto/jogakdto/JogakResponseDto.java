@@ -26,6 +26,7 @@ public class JogakResponseDto {
         private String mogakTitle;
         private String category;
         private String title;
+        private Boolean isRoutine;
     }
 
     @Getter
