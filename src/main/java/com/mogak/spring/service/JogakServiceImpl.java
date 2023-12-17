@@ -81,8 +81,7 @@ public class JogakServiceImpl implements JogakService {
     public JogakResponseDto.GetJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
         Mogak mogak = mogakRepository.findById(createJogakDto.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        Jogak jogak = jogakRepository.save(JogakConverter.toJogak(mogak, mogak.getBigCategory(),
-                createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getToday(), createJogakDto.getEndDate()));
+        Jogak jogak = jogakRepository.save(JogakConverter.toJogak(mogak, createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getToday(), createJogakDto.getEndDate()));
         validatePeriod(Optional.ofNullable(createJogakDto.getIsRoutine()), Optional.ofNullable(createJogakDto.getDays()));
         if (createJogakDto.getIsRoutine()) {
             List<Period> periods = new ArrayList<>();

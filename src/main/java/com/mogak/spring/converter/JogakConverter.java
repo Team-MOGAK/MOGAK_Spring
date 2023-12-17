@@ -4,7 +4,6 @@ import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.jogak.DailyJogak;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
-import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 
 import java.time.LocalDate;
@@ -12,10 +11,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class JogakConverter {
-    public static Jogak toJogak(Mogak mogak, MogakCategory category, String title, Boolean isRoutine, LocalDate today, LocalDate endAt) {
+    public static Jogak toJogak(Mogak mogak, String title, Boolean isRoutine, LocalDate today, LocalDate endAt) {
         return Jogak.builder()
+                .user(mogak.getUser())
                 .mogak(mogak)
-                .category(category)
+                .category(mogak.getBigCategory())
                 .title(title)
                 .isRoutine(isRoutine)
                 .numberAchievements(0)
