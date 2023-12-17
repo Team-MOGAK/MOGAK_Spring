@@ -12,14 +12,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class JogakConverter {
-    public static Jogak toJogak(Mogak mogak, MogakCategory category, String title, Boolean isRoutine, LocalDate endAt) {
+    public static Jogak toJogak(Mogak mogak, MogakCategory category, String title, Boolean isRoutine, LocalDate today, LocalDate endAt) {
         return Jogak.builder()
                 .mogak(mogak)
                 .category(category)
                 .title(title)
                 .isRoutine(isRoutine)
                 .numberAchievements(0)
-                .startAt(mogak.getStartAt())
+                .startAt(today)
                 .endAt(endAt)
                 .state(Validation.ACTIVE.toString())
                 .build();
