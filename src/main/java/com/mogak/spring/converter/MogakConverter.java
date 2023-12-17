@@ -53,6 +53,7 @@ public class MogakConverter {
      * */
     public static MogakResponseDto.GetMogakDto toGetMogakDto(Mogak mogak) {
         return MogakResponseDto.GetMogakDto.builder()
+                .id(mogak.getId())
                 .title(mogak.getTitle())
                 .state(mogak.getState())
                 .bigCategory(mogak.getBigCategory())
