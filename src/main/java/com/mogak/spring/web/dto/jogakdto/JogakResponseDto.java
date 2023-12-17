@@ -6,16 +6,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class JogakResponseDto {
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class CreateJogakDto {
-        private Long jogakId;
-        private String category;
-        private String title;
-        private Boolean isRoutine;
-    }
 
     @Getter
     @Builder
@@ -27,6 +17,22 @@ public class JogakResponseDto {
         private String category;
         private String title;
         private Boolean isRoutine;
+        private LocalDate startDate;
+        private LocalDate endDate;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class GetDailyJogakDto {
+        private Long dailyJogakId;
+        private String mogakTitle;
+        private String category;
+        private String title;
+        private Boolean isRoutine;
+        private LocalDate startDate;
+        private LocalDate endDate;
     }
 
     @Getter
@@ -36,6 +42,15 @@ public class JogakResponseDto {
     public static class GetJogakListDto {
         private int size;
         private List<JogakResponseDto.GetJogakDto> jogaks;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class GetDailyJogakListDto {
+        private int size;
+        private List<JogakResponseDto.GetDailyJogakDto> dailyJogaks;
     }
 
     @Getter

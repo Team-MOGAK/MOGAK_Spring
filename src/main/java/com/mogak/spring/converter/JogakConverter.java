@@ -44,14 +44,6 @@ public class JogakConverter {
                 .isRoutine(jogak.getIsRoutine())
                 .build();
     }
-    public static JogakResponseDto.CreateJogakDto toCreateJogakResponseDto(Jogak jogak) {
-        return JogakResponseDto.CreateJogakDto.builder()
-                .jogakId(jogak.getId())
-                .category(jogak.getCategory().toString())
-                .title(jogak.getTitle())
-                .isRoutine(jogak.getIsRoutine())
-                .build();
-    }
 
     public static JogakResponseDto.GetJogakDto toGetJogakResponseDto(Jogak jogak) {
         return JogakResponseDto.GetJogakDto.builder()
@@ -60,12 +52,14 @@ public class JogakConverter {
                 .category(jogak.getCategory().getName())
                 .title(jogak.getTitle())
                 .isRoutine(jogak.getIsRoutine())
+                .startDate(jogak.getStartAt())
+                .endDate(jogak.getEndAt())
                 .build();
     }
 
-    public static JogakResponseDto.GetJogakDto toGetJogakResponseDto(DailyJogak jogak) {
-        return JogakResponseDto.GetJogakDto.builder()
-                .jogakId(jogak.getId())
+    public static JogakResponseDto.GetDailyJogakDto toGetDailyJogakResponseDto(DailyJogak jogak) {
+        return JogakResponseDto.GetDailyJogakDto.builder()
+                .dailyJogakId(jogak.getId())
                 .mogakTitle(jogak.getMogak().getTitle())
                 .category(jogak.getCategory().getName())
                 .title(jogak.getTitle())
@@ -82,10 +76,10 @@ public class JogakConverter {
                 .build();
     }
 
-    public static JogakResponseDto.GetJogakListDto toGetDailyJogakListResponseDto(List<DailyJogak> jogaks) {
-        return JogakResponseDto.GetJogakListDto.builder()
-                .jogaks(jogaks.stream()
-                        .map(JogakConverter::toGetJogakResponseDto)
+    public static JogakResponseDto.GetDailyJogakListDto toGetDailyJogakListResponseDto(List<DailyJogak> jogaks) {
+        return JogakResponseDto.GetDailyJogakListDto.builder()
+                .dailyJogaks(jogaks.stream()
+                        .map(JogakConverter::toGetDailyJogakResponseDto)
                         .collect(Collectors.toList()))
                 .size(jogaks.size())
                 .build();

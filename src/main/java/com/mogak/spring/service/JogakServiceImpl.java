@@ -78,7 +78,7 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.CreateJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
+    public JogakResponseDto.GetJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
         Mogak mogak = mogakRepository.findById(createJogakDto.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         Jogak jogak = jogakRepository.save(JogakConverter.toJogak(mogak, mogak.getBigCategory(),
@@ -103,7 +103,7 @@ public class JogakServiceImpl implements JogakService {
                 );
             }
         }
-        return JogakConverter.toCreateJogakResponseDto(jogak);
+        return JogakConverter.toGetJogakResponseDto(jogak);
     }
 
     @Transactional
@@ -165,10 +165,11 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public JogakResponseDto.GetJogakListDto getTodayJogaks(Long userId) {
+    public JogakResponseDto.GetDailyJogakListDto getTodayJogaks(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        return JogakConverter.toGetDailyJogakListResponseDto(jogakRepository.findDailyJogaks(user, Weeks.getTodayMidnight(), Weeks.getTodayMidnight().plusDays(1)));
+        return JogakConverter.toGetDailyJogakListResponseDto(jogakRepository.findDailyJogaks(
+                user, Weeks.getTodayMidnight(), Weeks.getTodayMidnight().plusDays(1)));
     }
 
     /**
