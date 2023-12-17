@@ -256,7 +256,7 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.startDailyJogakDto startJogak(Long jogakId) {
+    public JogakResponseDto.StartDailyJogakDto startJogak(Long jogakId) {
         Jogak jogak = jogakRepository.findById(jogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         if (jogak.getIsRoutine()) {

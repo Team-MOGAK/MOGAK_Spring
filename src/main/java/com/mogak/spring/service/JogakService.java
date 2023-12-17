@@ -16,7 +16,7 @@ public interface JogakService {
 //    void failRoutineJogakAtMidnight();
 //    void failJogakAtFour();
 
-    JogakResponseDto.startDailyJogakDto startJogak(Long jogakId);
+    JogakResponseDto.StartDailyJogakDto startJogak(Long jogakId);
 
     JogakResponseDto.JogakSuccessDto successJogak(Long jogakId);
 

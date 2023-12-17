@@ -40,7 +40,7 @@ public class DailyJogak extends BaseEntity {
     public static JogakResponseDto.GetRoutineJogakDto getRoutineJogakDto(DailyJogak dailyJogak) {
         return JogakResponseDto.GetRoutineJogakDto.builder()
                 .dailyJogakId(dailyJogak.getId())
-                .Date(dailyJogak.getCreatedAt().toLocalDate())
+                .date(dailyJogak.getCreatedAt().toLocalDate())
                 .isAchievement(dailyJogak.getAchievement())
                 .title(dailyJogak.getTitle())
                 .build();
@@ -49,7 +49,7 @@ public class DailyJogak extends BaseEntity {
     public static JogakResponseDto.GetRoutineJogakDto getFutureRoutineJogakDto(LocalDate date, String title) {
         return JogakResponseDto.GetRoutineJogakDto.builder()
                 .dailyJogakId(-1L)
-                .Date(date)
+                .date(date)
                 .isAchievement(false)
                 .title(title)
                 .build();
