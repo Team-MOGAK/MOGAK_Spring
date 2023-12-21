@@ -15,11 +15,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.springframework.format.annotation.DateTimeFormat.*;
 
 @Tag(name = "조각 API", description = "조각 API 명세서")
 @RequiredArgsConstructor
@@ -38,11 +43,11 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
-    public ResponseEntity<BaseResponse<JogakResponseDto.CreateJogakDto>> create(@Valid @RequestBody JogakRequestDto.CreateJogakDto createJogakDto) {
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakDto>> create(@Valid @RequestBody JogakRequestDto.CreateJogakDto createJogakDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(jogakService.createJogak(createJogakDto)));
     }
 
-    @Operation(summary = "일일 조각 조회", description = "일일 조각을 조회합니다",
+    @Operation(summary = "일회성 조각 조회", description = "일회성 조각들을 조회합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조회 성공"),
@@ -54,16 +59,29 @@ public class JogakController {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks(authHandler.getUserId())));
     }
 
-    @Operation(summary = "당일 루틴 조각 조회", description = "오늘의 루틴 조각을 조회합니다",
+    @Operation(summary = "당일 조각 조회", description = "오늘 해야할 조각들을 조회합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조회 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/routine")
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakListDto>> getRoutineJogaks() {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineTodayJogaks(authHandler.getUserId())));
+    @GetMapping("/today")
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getTodayJogaks() {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getTodayJogaks(authHandler.getUserId())));
+    }
+
+    @Operation(summary = "주간/월간 루틴 조각 조회", description = "주간/월간 루틴 조각을 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
+    @GetMapping("/routines")
+    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetRoutineJogakDto>>> getRoutineJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate startDay,
+                                                                                                    @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate endDay) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogaks(authHandler.getUserId(), startDay, endDay)));
     }
 
     @Operation(summary = "일일 조각 시작", description = "일일 조각을 시작합니다",
@@ -76,7 +94,7 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("{jogakId}/start")
-    public ResponseEntity<BaseResponse<JogakResponseDto.startDailyJogakDto>> startJogak(@PathVariable Long jogakId) {
+    public ResponseEntity<BaseResponse<JogakResponseDto.StartDailyJogakDto>> startJogak(@PathVariable Long jogakId) {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.startJogak(jogakId)));
     }
 
@@ -92,7 +110,7 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("{jogakId}/success")
-    public ResponseEntity<BaseResponse<JogakResponseDto.successJogakDto>> successJogak(@PathVariable Long jogakId) {
+    public ResponseEntity<BaseResponse<JogakResponseDto.JogakSuccessDto>> successJogak(@PathVariable Long jogakId) {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.successJogak(jogakId)));
     }
 

@@ -36,14 +36,16 @@ public class ModaratServiceImpl implements ModaratService {
     @Transactional
     @Override
     public void delete(Long modaratId) {
-        modaratRepository.deleteById(modaratId);
+        Modarat modarat = modaratRepository.findById(modaratId)
+                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
+        modaratRepository.delete(modarat);
     }
 
     @Transactional
     @Override
     public Modarat update(Long modaratId, ModaratRequestDto.UpdateModaratDto request) {
         Modarat modarat = modaratRepository.findById(modaratId)
-                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
+                .orElseThrow(()  -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
         modarat.update(request.getTitle(), request.getColor());
         return modarat;
     }

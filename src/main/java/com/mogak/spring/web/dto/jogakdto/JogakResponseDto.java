@@ -2,19 +2,10 @@ package com.mogak.spring.web.dto.jogakdto;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class JogakResponseDto {
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class CreateJogakDto {
-        private Long jogakId;
-        private String category;
-        private String title;
-        private Boolean isRoutine;
-    }
 
     @Getter
     @Builder
@@ -25,6 +16,23 @@ public class JogakResponseDto {
         private String mogakTitle;
         private String category;
         private String title;
+        private Boolean isRoutine;
+        private LocalDate startDate;
+        private LocalDate endDate;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class GetDailyJogakDto {
+        private Long dailyJogakId;
+        private String mogakTitle;
+        private String category;
+        private String title;
+        private Boolean isRoutine;
+        private LocalDate startDate;
+        private LocalDate endDate;
     }
 
     @Getter
@@ -40,7 +48,16 @@ public class JogakResponseDto {
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class startDailyJogakDto {
+    public static class GetDailyJogakListDto {
+        private int size;
+        private List<JogakResponseDto.GetDailyJogakDto> dailyJogaks;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class StartDailyJogakDto {
         private Long dailyJogakId;
         private String title;
     }
@@ -49,7 +66,18 @@ public class JogakResponseDto {
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class successJogakDto {
+    public static class GetRoutineJogakDto {
+        private Long dailyJogakId;
+        private LocalDate date;
+        private Boolean isAchievement;
+        private String title;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class JogakSuccessDto {
         private String title;
         private String mogakTitle;
         private String category;

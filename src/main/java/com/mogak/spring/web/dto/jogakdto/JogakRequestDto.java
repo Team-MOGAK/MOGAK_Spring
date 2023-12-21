@@ -1,6 +1,7 @@
 package com.mogak.spring.web.dto.jogakdto;
 
 import lombok.Getter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -17,6 +18,9 @@ public class JogakRequestDto {
         @NotNull
         private Boolean isRoutine;
         private List<String> days;
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        private LocalDate today;
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate endDate;
     }
 
@@ -27,6 +31,7 @@ public class JogakRequestDto {
         @NotNull
         private Boolean isRoutine;
         private List<String> days;
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate endDate;
     }
 

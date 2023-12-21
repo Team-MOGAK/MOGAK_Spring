@@ -13,15 +13,6 @@ public class MogakResponseDto {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class CreateDto {
-        private Long mogakId;
-        private String title;
-    }
-
-    @Builder
-    @Getter
-    @AllArgsConstructor(access = AccessLevel.PROTECTED)
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class UpdateStateDto {
         private Long mogakId;
         private LocalDateTime updatedAt;
@@ -41,6 +32,7 @@ public class MogakResponseDto {
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class GetMogakDto {
+        private Long id;
         private String title;
         private String state;
         private MogakCategory bigCategory;
@@ -49,15 +41,4 @@ public class MogakResponseDto {
         private LocalDate startAt;
         private LocalDate endAt;
     }
-
-//    @Builder
-//    @Getter
-//    @AllArgsConstructor(access = AccessLevel.PROTECTED)
-//    @NoArgsConstructor(access = AccessLevel.PROTECTED)
-//    public static class GetMogakInModaratDto {
-//        private String title;
-//        private MogakCategory bigCategory;
-//        private String smallCategory;
-//        private String color;
-//    }
 }

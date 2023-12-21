@@ -3,9 +3,12 @@ package com.mogak.spring.domain.jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.global.BaseEntity;
+import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+
 @Builder
 @Getter
 @Table(name = "daily_jogak")
@@ -32,5 +35,23 @@ public class DailyJogak extends BaseEntity {
 
     public void updateSuccess() {
         this.achievement = true;
+    }
+
+    public static JogakResponseDto.GetRoutineJogakDto getRoutineJogakDto(DailyJogak dailyJogak) {
+        return JogakResponseDto.GetRoutineJogakDto.builder()
+                .dailyJogakId(dailyJogak.getId())
+                .date(dailyJogak.getCreatedAt().toLocalDate())
+                .isAchievement(dailyJogak.getAchievement())
+                .title(dailyJogak.getTitle())
+                .build();
+    }
+
+    public static JogakResponseDto.GetRoutineJogakDto getFutureRoutineJogakDto(LocalDate date, String title) {
+        return JogakResponseDto.GetRoutineJogakDto.builder()
+                .dailyJogakId(-1L)
+                .date(date)
+                .isAchievement(false)
+                .title(title)
+                .build();
     }
 }

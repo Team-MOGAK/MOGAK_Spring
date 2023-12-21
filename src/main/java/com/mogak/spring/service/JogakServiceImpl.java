@@ -3,7 +3,10 @@ package com.mogak.spring.service;
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.JogakPeriodConverter;
 import com.mogak.spring.domain.common.Weeks;
-import com.mogak.spring.domain.jogak.*;
+import com.mogak.spring.domain.jogak.DailyJogak;
+import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.jogak.JogakPeriod;
+import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.JogakException;
@@ -14,17 +17,17 @@ import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service
@@ -43,7 +46,7 @@ public class JogakServiceImpl implements JogakService {
     @Transactional
     public void createRoutineJogakToday() {
         for (User user: userRepository.findAll()) {
-            List<Jogak> jogaks  = jogakRepository.findDailyRoutineJogak(user, Weeks.getTodayNum());
+            List<Jogak> jogaks  = jogakRepository.findDailyRoutineJogaks(user, Weeks.getTodayNum());
             for (Jogak jogak : jogaks) {
                 dailyJogakRepository.save(JogakConverter.toDailyJogak(jogak));
             }
@@ -75,11 +78,10 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.CreateJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
+    public JogakResponseDto.GetJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
         Mogak mogak = mogakRepository.findById(createJogakDto.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        Jogak jogak = jogakRepository.save(JogakConverter.toJogak(mogak, mogak.getBigCategory(),
-                createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getEndDate()));
+        Jogak jogak = jogakRepository.save(JogakConverter.toJogak(mogak, createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getToday(), createJogakDto.getEndDate()));
         validatePeriod(Optional.ofNullable(createJogakDto.getIsRoutine()), Optional.ofNullable(createJogakDto.getDays()));
         if (createJogakDto.getIsRoutine()) {
             List<Period> periods = new ArrayList<>();
@@ -100,7 +102,7 @@ public class JogakServiceImpl implements JogakService {
                 );
             }
         }
-        return JogakConverter.toCreateJogakResponseDto(jogak);
+        return JogakConverter.toGetJogakResponseDto(jogak);
     }
 
     @Transactional
@@ -162,11 +164,88 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public JogakResponseDto.GetJogakListDto getRoutineTodayJogaks(Long userId) {
+    public JogakResponseDto.GetDailyJogakListDto getTodayJogaks(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        mogakRepository.findAllByUser(user);
-        return JogakConverter.toGetJogakListResponseDto(jogakRepository.findDailyRoutineJogak(user, getTodayNum()));
+        return JogakConverter.toGetDailyJogakListResponseDto(jogakRepository.findDailyJogaks(
+                user, Weeks.getTodayMidnight(), Weeks.getTodayMidnight().plusDays(1)));
+    }
+
+    /**
+     * 주간/월간 루틴 가져오는 API
+     * */
+    @Override
+    public List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDate, LocalDate endDate) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        List<LocalDate> pastDates = getPastDates(startDate, endDate);
+        List<LocalDate> futureDates = getFutureDates(startDate, endDate);
+        List<JogakResponseDto.GetRoutineJogakDto> routineJogaks = new ArrayList<>();
+
+        // 오늘 + 이전 가져오기
+        if (!pastDates.isEmpty()) {
+            List<DailyJogak> pastJogaks = dailyJogakRepository.findByDateRange(startDate.atStartOfDay(), endDate.atStartOfDay());
+            routineJogaks.addAll(pastJogaks.stream()
+                    .map(DailyJogak::getRoutineJogakDto)
+                    .collect(Collectors.toList()));
+        }
+
+        // 미래 가져오기
+        if (!futureDates.isEmpty()) {
+            Map<Integer, List<Jogak>> dailyRoutineJogaks = new HashMap<>();
+            // 월~금 루틴 조각 가져오기
+            List<Jogak> userRoutineJogaks = jogakRepository.findAllRoutineJogaksByUser(userId);
+            IntStream.rangeClosed(1, 7).forEach(i -> {
+                List<Jogak> matchingJogaks = userRoutineJogaks.stream()
+                        .filter(jogak -> jogak.getJogakPeriods().stream()
+                                .anyMatch(jogakPeriod -> {
+                                    Period period = jogakPeriod.getPeriod();
+                                    return i == period.getId();
+                                }))
+                        .collect(Collectors.toList());
+                dailyRoutineJogaks.put(i, matchingJogaks);
+                log.info("루틴 day: " + i + " " + dailyRoutineJogaks.get(i));
+            });
+            // 요일 값 대입
+            for (LocalDate date: futureDates) {
+                dailyRoutineJogaks.get(dateToNum(date))
+                        .forEach(i -> {
+                            log.info(i.getEndAt() + " , " + date);
+                            // 기간에 해당하지 않는 조각은 가져오지 않는 로직
+                            if (i.getEndAt().isAfter(date)) {
+                                routineJogaks.add(DailyJogak.getFutureRoutineJogakDto(date, i.getTitle()));
+                            }
+                        });
+            }
+        }
+        return routineJogaks;
+    }
+
+    private List<LocalDate> getPastDates(LocalDate startDate, LocalDate endDate) {
+        LocalDate today = LocalDate.now();
+        List<LocalDate> pastDates = new ArrayList<>();
+        for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
+            if (date.isBefore(today)) {
+                pastDates.add(date);
+            }
+        }
+        return pastDates;
+    }
+
+    private List<LocalDate> getFutureDates(LocalDate startDate, LocalDate endDate) {
+        LocalDate today = LocalDate.now();
+        List<LocalDate> futureDates = new ArrayList<>();
+        for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
+            if (date.isAfter(today)) {
+                futureDates.add(date);
+            }
+        }
+        return futureDates;
+    }
+
+    private int dateToNum(LocalDate date) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        return dayOfWeek.getValue();
     }
 
     private int getTodayNum() {
@@ -177,7 +256,7 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.startDailyJogakDto startJogak(Long jogakId) {
+    public JogakResponseDto.StartDailyJogakDto startJogak(Long jogakId) {
         Jogak jogak = jogakRepository.findById(jogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         if (jogak.getIsRoutine()) {
@@ -188,7 +267,7 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.successJogakDto successJogak(Long dailyJogakId) {
+    public JogakResponseDto.JogakSuccessDto successJogak(Long dailyJogakId) {
         DailyJogak dailyjogak = dailyJogakRepository.findById(dailyJogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         dailyjogak.updateSuccess();
@@ -204,5 +283,4 @@ public class JogakServiceImpl implements JogakService {
         // TODO: 변경된 코드에 맞춘 회고록 + 댓글 삭제
         jogakRepository.deleteById(jogakId);
     }
-
 }

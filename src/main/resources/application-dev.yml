@@ -66,6 +66,7 @@ jwt:
 
 
 server:
+  port: 8081
   ssl:
     key-store: ${SSL_KEY_STORE}
     key-store-type: ${SSL_KEY_TYPE}
