@@ -48,7 +48,7 @@ public class NetworkController {
             })
     @PostMapping("/api/posts/like")
     public ResponseEntity<BaseResponse<String>> updateLike(@RequestBody PostLikeRequestDto.LikeDto request) {
-        String message = postLikeService.updateLike(authHandler.getUserId(), request);
+        String message = postLikeService.updateLike(request);
         return ResponseEntity.ok(new BaseResponse<>(message));
     }
 
@@ -70,7 +70,7 @@ public class NetworkController {
             @RequestParam int cursor,
             @RequestParam int size
     ) {
-        return ResponseEntity.ok(new BaseResponse<>(postService.getPacemakerPosts(authHandler.getUserId(), cursor, size)));
+        return ResponseEntity.ok(new BaseResponse<>(postService.getPacemakerPosts(cursor, size)));
     }
 
     //네트워킹 전체조회
@@ -93,7 +93,7 @@ public class NetworkController {
             @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size") int size,
             @RequestParam(value = "sort", defaultValue = "createdAt", required = false) String sort, @RequestParam(value = "address", required = false) String address
             /*@RequestParam(value = "category", defaultValue="all", required = false) List<String> categoryList,*/) {
-        Slice<Post> posts = postService.getNetworkPosts(authHandler.getUserId(), page, size, sort, address);
+        Slice<Post> posts = postService.getNetworkPosts(page, size, sort, address);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toNetworkPagingDto(posts)));
     }
 

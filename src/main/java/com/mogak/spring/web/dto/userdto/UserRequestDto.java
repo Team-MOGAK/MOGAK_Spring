@@ -7,6 +7,11 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 public class UserRequestDto {
+    @Builder
+    @Getter
+    public static class CheckNicknameDto{
+        private String nickname;
+    }
 
     @Builder
     @Getter

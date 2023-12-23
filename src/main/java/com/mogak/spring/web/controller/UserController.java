@@ -42,14 +42,14 @@ public class UserController {
                     @ApiResponse(responseCode = "409", description = "올바르지 않은 닉네임",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PostMapping("/{nickname}/verify")
-    public ResponseEntity<BaseResponse<ErrorCode>> verifyNickname(@PathVariable String nickname) {
-        userService.verifyNickname(nickname);
+    @PostMapping("/nickname/verify")
+    public ResponseEntity<BaseResponse<ErrorCode>> verifyNickname(@RequestBody CheckNicknameDto request) {
+        userService.verifyNickname(request.getNickname());
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
 
     }
 
-    @Operation(summary = "(임시)계정 생성", description = "계정 생성을 한다",
+    @Operation(summary = "회원등록", description = "회원 등록을 합니다",
             responses = {
                     @ApiResponse(responseCode = "201", description = "계정 생성 완료"),
                     @ApiResponse(responseCode = "400", description = "존재하지 않은 직업, 존재하지 않은 주소",
@@ -77,19 +77,19 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(toCreateDto));
     }
 
-    @Operation(summary = "(임시)로그인", description = "입력한 이메일로 로그인을 시도합니다",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "로그인 성공"),
-                    @ApiResponse(responseCode = "404", description = "존재하지 않는 계정",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "409", description = "올바르지 않은 이메일 형식",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            })
-    @PostMapping("/login/{email}")
-    public ResponseEntity<BaseResponse<ErrorCode>> login(@PathVariable String email) {
-        User user = userService.getUserByEmail(email);
-        return ResponseEntity.ok().headers(userService.getHeader(user)).body(new BaseResponse<>(ErrorCode.SUCCESS));
-    }
+//    @Operation(summary = "(임시)로그인", description = "입력한 이메일로 로그인을 시도합니다",
+//            responses = {
+//                    @ApiResponse(responseCode = "200", description = "로그인 성공"),
+//                    @ApiResponse(responseCode = "404", description = "존재하지 않는 계정",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//                    @ApiResponse(responseCode = "409", description = "올바르지 않은 이메일 형식",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//            })
+//    @PostMapping("/login/{email}")
+//    public ResponseEntity<BaseResponse<ErrorCode>> login(@PathVariable String email) {
+//        User user = userService.getUserByEmail(email);
+//        return ResponseEntity.ok().headers(userService.getHeader(user)).body(new BaseResponse<>(ErrorCode.SUCCESS));
+//    }
 
     @Operation(summary = "닉네임 변경", description = "유저의 닉네임을 변경합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
@@ -102,7 +102,7 @@ public class UserController {
             })
     @PutMapping("/profile/nickname")
     public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@Valid @RequestBody UpdateNicknameDto nicknameDto) {
-        userService.updateNickname(authHandler.getUserId(), nicknameDto);
+        userService.updateNickname(nicknameDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -115,7 +115,7 @@ public class UserController {
             })
     @PutMapping("/profile/job")
     public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@Valid @RequestBody UpdateJobDto jobDto) {
-        userService.updateJob(authHandler.getUserId(), jobDto);
+        userService.updateJob(jobDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -128,10 +128,9 @@ public class UserController {
             })
     @PutMapping("/profile/image")
     public ResponseEntity<Void> updateImage(@RequestPart MultipartFile multipartFile) {
-        Long userId = authHandler.getUserId();
-        String profileImgName = userService.getProfileImgName(userId); //기존 프로필사진받아오기
+        String profileImgName = userService.getProfileImgName(); //기존 프로필사진받아오기
         UserRequestDto.UpdateImageDto updateImageDto = awsS3Service.updateProfileImg(multipartFile, profileImgName, dirName);
-        userService.updateImg(userId, updateImageDto);
+        userService.updateImg(updateImageDto);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

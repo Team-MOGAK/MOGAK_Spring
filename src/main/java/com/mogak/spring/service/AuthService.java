@@ -41,7 +41,7 @@ public class AuthService {
 
         AppleUserResponse appleUser = appleOAuthUserProvider.getAppleUser(request.getId_token());
         boolean isRegistered = userRepository.existsByEmail(appleUser.getEmail());
-        if (!isRegistered) { //회원가입이 되어 있지 않는 경우
+        if (!isRegistered && !isRegisterNickname(appleUser.getEmail())) { //회원가입이 되어 있지 않는 경우-이메일 체크&해당 이메일로 가입한 닉네임 있는지 검증
             User oauthUser = new User(appleUser.getEmail());
             User savedUser = userRepository.save(oauthUser);
             JwtTokens jwtTokens = issueTokens(savedUser);
@@ -60,6 +60,18 @@ public class AuthService {
                 .userId(findUser.getId())
                 .tokens(jwtTokens)
                 .build();
+    }
+
+    /**
+     * 닉네임 등록 여부
+     */
+    private boolean isRegisterNickname(String email){
+        User user = userRepository.findByEmail(email).get();
+        if(user.getNickname().isEmpty()){
+            return false;
+        }else{
+            return true;
+        }
     }
 
     /**
@@ -97,30 +109,17 @@ public class AuthService {
         return jwtTokens;
     }
 
-//    public String appleSignUp(AppleSignUpRequest request) {
-//        AppleUserResponse appleUser = appleOAuthUserProvider.getAppleUser(request.getId_token());
-//        boolean isRegistered = userRepository.existsByEmail(appleUser.getEmail());
-//        if (isRegistered) { //회원가입이 되어 있는 경우
-//            User findUser = userRepository.findByEmail(appleUser.getEmail()).get();
-//            String token = jwtService.issueToken(findUser); //토큰 발급
-//            return token;
-//        }
-//        //create(reqeust,uploadImageDto); 이 부분은 userService에 있는 것으로 같이 합쳐야함
-////        User user = User user = userRepository.findByEmail(appleUser.getEmail()).get();
-////        String token = jwtService.issueToken(findUser);
-//        //storeRefresh(token, appleUser.getEmail());
-//        return token;
-//    }
 
     @Transactional
-    public void logout(){
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    public void logout(String accessToken){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName(); //email 갖고오기
         //refresh 삭제
-        //access저장
-
-
+        if(redisService.getValues(email)!= null){
+            redisService.deleteValues(email);
+        }
+        //블랙리스트 생성 - access저장
+        redisService.setValues(accessToken,"logout",accessTokenExpiry);
     }
-
 
     /**
      * 로그인한 사용자 탈퇴

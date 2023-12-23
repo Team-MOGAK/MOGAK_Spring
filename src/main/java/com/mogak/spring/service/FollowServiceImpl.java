@@ -10,6 +10,7 @@ import com.mogak.spring.repository.FollowRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.web.dto.userdto.FollowRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +29,9 @@ public class FollowServiceImpl implements FollowService {
 
     @Transactional
     @Override
-    public void follow(Long userId, String nickname) {
-        User fromUser = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    public void follow(String nickname) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User fromUser = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 
         if (followRepository.findByFromAndTo(fromUser, toUser).isPresent()) {
@@ -40,8 +42,9 @@ public class FollowServiceImpl implements FollowService {
 
     @Transactional
     @Override
-    public void unfollow(Long userId, String nickname) {
-        User fromUser = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    public void unfollow(String nickname) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User fromUser = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 
         Follow follow = followRepository.findByFromAndTo(fromUser, toUser).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_FOLLOW));

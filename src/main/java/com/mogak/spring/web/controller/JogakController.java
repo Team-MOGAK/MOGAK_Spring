@@ -32,7 +32,7 @@ import static org.springframework.format.annotation.DateTimeFormat.*;
 @RequestMapping("/api/modarats/mogaks/jogaks")
 public class JogakController {
     private final JogakService jogakService;
-    private final AuthHandler authHandler;
+//    private final AuthHandler authHandler;
 
     @Operation(summary = "조각 생성", description = "조각을 생성합니다",
             responses = {
@@ -56,7 +56,7 @@ public class JogakController {
             })
     @GetMapping("/daily")
     public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakListDto>> getDailyJogaks() {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks(authHandler.getUserId())));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks()));
     }
 
     @Operation(summary = "당일 조각 조회", description = "오늘 해야할 조각들을 조회합니다",
@@ -68,7 +68,7 @@ public class JogakController {
             })
     @GetMapping("/today")
     public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getTodayJogaks() {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getTodayJogaks(authHandler.getUserId())));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getTodayJogaks()));
     }
 
     @Operation(summary = "주간/월간 루틴 조각 조회", description = "주간/월간 루틴 조각을 조회합니다",
@@ -81,7 +81,7 @@ public class JogakController {
     @GetMapping("/routines")
     public ResponseEntity<BaseResponse<List<JogakResponseDto.GetRoutineJogakDto>>> getRoutineJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate startDay,
                                                                                                     @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate endDay) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogaks(authHandler.getUserId(), startDay, endDay)));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogaks(startDay, endDay)));
     }
 
     @Operation(summary = "일일 조각 시작", description = "일일 조각을 시작합니다",

@@ -51,7 +51,7 @@ public class CommentController {
             @PathVariable Long postId,
             @RequestBody CommentRequestDto.CreateCommentDto request
             ) {
-        PostComment comment = postCommentService.create(authHandler.getUserId(), request, postId);
+        PostComment comment = postCommentService.create(request, postId);
         return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toCreateCommentDto(comment)));
     }
 

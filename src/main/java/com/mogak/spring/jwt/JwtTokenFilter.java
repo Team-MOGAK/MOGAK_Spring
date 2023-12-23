@@ -28,7 +28,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
-    private static final List<String> EXCLUDE_URLS= Arrays.asList("/swagger-ui/index.html","/api/auth/login","/api/auth/refresh");
+    private static final List<String> EXCLUDE_URLS= Arrays.asList("/swagger-ui/index.html","/api/auth/login","/api/auth/refresh","/api/auth/logout","/api/users/nickname/verify","/api/users/join");
 
     @Override
     protected void doFilterInternal(HttpServletRequest servletRequest, HttpServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -36,14 +36,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
         try {
-            if(!shouldExclude(request)){
-                String accessToken = jwtTokenProvider.resolveAccessToken(request);
-                jwtTokenProvider.parseToken(accessToken);
-                if(isLogout(accessToken)){
-                    throw new IllegalStateException("Invalid Token");
-                }
-                setAuthentication(accessToken);
+            String accessToken = jwtTokenProvider.resolveAccessToken(request);
+            jwtTokenProvider.parseToken(accessToken);
+            if(isLogout(accessToken)){
+                throw new IllegalStateException("Invalid Token");
             }
+            setAuthentication(accessToken);
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e){//만료기간 체크
             throw new IllegalStateException("Expired token");
@@ -65,12 +63,19 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         return true;
     }
 
-    private boolean shouldExclude(HttpServletRequest request){
-        return EXCLUDE_URLS.stream()
-                .anyMatch(url -> {
-                    System.out.println(request.getRequestURI() + " / " + url);
-                    return request.getRequestURI().contains(url);
-                });
+//    private boolean shouldExclude(HttpServletRequest request){
+//        return EXCLUDE_URLS.stream()
+//                .anyMatch(url -> {
+//                    System.out.println(request.getRequestURI() + " / " + url);
+//                    return request.getRequestURI().contains(url);
+//                });
+//    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String[] excludePath = {"/swagger-ui/**","/api/auth/login","/api/auth/refresh","/api/auth/logout","/api/users/nickname/verify","/api/users/join"};
+        String path=request.getRequestURI();
+        return Arrays.stream(excludePath).anyMatch(path::startsWith);
     }
 
 }

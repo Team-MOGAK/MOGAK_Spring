@@ -39,13 +39,16 @@ public class SecurityConfig {
                 .antMatchers("/swagger-ui/**").permitAll()
                 .antMatchers("/api/auth/login").permitAll()
                 .antMatchers("/api/auth/refresh").permitAll()
+                .antMatchers("/api/auth/logout").permitAll()
+                .antMatchers("/api/users/nickname/verify").permitAll()
+                .antMatchers("/api/users/join").permitAll()
                 .antMatchers("/h2-console/*").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // jwt 사용하는 경우 사용
                 .and()
-//                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 //UserNamePasswordAuthenticationFilter 적용하기 전에 JWTTokenFilter를 적용 하라는 뜻.
                 .build();
     }

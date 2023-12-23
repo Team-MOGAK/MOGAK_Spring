@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,9 +42,10 @@ public class PostServiceImpl implements PostService {
     //회고록 & 회고록 이미지 생성 => 리팩토링 필요
     @Transactional
     @Override
-    public Post create(Long userId, PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, /*User user,*/Long mogakId) {
+    public Post create(PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList,Long mogakId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (request.getContents().length() > 350) {
             throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
         }
@@ -110,8 +112,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<NetworkPostDto> getPacemakerPosts(Long userId, int cursor, int size) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    public List<NetworkPostDto> getPacemakerPosts(int cursor, int size) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Pageable pageable = PageRequest.of(cursor, size);
         List<Post> posts = postRepository.findPacemakerPostsByUser(user, pageable);
         //postImg 중 썸네일 이미지는 제외
@@ -138,8 +141,9 @@ public class PostServiceImpl implements PostService {
 
     //전체 네트워킹 조회 - 이미지 썸네일 제외 반환
     @Override
-    public Slice<Post> getNetworkPosts(Long userId, int page, int size, String sort, String address /*List<String> categoryList,*/){
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    public Slice<Post> getNetworkPosts(int page, int size, String sort, String address /*List<String> categoryList,*/){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if(address == null){
             address = user.getAddress().getName();
         }

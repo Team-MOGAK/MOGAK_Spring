@@ -11,8 +11,8 @@ public interface JogakService {
     void createRoutineJogakToday();
     JogakResponseDto.GetJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto);
     void updateJogak(Long jogakId, JogakRequestDto.UpdateJogakDto updateJogakDto);
-    JogakResponseDto.GetJogakListDto getDailyJogaks(Long userId);
-    JogakResponseDto.GetDailyJogakListDto getTodayJogaks(Long userId);
+    JogakResponseDto.GetJogakListDto getDailyJogaks();
+    JogakResponseDto.GetDailyJogakListDto getTodayJogaks();
 //    void failRoutineJogakAtMidnight();
 //    void failJogakAtFour();
 
@@ -22,5 +22,5 @@ public interface JogakService {
 
     void deleteJogak(Long jogakId);
 
-    List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDay, LocalDate endDay);
+    List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(LocalDate startDay, LocalDate endDay);
 }

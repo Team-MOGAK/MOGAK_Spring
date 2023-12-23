@@ -13,8 +13,10 @@ import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.util.Regex;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
+import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +36,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public UserResponseDto.ToCreateDto create(CreateUserDto response, UploadImageDto uploadImageDto) {
-//        inputVerify(response);
+        inputVerify(response);
         Job job = jobRepository.findJobByName(response.getJob())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
         Address address = addressRepository.findAddressByName(response.getAddress())
@@ -81,19 +83,21 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void updateNickname(Long userId, UpdateNicknameDto nicknameDto) {
+    public void updateNickname(UpdateNicknameDto nicknameDto) {
         verifyNickname(nicknameDto.getNickname());
-        User user = userRepository.findById(userId)
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateNickname(nicknameDto.getNickname());
     }
 
     @Transactional
     @Override
-    public void updateJob(Long userId, UpdateJobDto jobDto) {
+    public void updateJob(UpdateJobDto jobDto) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Job job = jobRepository.findJobByName(jobDto.getJob())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateJob(job);
     }
@@ -104,15 +108,16 @@ public class UserServiceImpl implements UserService {
             throw new UserException(ErrorCode.NOT_VALID_EMAIL);
     }
 
-    @Override
-    public HttpHeaders getHeader(User user) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", jwtTokenHandler.createJwtToken(user.getId().toString()));
-        return headers;
-    }
+//    @Override
+//    public HttpHeaders getHeader(User user) {
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.set("Authorization", jwtTokenHandler.createJwtToken(user.getId().toString()));
+//        return headers;
+//    }
 
-    public String getProfileImgName(Long userId) {
-        User user = userRepository.findById(userId)
+    public String getProfileImgName() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String profileImgName = user.getProfileImgName();
         return profileImgName;
@@ -120,8 +125,9 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void updateImg(Long userId, UserRequestDto.UpdateImageDto userImageDto) {
-        User user = userRepository.findById(userId)
+    public void updateImg(UserRequestDto.UpdateImageDto userImageDto) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String imgUrl = userImageDto.getImgUrl();
         String imgName = userImageDto.getImgName();
