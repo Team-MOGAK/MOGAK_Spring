@@ -13,6 +13,7 @@ import com.mogak.spring.repository.query.SingleDetailModaratDto;
 import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
 import com.mogak.spring.web.dto.modaratdto.ModaratResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +29,9 @@ public class ModaratServiceImpl implements ModaratService {
 
     @Transactional
     @Override
-    public Modarat create(Long userId, ModaratRequestDto.CreateModaratDto request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    public Modarat create(ModaratRequestDto.CreateModaratDto request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return modaratRepository.save(ModaratConverter.toModarat(user, request));
     }
 
@@ -59,7 +61,10 @@ public class ModaratServiceImpl implements ModaratService {
     }
 
     @Override
-    public List<ModaratResponseDto.GetModaratTitleDto> getModaratTitleList(Long userId) {
+    public List<ModaratResponseDto.GetModaratTitleDto> getModaratTitleList() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        Long userId = user.getId();
         return modaratRepository.findModaratsByUserId(userId).stream()
                 .map(ModaratConverter::toGetModaratTitleDto)
                 .collect(Collectors.toList());

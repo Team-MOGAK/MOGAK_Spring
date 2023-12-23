@@ -16,6 +16,10 @@ spring:
   devtools:
     livereload:
       enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
 
   jpa:
     hibernate:
@@ -45,3 +49,39 @@ springdoc:
 
 jwt:
   secret: ${JWT_SECRET_KEY}
+
+feign:
+  client:
+    config:
+      apple-public-key-client:
+        connect-timeout: 5000
+        read-timeout: 3000
+
+oauth:
+  apple:
+    iss: https://appleid.apple.com
+    client-id: ${APPLE_CLIENT_ID}
+    nonce: ${APPLE_NONCE}
+
+#security:
+#  oauth2:
+#    client:
+#      registration:
+#        apple:
+#          grant-type: authorization_code
+#          client-id: ${APPLE_CLIENT_ID}
+#          key-id: ${APPLE_KEY_ID}
+#          team-id: ${APPLE_TEAM_ID}
+#          key-path: ${APPLE_KEY_PATH}
+#          redirect-uri: ${APPLE_REDIRECT_URI}
+#          client-authentication-method: POST
+#          client-name: Apple
+#          scope:
+#            - email
+#            - name
+#      provider: #사용자 인증 정보를 제공하는 구성 요소를 지정하는데 사용
+#        apple:
+#          authorizationUri: https://appleid.apple.com/auth/authorize?response_mode=form_post #인가코드  uri
+#          tokenUri: https://appleid.apple.com/auth/token #id_token uri
+
+

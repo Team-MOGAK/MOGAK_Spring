@@ -1,12 +1,18 @@
 package com.mogak.spring.web.dto.userdto;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 public class UserRequestDto {
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class CheckNicknameDto{
+        private String nickname;
+    }
 
     @Builder
     @Getter
@@ -20,6 +26,7 @@ public class UserRequestDto {
         private String address;
         @Size(min = 1, max = 100)
         private String email;
+        private Long userId;
     }
     @Builder
     @Getter

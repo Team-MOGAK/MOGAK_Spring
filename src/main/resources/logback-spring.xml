@@ -30,7 +30,7 @@
         </appender>
         <!-- 에러 관련 로그는 따로 파일을 빼 처리 -->
         <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">a
                 <level>ERROR</level>
                 <onMatch>ACCEPT</onMatch>
                 <onMismatch>DENY</onMismatch>

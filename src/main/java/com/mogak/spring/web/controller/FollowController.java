@@ -43,7 +43,7 @@ public class FollowController {
             })
     @PostMapping("{nickname}")
     public ResponseEntity<BaseResponse<ErrorCode>> follow(@PathVariable String nickname) {
-        followService.follow(authHandler.getUserId(), nickname);
+        followService.follow(nickname);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -60,7 +60,7 @@ public class FollowController {
             })
     @DeleteMapping("{nickname}")
     public ResponseEntity<BaseResponse<ErrorCode>> unfollow(@PathVariable String nickname) {
-        followService.unfollow(authHandler.getUserId(), nickname);
+        followService.unfollow(nickname);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
