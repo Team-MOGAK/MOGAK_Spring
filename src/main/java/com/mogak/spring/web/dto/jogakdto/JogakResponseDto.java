@@ -58,15 +58,6 @@ public class JogakResponseDto {
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class StartDailyJogakDto {
-        private Long dailyJogakId;
-        private String title;
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class GetRoutineJogakDto {
         private Long dailyJogakId;
         private LocalDate date;

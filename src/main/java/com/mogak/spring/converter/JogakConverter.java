@@ -84,13 +84,6 @@ public class JogakConverter {
                 .build();
     }
 
-    public static JogakResponseDto.StartDailyJogakDto toStartJogakDto(DailyJogak dailyJogak) {
-        return JogakResponseDto.StartDailyJogakDto.builder()
-                .dailyJogakId(dailyJogak.getId())
-                .title(dailyJogak.getTitle())
-                .build();
-    }
-
     public static JogakResponseDto.JogakSuccessDto toSuccessJogak(Jogak jogak) {
         return JogakResponseDto.JogakSuccessDto.builder()
                 .title(jogak.getMogak().getTitle())
