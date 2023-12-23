@@ -17,6 +17,7 @@ public class JogakResponseDto {
         private String category;
         private String title;
         private Boolean isRoutine;
+        private Integer achievements;
         private LocalDate startDate;
         private LocalDate endDate;
     }

@@ -18,7 +18,7 @@ public class JogakConverter {
                 .category(mogak.getBigCategory())
                 .title(title)
                 .isRoutine(isRoutine)
-                .numberAchievements(0)
+                .achievements(0)
                 .startAt(today)
                 .endAt(endAt)
                 .state(Validation.ACTIVE.toString())
