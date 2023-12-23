@@ -9,6 +9,7 @@ import com.mogak.spring.domain.jogak.JogakPeriod;
 import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
@@ -81,7 +82,7 @@ public class JogakServiceImpl implements JogakService {
     public JogakResponseDto.GetJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
         Mogak mogak = mogakRepository.findById(createJogakDto.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        Jogak jogak = jogakRepository.save(JogakConverter.toJogak(mogak, createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getToday(), createJogakDto.getEndDate()));
+        Jogak jogak = jogakRepository.save(JogakConverter.toInitialJogak(mogak, createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getToday(), createJogakDto.getEndDate()));
         validatePeriod(Optional.ofNullable(createJogakDto.getIsRoutine()), Optional.ofNullable(createJogakDto.getDays()));
         if (createJogakDto.getIsRoutine()) {
             List<Period> periods = new ArrayList<>();
@@ -271,6 +272,9 @@ public class JogakServiceImpl implements JogakService {
         DailyJogak dailyjogak = dailyJogakRepository.findById(dailyJogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         dailyjogak.updateSuccess();
+        Jogak jogak = jogakRepository.findById(dailyjogak.getJogakId())
+                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_JOGAK));
+        jogak.increaseAchievements();
         return JogakConverter.toSuccessJogak(JogakConverter.toJogak(dailyjogak));
     }
 

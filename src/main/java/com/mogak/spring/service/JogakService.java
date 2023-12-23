@@ -18,7 +18,7 @@ public interface JogakService {
 
     JogakResponseDto.StartDailyJogakDto startJogak(Long jogakId);
 
-    JogakResponseDto.JogakSuccessDto successJogak(Long jogakId);
+    JogakResponseDto.JogakSuccessDto successJogak(Long dailyJogakId);
 
     void deleteJogak(Long jogakId);
 

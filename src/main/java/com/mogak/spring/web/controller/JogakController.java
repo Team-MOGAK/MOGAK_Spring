@@ -109,9 +109,9 @@ public class JogakController {
                     @ApiResponse(responseCode = "409", description = "이미 종료한 조각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("{jogakId}/success")
-    public ResponseEntity<BaseResponse<JogakResponseDto.JogakSuccessDto>> successJogak(@PathVariable Long jogakId) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.successJogak(jogakId)));
+    @PutMapping("{dailyJogakId}/success")
+    public ResponseEntity<BaseResponse<JogakResponseDto.JogakSuccessDto>> successJogak(@PathVariable Long dailyJogakId) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.successJogak(dailyJogakId)));
     }
 
     @Operation(summary = "조각 수정", description = "입력값을 이용해 조각을 수정합니다",

@@ -1,6 +1,5 @@
 package com.mogak.spring.converter;
 
-import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.jogak.DailyJogak;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
@@ -11,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class JogakConverter {
-    public static Jogak toJogak(Mogak mogak, String title, Boolean isRoutine, LocalDate today, LocalDate endAt) {
+    public static Jogak toInitialJogak(Mogak mogak, String title, Boolean isRoutine, LocalDate today, LocalDate endAt) {
         return Jogak.builder()
                 .user(mogak.getUser())
                 .mogak(mogak)
@@ -21,7 +20,6 @@ public class JogakConverter {
                 .achievements(0)
                 .startAt(today)
                 .endAt(endAt)
-                .state(Validation.ACTIVE.toString())
                 .build();
     }
 
@@ -31,7 +29,6 @@ public class JogakConverter {
                 .category(dailyJogak.getCategory())
                 .title(dailyJogak.getTitle())
                 .isRoutine(dailyJogak.getIsRoutine())
-                .state(Validation.ACTIVE.toString())
                 .build();
     }
 
@@ -41,6 +38,7 @@ public class JogakConverter {
                 .category(jogak.getCategory())
                 .title(jogak.getTitle())
                 .achievement(false)
+                .jogakId(jogak.getId())
                 .isRoutine(jogak.getIsRoutine())
                 .build();
     }

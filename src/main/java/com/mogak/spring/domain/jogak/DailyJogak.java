@@ -23,6 +23,8 @@ public class DailyJogak extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mogak_id")
     private Mogak mogak;
+    @Column(nullable = false, name = "jogak_id")
+    private Long jogakId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mogak_category")
     private MogakCategory category;

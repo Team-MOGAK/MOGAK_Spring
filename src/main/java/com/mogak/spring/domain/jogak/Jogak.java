@@ -68,4 +68,11 @@ public class Jogak extends BaseEntity {
         this.state = state.toString();
     }
 
+    public void increaseAchievements() {
+        this.achievements += 1;
+    }
+
+    public void decreaseAchievements() {
+        this.achievements -= 1;
+    }
 }
