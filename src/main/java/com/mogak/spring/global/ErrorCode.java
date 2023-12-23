@@ -55,6 +55,7 @@ public enum ErrorCode {
     NOT_VALID_UPDATE_JOGAK(HttpStatus.BAD_REQUEST, "J008", "유효하지 않은 조각 수정입니다"),
     NOT_VALID_PERIOD(HttpStatus.BAD_REQUEST, "J009", "유효하지 않은 반복주기입니다"),
     NOT_VALID_DAILY_JOGAK(HttpStatus.BAD_REQUEST, "J010", "유효하지 않은 루틴의 조각입니다"),
+    NOT_SUCCESS_DAILY_JOGAK(HttpStatus.CONFLICT, "J011", "성공하지 않은 데일리 조각입니다"),
 
     /**
      * 게시물 에러

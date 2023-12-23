@@ -58,6 +58,7 @@ public class MogakConverter {
                 .state(mogak.getState())
                 .bigCategory(mogak.getBigCategory())
                 .smallCategory(mogak.getSmallCategory())
+                .color(mogak.getColor())
                 .startAt(mogak.getStartAt())
                 .endAt(mogak.getEndAt())
                 .build();
