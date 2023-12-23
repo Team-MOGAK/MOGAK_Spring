@@ -44,7 +44,7 @@ public class ModaratController {
             })
     @PostMapping("")
     public ResponseEntity<BaseResponse<CreateModaratDto>> createModarat(@Valid @RequestBody ModaratRequestDto.CreateModaratDto request) {
-        Modarat modarat = modaratService.create(authHandler.getUserId(), request);
+        Modarat modarat = modaratService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(ModaratConverter.toCreateDto(modarat)));
     }
 
@@ -89,7 +89,7 @@ public class ModaratController {
             })
     @GetMapping("")
     public ResponseEntity<BaseResponse<List<GetModaratTitleDto>>> getModaratTitleList() {
-        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(modaratService.getModaratTitleList(authHandler.getUserId())));
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(modaratService.getModaratTitleList()));
     }
 
 }

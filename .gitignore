@@ -41,3 +41,6 @@ src/main/**/application-aws.yml
 
 ### log file ###
 **/*.log
+
+### login key folder ###
+**/*.p8

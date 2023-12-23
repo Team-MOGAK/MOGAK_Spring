@@ -8,9 +8,9 @@ import com.mogak.spring.web.dto.modaratdto.ModaratResponseDto;
 import java.util.List;
 
 public interface ModaratService {
-    Modarat create(Long userId, ModaratRequestDto.CreateModaratDto request);
+    Modarat create(ModaratRequestDto.CreateModaratDto request);
     void delete(Long modaratId);
     Modarat update(Long modaratId, ModaratRequestDto.UpdateModaratDto request);
     SingleDetailModaratDto getDetailModarat(Long modaratId);
-    List<ModaratResponseDto.GetModaratTitleDto> getModaratTitleList(Long userId);
+    List<ModaratResponseDto.GetModaratTitleDto> getModaratTitleList();
 }

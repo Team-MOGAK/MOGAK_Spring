@@ -17,6 +17,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<ErrorResponse> BaseException(BaseException e) {
+        e.printStackTrace();
         ErrorCode errorCode = ErrorCode.findByMessage(e.getMessage());
         return ResponseEntity.status(e.getHttpStatus())
                 .body(ErrorResponse.of(Objects.requireNonNull(errorCode)));
@@ -44,7 +45,8 @@ public class GlobalExceptionHandler {
      * 잘못 입력된 경우
      * */
     @ExceptionHandler({NullPointerException.class, HttpMessageNotReadableException.class})
-    public ResponseEntity<ErrorResponse> handleBadRequestException() {
+    public ResponseEntity<ErrorResponse> handleBadRequestException(NullPointerException e) {
+        e.printStackTrace();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(ErrorCode.BAD_REQUEST));
     }
@@ -54,6 +56,7 @@ public class GlobalExceptionHandler {
      * */
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleAnyException(RuntimeException e) {
+        e.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR));
     }
