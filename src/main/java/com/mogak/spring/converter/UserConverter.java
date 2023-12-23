@@ -21,8 +21,8 @@ public class UserConverter {
                 .build();
     }
 
-    public static UserResponseDto.ToCreateDto toCreateDto(User user) {
-        return UserResponseDto.ToCreateDto.builder()
+    public static UserResponseDto.CreateDto toCreateDto(User user) {
+        return UserResponseDto.CreateDto.builder()
                 .userId(user.getId())
                 .nickname(user.getNickname())
                 .build();
