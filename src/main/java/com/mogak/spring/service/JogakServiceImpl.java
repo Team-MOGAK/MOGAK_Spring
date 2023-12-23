@@ -257,13 +257,14 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.StartDailyJogakDto startJogak(Long jogakId) {
+    public JogakResponseDto.JogakDailyJogakDto startJogak(Long jogakId) {
         Jogak jogak = jogakRepository.findById(jogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         if (jogak.getIsRoutine()) {
             throw new JogakException(ErrorCode.ALREADY_START_JOGAK);
         }
-        return JogakConverter.toStartJogakDto((dailyJogakRepository.save(JogakConverter.toInitialDailyJogak(jogak))));
+        DailyJogak dailyJogak = dailyJogakRepository.save(JogakConverter.toInitialDailyJogak(jogak));
+        return JogakConverter.toJogakDailyJogakDto(jogak, dailyJogak);
     }
 
     @Transactional
@@ -283,6 +284,9 @@ public class JogakServiceImpl implements JogakService {
     public JogakResponseDto.JogakDailyJogakDto failJogak(Long dailyJogakId) {
         DailyJogak dailyJogak = dailyJogakRepository.findById(dailyJogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        if (!dailyJogak.getIsAchievement()) {
+            throw new BaseException(ErrorCode.NOT_SUCCESS_DAILY_JOGAK);
+        }
         dailyJogak.updateAchievement(false);
         Jogak jogak = jogakRepository.findById(dailyJogak.getJogakId())
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_JOGAK));

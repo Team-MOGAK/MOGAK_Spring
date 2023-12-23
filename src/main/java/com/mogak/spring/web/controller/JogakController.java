@@ -94,7 +94,7 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("{jogakId}/start")
-    public ResponseEntity<BaseResponse<JogakResponseDto.StartDailyJogakDto>> startJogak(@PathVariable Long jogakId) {
+    public ResponseEntity<BaseResponse<JogakResponseDto.JogakDailyJogakDto>> startJogak(@PathVariable Long jogakId) {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.startJogak(jogakId)));
     }
 
@@ -125,7 +125,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "409", description = "이미 종료한 조각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("{dailyJogakId}/success")
+    @PutMapping("{dailyJogakId}/fail")
     public ResponseEntity<BaseResponse<JogakResponseDto.JogakDailyJogakDto>> failJogak(@PathVariable Long dailyJogakId) {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.failJogak(dailyJogakId)));
     }

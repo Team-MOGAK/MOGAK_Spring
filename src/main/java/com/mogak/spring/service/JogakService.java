@@ -1,6 +1,5 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 
@@ -17,7 +16,7 @@ public interface JogakService {
 //    void failRoutineJogakAtMidnight();
 //    void failJogakAtFour();
 
-    JogakResponseDto.StartDailyJogakDto startJogak(Long jogakId);
+    JogakResponseDto.JogakDailyJogakDto startJogak(Long jogakId);
 
     JogakResponseDto.JogakDailyJogakDto successJogak(Long dailyJogakId);
 

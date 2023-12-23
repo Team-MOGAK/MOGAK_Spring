@@ -50,6 +50,7 @@ public class JogakConverter {
                 .category(jogak.getCategory().getName())
                 .title(jogak.getTitle())
                 .isRoutine(jogak.getIsRoutine())
+                .achievements(jogak.getAchievements())
                 .startDate(jogak.getStartAt())
                 .endDate(jogak.getEndAt())
                 .build();
