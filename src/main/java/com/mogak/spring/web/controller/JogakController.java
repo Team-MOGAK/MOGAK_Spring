@@ -3,7 +3,6 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
@@ -24,7 +23,7 @@ import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.springframework.format.annotation.DateTimeFormat.*;
+import static org.springframework.format.annotation.DateTimeFormat.ISO;
 
 @Tag(name = "조각 API", description = "조각 API 명세서")
 @RequiredArgsConstructor
@@ -32,7 +31,6 @@ import static org.springframework.format.annotation.DateTimeFormat.*;
 @RequestMapping("/api/modarats/mogaks/jogaks")
 public class JogakController {
     private final JogakService jogakService;
-//    private final AuthHandler authHandler;
 
     @Operation(summary = "조각 생성", description = "조각을 생성합니다",
             responses = {
