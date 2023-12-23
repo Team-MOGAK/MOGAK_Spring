@@ -50,9 +50,9 @@ public class PostController {
     @PostMapping("/api/mogaks/{mogakId}/posts")
     public ResponseEntity<BaseResponse<CreatePostDto>> createPost(@PathVariable Long mogakId,
                                                                   @RequestPart PostRequestDto.CreatePostDto request,
-                                                                  @RequestPart(required = true) List<MultipartFile> multipartFile/*User user*/) {
+                                                                  @RequestPart(required = true) List<MultipartFile> multipartFile) {
         List<CreatePostImgDto> postImgDtoList = awsS3Service.uploadImg(multipartFile, dirName);
-        Post post = postService.create(authHandler.getUserId(), request, postImgDtoList, mogakId);
+        Post post = postService.create(request, postImgDtoList, mogakId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toCreatePostDto(post)));
     }
 

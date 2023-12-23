@@ -13,6 +13,7 @@ import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.web.dto.commentdto.CommentRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,10 +31,11 @@ public class PostCommentServiceImpl implements PostCommentService {
     //댓글 생성 - dto
     @Transactional
     @Override
-    public PostComment create(Long userId, CommentRequestDto.CreateCommentDto request, Long postId) {
+    public PostComment create(CommentRequestDto.CreateCommentDto request, Long postId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (request.getContents().length() > 200) {
             throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
@@ -56,6 +58,9 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public PostComment update(CommentRequestDto.UpdateCommentDto request, Long postId, Long commentId) {
+        /**
+         * TODO 유저 확인 체크하는 부분 추가해야함
+         */
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         PostComment comment = postCommentRepository.findByPostAndId(post, commentId);

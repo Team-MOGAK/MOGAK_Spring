@@ -19,6 +19,7 @@ import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -154,8 +155,9 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public JogakResponseDto.GetJogakListDto getDailyJogaks(Long userId) {
-        User user = userRepository.findById(userId)
+    public JogakResponseDto.GetJogakListDto getDailyJogaks() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<Jogak> jogakList = mogakRepository.findAllByUser(user).stream()
                 .flatMap(mogak -> mogak.getJogaks().stream()
@@ -165,8 +167,9 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public JogakResponseDto.GetDailyJogakListDto getTodayJogaks(Long userId) {
-        User user = userRepository.findById(userId)
+    public JogakResponseDto.GetDailyJogakListDto getTodayJogaks() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return JogakConverter.toGetDailyJogakListResponseDto(jogakRepository.findDailyJogaks(
                 user, Weeks.getTodayMidnight(), Weeks.getTodayMidnight().plusDays(1)));
@@ -176,9 +179,11 @@ public class JogakServiceImpl implements JogakService {
      * 주간/월간 루틴 가져오는 API
      * */
     @Override
-    public List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDate, LocalDate endDate) {
-        User user = userRepository.findById(userId)
+    public List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(LocalDate startDate, LocalDate endDate) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        Long userId = user.getId();
         List<LocalDate> pastDates = getPastDates(startDate, endDate);
         List<LocalDate> futureDates = getFutureDates(startDate, endDate);
         List<JogakResponseDto.GetRoutineJogakDto> routineJogaks = new ArrayList<>();

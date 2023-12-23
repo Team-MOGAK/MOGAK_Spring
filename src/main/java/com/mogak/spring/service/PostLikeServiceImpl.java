@@ -12,6 +12,7 @@ import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,10 +28,11 @@ public class PostLikeServiceImpl implements PostLikeService{
     //좋아요 생성 및 삭제
     @Transactional
     @Override
-    public String updateLike(Long userId, PostLikeRequestDto.LikeDto request){
+    public String updateLike(PostLikeRequestDto.LikeDto request){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 
         //이미 좋아요를 누른 게시물에 대한 처리
