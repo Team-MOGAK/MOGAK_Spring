@@ -22,7 +22,7 @@ public interface JogakService {
 
     void deleteJogak(Long jogakId);
 
-    List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDay, LocalDate endDay);
+    List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(LocalDate startDay, LocalDate endDay);
 
     JogakResponseDto.JogakDailyJogakDto failJogak(Long dailyJogakId);
 }
