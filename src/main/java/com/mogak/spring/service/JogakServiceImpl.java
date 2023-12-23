@@ -9,7 +9,6 @@ import com.mogak.spring.domain.jogak.JogakPeriod;
 import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
@@ -50,7 +49,7 @@ public class JogakServiceImpl implements JogakService {
         for (User user: userRepository.findAll()) {
             List<Jogak> jogaks  = jogakRepository.findDailyRoutineJogaks(user, Weeks.getTodayNum());
             for (Jogak jogak : jogaks) {
-                dailyJogakRepository.save(JogakConverter.toInitialDailyJogak(jogak));
+                dailyJogakRepository.save(JogakConverter.toDailyJogak(jogak));
             }
         }
     }
@@ -83,7 +82,7 @@ public class JogakServiceImpl implements JogakService {
     public JogakResponseDto.GetJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
         Mogak mogak = mogakRepository.findById(createJogakDto.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        Jogak jogak = jogakRepository.save(JogakConverter.toInitialJogak(mogak, createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getToday(), createJogakDto.getEndDate()));
+        Jogak jogak = jogakRepository.save(JogakConverter.toJogak(mogak, createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getToday(), createJogakDto.getEndDate()));
         validatePeriod(Optional.ofNullable(createJogakDto.getIsRoutine()), Optional.ofNullable(createJogakDto.getDays()));
         if (createJogakDto.getIsRoutine()) {
             List<Period> periods = new ArrayList<>();
@@ -262,41 +261,22 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.JogakDailyJogakDto startJogak(Long jogakId) {
+    public JogakResponseDto.StartDailyJogakDto startJogak(Long jogakId) {
         Jogak jogak = jogakRepository.findById(jogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
-        if (jogak.getIsRoutine() || dailyJogakRepository.findByCreatedAtBetweenAndId(LocalDate.now().atStartOfDay(), LocalDate.now().atStartOfDay().plusDays(1), jogakId).isPresent()) {
+        if (jogak.getIsRoutine()) {
             throw new JogakException(ErrorCode.ALREADY_START_JOGAK);
         }
-        DailyJogak dailyJogak = dailyJogakRepository.save(JogakConverter.toInitialDailyJogak(jogak));
-        return JogakConverter.toJogakDailyJogakDto(jogak, dailyJogak);
+        return JogakConverter.toStartJogakDto((dailyJogakRepository.save(JogakConverter.toDailyJogak(jogak))));
     }
 
     @Transactional
     @Override
-    public JogakResponseDto.JogakDailyJogakDto successJogak(Long dailyJogakId) {
+    public JogakResponseDto.JogakSuccessDto successJogak(Long dailyJogakId) {
         DailyJogak dailyjogak = dailyJogakRepository.findById(dailyJogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
-        dailyjogak.updateAchievement(true);
-        Jogak jogak = jogakRepository.findById(dailyjogak.getJogakId())
-                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_JOGAK));
-        jogak.increaseAchievements();
-        return JogakConverter.toJogakDailyJogakDto(jogak, dailyjogak);
-    }
-
-    @Transactional
-    @Override
-    public JogakResponseDto.JogakDailyJogakDto failJogak(Long dailyJogakId) {
-        DailyJogak dailyJogak = dailyJogakRepository.findById(dailyJogakId)
-                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
-        if (!dailyJogak.getIsAchievement()) {
-            throw new BaseException(ErrorCode.NOT_SUCCESS_DAILY_JOGAK);
-        }
-        dailyJogak.updateAchievement(false);
-        Jogak jogak = jogakRepository.findById(dailyJogak.getJogakId())
-                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_JOGAK));
-        jogak.decreaseAchievements();
-        return JogakConverter.toJogakDailyJogakDto(jogak, dailyJogak);
+        dailyjogak.updateSuccess();
+        return JogakConverter.toSuccessJogak(JogakConverter.toJogak(dailyjogak));
     }
 
     @Transactional
