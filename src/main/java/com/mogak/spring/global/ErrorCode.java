@@ -24,6 +24,7 @@ public enum ErrorCode {
     NOT_VALID_NICKNAME(HttpStatus.CONFLICT, "U004","올바른 닉네임이 아닙니다"),
     NOT_VALID_EMAIL(HttpStatus.CONFLICT, "U005","올바른 이메일 형식이 아닙니다"),
     ALREADY_EXIST_USER(HttpStatus.CONFLICT, "U006",  "이미 존재하는 유저입니다"),
+    NOT_VALID_APPLE_CLAIMS(HttpStatus.CONFLICT, "U007","올바르지 않은 apple oauth claims 형식입니다"),
 
     /**
      * 모다라트 에러

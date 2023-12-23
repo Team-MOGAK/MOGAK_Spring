@@ -9,6 +9,7 @@ import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
+import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,7 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
 
 import static com.mogak.spring.web.dto.userdto.UserRequestDto.*;
-import static com.mogak.spring.web.dto.userdto.UserResponseDto.ToCreateDto;
+import static com.mogak.spring.web.dto.userdto.UserResponseDto.CreateDto;
 
 @Tag(name = "유저 API", description = "유저 API 명세서")
 @RequiredArgsConstructor
@@ -61,7 +62,7 @@ public class UserController {
      * 회원가입
      */
     @PostMapping("/join")
-    public ResponseEntity<BaseResponse<ToCreateDto>> createUser(@Valid @RequestPart CreateUserDto request,
+    public ResponseEntity<BaseResponse<UserResponseDto.CreateDto>> createUser(@Valid @RequestPart CreateUserDto request,
                                                                 @RequestPart(required = false) MultipartFile multipartFile) {
         UploadImageDto uploadImageDto;
         if (multipartFile.isEmpty()) {
@@ -73,8 +74,8 @@ public class UserController {
         else {
             uploadImageDto = awsS3Service.uploadProfileImg(multipartFile,dirName);
         }
-        ToCreateDto toCreateDto = userService.create(request,uploadImageDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(toCreateDto));
+        UserResponseDto.CreateDto createDto = userService.create(request,uploadImageDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(createDto));
     }
 
 //    @Operation(summary = "(임시)로그인", description = "입력한 이메일로 로그인을 시도합니다",

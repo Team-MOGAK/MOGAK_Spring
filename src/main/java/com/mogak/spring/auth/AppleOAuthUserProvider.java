@@ -1,5 +1,8 @@
 package com.mogak.spring.auth;
 
+import com.mogak.spring.exception.UserException;
+import com.mogak.spring.global.BaseException;
+import com.mogak.spring.global.ErrorCode;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -32,7 +35,8 @@ public class AppleOAuthUserProvider {
 
     private void validateClaims(Claims claims) {
         if (!appleClaimsValidator.isValid(claims)) {
-            throw new IllegalStateException("Apple OAuth Claims 값이 올바르지 않습니다."); //예외처리 수정 필요
+            throw new UserException(ErrorCode.NOT_VALID_APPLE_CLAIMS) {
+            }; //예외처리 수정 필요
         }
     }
 

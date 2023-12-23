@@ -7,7 +7,7 @@ import org.springframework.http.HttpHeaders;
 
 public interface UserService {
 
-    UserResponseDto.ToCreateDto create(UserRequestDto.CreateUserDto request, UserRequestDto.UploadImageDto uploadImageDto);
+    UserResponseDto.CreateDto create(UserRequestDto.CreateUserDto request, UserRequestDto.UploadImageDto uploadImageDto);
     Boolean verifyNickname(String request);
   
 //    HttpHeaders getHeader(User user);

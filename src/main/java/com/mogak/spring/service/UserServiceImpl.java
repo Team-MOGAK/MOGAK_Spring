@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserResponseDto.ToCreateDto create(CreateUserDto response, UploadImageDto uploadImageDto) {
+    public UserResponseDto.CreateDto create(CreateUserDto response, UploadImageDto uploadImageDto) {
         inputVerify(response);
         Job job = jobRepository.findJobByName(response.getJob())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
         String profileImgName = uploadImageDto.getImgName();
         User user = userRepository.findById(response.getUserId()).get();
         user.registerUser(response.getNickname(), job, address, profileImgUrl, profileImgName);
-        return UserResponseDto.ToCreateDto.builder().userId(user.getId()).nickname(user.getNickname()).build();
+        return UserResponseDto.CreateDto.builder().userId(user.getId()).nickname(user.getNickname()).build();
     }
 
     private Optional<User> findUserByNickname(String nickname) {
