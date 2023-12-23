@@ -36,10 +36,13 @@ public class SecurityConfig {
                 // .antMatchers("/api/**").authenticated() // 다른 api는 인증 필요
                 //.and()
                 .authorizeRequests()
-                .antMatchers("/swagger-ui/**").permitAll()
+                .antMatchers("/swagger-resources/**").permitAll()
+                .antMatchers("/swagger-ui.html").permitAll()
+                .antMatchers("/swagger-ui/index.html").permitAll()
                 .antMatchers("/api/auth/login").permitAll()
                 .antMatchers("/api/auth/refresh").permitAll()
                 .antMatchers("/api/auth/logout").permitAll()
+                .antMatchers("/api/auth/withdraw").permitAll()
                 .antMatchers("/api/users/nickname/verify").permitAll()
                 .antMatchers("/api/users/join").permitAll()
                 .antMatchers("/h2-console/*").permitAll()
@@ -48,7 +51,7 @@ public class SecurityConfig {
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // jwt 사용하는 경우 사용
                 .and()
-                //.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 //UserNamePasswordAuthenticationFilter 적용하기 전에 JWTTokenFilter를 적용 하라는 뜻.
                 .build();
     }
