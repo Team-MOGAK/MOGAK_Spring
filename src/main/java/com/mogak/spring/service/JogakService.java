@@ -16,11 +16,13 @@ public interface JogakService {
 //    void failRoutineJogakAtMidnight();
 //    void failJogakAtFour();
 
-    JogakResponseDto.StartDailyJogakDto startJogak(Long jogakId);
+    JogakResponseDto.JogakDailyJogakDto startJogak(Long jogakId);
 
-    JogakResponseDto.JogakSuccessDto successJogak(Long jogakId);
+    JogakResponseDto.JogakDailyJogakDto successJogak(Long dailyJogakId);
 
     void deleteJogak(Long jogakId);
 
-    List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(LocalDate startDay, LocalDate endDay);
+    List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDay, LocalDate endDay);
+
+    JogakResponseDto.JogakDailyJogakDto failJogak(Long dailyJogakId);
 }

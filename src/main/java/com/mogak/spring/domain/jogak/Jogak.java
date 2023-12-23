@@ -38,8 +38,8 @@ public class Jogak extends BaseEntity {
     private List<JogakPeriod> jogakPeriods = new ArrayList<>();
     @Column(nullable = false)
     private Boolean isRoutine;
-    @Column(name = "number_achievements")
-    private Integer numberAchievements;
+    @Column(name = "achievement")
+    private Integer achievements;
     @Column(name = "start_at")
     private LocalDate startAt;
     @Column(name = "end_at")
@@ -64,39 +64,15 @@ public class Jogak extends BaseEntity {
         this.category = category;
     }
 
-//    public void start(LocalDateTime now) {
-//        if (this.startTime != null) {
-//            throw new JogakException(ErrorCode.ALREADY_START_JOGAK);
-//        }
-//        if (!this.getCreatedAt().toLocalDate().equals(LocalDate.now())) {
-//            throw new JogakException(ErrorCode.WRONG_START_MIDNIGHT_JOGAK);
-//        }
-//
-//        this.startTime = now;
-//        this.state = JogakState.ONGOING.name();
-//    }
-
-//    public void end(LocalDateTime now) {
-//       if (this.startTime == null ||
-//               !this.state.equals(JogakState.ONGOING.name())) {
-//           throw new JogakException(ErrorCode.NOT_START_JOGAK);
-//       }
-//       if (this.endTime != null) {
-//           throw new JogakException(ErrorCode.ALREADY_END_JOGAK);
-//       }
-//
-//       LocalDateTime startOfDay = getCreatedAt().toLocalDate().atStartOfDay();
-//       LocalDateTime deadLine = getCreatedAt().toLocalDate().atStartOfDay().plusDays(1).plusHours(4);
-//       if (now.isBefore(startOfDay) || now.isAfter(deadLine)) {
-//           throw new JogakException(ErrorCode.OVERDUE_DEADLINE_JOGAK);
-//       }
-//
-//       this.endTime = now;
-//       this.state = JogakState.SUCCESS.name();
-//    }
-
     public void updateState(JogakState state) {
         this.state = state.toString();
     }
 
+    public void increaseAchievements() {
+        this.achievements += 1;
+    }
+
+    public void decreaseAchievements() {
+        this.achievements -= 1;
+    }
 }

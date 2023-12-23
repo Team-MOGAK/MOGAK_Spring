@@ -17,6 +17,7 @@ public class JogakResponseDto {
         private String category;
         private String title;
         private Boolean isRoutine;
+        private Integer achievements;
         private LocalDate startDate;
         private LocalDate endDate;
     }
@@ -57,15 +58,6 @@ public class JogakResponseDto {
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class StartDailyJogakDto {
-        private Long dailyJogakId;
-        private String title;
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class GetRoutineJogakDto {
         private Long dailyJogakId;
         private LocalDate date;
@@ -81,5 +73,19 @@ public class JogakResponseDto {
         private String title;
         private String mogakTitle;
         private String category;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class JogakDailyJogakDto {
+        private Long jogakId;
+        private Long dailyJogakId;
+        private String title;
+        private String mogakTitle;
+        private String category;
+        private Boolean isAchievement;
+        private Integer achievements;
     }
 }
