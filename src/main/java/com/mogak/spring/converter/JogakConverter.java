@@ -32,12 +32,12 @@ public class JogakConverter {
                 .build();
     }
 
-    public static DailyJogak toDailyJogak(Jogak jogak) {
+    public static DailyJogak toInitialDailyJogak(Jogak jogak) {
         return DailyJogak.builder()
                 .mogak(jogak.getMogak())
                 .category(jogak.getCategory())
                 .title(jogak.getTitle())
-                .achievement(false)
+                .isAchievement(false)
                 .jogakId(jogak.getId())
                 .isRoutine(jogak.getIsRoutine())
                 .build();
@@ -95,6 +95,18 @@ public class JogakConverter {
                 .title(jogak.getMogak().getTitle())
                 .mogakTitle(jogak.getMogak().getTitle())
                 .title(jogak.getCategory().getName())
+                .build();
+    }
+
+    public static JogakResponseDto.JogakDailyJogakDto toJogakDailyJogakDto(Jogak jogak, DailyJogak dailyJogak) {
+        return JogakResponseDto.JogakDailyJogakDto.builder()
+                .jogakId(jogak.getId())
+                .dailyJogakId(dailyJogak.getId())
+                .title(dailyJogak.getTitle())
+                .mogakTitle(jogak.getTitle())
+                .category(jogak.getTitle())
+                .isAchievement(dailyJogak.getIsAchievement())
+                .achievements(jogak.getAchievements())
                 .build();
     }
 }

@@ -31,19 +31,19 @@ public class DailyJogak extends BaseEntity {
     @Column(nullable = false)
     private String title;
     @Column(nullable = false)
-    private Boolean achievement;
+    private Boolean isAchievement;
     @Column(nullable = false)
     private Boolean isRoutine;
 
-    public void updateSuccess() {
-        this.achievement = true;
+    public void updateAchievement(boolean state) {
+        this.isAchievement = state;
     }
 
     public static JogakResponseDto.GetRoutineJogakDto getRoutineJogakDto(DailyJogak dailyJogak) {
         return JogakResponseDto.GetRoutineJogakDto.builder()
                 .dailyJogakId(dailyJogak.getId())
                 .date(dailyJogak.getCreatedAt().toLocalDate())
-                .isAchievement(dailyJogak.getAchievement())
+                .isAchievement(dailyJogak.getIsAchievement())
                 .title(dailyJogak.getTitle())
                 .build();
     }

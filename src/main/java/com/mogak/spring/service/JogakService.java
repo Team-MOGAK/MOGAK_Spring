@@ -1,5 +1,6 @@
 package com.mogak.spring.service;
 
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 
@@ -18,9 +19,11 @@ public interface JogakService {
 
     JogakResponseDto.StartDailyJogakDto startJogak(Long jogakId);
 
-    JogakResponseDto.JogakSuccessDto successJogak(Long dailyJogakId);
+    JogakResponseDto.JogakDailyJogakDto successJogak(Long dailyJogakId);
 
     void deleteJogak(Long jogakId);
 
     List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDay, LocalDate endDay);
+
+    JogakResponseDto.JogakDailyJogakDto failJogak(Long dailyJogakId);
 }

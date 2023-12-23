@@ -83,4 +83,18 @@ public class JogakResponseDto {
         private String mogakTitle;
         private String category;
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class JogakDailyJogakDto {
+        private Long jogakId;
+        private Long dailyJogakId;
+        private String title;
+        private String mogakTitle;
+        private String category;
+        private Boolean isAchievement;
+        private Integer achievements;
+    }
 }

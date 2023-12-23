@@ -49,7 +49,7 @@ public class JogakServiceImpl implements JogakService {
         for (User user: userRepository.findAll()) {
             List<Jogak> jogaks  = jogakRepository.findDailyRoutineJogaks(user, Weeks.getTodayNum());
             for (Jogak jogak : jogaks) {
-                dailyJogakRepository.save(JogakConverter.toDailyJogak(jogak));
+                dailyJogakRepository.save(JogakConverter.toInitialDailyJogak(jogak));
             }
         }
     }
@@ -263,19 +263,31 @@ public class JogakServiceImpl implements JogakService {
         if (jogak.getIsRoutine()) {
             throw new JogakException(ErrorCode.ALREADY_START_JOGAK);
         }
-        return JogakConverter.toStartJogakDto((dailyJogakRepository.save(JogakConverter.toDailyJogak(jogak))));
+        return JogakConverter.toStartJogakDto((dailyJogakRepository.save(JogakConverter.toInitialDailyJogak(jogak))));
     }
 
     @Transactional
     @Override
-    public JogakResponseDto.JogakSuccessDto successJogak(Long dailyJogakId) {
+    public JogakResponseDto.JogakDailyJogakDto successJogak(Long dailyJogakId) {
         DailyJogak dailyjogak = dailyJogakRepository.findById(dailyJogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
-        dailyjogak.updateSuccess();
+        dailyjogak.updateAchievement(true);
         Jogak jogak = jogakRepository.findById(dailyjogak.getJogakId())
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_JOGAK));
         jogak.increaseAchievements();
-        return JogakConverter.toSuccessJogak(JogakConverter.toJogak(dailyjogak));
+        return JogakConverter.toJogakDailyJogakDto(jogak, dailyjogak);
+    }
+
+    @Transactional
+    @Override
+    public JogakResponseDto.JogakDailyJogakDto failJogak(Long dailyJogakId) {
+        DailyJogak dailyJogak = dailyJogakRepository.findById(dailyJogakId)
+                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        dailyJogak.updateAchievement(false);
+        Jogak jogak = jogakRepository.findById(dailyJogak.getJogakId())
+                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_JOGAK));
+        jogak.decreaseAchievements();
+        return JogakConverter.toJogakDailyJogakDto(jogak, dailyJogak);
     }
 
     @Transactional
