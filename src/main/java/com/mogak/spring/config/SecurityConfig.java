@@ -36,9 +36,8 @@ public class SecurityConfig {
                 // .antMatchers("/api/**").authenticated() // 다른 api는 인증 필요
                 //.and()
                 .authorizeRequests()
-                .antMatchers("/swagger-resources/**").permitAll()
-                .antMatchers("/swagger-ui.html").permitAll()
-                .antMatchers("/swagger-ui/index.html").permitAll()
+                .antMatchers("/v3/api-docs/**").permitAll()
+                .antMatchers("/swagger*/**").permitAll()
                 .antMatchers("/api/auth/login").permitAll()
                 .antMatchers("/api/auth/refresh").permitAll()
                 .antMatchers("/api/auth/logout").permitAll()
