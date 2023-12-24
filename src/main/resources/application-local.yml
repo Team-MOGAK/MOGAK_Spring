@@ -18,8 +18,9 @@ spring:
       enabled: true
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: 127.0.0.1
+      port: 6379
+#      maxmemory: 128M
 
   jpa:
     hibernate:

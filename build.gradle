@@ -33,12 +33,14 @@ dependencies {
 	implementation platform("org.springframework.cloud:spring-cloud-dependencies:2021.0.5") //for feignclient, apple login
 	implementation "org.springframework.cloud:spring-cloud-starter-openfeign" //for feignclient, applelogin
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis' //for redis
+	implementation("it.ozimov:embedded-redis:0.7.2")
 	implementation 'com.github.downgoon:marvin:1.5.5'
 	implementation 'com.github.downgoon:MarvinPlugins:1.5.5'
 	implementation 'org.springframework:spring-test' //mockmultipartfile을 위함
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 	implementation 'javax.xml.bind:jaxb-api:2.3.1'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.projectlombok:lombok:1.18.26'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2' //개발환경에서만 h2 db 사용
 	runtimeOnly 'com.mysql:mysql-connector-j'
