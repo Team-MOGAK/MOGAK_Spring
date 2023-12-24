@@ -33,9 +33,11 @@ public class User extends BaseEntity {
     private String profileImgUrl;
     private String profileImgName;
     private String email;
-    //@Column(nullable = false)
+        //@Column(nullable = false)
     private String validation;
     private boolean deleted = Boolean.FALSE;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
 
     public void updateNickname(String nickname) {
@@ -66,5 +68,6 @@ public class User extends BaseEntity {
         this.profileImgUrl = profileImgUrl;
         this.profileImgName = profileImgName;
         this.validation = "ACTIVE";
+        this.role=Role.USER;
     }
 }
