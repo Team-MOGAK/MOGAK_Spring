@@ -4,6 +4,7 @@ import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.redis.RedisService;
 import io.jsonwebtoken.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +20,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 @Component
+@RequiredArgsConstructor
 public class JwtTokenProvider {
 
     @Value("${jwt.secret}")
