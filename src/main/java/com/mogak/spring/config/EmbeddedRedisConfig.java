@@ -15,7 +15,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-@Slf4j
+
 @Profile("local")
 @Configuration
 public class EmbeddedRedisConfig {
@@ -26,11 +26,20 @@ public class EmbeddedRedisConfig {
 //    private String redisMaxMemory;
 
     private RedisServer redisServer;
+//    @PostConstruct
+//    public void redisServer() throws IOException {
+//        redisServer = new RedisServer(port);
+//        redisServer.start();
+//    }
+
     @PostConstruct
-    public void redisServer() throws IOException {
-        int port = isRedisRunning()? findAvailablePort() : redisPort;
-        redisServer = new RedisServer(port);
-        redisServer.start();
+    public void startRedis() {
+        try {
+            int port = isRedisRunning()? findAvailablePort() : redisPort;
+            redisServer = new RedisServer(port);
+            redisServer.start();
+        } catch (Exception e) {
+        }
     }
 
     @PreDestroy

@@ -33,7 +33,7 @@ dependencies {
 	implementation platform("org.springframework.cloud:spring-cloud-dependencies:2021.0.5") //for feignclient, apple login
 	implementation "org.springframework.cloud:spring-cloud-starter-openfeign" //for feignclient, applelogin
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis' //for redis
-	implementation("it.ozimov:embedded-redis:0.7.2")
+	implementation("it.ozimov:embedded-redis:0.7.2") { exclude group: "org.slf4j", module: "slf4j-simple" }
 	implementation 'com.github.downgoon:marvin:1.5.5'
 	implementation 'com.github.downgoon:MarvinPlugins:1.5.5'
 	implementation 'org.springframework:spring-test' //mockmultipartfile을 위함
