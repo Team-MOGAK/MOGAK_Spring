@@ -18,8 +18,9 @@ spring:
       enabled: true
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: 127.0.0.1
+      port: 6379
+#      maxmemory: 128M
 
   jpa:
     hibernate:
@@ -49,6 +50,8 @@ springdoc:
 
 jwt:
   secret: ${JWT_SECRET_KEY}
+  access-token-expiry: 7200000 #2시간
+  refresh-token-expiry: 2678400000 #31일
 
 feign:
   client:
@@ -61,7 +64,7 @@ oauth:
   apple:
     iss: https://appleid.apple.com
     client-id: ${APPLE_CLIENT_ID}
-    nonce: ${APPLE_NONCE}
+#    nonce: ${APPLE_NONCE}
 
 #security:
 #  oauth2:
