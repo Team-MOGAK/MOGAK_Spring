@@ -79,7 +79,16 @@ public enum ErrorCode {
     EXPIRE_TOKEN(HttpStatus.UNAUTHORIZED, "T002", "만료된 토큰입니다"),
     EMPTY_TOKEN(HttpStatus.UNAUTHORIZED, "T003", "토큰이 존재하지 않습니다"),
     INVALID_PERMISSION(HttpStatus.FORBIDDEN, "T004", "권한이 부여되지 않았습니다"),
-    
+    LOGOUT_TOKEN(HttpStatus.FORBIDDEN, "T005", "로그아웃된 토큰입니다"),
+    APPLE_JWT_WRONG_TOKEN(HttpStatus.BAD_REQUEST, "T006", "Apple JWT 값의 alg, kid 정보가 올바르지 않습니다."),
+    WRONG_APPLE_ENCODE(HttpStatus.CONFLICT, "T007", "Apple OAuth 통신 암호화 과정 중 문제가 발생했습니다."),
+    WRONG_APPLE_PUBLIC_KEY(HttpStatus.CONFLICT, "T008", "Apple OAuth 로그인 중 public key 생성에 문제가 발생했습니다."),
+    INVALID_APPLE_ID_TOKEN(HttpStatus.BAD_REQUEST,"T009", "Apple OAuth Identity Token 형식이 올바르지 않습니다."),
+    EXPIRE_APPLE_ID_TOKEN(HttpStatus.BAD_REQUEST,"T010", "Apple 로그인 중 Identity Token 유효기간이 만료됐습니다."),
+
+
+
+
     /**
      * 팔로우 에러
      * */

@@ -1,5 +1,7 @@
 package com.mogak.spring.auth;
 
+import com.mogak.spring.exception.AuthException;
+import com.mogak.spring.global.ErrorCode;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
 
@@ -40,7 +42,7 @@ public class PublicKeyGenerator {
             KeyFactory keyFactory = KeyFactory.getInstance(publicKey.getKty());
             return keyFactory.generatePublic(publicKeySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException exception) {
-            throw new IllegalStateException("Apple OAuth 로그인 중 public key 생성에 문제가 발생했습니다.");
+            throw new AuthException(ErrorCode.WRONG_APPLE_PUBLIC_KEY);
         }
     }
 }

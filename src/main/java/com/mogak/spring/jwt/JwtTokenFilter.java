@@ -1,5 +1,7 @@
 package com.mogak.spring.jwt;
 
+import com.mogak.spring.exception.AuthException;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.redis.RedisService;
 import feign.Request;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -28,7 +30,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
-    private static final List<String> EXCLUDE_URLS= Arrays.asList("/swagger-ui/index.html","/api/auth/login","/api/auth/refresh","/api/auth/logout","/api/users/nickname/verify","/api/users/join");
+//    private static final List<String> EXCLUDE_URLS= Arrays.asList("/swagger-ui/index.html","/api/auth/login","/api/auth/refresh","/api/auth/logout","/api/users/nickname/verify","/api/users/join");
 
     @Override
     protected void doFilterInternal(HttpServletRequest servletRequest, HttpServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -39,14 +41,14 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             String accessToken = jwtTokenProvider.resolveAccessToken(request);
             jwtTokenProvider.parseToken(accessToken);
             if(isLogout(accessToken)){
-                throw new IllegalStateException("Invalid Token");
+                throw new AuthException(ErrorCode.LOGOUT_TOKEN);
             }
             setAuthentication(accessToken);
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e){//만료기간 체크
-            throw new IllegalStateException("Expired token");
+            throw new AuthException(ErrorCode.EXPIRE_TOKEN);
         } catch (SignatureException | UnsupportedJwtException e){ //기존서명확인불가&jwt 구조 문제
-            throw new IllegalStateException("Invalid token");
+            throw new AuthException(ErrorCode.WRONG_TOKEN);
         }
     }
 
@@ -55,9 +57,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
+    /**
+     * 해당 토큰이 로그아웃된 토큰인지 체크
+     */
     public boolean isLogout(String accessToken){
-        String userEmail = jwtTokenProvider.getUserPk(accessToken);
-        if(redisService.getValues(userEmail).isEmpty()){
+        if(redisService.getValues(accessToken) == "logout"){
             return false;
         }
         return true;

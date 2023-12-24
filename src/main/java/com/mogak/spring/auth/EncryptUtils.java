@@ -1,5 +1,9 @@
 package com.mogak.spring.auth;
 
+import com.mogak.spring.exception.AuthException;
+import com.mogak.spring.global.ErrorCode;
+import org.apache.http.auth.AuthenticationException;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -18,7 +22,7 @@ public class EncryptUtils {
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalArgumentException("Apple OAuth 통신 암호화 과정 중 문제가 발생했습니다.");
+            throw new AuthException(ErrorCode.WRONG_APPLE_ENCODE);
         }
     }
 
