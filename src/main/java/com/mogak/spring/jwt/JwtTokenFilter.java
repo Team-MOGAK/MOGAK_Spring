@@ -43,7 +43,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             if(isLogout(accessToken)){
                 throw new AuthException(ErrorCode.LOGOUT_TOKEN);
             }
-            setAuthentication(accessToken);
+            setAuthentication(accessToken); //securitycontextholder에 토큰 등록
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e){//만료기간 체크
             throw new AuthException(ErrorCode.EXPIRE_TOKEN);
@@ -62,9 +62,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
      */
     public boolean isLogout(String accessToken){
         if(redisService.getValues(accessToken) == "logout"){
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
 //    private boolean shouldExclude(HttpServletRequest request){

@@ -113,6 +113,7 @@ public class AuthService {
     @Transactional
     public void logout(String accessToken){
         String email = SecurityContextHolder.getContext().getAuthentication().getName(); //email 갖고오기
+        System.out.println("현재 사용자의 이메일 : " + email);
         //refresh 삭제
         if(redisService.getValues(email)!= null){
             redisService.deleteValues(email);
