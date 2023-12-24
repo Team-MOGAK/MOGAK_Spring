@@ -45,12 +45,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 throw new AuthException(ErrorCode.LOGOUT_TOKEN);
             }
             setAuthentication(accessToken); //securitycontextholder에 토큰 등록
-            filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e){//만료기간 체크
             throw new AuthException(ErrorCode.EXPIRE_TOKEN);
         } catch (SignatureException | UnsupportedJwtException e){ //기존서명확인불가&jwt 구조 문제
             throw new AuthException(ErrorCode.WRONG_TOKEN);
         }
+        filterChain.doFilter(request, response);
     }
 
     public void setAuthentication(String accessToken){

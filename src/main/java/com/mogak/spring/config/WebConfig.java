@@ -12,7 +12,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-
 public class WebConfig implements WebMvcConfigurer {
 
 //    private final JwtInterceptor jwtInterceptor;
@@ -27,7 +26,8 @@ public class WebConfig implements WebMvcConfigurer {
                         HttpMethod.PUT.name(),
                         HttpMethod.DELETE.name(),
                         HttpMethod.PATCH.name()
-                );
+                )
+                .allowCredentials(true);
     }
 
 //    @Override
