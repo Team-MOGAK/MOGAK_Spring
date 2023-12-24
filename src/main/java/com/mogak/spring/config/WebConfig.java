@@ -20,15 +20,13 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .exposedHeaders("Authorization","RefreshToken")
                 .allowedMethods(
                         HttpMethod.GET.name(),
                         HttpMethod.POST.name(),
                         HttpMethod.PUT.name(),
                         HttpMethod.DELETE.name(),
                         HttpMethod.PATCH.name()
-                )
-                .allowCredentials(true);
+                );
     }
 
 //    @Override

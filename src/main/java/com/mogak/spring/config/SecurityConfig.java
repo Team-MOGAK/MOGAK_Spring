@@ -3,6 +3,8 @@ package com.mogak.spring.config;
 //import com.mogak.spring.jwt.JwtInterceptor;
 //import com.mogak.spring.login.JwtTokenFilter;
 import com.mogak.spring.jwt.JwtTokenFilter;
+import com.mogak.spring.jwt.JwtTokenProvider;
+import com.mogak.spring.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,7 +46,7 @@ public class SecurityConfig {
                 .antMatchers("/api/users/nickname/verify").permitAll()
                 .antMatchers("/api/users/join").permitAll()
                 .antMatchers("/h2-console/*").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers("/api/**").authenticated()
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // jwt 사용하는 경우 사용
