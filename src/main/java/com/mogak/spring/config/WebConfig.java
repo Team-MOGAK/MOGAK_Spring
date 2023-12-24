@@ -16,10 +16,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
 //    private final JwtInterceptor jwtInterceptor;
+    @Value("${server.domain}")
+    private String domain;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
+                .allowedOrigins(domain)
                 .allowedMethods(
                         HttpMethod.GET.name(),
                         HttpMethod.POST.name(),
