@@ -57,9 +57,6 @@ public class UserServiceImpl implements UserService {
             throw new UserException(ErrorCode.NOT_VALID_EMAIL);
         if (findUserByNickname(response.getNickname()).isPresent())
             throw new UserException(ErrorCode.ALREADY_EXIST_USER);
-        if (findUserByEmail(response.getEmail()).isPresent()) {
-            throw new UserException(ErrorCode.ALREADY_EXIST_USER);
-        }
     }
 
     public Boolean verifyNickname(String nickname) {
