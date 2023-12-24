@@ -25,10 +25,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .httpBasic().disable()
+                .cors().and()
                 .csrf().disable()
                 .formLogin().disable()
-                .cors().disable()
-//                .authorizeRequests()
+                //                .authorizeRequests()
 //                .antMatchers("/h2-console/*").permitAll()
 //                .antMatchers("**").permitAll() // 우선 모든 권한 허용
 //                .antMatchers(HttpMethod.POST,"/api/v1/**").authenticated()

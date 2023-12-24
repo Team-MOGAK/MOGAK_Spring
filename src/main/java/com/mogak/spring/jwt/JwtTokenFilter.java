@@ -39,6 +39,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         try {
             String accessToken = jwtTokenProvider.resolveAccessToken(request);
+            System.out.println(accessToken);
             jwtTokenProvider.parseToken(accessToken);
             if(isLogout(accessToken)){
                 throw new AuthException(ErrorCode.LOGOUT_TOKEN);
