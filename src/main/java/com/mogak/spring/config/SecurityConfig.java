@@ -29,7 +29,6 @@ public class SecurityConfig {
                 .cors().disable()
                 .csrf().disable()
                 .formLogin().disable()
-                .anonymous().disable()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // jwt 사용하는 경우 사용
                 .and()

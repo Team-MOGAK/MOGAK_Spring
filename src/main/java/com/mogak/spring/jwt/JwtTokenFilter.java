@@ -8,6 +8,8 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -37,9 +40,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         String accessToken = jwtTokenProvider.resolveAccessToken(request);
+        log.info("현재 accesstoken: " + accessToken);
 
         try {
-            logger.info("현재 accesstoken: " + accessToken);
+            log.info("현재 accesstoken: " + accessToken);
             if(accessToken==null){
                 throw new AuthException(ErrorCode.EMPTY_TOKEN);
             }
@@ -48,6 +52,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
             if(jwtTokenProvider.validateAccessToken(accessToken)){//access token 검증
                 setAuthentication(accessToken); //검증된 토큰만 securitycontextholder에 토큰 등록
+                log.info("인증 성공");
             }
         } catch (ExpiredJwtException e){//만료기간 체크
             throw new AuthException(ErrorCode.EXPIRE_TOKEN);
@@ -57,6 +62,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    /**
+     * Authentication 객체 생성
+     */
     public void setAuthentication(String accessToken){
         Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
