@@ -1,5 +1,6 @@
 package com.mogak.spring.jwt;
 
+import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.redis.RedisService;
@@ -56,6 +57,19 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
+    /**
+     * access token 검증
+     */
+    public boolean validateAccessToken(String accessToken){
+        try{
+            parseToken(accessToken);
+        }catch (ExpiredJwtException e){
+            throw new AuthException(ErrorCode.EXPIRE_TOKEN);
+        }catch (SignatureException | UnsupportedJwtException e){
+            throw new AuthException(ErrorCode.WRONG_TOKEN);
+        }
+        return true;
+    }
 
     /**
      * claims 추출
@@ -88,7 +102,10 @@ public class JwtTokenProvider {
     }
     //header에서 access token 가져오기
     public String resolveAccessToken(HttpServletRequest request) {
-        return request.getHeader(access_header).replace("Bearer","").trim();
+        if(request.getHeader(access_header)!=null & request.getHeader(access_header).startsWith("Bearer ")){
+            return request.getHeader(access_header).substring(7);
+        }
+        return null;
     }
     //user email 검색
     public String getUserPk(String token) {

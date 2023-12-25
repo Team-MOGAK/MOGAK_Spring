@@ -36,18 +36,22 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest servletRequest, HttpServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
+        String accessToken = jwtTokenProvider.resolveAccessToken(request);
 
         try {
-            String accessToken = jwtTokenProvider.resolveAccessToken(request);
-            System.out.println("현재 accesstoken: "+ accessToken);
-            jwtTokenProvider.parseToken(accessToken);
-            if(isLogout(accessToken)){
+            logger.info("현재 accesstoken: " + accessToken);
+            if(accessToken==null){
+                throw new AuthException(ErrorCode.EMPTY_TOKEN);
+            }
+            if(isLogout(accessToken)){ //로그아웃 검증
                 throw new AuthException(ErrorCode.LOGOUT_TOKEN);
             }
-            setAuthentication(accessToken); //securitycontextholder에 토큰 등록
+            if(jwtTokenProvider.validateAccessToken(accessToken)){//access token 검증
+                setAuthentication(accessToken); //검증된 토큰만 securitycontextholder에 토큰 등록
+            }
         } catch (ExpiredJwtException e){//만료기간 체크
             throw new AuthException(ErrorCode.EXPIRE_TOKEN);
-        } catch (SignatureException | UnsupportedJwtException e){ //기존서명확인불가&jwt 구조 문제
+        } catch (SignatureException | UnsupportedJwtException | AuthException e){ //기존서명확인불가&jwt 구조 문제
             throw new AuthException(ErrorCode.WRONG_TOKEN);
         }
         filterChain.doFilter(request, response);
@@ -62,7 +66,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
      * 해당 토큰이 로그아웃된 토큰인지 체크
      */
     public boolean isLogout(String accessToken){
-        if(redisService.getValues(accessToken) == "logout"){
+        if(redisService.getValues(accessToken).equals("logout")){
             return true;
         }
         return false;
@@ -78,7 +82,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String[] excludePath = {"/","/swagger-ui/**", "/v3/api-docs", "/swagger-resources/**",
+        String[] excludePath = {"/","/**","/swagger-ui/**", "/v3/api-docs", "/swagger-resources/**",
                 "/webjars/**", "/swagger-ui.html", "/swagger-ui/index.html","/api-docs/**",
                 "/api/auth/login","/api/auth/refresh","/api/auth/logout",
                 "/api/auth/withdraw", "/api/users/nickname/verify","/api/users/join"};
