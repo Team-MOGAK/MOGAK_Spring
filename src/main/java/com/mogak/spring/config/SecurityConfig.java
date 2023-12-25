@@ -37,7 +37,8 @@ public class SecurityConfig {
                         "/swagger-ui/**", "/v3/api-docs", "/swagger-resources/**",
                         "/webjars/**","/api-docs/**","/h2-console/*",
                         "/api/auth/**","/api/users/nickname/verify","/api/users/join").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers("/api/**").authenticated()
+//                .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 //UserNamePasswordAuthenticationFilter 적용하기 전에 JWTTokenFilter를 적용 하라는 뜻.

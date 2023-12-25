@@ -80,14 +80,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         return false;
     }
 
-//    private boolean shouldExclude(HttpServletRequest request){
-//        return EXCLUDE_URLS.stream()
-//                .anyMatch(url -> {
-//                    System.out.println(request.getRequestURI() + " / " + url);
-//                    return request.getRequestURI().contains(url);
-//                });
-//    }
-
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String[] excludePath = {"/","/swagger-ui/**", "/v3/api-docs", "/swagger-resources/**",
@@ -95,6 +87,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 "/api/auth/login","/api/auth/refresh","/api/auth/logout",
                 "/api/auth/withdraw", "/api/users/nickname/verify","/api/users/join"};
         String path=request.getRequestURI();
+        log.info("필터 처리에 제외된 uri 입니다");
         return Arrays.stream(excludePath).anyMatch(path::startsWith);
     }
 }
