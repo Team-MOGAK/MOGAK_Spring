@@ -20,8 +20,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final RedisService redisService;
+    private final JwtTokenFilter jwtTokenFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -41,7 +40,7 @@ public class SecurityConfig {
                 .antMatchers("/api/**").hasRole("USER")
 //                .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(new JwtTokenFilter(jwtTokenProvider, redisService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 //UserNamePasswordAuthenticationFilter 적용하기 전에 JWTTokenFilter를 적용 하라는 뜻.
                 .build();
     }
