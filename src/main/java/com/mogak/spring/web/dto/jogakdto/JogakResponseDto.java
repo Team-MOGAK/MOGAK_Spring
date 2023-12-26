@@ -1,5 +1,6 @@
 package com.mogak.spring.web.dto.jogakdto;
 
+import com.mogak.spring.domain.jogak.Period;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -17,6 +18,7 @@ public class JogakResponseDto {
         private String category;
         private String title;
         private Boolean isRoutine;
+        private List<String> days;
         private Integer achievements;
         private LocalDate startDate;
         private LocalDate endDate;
@@ -85,6 +87,8 @@ public class JogakResponseDto {
         private String title;
         private String mogakTitle;
         private String category;
+        private Boolean isRoutine;
+        private List<Period> days;
         private Boolean isAchievement;
         private Integer achievements;
     }

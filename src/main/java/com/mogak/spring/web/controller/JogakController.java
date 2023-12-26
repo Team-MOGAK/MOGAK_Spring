@@ -33,6 +33,7 @@ public class JogakController {
     private final JogakService jogakService;
 
     @Operation(summary = "조각 생성", description = "조각을 생성합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조각 생성"),
                     @ApiResponse(responseCode = "400", description = "진행중인 모각만 조각을 생성",
@@ -83,6 +84,7 @@ public class JogakController {
     }
 
     @Operation(summary = "일일 조각 시작", description = "일일 조각을 시작합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조각 시작"),
@@ -97,6 +99,7 @@ public class JogakController {
     }
 
     @Operation(summary = "조각 성공", description = "조각이 성공합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = @Parameter(name = "dailyJogakId", description = "데일리 조각 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조각 종료"),
@@ -113,6 +116,7 @@ public class JogakController {
     }
 
     @Operation(summary = "조각 실패", description = "성공한 조각을 취소합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = @Parameter(name = "dailyJogakId", description = "데일리 조각 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조각 종료"),
@@ -129,6 +133,7 @@ public class JogakController {
     }
 
     @Operation(summary = "조각 수정", description = "입력값을 이용해 조각을 수정합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조각 수정 성공"),
                     @ApiResponse(responseCode = "400", description = "기타 카테고리 X",
@@ -144,6 +149,7 @@ public class JogakController {
     }
 
     @Operation(summary = "조각 삭제", description = "조각을 삭제합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = @Parameter(name = "jogakId", description = "조각 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조각 삭제"),

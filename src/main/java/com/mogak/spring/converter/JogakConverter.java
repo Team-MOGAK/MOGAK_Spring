@@ -43,6 +43,20 @@ public class JogakConverter {
                 .build();
     }
 
+    public static JogakResponseDto.GetJogakDto toGetJogakResponseDto(Jogak jogak, List<String> days) {
+        return JogakResponseDto.GetJogakDto.builder()
+                .jogakId(jogak.getId())
+                .mogakTitle(jogak.getMogak().getTitle())
+                .category(jogak.getCategory().getName())
+                .title(jogak.getTitle())
+                .isRoutine(jogak.getIsRoutine())
+                .days(days)
+                .achievements(jogak.getAchievements())
+                .startDate(jogak.getStartAt())
+                .endDate(jogak.getEndAt())
+                .build();
+    }
+
     public static JogakResponseDto.GetJogakDto toGetJogakResponseDto(Jogak jogak) {
         return JogakResponseDto.GetJogakDto.builder()
                 .jogakId(jogak.getId())
@@ -50,6 +64,7 @@ public class JogakConverter {
                 .category(jogak.getCategory().getName())
                 .title(jogak.getTitle())
                 .isRoutine(jogak.getIsRoutine())
+                .days(jogak.getPeriods())
                 .achievements(jogak.getAchievements())
                 .startDate(jogak.getStartAt())
                 .endDate(jogak.getEndAt())
@@ -99,6 +114,7 @@ public class JogakConverter {
                 .title(dailyJogak.getTitle())
                 .mogakTitle(jogak.getTitle())
                 .category(jogak.getTitle())
+                .isRoutine(jogak.getIsRoutine())
                 .isAchievement(dailyJogak.getIsAchievement())
                 .achievements(jogak.getAchievements())
                 .build();

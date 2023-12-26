@@ -88,7 +88,7 @@ public class JogakServiceImpl implements JogakService {
         if (createJogakDto.getIsRoutine()) {
             List<Period> periods = new ArrayList<>();
             List<String> requestDays = createJogakDto.getDays();
-
+            List<String> days = new ArrayList<>();
             // 반복주기 추출
             for (String day: requestDays) {
                 periods.add(periodRepository.findOneByDays(day)
@@ -102,7 +102,9 @@ public class JogakServiceImpl implements JogakService {
                                 .jogak(jogak)
                                 .build()
                 );
+                days.add(period.getDays());
             }
+            return JogakConverter.toGetJogakResponseDto(jogak, days);
         }
         return JogakConverter.toGetJogakResponseDto(jogak);
     }
@@ -156,9 +158,11 @@ public class JogakServiceImpl implements JogakService {
 
     @Override
     public JogakResponseDto.GetJogakListDto getDailyJogaks() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
+//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findById(1L)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+//        User user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<Jogak> jogakList = mogakRepository.findAllByUser(user).stream()
                 .flatMap(mogak -> mogak.getJogaks().stream()
                         .filter(jogak -> !jogak.getIsRoutine()))
@@ -168,8 +172,10 @@ public class JogakServiceImpl implements JogakService {
 
     @Override
     public JogakResponseDto.GetDailyJogakListDto getTodayJogaks() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
+//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+//        User user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findById(1L)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return JogakConverter.toGetDailyJogakListResponseDto(jogakRepository.findDailyJogaks(
                 user, Weeks.getTodayMidnight(), Weeks.getTodayMidnight().plusDays(1)));
@@ -180,8 +186,10 @@ public class JogakServiceImpl implements JogakService {
      * */
     @Override
     public List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(LocalDate startDate, LocalDate endDate) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
+//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+//        User user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findById(1L)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Long userId = user.getId();
         List<LocalDate> pastDates = getPastDates(startDate, endDate);
@@ -281,6 +289,9 @@ public class JogakServiceImpl implements JogakService {
         Jogak jogak = jogakRepository.findById(dailyjogak.getJogakId())
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_JOGAK));
         jogak.increaseAchievements();
+        for (Period p:periodRepository.findPeriodsByJogak_Id(jogak.getId())) {
+            System.out.println(p);
+        }
         return JogakConverter.toJogakDailyJogakDto(jogak, dailyjogak);
     }
 

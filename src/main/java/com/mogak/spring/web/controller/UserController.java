@@ -1,7 +1,5 @@
 package com.mogak.spring.web.controller;
 
-import com.mogak.spring.converter.UserConverter;
-import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
@@ -25,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
 
 import static com.mogak.spring.web.dto.userdto.UserRequestDto.*;
-import static com.mogak.spring.web.dto.userdto.UserResponseDto.CreateDto;
 
 @Tag(name = "유저 API", description = "유저 API 명세서")
 @RequiredArgsConstructor
@@ -87,9 +84,9 @@ public class UserController {
 //                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
 //            })
 //    @PostMapping("/login/{email}")
-//    public ResponseEntity<BaseResponse<ErrorCode>> login(@PathVariable String email) {
+//    public ResponseEntity<BaseResponse<String>> login(@PathVariable String email) {
 //        User user = userService.getUserByEmail(email);
-//        return ResponseEntity.ok().headers(userService.getHeader(user)).body(new BaseResponse<>(ErrorCode.SUCCESS));
+//        return ResponseEntity.ok().body(new BaseResponse<>(userService.getToken(user)));
 //    }
 
     @Operation(summary = "닉네임 변경", description = "유저의 닉네임을 변경합니다",
