@@ -20,7 +20,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtTokenFilter jwtTokenFilter;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final RedisService redisService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -37,10 +38,10 @@ public class SecurityConfig {
                         "/swagger-ui/**", "/v3/api-docs", "/swagger-resources/**",
                         "/webjars/**","/api-docs/**","/h2-console/*",
                         "/api/auth/**","/api/users/nickname/verify","/api/users/join").permitAll()
-                .antMatchers("/api/**").authenticated()
+                .antMatchers("/api/**").hasRole("USER")
 //                .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtTokenFilter(jwtTokenProvider, redisService), UsernamePasswordAuthenticationFilter.class)
                 //UserNamePasswordAuthenticationFilter 적용하기 전에 JWTTokenFilter를 적용 하라는 뜻.
                 .build();
     }

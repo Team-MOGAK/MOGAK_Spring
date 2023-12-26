@@ -80,6 +80,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         return false;
     }
 
+    /**
+     * 해당 uri는 filter x
+     */
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String[] excludePath = {"/","/swagger-ui/**", "/v3/api-docs", "/swagger-resources/**",
