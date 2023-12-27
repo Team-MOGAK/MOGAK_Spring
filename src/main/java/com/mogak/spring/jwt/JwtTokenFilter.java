@@ -40,10 +40,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 //    private static final List<String> EXCLUDE_URLS= Arrays.asList("/swagger-ui/index.html","/api/auth/login","/api/auth/refresh","/api/auth/logout","/api/users/nickname/verify","/api/users/join");
 
     @Override
-    protected void doFilterInternal(HttpServletRequest servletRequest, HttpServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
-        HttpServletResponse response = (HttpServletResponse) servletResponse;
-        log.info("현재 request: " + request);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         String accessToken = jwtTokenProvider.resolveAccessToken(request);
         log.info("현재 accesstoken: " + accessToken);
         System.out.print("현재 accesstoken: " + accessToken);
@@ -58,12 +55,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
             if(jwtTokenProvider.validateAccessToken(accessToken)){//access token 검증
                 setAuthentication(accessToken); //검증된 토큰만 securitycontextholder에 토큰 등록
-                log.info("인증 성공");
                 System.out.print("인증성공");
             }
         } catch (ExpiredJwtException e){//만료기간 체크
+            log.info("만료된 토큰입니다");
             throw new AuthException(ErrorCode.EXPIRE_TOKEN);
         } catch (SignatureException | UnsupportedJwtException | AuthException e){ //기존서명확인불가&jwt 구조 문제
+            log.info("잘못된 토큰입니다");
             throw new AuthException(ErrorCode.WRONG_TOKEN);
         }
         filterChain.doFilter(request, response);
