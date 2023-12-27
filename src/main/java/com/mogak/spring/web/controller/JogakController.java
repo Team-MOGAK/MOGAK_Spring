@@ -58,16 +58,16 @@ public class JogakController {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks()));
     }
 
-    @Operation(summary = "당일 조각 조회", description = "오늘 해야할 조각들을 조회합니다",
+    @Operation(summary = "일별 데일리 조각 조회", description = "일별 데일리 조각들을 조회합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조회 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/today")
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getTodayJogaks() {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getTodayJogaks()));
+    @GetMapping("/day")
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getDayJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate day) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDayJogaks(day)));
     }
 
     @Operation(summary = "주간/월간 루틴 조각 조회", description = "주간/월간 루틴 조각을 조회합니다",

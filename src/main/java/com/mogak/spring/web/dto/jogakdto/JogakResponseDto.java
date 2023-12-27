@@ -34,8 +34,7 @@ public class JogakResponseDto {
         private String category;
         private String title;
         private Boolean isRoutine;
-        private LocalDate startDate;
-        private LocalDate endDate;
+        private Boolean isAchievement;
     }
 
     @Getter
