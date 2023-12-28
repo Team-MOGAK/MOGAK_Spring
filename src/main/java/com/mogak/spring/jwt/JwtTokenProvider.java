@@ -30,7 +30,7 @@ public class JwtTokenProvider {
     private Long accessTokenValidTime;
     @Value("${jwt.refresh-token-expiry}")
     private Long refreshTokenValidTime;
-    private CustomUserDetailsService userDetailsService;
+    private final CustomUserDetailsService userDetailsService;
 
     public static final String access_header = "Authorization";
     public static final String refresh_header = "RefreshToken";
