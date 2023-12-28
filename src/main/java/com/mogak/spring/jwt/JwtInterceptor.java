@@ -67,8 +67,9 @@ public class JwtInterceptor implements HandlerInterceptor{
     }
 
     public boolean isLogout(String accessToken){
-        if(redisService.getValues(accessToken).equals("logout")){
-            return true;
+        String values = redisService.getValues(accessToken);
+        if(values != null){
+            return "logout".equals(values);
         }
         return false;
     }
