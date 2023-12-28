@@ -1,6 +1,5 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
@@ -13,9 +12,7 @@ import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.util.Regex;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
-import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -109,10 +106,8 @@ public class UserServiceImpl implements UserService {
     }
 
 //    @Override
-//    public HttpHeaders getHeader(User user) {
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.set("Authorization", jwtTokenHandler.createJwtToken(user.getId().toString()));
-//        return headers;
+//    public String getToken(User user) {
+//        return jwtTokenHandler.createJwtToken(user.getId().toString());
 //    }
 
     public String getProfileImgName() {
