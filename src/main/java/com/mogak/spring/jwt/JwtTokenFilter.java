@@ -80,8 +80,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
      * 해당 토큰이 로그아웃된 토큰인지 체크
      */
     public boolean isLogout(String accessToken){
-        if(redisService.getValues(accessToken).equals("logout")){
-            return true;
+        String values = redisService.getValues(accessToken);
+        if(values != null){
+            return "logout".equals(values);
         }
         return false;
     }
