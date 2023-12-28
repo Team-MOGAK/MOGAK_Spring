@@ -36,28 +36,27 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
-    private final UserDetailsService userDetailsService;
 //    private static final List<String> EXCLUDE_URLS= Arrays.asList("/swagger-ui/index.html","/api/auth/login","/api/auth/refresh","/api/auth/logout","/api/users/nickname/verify","/api/users/join");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
-        log.info("현재 request" + request);
+        System.out.print("현재 request: " + request);
         String accessToken = jwtTokenProvider.resolveAccessToken(request);
-        log.info("현재 accesstoken: " + accessToken);
         System.out.print("현재 accesstoken: " + accessToken);
 
         try {
-            log.info("현재 accesstoken: " + accessToken);
             if(accessToken==null){
                 throw new AuthException(ErrorCode.EMPTY_TOKEN);
             }
             if(isLogout(accessToken)){ //로그아웃 검증
                 throw new AuthException(ErrorCode.LOGOUT_TOKEN);
             }
-            if(jwtTokenProvider.validateAccessToken(accessToken)){//access token 검증
-                setAuthentication(accessToken); //검증된 토큰만 securitycontextholder에 토큰 등록
-                System.out.print("인증성공");
-            }
+//            if(jwtTokenProvider.validateAccessToken(accessToken)){//access token 검증
+//                setAuthentication(accessToken); //검증된 토큰만 securitycontextholder에 토큰 등록
+//                System.out.print("인증성공");
+//            }
+            System.out.print("인증성공");
+            setAuthentication(accessToken); //검증된 토큰만 securitycontextholder에 토큰 등록
         } catch (ExpiredJwtException e){//만료기간 체크
             log.info("만료된 토큰입니다");
             throw new AuthException(ErrorCode.EXPIRE_TOKEN);
