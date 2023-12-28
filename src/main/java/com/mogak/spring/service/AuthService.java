@@ -65,11 +65,11 @@ public class AuthService {
     /**
      * 닉네임 등록 여부
      */
-    private boolean isRegisterNickname(String email){
+    private boolean isRegisterNickname(String email) {
         User user = userRepository.findByEmail(email).get();
-        if(user.getNickname().isEmpty()){
+        if (user.getNickname().isEmpty()) {
             return false;
-        }else{
+        } else {
             return true;
         }
     }
@@ -87,7 +87,7 @@ public class AuthService {
 
     }
 
-    private void storeRefresh(String email, JwtTokens jwtTokens){
+    private void storeRefresh(String email, JwtTokens jwtTokens) {
         redisService.setValues(
                 email,
                 jwtTokens.getRefreshToken(),
@@ -99,7 +99,7 @@ public class AuthService {
      * 토큰 갱신
      */
     @Transactional
-    public JwtTokens reissue(String refreshToken){
+    public JwtTokens reissue(String refreshToken) {
         String email = jwtTokenProvider.getEmailByRefresh(refreshToken);
         System.out.println(email);
         User findUser = userRepository.findByEmail(email).get();
@@ -111,25 +111,26 @@ public class AuthService {
 
 
     @Transactional
-    public void logout(String accessToken){
+    public void logout(String accessToken) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName(); //email 갖고오기
         System.out.println("현재 사용자의 이메일 : " + email);
         //refresh 삭제
-        if(redisService.getValues(email)!= null){
+        if (redisService.getValues(email) != null) {
             redisService.deleteValues(email);
         }
         //블랙리스트 생성 - access저장
-        redisService.setValues(accessToken,"logout",accessTokenExpiry);
+        redisService.setValues(accessToken, "logout", accessTokenExpiry);
     }
 
     /**
      * 로그인한 사용자 탈퇴
      */
     @Transactional
-    public boolean deleteUser(Long userId){
+    public boolean deleteUser(Long userId) {
         User deleteUser = userRepository.findById(userId).get();
         deleteUser.updateValidation("INACTIVE");
-//        userRepository.deleteById(deleteUser.getId()); //user soft delete
+        userRepository.deleteById(deleteUser.getId()); //user soft delete
+
         /*
             추가로 user의 모다라트, 모각, 조각, 회고록, 댓글 삭제
          */

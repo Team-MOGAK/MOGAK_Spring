@@ -41,6 +41,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+        log.info("현재 request" + request);
         String accessToken = jwtTokenProvider.resolveAccessToken(request);
         log.info("현재 accesstoken: " + accessToken);
         System.out.print("현재 accesstoken: " + accessToken);
