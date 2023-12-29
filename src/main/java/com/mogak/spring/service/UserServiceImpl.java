@@ -6,6 +6,7 @@ import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.login.JwtTokenHandler;
 import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
@@ -85,7 +86,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateNickname(UpdateNicknameDto nicknameDto) {
         verifyNickname(nicknameDto.getNickname());
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateNickname(nicknameDto.getNickname());
@@ -94,7 +97,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void updateJob(UpdateJobDto jobDto) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         Job job = jobRepository.findJobByName(jobDto.getJob())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
         User user = userRepository.findByEmail(email)
@@ -116,7 +121,9 @@ public class UserServiceImpl implements UserService {
 //    }
 
     public String getProfileImgName() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String profileImgName = user.getProfileImgName();
@@ -126,7 +133,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void updateImg(UserRequestDto.UpdateImageDto userImageDto) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String imgUrl = userImageDto.getImgUrl();

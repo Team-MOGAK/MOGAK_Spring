@@ -12,6 +12,7 @@ import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.PostException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
@@ -43,7 +44,9 @@ public class PostServiceImpl implements PostService {
     @Transactional
     @Override
     public Post create(PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList,Long mogakId) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (request.getContents().length() > 350) {
@@ -113,7 +116,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<NetworkPostDto> getPacemakerPosts(int cursor, int size) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Pageable pageable = PageRequest.of(cursor, size);
         List<Post> posts = postRepository.findPacemakerPostsByUser(user, pageable);
@@ -142,7 +147,9 @@ public class PostServiceImpl implements PostService {
     //전체 네트워킹 조회 - 이미지 썸네일 제외 반환
     @Override
     public Slice<Post> getNetworkPosts(int page, int size, String sort, String address /*List<String> categoryList,*/){
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if(address == null){
             address = user.getAddress().getName();

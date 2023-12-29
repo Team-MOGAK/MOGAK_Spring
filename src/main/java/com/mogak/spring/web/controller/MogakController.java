@@ -49,7 +49,7 @@ public class MogakController {
     @PostMapping("/mogaks")
     public ResponseEntity<BaseResponse<GetMogakDto>> createMogak(@Valid @RequestBody MogakRequestDto.CreateDto request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new BaseResponse<>(mogakService.create(authHandler.getUserId(), request)));
+                .body(new BaseResponse<>(mogakService.create(request)));
     }
 
     @Operation(summary = "모각 달성", description = "해당하는 모각을 달성합니다",
@@ -86,7 +86,7 @@ public class MogakController {
             })
     @GetMapping("/{modaratId}/mogaks")
     public ResponseEntity<BaseResponse<GetMogakListDto>> getMogakList(@PathVariable Long modaratId) {
-            return ResponseEntity.ok(new BaseResponse<>(mogakService.getMogakDtoList(authHandler.getUserId(), modaratId)));
+            return ResponseEntity.ok(new BaseResponse<>(mogakService.getMogakDtoList(modaratId)));
     }
 
     @Operation(summary = "모각 삭제", description = "모각을 삭제합니다",

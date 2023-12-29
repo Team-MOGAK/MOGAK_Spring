@@ -14,6 +14,7 @@ import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
@@ -156,7 +157,9 @@ public class JogakServiceImpl implements JogakService {
 
     @Override
     public JogakResponseDto.GetJogakListDto getDailyJogaks() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<Jogak> jogakList = mogakRepository.findAllByUser(user).stream()
@@ -168,7 +171,9 @@ public class JogakServiceImpl implements JogakService {
 
     @Override
     public JogakResponseDto.GetDailyJogakListDto getTodayJogaks() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return JogakConverter.toGetDailyJogakListResponseDto(jogakRepository.findDailyJogaks(
@@ -180,7 +185,9 @@ public class JogakServiceImpl implements JogakService {
      * */
     @Override
     public List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(LocalDate startDate, LocalDate endDate) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Long userId = user.getId();

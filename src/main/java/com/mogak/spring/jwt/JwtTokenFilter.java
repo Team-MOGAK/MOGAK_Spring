@@ -36,7 +36,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
-//    private static final List<String> EXCLUDE_URLS= Arrays.asList("/swagger-ui/index.html","/api/auth/login","/api/auth/refresh","/api/auth/logout","/api/users/nickname/verify","/api/users/join");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
@@ -95,7 +94,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String[] excludePath = {"/","/swagger-ui/**", "/v3/api-docs", "/swagger-resources/**",
                 "/webjars/**", "/swagger-ui.html", "/swagger-ui/index.html","/api-docs/**",
                 "/api/auth/login","/api/auth/refresh","/api/auth/logout",
-                "/api/auth/withdraw", "/api/users/nickname/verify","/api/users/join"};
+                "/api/users/nickname/verify","/api/users/join"};
         String path=request.getRequestURI();
         return Arrays.stream(excludePath).anyMatch(path::startsWith);
     }

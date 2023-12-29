@@ -6,6 +6,7 @@ import com.mogak.spring.domain.user.Follow;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.repository.FollowRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.web.dto.userdto.FollowRequestDto;
@@ -30,7 +31,9 @@ public class FollowServiceImpl implements FollowService {
     @Transactional
     @Override
     public void follow(String nickname) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         User fromUser = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 
@@ -43,7 +46,9 @@ public class FollowServiceImpl implements FollowService {
     @Transactional
     @Override
     public void unfollow(String nickname) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         User fromUser = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 

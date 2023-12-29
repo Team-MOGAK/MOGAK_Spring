@@ -3,12 +3,13 @@ package com.mogak.spring.service;
 import com.mogak.spring.auth.AppleOAuthUserProvider;
 import com.mogak.spring.auth.AppleUserResponse;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.UserException;
+import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.redis.RedisService;
-import com.mogak.spring.repository.AddressRepository;
-import com.mogak.spring.repository.JobRepository;
-import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
 import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,9 @@ public class AuthService {
     //로그인, 토큰, 로그아웃, 회원탈퇴
 
     private final UserRepository userRepository;
-    private final JobRepository jobRepository;
-    private final AddressRepository addressRepository;
+    private final ModaratRepository modaratRepository;
+    private final MogakRepository mogakRepository;
+    private final JogakRepository jogakRepository;
     private final AppleOAuthUserProvider appleOAuthUserProvider;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
@@ -126,14 +128,19 @@ public class AuthService {
      * 로그인한 사용자 탈퇴
      */
     @Transactional
-    public boolean deleteUser(Long userId) {
-        User deleteUser = userRepository.findById(userId).get();
+    public boolean deleteUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
+        User deleteUser = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        if(deleteUser == null){
+            return false;
+        }
         deleteUser.updateValidation("INACTIVE");
-        userRepository.deleteById(deleteUser.getId()); //user soft delete
-
-        /*
-            추가로 user의 모다라트, 모각, 조각, 회고록, 댓글 삭제
-         */
+        userRepository.deleteById(deleteUser.getId());
+        modaratRepository.deleteByUserId(deleteUser.getId());
+        mogakRepository.deleteByUserId(deleteUser.getId());
+        jogakRepository.deleteByUserId(deleteUser.getId());
         redisService.deleteValues(deleteUser.getEmail());
         return true;
     }

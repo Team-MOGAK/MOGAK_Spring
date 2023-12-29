@@ -23,4 +23,6 @@ public interface ModaratRepository extends JpaRepository<Modarat, Long> {
     Optional<List<GetMogakInModaratDto>> findMogakDtoListByModaratId(@Param("modaratId") Long modaratId);
 
     List<Modarat> findModaratsByUserId(Long userId);
+
+    void deleteByUserId(Long userId);
 }

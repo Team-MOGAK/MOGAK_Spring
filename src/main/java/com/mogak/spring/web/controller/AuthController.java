@@ -67,8 +67,8 @@ public class AuthController {
     @Operation(summary = "회원탈퇴", description = "회원탈퇴를 합니다",
             responses = {@ApiResponse(responseCode = "200", description = "회원퇄퇴 성공"),})
     @PostMapping("/withdraw")
-    public ResponseEntity<Void> withdrawUser(/*수정*/@RequestBody Long userId) {
-        boolean isDeleted = authService.deleteUser(userId);
+    public ResponseEntity<Void> withdrawUser() {
+        boolean isDeleted = authService.deleteUser();
         return ResponseEntity.ok().build();
     }
 }

@@ -8,6 +8,7 @@ import com.mogak.spring.exception.PostCommentException;
 import com.mogak.spring.exception.PostException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.repository.PostCommentRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -32,7 +33,9 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public PostComment create(CommentRequestDto.CreateCommentDto request, Long postId) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Object principal = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails)principal;
+        String email = ((CustomUserDetails) principal).getUsername();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         User user = userRepository.findByEmail(email)
