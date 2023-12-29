@@ -1,18 +1,18 @@
 package com.mogak.spring.web.controller;
 
-import com.mogak.spring.exception.ErrorResponse;
+import com.fasterxml.jackson.databind.ser.Serializers;
+import com.mogak.spring.global.BaseResponse;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.service.AuthService;
 import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
 import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
+import com.mogak.spring.web.dto.authdto.AuthResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,9 +33,9 @@ public class AuthController {
     @Operation(summary = "로그인", description = "애플로그인을 합니다",
             responses = {@ApiResponse(responseCode = "200", description = "로그인 성공"),})
     @PostMapping("/login")
-    public ResponseEntity<AppleLoginResponse> loginApple(@RequestBody AppleLoginRequest request) {
+    public ResponseEntity<BaseResponse<AppleLoginResponse>> loginApple(@RequestBody AppleLoginRequest request) {
         AppleLoginResponse response = authService.appleLogin(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(response));
     }
 
     /**
@@ -45,9 +45,9 @@ public class AuthController {
             description = "refresh 토큰으로 access&refresh 토큰 재발급을 합니다",
             responses = {@ApiResponse(responseCode = "200", description = "재발급 성공"),})
     @PostMapping("/refresh")
-    public ResponseEntity<JwtTokens> refreshToken(@RequestHeader(value = "RefreshToken") String refreshToken) {
+    public ResponseEntity<BaseResponse<JwtTokens>> refreshToken(@RequestHeader(value = "RefreshToken") String refreshToken) {
         JwtTokens jwtTokens = authService.reissue(refreshToken);
-        return ResponseEntity.ok(jwtTokens);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(jwtTokens));
     }
 
     /**
@@ -56,9 +56,9 @@ public class AuthController {
     @Operation(summary = "로그아웃", description = "로그아웃을 합니다",
             responses = {@ApiResponse(responseCode = "200", description = "로그아웃 성공"),})
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader(value = "Authorization") String accessToken) {
+    public ResponseEntity<BaseResponse<ErrorCode>> logout(@RequestHeader(value = "Authorization") String accessToken) {
         authService.logout(accessToken);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
     /**
@@ -67,8 +67,8 @@ public class AuthController {
     @Operation(summary = "회원탈퇴", description = "회원탈퇴를 합니다",
             responses = {@ApiResponse(responseCode = "200", description = "회원퇄퇴 성공"),})
     @PostMapping("/withdraw")
-    public ResponseEntity<Void> withdrawUser() {
-        boolean isDeleted = authService.deleteUser();
-        return ResponseEntity.ok().build();
+    public ResponseEntity<BaseResponse<AuthResponse.WithdrawDto>> withdrawUser() {
+        AuthResponse.WithdrawDto withdrawDto = authService.deleteUser();
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(withdrawDto));
     }
 }

@@ -5,13 +5,13 @@ import com.mogak.spring.auth.AppleUserResponse;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.redis.RedisService;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
 import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
+import com.mogak.spring.web.dto.authdto.AuthResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -128,11 +128,13 @@ public class AuthService {
      * 로그인한 사용자 탈퇴
      */
     @Transactional
-    public boolean deleteUser() {
+    public AuthResponse.WithdrawDto deleteUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User deleteUser = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if(deleteUser == null){
-            return false;
+            return AuthResponse.WithdrawDto.builder()
+                    .isDeleted(false)
+                    .build();
         }
         deleteUser.updateValidation("INACTIVE");
         userRepository.deleteById(deleteUser.getId());
@@ -140,6 +142,8 @@ public class AuthService {
         mogakRepository.deleteByUserId(deleteUser.getId());
         jogakRepository.deleteByUserId(deleteUser.getId());
         redisService.deleteValues(deleteUser.getEmail());
-        return true;
+        return AuthResponse.WithdrawDto.builder()
+                .isDeleted(true)
+                .build();
     }
 }
