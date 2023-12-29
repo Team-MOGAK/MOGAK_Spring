@@ -10,7 +10,7 @@ public interface UserService {
     UserResponseDto.CreateDto create(UserRequestDto.CreateUserDto request, UserRequestDto.UploadImageDto uploadImageDto);
     Boolean verifyNickname(String request);
   
-//    HttpHeaders getHeader(User user);
+//    String getToken(User user);
   
     void updateNickname(UserRequestDto.UpdateNicknameDto nicknameDto);
     String getProfileImgName();
