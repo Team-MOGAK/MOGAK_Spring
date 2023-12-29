@@ -86,9 +86,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateNickname(UpdateNicknameDto nicknameDto) {
         verifyNickname(nicknameDto.getNickname());
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateNickname(nicknameDto.getNickname());
@@ -97,9 +95,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void updateJob(UpdateJobDto jobDto) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Job job = jobRepository.findJobByName(jobDto.getJob())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
         User user = userRepository.findByEmail(email)
@@ -121,9 +117,7 @@ public class UserServiceImpl implements UserService {
 //    }
 
     public String getProfileImgName() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String profileImgName = user.getProfileImgName();
@@ -133,9 +127,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void updateImg(UserRequestDto.UpdateImageDto userImageDto) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String imgUrl = userImageDto.getImgUrl();

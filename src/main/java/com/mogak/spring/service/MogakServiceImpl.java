@@ -47,9 +47,7 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public MogakResponseDto.GetMogakDto create(MogakRequestDto.CreateDto request) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Modarat modarat = modaratRepository.findById(request.getModaratId())
@@ -151,9 +149,7 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Override
     public MogakResponseDto.GetMogakListDto getMogakDtoList(Long modaratId) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return MogakConverter.toGetMogakListDto(mogakRepository.findAllByModaratId(modaratId));

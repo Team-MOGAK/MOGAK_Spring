@@ -129,9 +129,7 @@ public class AuthService {
      */
     @Transactional
     public boolean deleteUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User deleteUser = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if(deleteUser == null){
             return false;

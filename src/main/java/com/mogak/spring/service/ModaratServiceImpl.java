@@ -31,9 +31,7 @@ public class ModaratServiceImpl implements ModaratService {
     @Transactional
     @Override
     public Modarat create(ModaratRequestDto.CreateModaratDto request) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return modaratRepository.save(ModaratConverter.toModarat(user, request));
     }
@@ -65,9 +63,7 @@ public class ModaratServiceImpl implements ModaratService {
 
     @Override
     public List<ModaratResponseDto.GetModaratTitleDto> getModaratTitleList() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Long userId = user.getId();
         return modaratRepository.findModaratsByUserId(userId).stream()

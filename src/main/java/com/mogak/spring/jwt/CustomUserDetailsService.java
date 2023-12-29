@@ -19,9 +19,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(useremail).orElseThrow(
                 () -> new UsernameNotFoundException("해당 유저 존재하지 않음")
         );
-        if(user != null){
-            return new CustomUserDetails(user);
-        }
-        return null;
+        return new CustomUserDetails(user);
     }
 }

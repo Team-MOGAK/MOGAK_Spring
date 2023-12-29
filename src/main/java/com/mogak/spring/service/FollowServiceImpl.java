@@ -31,9 +31,7 @@ public class FollowServiceImpl implements FollowService {
     @Transactional
     @Override
     public void follow(String nickname) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User fromUser = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 
@@ -46,9 +44,7 @@ public class FollowServiceImpl implements FollowService {
     @Transactional
     @Override
     public void unfollow(String nickname) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User fromUser = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 

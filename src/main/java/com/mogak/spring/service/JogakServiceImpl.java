@@ -157,9 +157,7 @@ public class JogakServiceImpl implements JogakService {
 
     @Override
     public JogakResponseDto.GetJogakListDto getDailyJogaks() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<Jogak> jogakList = mogakRepository.findAllByUser(user).stream()
@@ -171,9 +169,7 @@ public class JogakServiceImpl implements JogakService {
 
     @Override
     public JogakResponseDto.GetDailyJogakListDto getTodayJogaks() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return JogakConverter.toGetDailyJogakListResponseDto(jogakRepository.findDailyJogaks(
@@ -185,9 +181,7 @@ public class JogakServiceImpl implements JogakService {
      * */
     @Override
     public List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(LocalDate startDate, LocalDate endDate) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Long userId = user.getId();
