@@ -137,10 +137,10 @@ public class AuthService {
                     .build();
         }
         deleteUser.updateValidation("INACTIVE");
-        userRepository.deleteById(deleteUser.getId());
-        modaratRepository.deleteByUserId(deleteUser.getId());
-        mogakRepository.deleteByUserId(deleteUser.getId());
         jogakRepository.deleteByUserId(deleteUser.getId());
+        mogakRepository.deleteByUserId(deleteUser.getId());
+        modaratRepository.deleteByUserId(deleteUser.getId());
+        userRepository.deleteById(deleteUser.getId());
         redisService.deleteValues(deleteUser.getEmail());
         return AuthResponse.WithdrawDto.builder()
                 .isDeleted(true)

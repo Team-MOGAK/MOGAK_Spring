@@ -37,14 +37,15 @@ public class JwtInterceptor implements HandlerInterceptor{
             //헤더에서 토큰 받아옴
             String accessToken = jwtTokenProvider.resolveAccessToken(request);
             log.info("현재 accesstoken : " + accessToken);
-//            jwtTokenProvider.parseToken(accessToken);
             //로그아웃 여부 확인 추가
             if(isLogout(accessToken)){
                 throw new IllegalStateException("Invalid Token");
             }
             //토큰 확인되면  유저 정보 받아오고 authectication 객체 저장
-            setAuthentication(accessToken);
-            log.info("인증 성공");
+            if(jwtTokenProvider.validateAccessToken(accessToken)){//access token 검증
+                setAuthentication(accessToken); //검증된 토큰만 securitycontextholder에 토큰 등록
+                System.out.print("인증성공");
+            }
         } catch (ExpiredJwtException e){//만료기간 체크
             log.info("만료된 토큰입니다");
             throw new AuthException(ErrorCode.EXPIRE_TOKEN);

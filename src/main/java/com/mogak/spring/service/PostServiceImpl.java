@@ -40,6 +40,10 @@ public class PostServiceImpl implements PostService {
     private final PostImgRepository postImgRepository;
     private final PostCommentRepository postCommentRepository;
 
+    /**
+     * TODO 회고록 - user id로 조회되도록 수정
+     */
+
     //회고록 & 회고록 이미지 생성 => 리팩토링 필요
     @Transactional
     @Override
