@@ -1,6 +1,7 @@
 package com.mogak.spring.jwt;
 
 import com.mogak.spring.exception.AuthException;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.redis.RedisService;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -43,10 +44,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         log.info("현재 accessToken : " + accessToken);
         try {
             if(accessToken==null){
-                throw new AuthException(ErrorCode.EMPTY_TOKEN);
+                throw new BaseException(ErrorCode.EMPTY_TOKEN);
             }
             if(isLogout(accessToken)){ //로그아웃 검증
-                throw new AuthException(ErrorCode.LOGOUT_TOKEN);
+                throw new BaseException(ErrorCode.LOGOUT_TOKEN);
             }
             if(jwtTokenProvider.validateAccessToken(accessToken)){//access token 검증
                 setAuthentication(accessToken); //검증된 토큰만 securitycontextholder에 토큰 등록
@@ -54,10 +55,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
         } catch (ExpiredJwtException e){//만료기간 체크
             log.info("만료된 토큰입니다");
-            throw new AuthException(ErrorCode.EXPIRE_TOKEN);
+            throw new BaseException(ErrorCode.EXPIRE_TOKEN);
         } catch (SignatureException | UnsupportedJwtException | AuthException e){ //기존서명확인불가&jwt 구조 문제
             log.info("잘못된 토큰입니다");
-            throw new AuthException(ErrorCode.WRONG_TOKEN);
+            throw new BaseException(ErrorCode.WRONG_TOKEN);
         }
         filterChain.doFilter(request, response);
     }
