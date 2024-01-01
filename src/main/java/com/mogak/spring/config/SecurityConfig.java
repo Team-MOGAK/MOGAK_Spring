@@ -22,7 +22,7 @@ public class SecurityConfig {
 
 //    private final JwtTokenFilter jwtTokenFilter;
 
-//    @Bean
+    //    @Bean
 //    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 ////        return httpSecurity
 //                .httpBasic().disable()

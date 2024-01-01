@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
         String profileImgUrl = uploadImageDto.getImgUrl();
         String profileImgName = uploadImageDto.getImgName();
         User user = userRepository.findById(response.getUserId()).get();
-        if(user.getNickname() != null){
+        if (user.getNickname() != null) {
             throw new UserException(ErrorCode.ALREADY_EXIST_USER);
         }
         user.registerUser(response.getNickname(), job, address, profileImgUrl, profileImgName);

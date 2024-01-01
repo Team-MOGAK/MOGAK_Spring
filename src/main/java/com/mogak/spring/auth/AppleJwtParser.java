@@ -3,6 +3,7 @@ package com.mogak.spring.auth;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mogak.spring.exception.AuthException;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import io.jsonwebtoken.*;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import org.springframework.util.Base64Utils;
 
 import java.security.PublicKey;
 import java.util.Map;
+
 /*
 identy token에서 alg, kid 추출 -> id_token를 public key로 파싱
  */
@@ -20,6 +22,7 @@ public class AppleJwtParser {
     private static final int HEADER_INDEX = 0;
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     /*
     identy token에서 alg, kid 추출
      */
@@ -29,9 +32,10 @@ public class AppleJwtParser {
             String decodedHeader = new String(Base64Utils.decodeFromUrlSafeString(encodedHeader));
             return OBJECT_MAPPER.readValue(decodedHeader, Map.class);
         } catch (JsonProcessingException | ArrayIndexOutOfBoundsException e) { //Token header가 올바르지 않으면 예외발생
-            throw new AuthException(ErrorCode.INVALID_APPLE_ID_TOKEN);
+            throw new BaseException(ErrorCode.INVALID_APPLE_ID_TOKEN);
         }
     }
+
     /*
     id token 파싱
      */
@@ -42,9 +46,9 @@ public class AppleJwtParser {
                     .parseClaimsJws(idToken)
                     .getBody();
         } catch (ExpiredJwtException e) {
-            throw new AuthException(ErrorCode.EXPIRE_APPLE_ID_TOKEN);
+            throw new BaseException(ErrorCode.EXPIRE_APPLE_ID_TOKEN);
         } catch (UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
-            throw new AuthException(ErrorCode.INVALID_APPLE_ID_TOKEN);//예외처리 수정필요
+            throw new BaseException(ErrorCode.INVALID_APPLE_ID_TOKEN);
         }
     }
 }

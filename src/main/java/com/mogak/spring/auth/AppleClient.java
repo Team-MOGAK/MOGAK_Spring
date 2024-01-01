@@ -4,7 +4,7 @@ import com.mogak.spring.auth.ApplePublicKeys;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 
-@FeignClient(name = "apple-public-key-client", url="https://appleid.apple.com/auth")
+@FeignClient(name = "apple-public-key-client", url = "https://appleid.apple.com/auth")
 public interface AppleClient {
 
     /*

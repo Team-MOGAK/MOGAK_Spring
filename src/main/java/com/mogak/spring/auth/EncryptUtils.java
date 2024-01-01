@@ -1,6 +1,7 @@
 package com.mogak.spring.auth;
 
 import com.mogak.spring.exception.AuthException;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import org.apache.http.auth.AuthenticationException;
 
@@ -22,7 +23,7 @@ public class EncryptUtils {
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
-            throw new AuthException(ErrorCode.WRONG_APPLE_ENCODE);
+            throw new BaseException(ErrorCode.WRONG_APPLE_ENCODE);
         }
     }
 

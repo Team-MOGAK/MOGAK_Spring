@@ -1,6 +1,7 @@
 package com.mogak.spring.auth;
 
 import com.mogak.spring.exception.AuthException;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,6 @@ public class ApplePublicKeys {
                 .stream()
                 .filter(k -> k.getAlg().equals(alg) && k.getKid().equals(kid))
                 .findFirst()
-                .orElseThrow(() -> new AuthException(ErrorCode.APPLE_JWT_WRONG_TOKEN));
+                .orElseThrow(() -> new BaseException(ErrorCode.APPLE_JWT_WRONG_TOKEN));
     }
 }

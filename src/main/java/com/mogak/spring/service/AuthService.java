@@ -131,7 +131,7 @@ public class AuthService {
     public AuthResponse.WithdrawDto deleteUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User deleteUser = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        if(deleteUser == null){
+        if (deleteUser == null) {
             return AuthResponse.WithdrawDto.builder()
                     .isDeleted(false)
                     .build();
