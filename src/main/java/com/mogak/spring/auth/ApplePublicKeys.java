@@ -1,5 +1,8 @@
 package com.mogak.spring.auth;
 
+import com.mogak.spring.exception.AuthException;
+import com.mogak.spring.exception.BaseException;
+import com.mogak.spring.global.ErrorCode;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,6 +22,6 @@ public class ApplePublicKeys {
                 .stream()
                 .filter(k -> k.getAlg().equals(alg) && k.getKid().equals(kid))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Apple JWT 값의 alg, kid 정보가 올바르지 않습니다."));
+                .orElseThrow(() -> new BaseException(ErrorCode.APPLE_JWT_WRONG_TOKEN));
     }
 }

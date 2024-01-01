@@ -53,6 +53,9 @@ jwt:
   access-token-expiry: 7200000 #2시간
   refresh-token-expiry: 2678400000 #31일
 
+server:
+  domain: ${SERVER_DOMAIN}
+
 feign:
   client:
     config:

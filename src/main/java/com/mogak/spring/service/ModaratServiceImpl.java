@@ -6,6 +6,7 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.repository.ModaratRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.repository.query.GetMogakInModaratDto;

@@ -3,14 +3,15 @@ package com.mogak.spring.service;
 import com.mogak.spring.auth.AppleOAuthUserProvider;
 import com.mogak.spring.auth.AppleUserResponse;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.UserException;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.redis.RedisService;
-import com.mogak.spring.repository.AddressRepository;
-import com.mogak.spring.repository.JobRepository;
-import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
 import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
+import com.mogak.spring.web.dto.authdto.AuthResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,8 +24,9 @@ public class AuthService {
     //로그인, 토큰, 로그아웃, 회원탈퇴
 
     private final UserRepository userRepository;
-    private final JobRepository jobRepository;
-    private final AddressRepository addressRepository;
+    private final ModaratRepository modaratRepository;
+    private final MogakRepository mogakRepository;
+    private final JogakRepository jogakRepository;
     private final AppleOAuthUserProvider appleOAuthUserProvider;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
@@ -65,11 +67,11 @@ public class AuthService {
     /**
      * 닉네임 등록 여부
      */
-    private boolean isRegisterNickname(String email){
+    private boolean isRegisterNickname(String email) {
         User user = userRepository.findByEmail(email).get();
-        if(user.getNickname().isEmpty()){
+        if (user.getNickname().isEmpty()) {
             return false;
-        }else{
+        } else {
             return true;
         }
     }
@@ -87,7 +89,7 @@ public class AuthService {
 
     }
 
-    private void storeRefresh(String email, JwtTokens jwtTokens){
+    private void storeRefresh(String email, JwtTokens jwtTokens) {
         redisService.setValues(
                 email,
                 jwtTokens.getRefreshToken(),
@@ -99,7 +101,7 @@ public class AuthService {
      * 토큰 갱신
      */
     @Transactional
-    public JwtTokens reissue(String refreshToken){
+    public JwtTokens reissue(String refreshToken) {
         String email = jwtTokenProvider.getEmailByRefresh(refreshToken);
         System.out.println(email);
         User findUser = userRepository.findByEmail(email).get();
@@ -111,28 +113,37 @@ public class AuthService {
 
 
     @Transactional
-    public void logout(String accessToken){
+    public void logout(String accessToken) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName(); //email 갖고오기
+        System.out.println("현재 사용자의 이메일 : " + email);
         //refresh 삭제
-        if(redisService.getValues(email)!= null){
+        if (redisService.getValues(email) != null) {
             redisService.deleteValues(email);
         }
         //블랙리스트 생성 - access저장
-        redisService.setValues(accessToken,"logout",accessTokenExpiry);
+        redisService.setValues(accessToken, "logout", accessTokenExpiry);
     }
 
     /**
      * 로그인한 사용자 탈퇴
      */
     @Transactional
-    public boolean deleteUser(Long userId){
-        User deleteUser = userRepository.findById(userId).get();
+    public AuthResponse.WithdrawDto deleteUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User deleteUser = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        if (deleteUser == null) {
+            return AuthResponse.WithdrawDto.builder()
+                    .isDeleted(false)
+                    .build();
+        }
         deleteUser.updateValidation("INACTIVE");
-//        userRepository.deleteById(deleteUser.getId()); //user soft delete
-        /*
-            추가로 user의 모다라트, 모각, 조각, 회고록, 댓글 삭제
-         */
+        jogakRepository.deleteByUserId(deleteUser.getId());
+        mogakRepository.deleteByUserId(deleteUser.getId());
+        modaratRepository.deleteByUserId(deleteUser.getId());
+        userRepository.deleteById(deleteUser.getId());
         redisService.deleteValues(deleteUser.getEmail());
-        return true;
+        return AuthResponse.WithdrawDto.builder()
+                .isDeleted(true)
+                .build();
     }
 }

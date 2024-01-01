@@ -14,6 +14,7 @@ import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;

@@ -48,7 +48,7 @@
             <appender-ref ref="FILE" />
             <appender-ref ref="ERROR"/>
         </logger>
-        <root level="INFO">
+        <root level="TRACE">
             <appender-ref ref="FILE" />
             <appender-ref ref="ERROR" />
             <appender-ref ref="CONSOLE"/>

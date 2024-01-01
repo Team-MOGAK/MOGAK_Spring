@@ -44,3 +44,6 @@ src/main/**/application-aws.yml
 
 ### login key folder ###
 **/*.p8
+
+### ssl key ###
+**/*.p12

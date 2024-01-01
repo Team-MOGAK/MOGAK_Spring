@@ -7,23 +7,29 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
-@RequiredArgsConstructor
-public class CustomUserDetails implements UserDetails{
+public class CustomUserDetails implements UserDetails {
 
 
     private final User user;
 
+    public CustomUserDetails(User user) {
+        this.user = user;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(() -> user.getRole().getKey());
+        return authorities;
     }
 
     @Override
     public String getPassword() {
-        return null;
+        return "";
     }
 
     @Override

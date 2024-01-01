@@ -37,4 +37,6 @@ public interface JogakRepository extends JpaRepository<Jogak, Long> {
     @Query("SELECT DISTINCT j FROM Jogak j JOIN FETCH j.jogakPeriods jp JOIN FETCH jp.period p " +
             "WHERE j.user.id = :userId AND j.isRoutine = true")
     List<Jogak> findAllRoutineJogaksByUser(@Param("userId") Long userId);
+
+    void deleteByUserId(Long userId);
 }

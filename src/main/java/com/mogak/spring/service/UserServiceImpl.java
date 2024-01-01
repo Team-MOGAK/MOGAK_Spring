@@ -5,6 +5,7 @@ import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.login.JwtTokenHandler;
 import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
@@ -41,6 +42,9 @@ public class UserServiceImpl implements UserService {
         String profileImgUrl = uploadImageDto.getImgUrl();
         String profileImgName = uploadImageDto.getImgName();
         User user = userRepository.findById(response.getUserId()).get();
+        if (user.getNickname() != null) {
+            throw new UserException(ErrorCode.ALREADY_EXIST_USER);
+        }
         user.registerUser(response.getNickname(), job, address, profileImgUrl, profileImgName);
         return UserResponseDto.CreateDto.builder().userId(user.getId()).nickname(user.getNickname()).build();
     }
@@ -54,9 +58,6 @@ public class UserServiceImpl implements UserService {
             throw new UserException(ErrorCode.NOT_VALID_EMAIL);
         if (findUserByNickname(response.getNickname()).isPresent())
             throw new UserException(ErrorCode.ALREADY_EXIST_USER);
-        if (findUserByEmail(response.getEmail()).isPresent()) {
-            throw new UserException(ErrorCode.ALREADY_EXIST_USER);
-        }
     }
 
     public Boolean verifyNickname(String nickname) {
