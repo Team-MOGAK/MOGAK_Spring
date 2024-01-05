@@ -54,8 +54,8 @@ public class UserServiceImpl implements UserService {
     }
 
     protected void inputVerify(CreateUserDto response) {
-        if (!Regex.EMAIL_REGEX.matchRegex(response.getEmail(), "EMAIL"))
-            throw new UserException(ErrorCode.NOT_VALID_EMAIL);
+//        if (!Regex.EMAIL_REGEX.matchRegex(response.getEmail(), "EMAIL"))
+//            throw new UserException(ErrorCode.NOT_VALID_EMAIL);
         if (findUserByNickname(response.getNickname()).isPresent())
             throw new UserException(ErrorCode.ALREADY_EXIST_USER);
     }
@@ -129,6 +129,5 @@ public class UserServiceImpl implements UserService {
         String imgName = userImageDto.getImgName();
         user.updateProfileImg(imgUrl, imgName);
     }
-
 
 }
