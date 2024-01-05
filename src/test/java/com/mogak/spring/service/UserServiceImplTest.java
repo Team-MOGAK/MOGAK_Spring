@@ -47,7 +47,7 @@ class UserServiceImplTest {
                         .nickname("hyun1234!")
                         .job("개발/데이터")
                         .address("경기도")
-                        .email("hyun1234@naver.com")
+//                        .email("hyun1234@naver.com")
                         .build();
 
         //given
