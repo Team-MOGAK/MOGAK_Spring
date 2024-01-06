@@ -1,5 +1,7 @@
 package com.mogak.spring.web.controller;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
+import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
@@ -60,34 +62,46 @@ public class UserController {
      */
     @PostMapping("/join")
     public ResponseEntity<BaseResponse<UserResponseDto.CreateDto>> createUser(@Valid @RequestPart CreateUserDto request,
-                                                                @RequestPart(required = false) MultipartFile multipartFile) {
+                                                                              @RequestPart(required = false) MultipartFile multipartFile) {
         UploadImageDto uploadImageDto;
-        if (multipartFile.isEmpty()) {
+        if (multipartFile == null || multipartFile.isEmpty()) {
             uploadImageDto = UploadImageDto.builder()
                     .imgUrl(null)
                     .imgName(null)
                     .build();
+        } else {
+            uploadImageDto = awsS3Service.uploadProfileImg(multipartFile, dirName);
         }
-        else {
-            uploadImageDto = awsS3Service.uploadProfileImg(multipartFile,dirName);
-        }
-        UserResponseDto.CreateDto createDto = userService.create(request,uploadImageDto);
+        UserResponseDto.CreateDto createDto = userService.create(request, uploadImageDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(createDto));
     }
 
-//    @Operation(summary = "(임시)로그인", description = "입력한 이메일로 로그인을 시도합니다",
-//            responses = {
-//                    @ApiResponse(responseCode = "200", description = "로그인 성공"),
-//                    @ApiResponse(responseCode = "404", description = "존재하지 않는 계정",
-//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//                    @ApiResponse(responseCode = "409", description = "올바르지 않은 이메일 형식",
-//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//            })
-//    @PostMapping("/login/{email}")
-//    public ResponseEntity<BaseResponse<String>> login(@PathVariable String email) {
-//        User user = userService.getUserByEmail(email);
-//        return ResponseEntity.ok().body(new BaseResponse<>(userService.getToken(user)));
-//    }
+        @Operation(summary = "임시 로그인", description = "입력한 이메일로 로그인을 시도합니다",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "로그인 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 계정",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "올바르지 않은 이메일 형식",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
+    @PostMapping("/login")
+    public ResponseEntity<BaseResponse<String>> login(@RequestBody UserRequestDto.GetEmailDto getEmailDto) {
+        User user = userService.getUserByEmail(getEmailDto.getEmail());
+        return ResponseEntity.ok().body(new BaseResponse<>(userService.getToken(user)));
+    }
+    @Operation(summary = "프로필 조회", description = "유저의 프로필을 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "프로필 조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            })
+    @GetMapping("/profile")
+    public ResponseEntity<BaseResponse<UserResponseDto.GetUserDto>> getUserProfile() {
+        UserResponseDto.GetUserDto getUserDto = userService.getUserProfile();
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(getUserDto));
+    }
+
 
     @Operation(summary = "닉네임 변경", description = "유저의 닉네임을 변경합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
@@ -125,11 +139,11 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/image")
-    public ResponseEntity<Void> updateImage(@RequestPart MultipartFile multipartFile) {
+    public ResponseEntity<BaseResponse<ErrorCode>> updateImage(@RequestPart MultipartFile multipartFile) {
         String profileImgName = userService.getProfileImgName(); //기존 프로필사진받아오기
         UserRequestDto.UpdateImageDto updateImageDto = awsS3Service.updateProfileImg(multipartFile, profileImgName, dirName);
         userService.updateImg(updateImageDto);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
 }

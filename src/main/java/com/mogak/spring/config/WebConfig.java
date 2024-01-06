@@ -42,6 +42,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/auth/refresh",
                         "/api/users/join",
                         "/api/users/nickname/verify",
+                        "/api/users/login", //임시로그인
                         "/",
                         "/swagger-ui/index.html",
                         "/swagger-ui.html",

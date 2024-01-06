@@ -58,4 +58,12 @@ public class UserRequestDto {
         private String imgName;
         private String imgUrl;
     }
+
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class GetEmailDto {
+        private String email;
+    }
 }

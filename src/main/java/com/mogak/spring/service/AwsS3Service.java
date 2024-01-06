@@ -116,7 +116,7 @@ public class AwsS3Service {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Fail to generate thumbnail");
         }
     }
-    //(임시)프로필 이미지 업로드
+    //프로필 이미지 업로드
     public UserRequestDto.UploadImageDto uploadProfileImg(MultipartFile request, String dirName){
         if(request.isEmpty()){
             throw new IllegalArgumentException("이미지가 존재하지 않습니다");
