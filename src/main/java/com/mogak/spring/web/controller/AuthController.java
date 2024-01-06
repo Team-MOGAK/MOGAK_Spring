@@ -16,9 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/*
-로그인 테스트를 위함. 이부분 테스트 끝나면 user controller로 옮길 예정
- */
 @Tag(name = "로그인(auth,token) API", description = "로그인(auth, token, 로그아웃, 회원탈퇴 관련) API 명세서")
 @RestController
 @RequiredArgsConstructor

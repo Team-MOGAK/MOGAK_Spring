@@ -81,21 +81,25 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void updateNickname(UpdateNicknameDto nicknameDto) {
+    public void updateNickname(Long userId, UpdateNicknameDto nicknameDto) {
         verifyNickname(nicknameDto.getNickname());
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
+//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+//        User user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateNickname(nicknameDto.getNickname());
     }
 
     @Transactional
     @Override
-    public void updateJob(UpdateJobDto jobDto) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    public void updateJob(Long userId, UpdateJobDto jobDto) {
+//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Job job = jobRepository.findJobByName(jobDto.getJob())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
-        User user = userRepository.findByEmail(email)
+//        User user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         user.updateJob(job);
     }
@@ -106,10 +110,10 @@ public class UserServiceImpl implements UserService {
             throw new UserException(ErrorCode.NOT_VALID_EMAIL);
     }
 
-//    @Override
-//    public String getToken(User user) {
-//        return jwtTokenHandler.createJwtToken(user.getId().toString());
-//    }
+    @Override
+    public String getToken(User user) {
+        return jwtTokenHandler.createJwtToken(user.getId().toString());
+    }
 
     public String getProfileImgName() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -121,9 +125,11 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void updateImg(UserRequestDto.UpdateImageDto userImageDto) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
+    public void updateImg(Long userId, UserRequestDto.UpdateImageDto userImageDto) {
+//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+//        User user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String imgUrl = userImageDto.getImgUrl();
         String imgName = userImageDto.getImgName();

@@ -8,10 +8,10 @@ import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
 import java.util.List;
 
 public interface MogakService {
-    MogakResponseDto.GetMogakDto create(MogakRequestDto.CreateDto createDto);
+    MogakResponseDto.GetMogakDto create(Long userId, MogakRequestDto.CreateDto createDto);
     Mogak achieveMogak(Long id);
     MogakResponseDto.UpdateStateDto updateMogak(MogakRequestDto.UpdateDto request);
-    MogakResponseDto.GetMogakListDto getMogakDtoList(Long modaratId);
+    MogakResponseDto.GetMogakListDto getMogakDtoList(Long userId, Long modaratId);
     void deleteMogak(Long mogakId);
 
     List<JogakResponseDto.GetJogakDto> getJogaks(Long mogakId);

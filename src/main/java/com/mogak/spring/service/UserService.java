@@ -10,15 +10,15 @@ public interface UserService {
     UserResponseDto.CreateDto create(UserRequestDto.CreateUserDto request, UserRequestDto.UploadImageDto uploadImageDto);
     Boolean verifyNickname(String request);
   
-//    String getToken(User user);
+    String getToken(User user);
   
-    void updateNickname(UserRequestDto.UpdateNicknameDto nicknameDto);
+    void updateNickname(Long userId, UserRequestDto.UpdateNicknameDto nicknameDto);
     String getProfileImgName();
   
-    void updateJob(UserRequestDto.UpdateJobDto jobDto);
+    void updateJob(Long userId, UserRequestDto.UpdateJobDto jobDto);
   
     User getUserByEmail(String email);
   
-    void updateImg(UserRequestDto.UpdateImageDto userImageDto);
+    void updateImg(Long userId, UserRequestDto.UpdateImageDto userImageDto);
 
 }

@@ -3,6 +3,7 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
@@ -31,6 +32,7 @@ import static org.springframework.format.annotation.DateTimeFormat.ISO;
 @RequestMapping("/api/modarats/mogaks/jogaks")
 public class JogakController {
     private final JogakService jogakService;
+    private final AuthHandler authHandler;
 
     @Operation(summary = "조각 생성", description = "조각을 생성합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
@@ -55,7 +57,7 @@ public class JogakController {
             })
     @GetMapping("/daily")
     public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakListDto>> getDailyJogaks() {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks()));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks(authHandler.getUserId())));
     }
 
     @Operation(summary = "일별 데일리 조각 조회", description = "일별 데일리 조각들을 조회합니다",
@@ -67,7 +69,7 @@ public class JogakController {
             })
     @GetMapping("/day")
     public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getDayJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate day) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDayJogaks(day)));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDayJogaks(authHandler.getUserId(), day)));
     }
 
     @Operation(summary = "주간/월간 루틴 조각 조회", description = "주간/월간 루틴 조각을 조회합니다",
@@ -80,7 +82,7 @@ public class JogakController {
     @GetMapping("/routines")
     public ResponseEntity<BaseResponse<List<JogakResponseDto.GetRoutineJogakDto>>> getRoutineJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate startDay,
                                                                                                     @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate endDay) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogaks(startDay, endDay)));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogaks(authHandler.getUserId(), startDay, endDay)));
     }
 
     @Operation(summary = "일일 조각 시작", description = "일일 조각을 시작합니다",
