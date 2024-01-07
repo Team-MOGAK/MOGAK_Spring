@@ -121,7 +121,6 @@ public class UserServiceImpl implements UserService {
     }
 
 
-
     public String getProfileImgName() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
@@ -142,7 +141,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto.GetUserDto getUserProfile(){
+    public UserResponseDto.GetUserDto getUserProfile() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));

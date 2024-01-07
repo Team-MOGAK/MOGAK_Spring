@@ -76,7 +76,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(createDto));
     }
 
-        @Operation(summary = "임시 로그인", description = "입력한 이메일로 로그인을 시도합니다",
+    @Operation(summary = "임시 로그인", description = "입력한 이메일로 로그인을 시도합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "로그인 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 계정",
@@ -89,6 +89,7 @@ public class UserController {
         User user = userService.getUserByEmail(getEmailDto.getEmail());
         return ResponseEntity.ok().body(new BaseResponse<>(userService.getToken(user)));
     }
+
     @Operation(summary = "프로필 조회", description = "유저의 프로필을 조회합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
@@ -141,7 +142,18 @@ public class UserController {
     @PutMapping("/profile/image")
     public ResponseEntity<BaseResponse<ErrorCode>> updateImage(@RequestPart MultipartFile multipartFile) {
         String profileImgName = userService.getProfileImgName(); //기존 프로필사진받아오기
-        UserRequestDto.UpdateImageDto updateImageDto = awsS3Service.updateProfileImg(multipartFile, profileImgName, dirName);
+        UserRequestDto.UpdateImageDto updateImageDto;
+        if (multipartFile == null || multipartFile.isEmpty()) {
+            if (profileImgName != null) {
+                awsS3Service.deleteProfileImg(profileImgName);
+            }
+            updateImageDto = UpdateImageDto.builder()
+                    .imgUrl(null)
+                    .imgName(null)
+                    .build();
+        } else {
+            updateImageDto = awsS3Service.updateProfileImg(multipartFile, profileImgName, dirName);
+        }
         userService.updateImg(updateImageDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
