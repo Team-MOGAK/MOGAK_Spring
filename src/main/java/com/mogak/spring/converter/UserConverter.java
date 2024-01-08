@@ -14,7 +14,7 @@ public class UserConverter {
                 .nickname(response.getNickname())
                 .job(job)
                 .address(address)
-                .email(response.getEmail())
+//                .email(response.getEmail())
                 .validation(Validation.ACTIVE.toString())
                 .profileImgUrl(profileImgUrl)
                 .profileImgName(profileImgName)

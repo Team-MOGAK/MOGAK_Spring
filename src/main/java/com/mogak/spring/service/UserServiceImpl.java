@@ -3,9 +3,11 @@ package com.mogak.spring.service;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.CustomUserDetails;
+import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.login.JwtTokenHandler;
 import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
@@ -30,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private final JobRepository jobRepository;
     private final AddressRepository addressRepository;
     private final JwtTokenHandler jwtTokenHandler;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     @Override
@@ -41,7 +44,8 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_ADDRESS));
         String profileImgUrl = uploadImageDto.getImgUrl();
         String profileImgName = uploadImageDto.getImgName();
-        User user = userRepository.findById(response.getUserId()).get();
+        User user = userRepository.findById(response.getUserId())
+                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
         if (user.getNickname() != null) {
             throw new UserException(ErrorCode.ALREADY_EXIST_USER);
         }
@@ -54,8 +58,8 @@ public class UserServiceImpl implements UserService {
     }
 
     protected void inputVerify(CreateUserDto response) {
-        if (!Regex.EMAIL_REGEX.matchRegex(response.getEmail(), "EMAIL"))
-            throw new UserException(ErrorCode.NOT_VALID_EMAIL);
+//        if (!Regex.EMAIL_REGEX.matchRegex(response.getEmail(), "EMAIL"))
+//            throw new UserException(ErrorCode.NOT_VALID_EMAIL);
         if (findUserByNickname(response.getNickname()).isPresent())
             throw new UserException(ErrorCode.ALREADY_EXIST_USER);
     }
@@ -111,6 +115,12 @@ public class UserServiceImpl implements UserService {
 //        return jwtTokenHandler.createJwtToken(user.getId().toString());
 //    }
 
+    @Override
+    public String getToken(User user) {
+        return jwtTokenProvider.createAccessToken(user.getId(), user.getEmail());
+    }
+
+
     public String getProfileImgName() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
@@ -130,5 +140,18 @@ public class UserServiceImpl implements UserService {
         user.updateProfileImg(imgUrl, imgName);
     }
 
-
+    @Override
+    public UserResponseDto.GetUserDto getUserProfile() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        String nickname = user.getNickname();
+        String job = user.getJob().getName();
+        String profileImgUrl = user.getProfileImgUrl();
+        return UserResponseDto.GetUserDto.builder()
+                .nickname(nickname)
+                .job(job)
+                .imgUrl(profileImgUrl)
+                .build();
+    }
 }

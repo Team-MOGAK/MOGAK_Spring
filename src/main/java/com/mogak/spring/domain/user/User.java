@@ -35,7 +35,6 @@ public class User extends BaseEntity {
     private String email;
     //@Column(nullable = false)
     private String validation;
-    private boolean deleted = Boolean.FALSE;
     @Enumerated(EnumType.STRING)
     private Role role;
 

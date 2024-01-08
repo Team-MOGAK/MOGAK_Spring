@@ -24,8 +24,8 @@ public class UserRequestDto {
         private String job;
         @Size(min = 1, max = 100)
         private String address;
-        @Size(min = 1, max = 100)
-        private String email;
+//        @Size(min = 1, max = 100)
+//        private String email;
         private Long userId;
     }
     @Builder
@@ -57,5 +57,13 @@ public class UserRequestDto {
     public static class UpdateImageDto {
         private String imgName;
         private String imgUrl;
+    }
+
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class GetEmailDto {
+        private String email;
     }
 }

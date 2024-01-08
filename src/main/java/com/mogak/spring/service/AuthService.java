@@ -3,6 +3,7 @@ package com.mogak.spring.service;
 import com.mogak.spring.auth.AppleOAuthUserProvider;
 import com.mogak.spring.auth.AppleUserResponse;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
@@ -40,26 +41,33 @@ public class AuthService {
     //로그인
     @Transactional
     public AppleLoginResponse appleLogin(AppleLoginRequest request) {
-
         AppleUserResponse appleUser = appleOAuthUserProvider.getAppleUser(request.getId_token());
         boolean isRegistered = userRepository.existsByEmail(appleUser.getEmail());
-        if (!isRegistered && !isRegisterNickname(appleUser.getEmail())) { //회원가입이 되어 있지 않는 경우-이메일 체크&해당 이메일로 가입한 닉네임 있는지 검증
-            User oauthUser = new User(appleUser.getEmail());
-            User savedUser = userRepository.save(oauthUser);
-            JwtTokens jwtTokens = issueTokens(savedUser);
+        if (isRegistered) { //회원가입이 되어 있는 경우-이메일 체크
+            User findUser = userRepository.findByEmail(appleUser.getEmail())
+                    .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
+            JwtTokens jwtTokens = issueTokens(findUser); //토큰 발급
+            storeRefresh(appleUser.getEmail(), jwtTokens); //리프레시 토큰 저장
+            if (!isRegisterNickname(appleUser.getEmail())) { //해당 이메일로 가입한 유저의 닉네임 없으면 회원가입하도록
+                return AppleLoginResponse.builder()
+                        .isRegistered(false)
+                        .userId(findUser.getId())
+                        .tokens(jwtTokens)
+                        .build();
+            }
             return AppleLoginResponse.builder()
-                    .isRegistered(false)
-                    .userId(savedUser.getId())
+                    .isRegistered(true)
+                    .userId(findUser.getId())
                     .tokens(jwtTokens)
                     .build();
         }
-        //회원가입이 되어 있는 경우
-        User findUser = userRepository.findByEmail(appleUser.getEmail()).get();
-        JwtTokens jwtTokens = issueTokens(findUser); //토큰 발급
-        storeRefresh(appleUser.getEmail(), jwtTokens); //리프레시 토큰 저장
+        //회원가입이 되어 있지 않은 경우
+        User oauthUser = new User(appleUser.getEmail());
+        User savedUser = userRepository.save(oauthUser);
+        JwtTokens jwtTokens = issueTokens(savedUser);
         return AppleLoginResponse.builder()
-                .isRegistered(true)
-                .userId(findUser.getId())
+                .isRegistered(false)
+                .userId(savedUser.getId())
                 .tokens(jwtTokens)
                 .build();
     }
@@ -68,11 +76,11 @@ public class AuthService {
      * 닉네임 등록 여부
      */
     private boolean isRegisterNickname(String email) {
-        User user = userRepository.findByEmail(email).get();
-        if (user.getNickname().isEmpty()) {
-            return false;
-        } else {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
+        if (user.getNickname() != null && !user.getNickname().isEmpty()) {
             return true;
+        } else {
+            return false;
         }
     }
 
@@ -104,7 +112,7 @@ public class AuthService {
     public JwtTokens reissue(String refreshToken) {
         String email = jwtTokenProvider.getEmailByRefresh(refreshToken);
         System.out.println(email);
-        User findUser = userRepository.findByEmail(email).get();
+        User findUser = userRepository.findByEmail(email).orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
         JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), email);
         redisService.deleteValues(email);
         storeRefresh(email, jwtTokens);
@@ -130,13 +138,17 @@ public class AuthService {
     @Transactional
     public AuthResponse.WithdrawDto deleteUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User deleteUser = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User deleteUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (deleteUser == null) {
             return AuthResponse.WithdrawDto.builder()
                     .isDeleted(false)
                     .build();
         }
         deleteUser.updateValidation("INACTIVE");
+        /**
+         * TODO cascade로 변경
+         */
         jogakRepository.deleteByUserId(deleteUser.getId());
         mogakRepository.deleteByUserId(deleteUser.getId());
         modaratRepository.deleteByUserId(deleteUser.getId());
