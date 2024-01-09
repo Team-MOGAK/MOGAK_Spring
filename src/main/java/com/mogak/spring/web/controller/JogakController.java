@@ -65,7 +65,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/day")
+    @GetMapping("/{day}")
     public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getDayJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate day) {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getDayJogaks(day)));
     }
