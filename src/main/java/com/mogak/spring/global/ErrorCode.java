@@ -57,6 +57,7 @@ public enum ErrorCode {
     NOT_VALID_PERIOD(HttpStatus.BAD_REQUEST, "J009", "유효하지 않은 반복주기입니다"),
     NOT_VALID_DAILY_JOGAK(HttpStatus.BAD_REQUEST, "J010", "유효하지 않은 루틴의 조각입니다"),
     NOT_SUCCESS_DAILY_JOGAK(HttpStatus.CONFLICT, "J011", "성공하지 않은 데일리 조각입니다"),
+    EXCEED_MAX_JOGAK(HttpStatus.CONFLICT, "J012", "생성 가능한 조각의 최대 갯수는 8개 입니다"),
 
     /**
      * 게시물 에러
@@ -101,7 +102,8 @@ public enum ErrorCode {
     NOT_FOUND(HttpStatus.NOT_FOUND, "Z003","찾을 수 없습니다"),
     NOT_SUPPORTED_METHOD_ERROR(HttpStatus.METHOD_NOT_ALLOWED, "Z004", "지원하지 않는 HTTP Method 요청입니다."),
     INVALID_PARAMETER_ERROR(HttpStatus.BAD_REQUEST, "Z005", "입력값이 유효하지 않습니다"),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Z500", "서버와의 연결에 실패했습니다");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Z500", "서버와의 연결에 실패했습니다")
+    ;
 
     private final HttpStatus status;
     private final String code;
