@@ -65,8 +65,8 @@ public class UserServiceImpl implements UserService {
     }
 
     public Boolean verifyNickname(String nickname) {
-        if (!Regex.USER_NICKNAME_REGEX.matchRegex(nickname, "NICKNAME"))
-            throw new UserException(ErrorCode.NOT_VALID_NICKNAME);
+//        if (!Regex.USER_NICKNAME_REGEX.matchRegex(nickname, "NICKNAME"))
+//            throw new UserException(ErrorCode.NOT_VALID_NICKNAME);
         if (findUserByNickname(nickname).isPresent())
             throw new UserException(ErrorCode.ALREADY_EXIST_USER);
         return true;

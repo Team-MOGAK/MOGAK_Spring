@@ -1,6 +1,5 @@
 package com.mogak.spring.web.controller;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
@@ -43,7 +42,7 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/nickname/verify")
-    public ResponseEntity<BaseResponse<ErrorCode>> verifyNickname(@RequestBody CheckNicknameDto request) {
+    public ResponseEntity<BaseResponse<ErrorCode>> verifyNickname(@Valid @RequestBody CheckNicknameDto request) {
         userService.verifyNickname(request.getNickname());
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
 

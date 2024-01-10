@@ -10,7 +10,9 @@ public class UserRequestDto {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class CheckNicknameDto{
+    public static class CheckNicknameDto {
+        @NotBlank(message = "닉네임을 입력해주세요.")
+        @Size(min = 2, max = 10, message = "닉네임은 2자 이상, 10자 이하입니다.")
         private String nickname;
     }
 
@@ -18,7 +20,7 @@ public class UserRequestDto {
     @Getter
     public static class CreateUserDto {
         @NotBlank(message = "닉네임을 입력해주세요.")
-        @Size(min = 1, max = 10, message = "닉네임은 최대 10자입니다.")
+        @Size(min = 2, max = 10, message = "닉네임은 2자 이상, 10자 이하입니다.")
         private String nickname;
         @Size(min = 1, max = 100)
         private String job;
@@ -42,7 +44,7 @@ public class UserRequestDto {
 
     @Getter
     public static class UpdateNicknameDto {
-        @Size(min = 1, max = 10, message = "닉네임은 최대 10자입니다.")
+        @Size(min = 2, max = 10, message = "닉네임은 최대 10자입니다.")
         private String nickname;
     }
 
