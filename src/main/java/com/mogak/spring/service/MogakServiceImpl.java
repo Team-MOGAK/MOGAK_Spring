@@ -113,14 +113,11 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Transactional
     @Override
-    public Mogak achieveMogak(Long mogakId) {
+    public MogakResponseDto.UpdateStateDto achieveMogak(Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        if (!mogak.getState().equals("ONGOING")) {
-            throw new MogakException(ErrorCode.WRONG_STATE_CHANGE);
-        }
         mogak.updateState(State.COMPLETE.toString());
-        return mogak;
+        return MogakConverter.toUpdateDto(mogak);
     }
 
     /**
