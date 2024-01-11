@@ -49,6 +49,7 @@ public class ModaratController {
     }
 
     @Operation(summary = "모다라트 삭제", description = "모다라트를 삭제합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 삭제 성공")
             })
@@ -59,6 +60,7 @@ public class ModaratController {
     }
 
     @Operation(summary = "모다라트 수정", description = "입력값을 이용해 모다라트를 수정합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "201", description = "모각 수정 성공"),
             })
@@ -70,6 +72,7 @@ public class ModaratController {
     }
 
     @Operation(summary = "단일 모다라트 상세조회", description = "단일 모다라트의 정보를 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조회 성공"),
                     @ApiResponse(responseCode = "400", description = "없는 모다라트 조회",

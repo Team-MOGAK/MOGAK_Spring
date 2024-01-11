@@ -47,6 +47,7 @@ public class MogakController {
     }
 
     @Operation(summary = "모각 달성", description = "해당하는 모각을 달성합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 달성"),
                     @ApiResponse(responseCode = "400", description = "기타 카테고리 X",
@@ -60,6 +61,7 @@ public class MogakController {
     }
 
     @Operation(summary = "모각 수정", description = "입력값을 이용해 모각을 수정합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 수정 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각, 존재하지 않는 카테고리",
@@ -83,6 +85,7 @@ public class MogakController {
     }
 
     @Operation(summary = "모각 삭제", description = "모각을 삭제합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
                     @Parameter(name = "mogakId", description = "모각 ID")
             },
@@ -98,6 +101,7 @@ public class MogakController {
     }
 
     @Operation(summary = "조각 조회", description = "모각의 조각을 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
                     @Parameter(name = "mogakId", description = "모각 ID")
             },

@@ -57,6 +57,7 @@ public class CommentController {
 
     //read
     @Operation(summary = "댓글 리스트 조회", description = "댓글 리스트를 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = @Parameter(name = "postId", description = "게시물 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "댓글 리스트 조회 성공"),
@@ -71,6 +72,7 @@ public class CommentController {
 
     //update
     @Operation(summary = "댓글 수정", description = "댓글을 수정합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
                     @Parameter(name = "postId", description = "게시물 ID"),
                     @Parameter(name = "commentId", description = "댓글 ID"),
@@ -90,6 +92,7 @@ public class CommentController {
 
     //delete
     @Operation(summary = "댓글 삭제", description = "댓글을 삭제합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
                     @Parameter(name = "postId", description = "게시물 ID"),
                     @Parameter(name = "commentId", description = "댓글 ID"),
