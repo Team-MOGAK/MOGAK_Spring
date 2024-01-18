@@ -22,7 +22,6 @@ public class MogakResponseDto {
     public static class GetMogakDto {
         private Long id;
         private String title;
-        private String state;
         private MogakCategory bigCategory;
         private String smallCategory;
         private String color;

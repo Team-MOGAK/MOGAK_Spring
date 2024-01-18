@@ -15,7 +15,6 @@ public interface MogakRepository extends JpaRepository<Mogak, Long> {
 //            "join fetch m.bigCategory join fetch m.mogakPeriods mp join fetch mp.period " +
 //            "where m.state = :state and mp.period.id = :today - 1 ")
 //    List<Mogak> findAllOngoingToday(@Param("state") String state, @Param("today") int today);
-    List<Mogak> findAllByEndAt(LocalDate now);
     List<Mogak> findAllByUser(User user);
 
     void deleteByUserId(Long userId);

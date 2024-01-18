@@ -1,15 +1,13 @@
 package com.mogak.spring.config;
 
 import com.mogak.spring.domain.common.Validation;
+import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
-import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
-import com.mogak.spring.service.JogakService;
-import com.mogak.spring.service.MogakService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -28,13 +26,10 @@ public class DataInitializer implements ApplicationRunner {
 
     private final MogakRepository mogakRepository;
     private final MogakCategoryRepository mogakCategoryRepository;
-    private final JogakPeriodRepository jogakPeriodRepository;
     private final AddressRepository addressRepository;
     private final PeriodRepository periodRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
-    private final MogakService mogakService;
-    private final JogakService jogakService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -187,9 +182,6 @@ public class DataInitializer implements ApplicationRunner {
                 .user(user1)
                 .title("스프링 해야딩")
                 .bigCategory(category1)
-                .state("ONGOING")
-                .startAt(LocalDate.now())
-                .endAt(LocalDate.now().plusDays(7))
                 .validation("VALID")
                 .build();
 
@@ -197,9 +189,6 @@ public class DataInitializer implements ApplicationRunner {
                 .user(user1)
                 .title("스프링가링가링")
                 .bigCategory(category1)
-                .state("ONGOING")
-                .startAt(LocalDate.now())
-                .endAt(LocalDate.now().plusDays(30))
                 .validation("VALID")
                 .build();
 
@@ -207,9 +196,6 @@ public class DataInitializer implements ApplicationRunner {
                 .user(user1)
                 .title("스프링딩동링딩동")
                 .bigCategory(category1)
-                .state("ONGOING")
-                .startAt(LocalDate.now())
-                .endAt(LocalDate.now().plusDays(7))
                 .validation("VALID")
                 .build();
 
@@ -217,9 +203,6 @@ public class DataInitializer implements ApplicationRunner {
                 .user(user1)
                 .title("스프링딩동링딩동기기기기딩딩딩")
                 .bigCategory(category1)
-                .state("BEFORE")
-                .startAt(LocalDate.now().plusDays(5))
-                .endAt(LocalDate.now().plusDays(7))
                 .validation("VALID")
                 .build();
 
@@ -232,19 +215,6 @@ public class DataInitializer implements ApplicationRunner {
         Period tuesday = periodRepository.findOneByDays("TUESDAY").orElseThrow(RuntimeException::new);
         Period thursday = periodRepository.findOneByDays("THURSDAY").orElseThrow(RuntimeException::new);
         Period friday = periodRepository.findOneByDays("FRIDAY").orElseThrow(RuntimeException::new);
-
-//        saveJogakPeriod(mogak1, monday);
-//        saveJogakPeriod(mogak1, tuesday);
-//        saveJogakPeriod(mogak1, thursday);
-//        saveJogakPeriod(mogak1, friday);
-//
-//        saveJogakPeriod(mogak2, thursday);
-//        saveJogakPeriod(mogak2, friday);
-//
-//        saveJogakPeriod(mogak3, monday);
-//        saveJogakPeriod(mogak3, tuesday);
-//        saveJogakPeriod(mogak3, thursday);
-//        saveJogakPeriod(mogak3, friday);
     }
 
 //    private void saveJogakPeriod(Jogak jogak, Period day) {
