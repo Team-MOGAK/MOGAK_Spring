@@ -58,6 +58,7 @@ public class PostController {
 
     //read-전체 조회
     @Operation(summary = "회고록 조회", description = "회고록을 페이징 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = {
                     @Parameter(name = "mogakId", description = "모각 ID"),
                     @Parameter(name = "page", description = "페이지 수"),
@@ -79,6 +80,7 @@ public class PostController {
 
     //read-상세 조회
     @Operation(summary = "회고록 자세히보기", description = "회고록의 자세한 내용을 조회합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = @Parameter(name = "postId", description = "게시물 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "모각 수정 성공"),
@@ -94,6 +96,7 @@ public class PostController {
 
     //update - 권한 설정 필요
     @Operation(summary = "회고록 수정", description = "회고록을 수정합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = @Parameter(name = "postId", description = "게시물 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "회고록 수정 성공"),
@@ -111,6 +114,7 @@ public class PostController {
 
     //Delete - s3 이미지 삭제,댓글 삭제도 구현
     @Operation(summary = "회고록 삭제", description = "회고록을 삭제합니다",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = @Parameter(name = "postId", description = "게시물 ID"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "회고록 삭제 성공"),

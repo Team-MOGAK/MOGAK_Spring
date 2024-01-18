@@ -26,7 +26,7 @@ public class JogakRequestDto {
 
     @Getter
     public static class UpdateJogakDto {
-        @NotNull @Size(min = 1, max = 100)
+        @Size(min = 1, max = 100)
         private String title;
         @NotNull
         private Boolean isRoutine;

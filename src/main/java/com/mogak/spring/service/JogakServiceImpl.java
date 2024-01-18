@@ -84,8 +84,14 @@ public class JogakServiceImpl implements JogakService {
     public JogakResponseDto.GetJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
         Mogak mogak = mogakRepository.findById(createJogakDto.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
+        // 조각 갯수 검증
+        if (!validateJogakNum(mogak)) {
+            throw new BaseException(ErrorCode.EXCEED_MAX_JOGAK);
+        }
         Jogak jogak = jogakRepository.save(JogakConverter.toInitialJogak(mogak, createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getToday(), createJogakDto.getEndDate()));
         validatePeriod(Optional.ofNullable(createJogakDto.getIsRoutine()), Optional.ofNullable(createJogakDto.getDays()));
+
+        // 루틴이 존재할 경우
         if (createJogakDto.getIsRoutine()) {
             List<Period> periods = new ArrayList<>();
             List<String> requestDays = createJogakDto.getDays();
@@ -108,6 +114,11 @@ public class JogakServiceImpl implements JogakService {
             return JogakConverter.toGetJogakResponseDto(jogak, days);
         }
         return JogakConverter.toGetJogakResponseDto(jogak);
+    }
+
+    // 모각의 조각 개수 검증
+    private boolean validateJogakNum(Mogak mogak) {
+        return !mogak.getJogaks().isEmpty() && mogak.getJogaks().size() < 9;
     }
 
     @Transactional
