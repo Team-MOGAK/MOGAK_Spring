@@ -46,19 +46,19 @@ public class MogakController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(mogakService.create(request)));
     }
 
-    @Operation(summary = "모각 달성", description = "해당하는 모각을 달성합니다",
-            security = @SecurityRequirement(name = "Bearer Authentication"),
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "모각 달성"),
-                    @ApiResponse(responseCode = "400", description = "기타 카테고리 X",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            })
-    @PutMapping("/mogaks/{mogakId}/complete")
-    public ResponseEntity<BaseResponse<MogakResponseDto.UpdateStateDto>> achieveMogak(@PathVariable Long mogakId) {
-        return ResponseEntity.ok(new BaseResponse<>(mogakService.achieveMogak(mogakId)));
-    }
+//    @Operation(summary = "모각 달성", description = "해당하는 모각을 달성합니다",
+//            security = @SecurityRequirement(name = "Bearer Authentication"),
+//            responses = {
+//                    @ApiResponse(responseCode = "200", description = "모각 달성"),
+//                    @ApiResponse(responseCode = "400", description = "기타 카테고리 X",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//                    @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
+//                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//            })
+//    @PutMapping("/mogaks/{mogakId}/complete")
+//    public ResponseEntity<BaseResponse<MogakResponseDto.UpdateStateDto>> achieveMogak(@PathVariable Long mogakId) {
+//        return ResponseEntity.ok(new BaseResponse<>(mogakService.achieveMogak(mogakId)));
+//    }
 
     @Operation(summary = "모각 수정", description = "입력값을 이용해 모각을 수정합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
@@ -68,7 +68,7 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PutMapping("/mogaks")
-    public ResponseEntity<BaseResponse<MogakResponseDto.UpdateStateDto>> updateMogak(@Valid @RequestBody MogakRequestDto.UpdateDto request) {
+    public ResponseEntity<BaseResponse<MogakResponseDto.GetMogakDto>> updateMogak(@Valid @RequestBody MogakRequestDto.UpdateDto request) {
         return ResponseEntity.ok(new BaseResponse<>(mogakService.updateMogak(request)));
     }
 

@@ -8,8 +8,8 @@ import java.util.List;
 
 public interface MogakService {
     MogakResponseDto.GetMogakDto create(MogakRequestDto.CreateDto createDto);
-    MogakResponseDto.UpdateStateDto achieveMogak(Long id);
-    MogakResponseDto.UpdateStateDto updateMogak(MogakRequestDto.UpdateDto request);
+//    MogakResponseDto.UpdateStateDto achieveMogak(Long id);
+    MogakResponseDto.GetMogakDto updateMogak(MogakRequestDto.UpdateDto request);
     MogakResponseDto.GetMogakListDto getMogakDtoList(Long modaratId);
     void deleteMogak(Long mogakId);
 

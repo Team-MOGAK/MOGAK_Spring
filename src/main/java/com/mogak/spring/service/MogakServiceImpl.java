@@ -54,8 +54,7 @@ public class MogakServiceImpl implements MogakService {
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
         MogakCategory category = categoryRepository.findMogakCategoryByName(request.getBigCategory())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
-        State state = State.registerState(request.getStartAt(), request.getEndAt(), LocalDate.now());
-        Mogak result = mogakRepository.save(MogakConverter.toMogak(request, modarat, category, request.getSmallCategory(), user, state));
+        Mogak result = mogakRepository.save(MogakConverter.toMogak(request, modarat, category, request.getSmallCategory(), user));
         return MogakConverter.toGetMogakDto(result);
     }
 
@@ -108,24 +107,24 @@ public class MogakServiceImpl implements MogakService {
 //        }
 //    }
 
-    /**
-     * 모각 미리 달성 메소드
-     * */
-    @Transactional
-    @Override
-    public MogakResponseDto.UpdateStateDto achieveMogak(Long mogakId) {
-        Mogak mogak = mogakRepository.findById(mogakId)
-                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        mogak.updateState(State.COMPLETE.toString());
-        return MogakConverter.toUpdateDto(mogak);
-    }
+//    /**
+//     * 모각 미리 달성 메소드
+//     * */
+//    @Transactional
+//    @Override
+//    public MogakResponseDto.UpdateStateDto achieveMogak(Long mogakId) {
+//        Mogak mogak = mogakRepository.findById(mogakId)
+//                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
+//        mogak.updateState(State.COMPLETE.toString());
+//        return MogakConverter.toUpdateDto(mogak);
+//    }
 
     /**
      * 모각 업데이트 메소드
      * */
     @Transactional
     @Override
-    public MogakResponseDto.UpdateStateDto updateMogak(MogakRequestDto.UpdateDto request) {
+    public MogakResponseDto.GetMogakDto updateMogak(MogakRequestDto.UpdateDto request) {
         Mogak mogak = mogakRepository.findById(request.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         Optional<String> categoryOptional = Optional.ofNullable(request.getBigCategory());
@@ -137,8 +136,8 @@ public class MogakServiceImpl implements MogakService {
             List<Jogak> jogakList = jogakRepository.findAllByMogak(mogak);
             jogakList.forEach(jogak -> jogak.updateCategory(category));
         });
-        mogak.update(request.getTitle(), request.getSmallCategory(), request.getStartAt(), request.getEndAt(), request.getColor());
-        return MogakConverter.toUpdateDto(mogak);
+        mogak.update(request.getTitle(), request.getSmallCategory(), request.getColor());
+        return MogakConverter.toGetMogakDto(mogak);
     }
 
     /**
