@@ -297,13 +297,13 @@ public class JogakServiceImpl implements JogakService {
     public JogakResponseDto.JogakDailyJogakDto successJogak(Long dailyJogakId) {
         DailyJogak dailyjogak = dailyJogakRepository.findById(dailyJogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        if (dailyjogak.getIsAchievement()) {
+            throw new BaseException(ErrorCode.ALREADY_END_JOGAK);
+        }
         dailyjogak.updateAchievement(true);
         Jogak jogak = jogakRepository.findById(dailyjogak.getJogakId())
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_JOGAK));
         jogak.increaseAchievements();
-        for (Period p:periodRepository.findPeriodsByJogak_Id(jogak.getId())) {
-            System.out.println(p);
-        }
         return JogakConverter.toJogakDailyJogakDto(jogak, dailyjogak);
     }
 
