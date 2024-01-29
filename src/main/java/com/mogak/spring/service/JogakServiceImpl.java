@@ -118,7 +118,7 @@ public class JogakServiceImpl implements JogakService {
 
     // 모각의 조각 개수 검증
     private boolean validateJogakNum(Mogak mogak) {
-        return !mogak.getJogaks().isEmpty() && mogak.getJogaks().size() < 9;
+        return mogak.getJogaks().size() < 8;
     }
 
     @Transactional
@@ -169,9 +169,7 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public JogakResponseDto.GetJogakListDto getDailyJogaks() {
-//        User user = userRepository.findById(1L)
-//                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    public JogakResponseDto.GetOneTimeJogakListDto getDailyJogaks(LocalDate day) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
@@ -179,7 +177,8 @@ public class JogakServiceImpl implements JogakService {
                 .flatMap(mogak -> mogak.getJogaks().stream()
                         .filter(jogak -> !jogak.getIsRoutine()))
                 .collect(Collectors.toList());
-        return JogakConverter.toGetJogakListResponseDto(jogakList);
+        List<DailyJogak> dailyJogak = jogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1));
+        return JogakConverter.toGetOneTimeJogakListResponseDto(jogakList, dailyJogak);
     }
 
     @Override
@@ -187,8 +186,6 @@ public class JogakServiceImpl implements JogakService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-//        User user = userRepository.findById(1L)
-//                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return JogakConverter.toGetDailyJogakListResponseDto(jogakRepository.findDailyJogaks(
                 user, day.atStartOfDay(), day.atStartOfDay().plusDays(1)));
     }
@@ -201,8 +198,6 @@ public class JogakServiceImpl implements JogakService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-//        User user = userRepository.findById(1L)
-//                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Long userId = user.getId();
         List<LocalDate> pastDates = getPastDates(startDate, endDate);
         List<LocalDate> futureDates = getFutureDates(startDate, endDate);
@@ -297,13 +292,13 @@ public class JogakServiceImpl implements JogakService {
     public JogakResponseDto.JogakDailyJogakDto successJogak(Long dailyJogakId) {
         DailyJogak dailyjogak = dailyJogakRepository.findById(dailyJogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        if (dailyjogak.getIsAchievement()) {
+            throw new BaseException(ErrorCode.ALREADY_END_JOGAK);
+        }
         dailyjogak.updateAchievement(true);
         Jogak jogak = jogakRepository.findById(dailyjogak.getJogakId())
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_JOGAK));
         jogak.increaseAchievements();
-        for (Period p:periodRepository.findPeriodsByJogak_Id(jogak.getId())) {
-            System.out.println(p);
-        }
         return JogakConverter.toJogakDailyJogakDto(jogak, dailyjogak);
     }
 

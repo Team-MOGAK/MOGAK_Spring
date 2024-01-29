@@ -57,6 +57,20 @@ public class JogakConverter {
                 .build();
     }
 
+    public static JogakResponseDto.GetOneTimeJogakDto toGetOneTimeJogakResponseDto(Jogak jogak, Boolean bool) {
+        return JogakResponseDto.GetOneTimeJogakDto.builder()
+                .jogakId(jogak.getId())
+                .mogakTitle(jogak.getMogak().getTitle())
+                .category(jogak.getCategory().getName())
+                .title(jogak.getTitle())
+                .isRoutine(jogak.getIsRoutine())
+                .isAlreadyAdded(bool)
+                .achievements(jogak.getAchievements())
+                .startDate(jogak.getStartAt())
+                .endDate(jogak.getEndAt())
+                .build();
+    }
+
     public static JogakResponseDto.GetJogakDto toGetJogakResponseDto(Jogak jogak) {
         return JogakResponseDto.GetJogakDto.builder()
                 .jogakId(jogak.getId())
@@ -81,13 +95,18 @@ public class JogakConverter {
                 .build();
     }
 
-    public static JogakResponseDto.GetJogakListDto toGetJogakListResponseDto(List<Jogak> jogaks) {
-        return JogakResponseDto.GetJogakListDto.builder()
+    public static JogakResponseDto.GetOneTimeJogakListDto toGetOneTimeJogakListResponseDto(List<Jogak> jogaks, List<DailyJogak> dailyJogaks) {
+        return JogakResponseDto.GetOneTimeJogakListDto.builder()
                 .jogaks(jogaks.stream()
-                        .map(JogakConverter::toGetJogakResponseDto)
+                        .map(jogak -> toGetOneTimeJogakResponseDto(jogak, findCorrespondingDailyJogak(jogak, dailyJogaks)))
                         .collect(Collectors.toList()))
                 .size(jogaks.size())
                 .build();
+    }
+
+    private static Boolean findCorrespondingDailyJogak(Jogak jogak, List<DailyJogak> dailyJogaks) {
+        return dailyJogaks.stream()
+                .anyMatch(dailyJogak -> dailyJogak.getJogakId() == jogak.getId());
     }
 
     public static JogakResponseDto.GetDailyJogakListDto toGetDailyJogakListResponseDto(List<DailyJogak> jogaks) {
