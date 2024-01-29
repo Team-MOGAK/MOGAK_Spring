@@ -54,8 +54,8 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/daily")
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakListDto>> getDailyJogaks() {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks()));
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetOneTimeJogakListDto>> getDailyJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate day) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks(day)));
     }
 
     @Operation(summary = "일별 데일리 조각 조회", description = "일별 데일리 조각들을 조회합니다",
