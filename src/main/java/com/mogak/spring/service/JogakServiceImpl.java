@@ -118,7 +118,7 @@ public class JogakServiceImpl implements JogakService {
 
     // 모각의 조각 개수 검증
     private boolean validateJogakNum(Mogak mogak) {
-        return !mogak.getJogaks().isEmpty() && mogak.getJogaks().size() < 9;
+        return mogak.getJogaks().size() < 8;
     }
 
     @Transactional
