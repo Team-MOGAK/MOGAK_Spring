@@ -58,6 +58,7 @@ public enum ErrorCode {
     NOT_VALID_DAILY_JOGAK(HttpStatus.BAD_REQUEST, "J010", "유효하지 않은 루틴의 조각입니다"),
     NOT_SUCCESS_DAILY_JOGAK(HttpStatus.CONFLICT, "J011", "성공하지 않은 데일리 조각입니다"),
     EXCEED_MAX_JOGAK(HttpStatus.CONFLICT, "J012", "생성 가능한 조각의 최대 갯수는 8개 입니다"),
+    NOT_EXIST_ROUTINES(HttpStatus.CONFLICT, "J013", "루틴이 설정된 경우 요일이 필요합니다"),
 
     /**
      * 게시물 에러

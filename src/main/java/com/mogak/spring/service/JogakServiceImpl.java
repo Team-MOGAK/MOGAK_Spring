@@ -95,6 +95,9 @@ public class JogakServiceImpl implements JogakService {
         if (createJogakDto.getIsRoutine()) {
             List<Period> periods = new ArrayList<>();
             List<String> requestDays = createJogakDto.getDays();
+            if (requestDays == null) {
+                throw new BaseException(ErrorCode.NOT_EXIST_ROUTINES);
+            }
             List<String> days = new ArrayList<>();
             // 반복주기 추출
             for (String day: requestDays) {
