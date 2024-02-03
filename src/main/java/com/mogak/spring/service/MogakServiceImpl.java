@@ -226,7 +226,7 @@ public class MogakServiceImpl implements MogakService {
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MOGAK));
         List<DailyJogak> dailyJogak = jogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1));
         return mogak.getJogaks().stream()
-                .filter(jogak -> jogak.getEndAt().isAfter(LocalDate.now()))
+                .filter(jogak -> jogak.getEndAt().isAfter(LocalDate.now().minusDays(1)))
                 .map(jogak -> JogakConverter.toGetJogakResponseDto(jogak, findCorrespondingDailyJogak(jogak, dailyJogak)))
                 .collect(Collectors.toList());
     }

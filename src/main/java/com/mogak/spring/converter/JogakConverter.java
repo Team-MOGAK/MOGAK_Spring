@@ -32,6 +32,18 @@ public class JogakConverter {
                 .build();
     }
 
+    public static DailyJogak toDailyJogakResponseDto(Jogak jogak) {
+        return DailyJogak.builder()
+                .id(-1L)
+                .mogak(jogak.getMogak())
+                .jogakId(jogak.getId())
+                .title(jogak.getTitle())
+                .category(jogak.getCategory())
+                .isRoutine(jogak.getIsRoutine())
+                .isAchievement(false)
+                .build();
+    }
+
     public static DailyJogak toInitialDailyJogak(Jogak jogak) {
         return DailyJogak.builder()
                 .mogak(jogak.getMogak())
@@ -112,14 +124,25 @@ public class JogakConverter {
                 .build();
     }
 
-    public static JogakResponseDto.GetDailyJogakDto toGetDailyJogakResponseDto(DailyJogak jogak) {
+    public static JogakResponseDto.GetDailyJogakDto toGetDailyJogakResponseDto(DailyJogak dailyJogak) {
         return JogakResponseDto.GetDailyJogakDto.builder()
-                .dailyJogakId(jogak.getId())
+                .dailyJogakId(dailyJogak.getId())
+                .mogakTitle(dailyJogak.getMogak().getTitle())
+                .category(dailyJogak.getCategory().getName())
+                .title(dailyJogak.getTitle())
+                .isRoutine(dailyJogak.getIsRoutine())
+                .isAchievement(dailyJogak.getIsAchievement())
+                .build();
+    }
+
+    public static JogakResponseDto.GetDailyJogakDto toGetFutureDailyJogakResponseDto(Jogak jogak) {
+        return JogakResponseDto.GetDailyJogakDto.builder()
+                .dailyJogakId(-1L)
                 .mogakTitle(jogak.getMogak().getTitle())
                 .category(jogak.getCategory().getName())
                 .title(jogak.getTitle())
                 .isRoutine(jogak.getIsRoutine())
-                .isAchievement(jogak.getIsAchievement())
+                .isAchievement(false)
                 .build();
     }
 

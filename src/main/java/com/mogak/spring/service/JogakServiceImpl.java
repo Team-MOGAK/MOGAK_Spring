@@ -189,6 +189,15 @@ public class JogakServiceImpl implements JogakService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        if (day.isAfter(LocalDate.now())) {
+            // 미래 루틴 조각 가져오기
+            List<Jogak> userRoutineJogaks = jogakRepository.findDailyRoutineJogaks(user, dateToNum(day));
+            return JogakConverter.toGetDailyJogakListResponseDto(
+                    userRoutineJogaks.stream()
+                            .filter(jogak -> jogak.getEndAt().isAfter(day))
+                            .map(JogakConverter::toDailyJogakResponseDto)
+                            .collect(Collectors.toList()));
+        }
         return JogakConverter.toGetDailyJogakListResponseDto(jogakRepository.findDailyJogaks(
                 user, day.atStartOfDay(), day.atStartOfDay().plusDays(1)));
     }
