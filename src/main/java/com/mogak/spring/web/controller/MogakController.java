@@ -114,7 +114,7 @@ public class MogakController {
             })
     @GetMapping("/mogaks/{mogakId}/jogaks")
     public ResponseEntity<BaseResponse<List<JogakResponseDto.GetJogakDto>>> getJogaks(@PathVariable Long mogakId,
-                                                                                      @RequestParam("day") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day) {
-        return ResponseEntity.ok(new BaseResponse<>(mogakService.getJogaks(mogakId, day)));
+                                                                                      @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(new BaseResponse<>(mogakService.getJogaks(mogakId, date)));
     }
 }
