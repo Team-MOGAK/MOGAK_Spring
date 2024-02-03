@@ -116,6 +116,7 @@ public class JogakServiceImpl implements JogakService {
             }
             return JogakConverter.toGetJogakResponseDto(jogak, days);
         }
+        // 루틴이 없는 경우
         return JogakConverter.toGetJogakResponseDto(jogak);
     }
 

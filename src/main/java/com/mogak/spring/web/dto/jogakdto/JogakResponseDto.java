@@ -19,6 +19,7 @@ public class JogakResponseDto {
         private String title;
         private Boolean isRoutine;
         private List<String> days;
+        private Boolean isAlreadyAdded;
         private Integer achievements;
         private LocalDate startDate;
         private LocalDate endDate;

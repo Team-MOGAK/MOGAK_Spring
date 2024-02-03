@@ -15,11 +15,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -111,7 +113,8 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/mogaks/{mogakId}/jogaks")
-    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetJogakDto>>> getJogaks(@PathVariable Long mogakId) {
-        return ResponseEntity.ok(new BaseResponse<>(mogakService.getJogaks(mogakId)));
+    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetJogakDto>>> getJogaks(@PathVariable Long mogakId,
+                                                                                      @RequestParam("day") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day) {
+        return ResponseEntity.ok(new BaseResponse<>(mogakService.getJogaks(mogakId, day)));
     }
 }
