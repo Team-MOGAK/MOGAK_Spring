@@ -14,7 +14,6 @@ import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
@@ -81,7 +80,7 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.GetJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
+    public JogakResponseDto.CreateJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
         Mogak mogak = mogakRepository.findById(createJogakDto.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         // 조각 갯수 검증
@@ -95,6 +94,9 @@ public class JogakServiceImpl implements JogakService {
         if (createJogakDto.getIsRoutine()) {
             List<Period> periods = new ArrayList<>();
             List<String> requestDays = createJogakDto.getDays();
+            if (requestDays == null) {
+                throw new BaseException(ErrorCode.NOT_EXIST_ROUTINES);
+            }
             List<String> days = new ArrayList<>();
             // 반복주기 추출
             for (String day: requestDays) {
@@ -111,9 +113,10 @@ public class JogakServiceImpl implements JogakService {
                 );
                 days.add(period.getDays());
             }
-            return JogakConverter.toGetJogakResponseDto(jogak, days);
+            return JogakConverter.toCreateJogakResponseDto(jogak, days);
         }
-        return JogakConverter.toGetJogakResponseDto(jogak);
+        // 루틴이 없는 경우
+        return JogakConverter.toCreateJogakResponseDto(jogak);
     }
 
     // 모각의 조각 개수 검증
@@ -186,6 +189,15 @@ public class JogakServiceImpl implements JogakService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        if (day.isAfter(LocalDate.now())) {
+            // 미래 루틴 조각 가져오기
+            List<Jogak> userRoutineJogaks = jogakRepository.findDailyRoutineJogaks(user, dateToNum(day));
+            return JogakConverter.toGetDailyJogakListResponseDto(
+                    userRoutineJogaks.stream()
+                            .filter(jogak -> jogak.getEndAt().isAfter(day))
+                            .map(JogakConverter::toDailyJogakResponseDto)
+                            .collect(Collectors.toList()));
+        }
         return JogakConverter.toGetDailyJogakListResponseDto(jogakRepository.findDailyJogaks(
                 user, day.atStartOfDay(), day.atStartOfDay().plusDays(1)));
     }
@@ -323,7 +335,7 @@ public class JogakServiceImpl implements JogakService {
         Jogak jogak = jogakRepository.findById(jogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         jogakPeriodRepository.deleteAllByJogakId(jogakId);
-        // TODO: 변경된 코드에 맞춘 회고록 + 댓글 삭제
+        dailyJogakRepository.deleteAllByJogakId(jogakId);
         jogakRepository.deleteById(jogakId);
     }
 }

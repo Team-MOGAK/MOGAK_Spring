@@ -42,7 +42,7 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetJogakDto>> create(@Valid @RequestBody JogakRequestDto.CreateJogakDto createJogakDto) {
+    public ResponseEntity<BaseResponse<JogakResponseDto.CreateJogakDto>> create(@Valid @RequestBody JogakRequestDto.CreateJogakDto createJogakDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(jogakService.createJogak(createJogakDto)));
     }
 
@@ -54,8 +54,8 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/daily")
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetOneTimeJogakListDto>> getDailyJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate day) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks(day)));
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetOneTimeJogakListDto>> getDailyJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks(date)));
     }
 
     @Operation(summary = "일별 데일리 조각 조회", description = "일별 데일리 조각들을 조회합니다",
@@ -65,9 +65,9 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/{day}")
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getDayJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate day) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDayJogaks(day)));
+    @GetMapping("/{date}")
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getDayJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDayJogaks(date)));
     }
 
     @Operation(summary = "주간/월간 루틴 조각 조회", description = "주간/월간 루틴 조각을 조회합니다",

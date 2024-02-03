@@ -2,7 +2,7 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.converter.JogakConverter;
 import com.mogak.spring.converter.MogakConverter;
-import com.mogak.spring.domain.common.State;
+import com.mogak.spring.domain.jogak.DailyJogak;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
@@ -13,7 +13,6 @@ import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
@@ -37,6 +36,7 @@ public class MogakServiceImpl implements MogakService {
     private final MogakRepository mogakRepository;
     private final MogakCategoryRepository categoryRepository;
     private final JogakRepository jogakRepository;
+    private final JogakService jogakService;
     private final PostRepository postRepository;
     private final PostImgRepository postImgRepository;
     private final PostCommentRepository postCommentRepository;
@@ -201,31 +201,40 @@ public class MogakServiceImpl implements MogakService {
     public void deleteMogak(Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-//        mogakPeriodRepository.deleteAllByMogakId(mogakId);
-        jogakRepository.deleteAll(mogak.getJogaks());
+        List<Jogak> jogaks = mogak.getJogaks();
+        jogaks.forEach(jogak -> jogakService.deleteJogak(jogak.getId()));
+        jogakRepository.deleteAll(jogaks);
 
-        List<Post> posts = postRepository.findAllByMogak(mogak);
-        if (!posts.isEmpty()) {
-            posts.forEach(post -> {
-                if (!postImgRepository.findAllByPost(post).isEmpty()) {
-                    postImgRepository.deleteAllByPost(post);
-                }
-                if (!postCommentRepository.findAllByPost(post).isEmpty()) {
-                    postCommentRepository.deleteAllByPost(post);
-                }
-            });
-            postRepository.deleteAllByMogak(mogak);
-        }
+//        List<Post> posts = postRepository.findAllByMogak(mogak);
+//        if (!posts.isEmpty()) {
+//            posts.forEach(post -> {
+//                if (!postImgRepository.findAllByPost(post).isEmpty()) {
+//                    postImgRepository.deleteAllByPost(post);
+//                }
+//                if (!postCommentRepository.findAllByPost(post).isEmpty()) {
+//                    postCommentRepository.deleteAllByPost(post);
+//                }
+//            });
+//            postRepository.deleteAllByMogak(mogak);
+//        }
         mogakRepository.deleteById(mogakId);
     }
 
     @Override
-    public List<JogakResponseDto.GetJogakDto> getJogaks(Long mogakId) {
+    public List<JogakResponseDto.GetJogakDto> getJogaks(Long mogakId, LocalDate day) {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MOGAK));
+        List<DailyJogak> dailyJogak = jogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1));
         return mogak.getJogaks().stream()
-                .filter(jogak -> jogak.getEndAt().isAfter(LocalDate.now()))
-                .map(JogakConverter::toGetJogakResponseDto)
+                .filter(jogak -> jogak.getEndAt().isAfter(LocalDate.now().minusDays(1)))
+                .map(jogak -> JogakConverter.toGetJogakResponseDto(jogak, findCorrespondingDailyJogak(jogak, dailyJogak)))
                 .collect(Collectors.toList());
+    }
+
+    private static Boolean findCorrespondingDailyJogak(Jogak jogak, List<DailyJogak> dailyJogaks) {
+        return dailyJogaks.stream()
+                .anyMatch(dailyJogak -> dailyJogak.getJogakId() == jogak.getId());
     }
 }
