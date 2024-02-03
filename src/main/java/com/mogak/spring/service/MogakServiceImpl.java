@@ -36,6 +36,7 @@ public class MogakServiceImpl implements MogakService {
     private final MogakRepository mogakRepository;
     private final MogakCategoryRepository categoryRepository;
     private final JogakRepository jogakRepository;
+    private final JogakService jogakService;
     private final PostRepository postRepository;
     private final PostImgRepository postImgRepository;
     private final PostCommentRepository postCommentRepository;
@@ -200,21 +201,22 @@ public class MogakServiceImpl implements MogakService {
     public void deleteMogak(Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-//        mogakPeriodRepository.deleteAllByMogakId(mogakId);
-        jogakRepository.deleteAll(mogak.getJogaks());
+        List<Jogak> jogaks = mogak.getJogaks();
+        jogaks.forEach(jogak -> jogakService.deleteJogak(jogak.getId()));
+        jogakRepository.deleteAll(jogaks);
 
-        List<Post> posts = postRepository.findAllByMogak(mogak);
-        if (!posts.isEmpty()) {
-            posts.forEach(post -> {
-                if (!postImgRepository.findAllByPost(post).isEmpty()) {
-                    postImgRepository.deleteAllByPost(post);
-                }
-                if (!postCommentRepository.findAllByPost(post).isEmpty()) {
-                    postCommentRepository.deleteAllByPost(post);
-                }
-            });
-            postRepository.deleteAllByMogak(mogak);
-        }
+//        List<Post> posts = postRepository.findAllByMogak(mogak);
+//        if (!posts.isEmpty()) {
+//            posts.forEach(post -> {
+//                if (!postImgRepository.findAllByPost(post).isEmpty()) {
+//                    postImgRepository.deleteAllByPost(post);
+//                }
+//                if (!postCommentRepository.findAllByPost(post).isEmpty()) {
+//                    postCommentRepository.deleteAllByPost(post);
+//                }
+//            });
+//            postRepository.deleteAllByMogak(mogak);
+//        }
         mogakRepository.deleteById(mogakId);
     }
 

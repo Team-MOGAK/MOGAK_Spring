@@ -2,12 +2,13 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.converter.ModaratConverter;
 import com.mogak.spring.domain.modarat.Modarat;
+import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.repository.ModaratRepository;
+import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.repository.query.GetMogakInModaratDto;
 import com.mogak.spring.repository.query.SingleDetailModaratDto;
@@ -27,6 +28,8 @@ import java.util.stream.Collectors;
 public class ModaratServiceImpl implements ModaratService {
     private final UserRepository userRepository;
     private final ModaratRepository modaratRepository;
+    private final MogakRepository mogakRepository;
+    private final MogakService mogakService;
 
     @Transactional
     @Override
@@ -41,6 +44,8 @@ public class ModaratServiceImpl implements ModaratService {
     public void delete(Long modaratId) {
         Modarat modarat = modaratRepository.findById(modaratId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
+        List<Mogak> mogaks = mogakRepository.findAllByModaratId(modaratId);
+        mogaks.forEach(mogak -> mogakService.deleteMogak(mogak.getId()));
         modaratRepository.delete(modarat);
     }
 

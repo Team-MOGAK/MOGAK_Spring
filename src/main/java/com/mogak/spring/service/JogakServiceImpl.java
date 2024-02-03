@@ -335,7 +335,7 @@ public class JogakServiceImpl implements JogakService {
         Jogak jogak = jogakRepository.findById(jogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         jogakPeriodRepository.deleteAllByJogakId(jogakId);
-        // TODO: 변경된 코드에 맞춘 회고록 + 댓글 삭제
+        dailyJogakRepository.deleteAllByJogakId(jogakId);
         jogakRepository.deleteById(jogakId);
     }
 }

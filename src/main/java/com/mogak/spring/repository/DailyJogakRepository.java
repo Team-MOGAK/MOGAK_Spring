@@ -18,4 +18,6 @@ public interface DailyJogakRepository extends JpaRepository<DailyJogak, Long> {
                                                      @Param("endDateTime") LocalDateTime endDateTime,
                                                      @Param("id") Long jogakId
     );
+
+    void deleteAllByJogakId(Long jogakId);
 }
