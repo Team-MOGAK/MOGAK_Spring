@@ -9,7 +9,7 @@ import java.util.List;
 public interface JogakService {
 
     void createRoutineJogakToday();
-    JogakResponseDto.GetJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto);
+    JogakResponseDto.CreateJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto);
     void updateJogak(Long jogakId, JogakRequestDto.UpdateJogakDto updateJogakDto);
     JogakResponseDto.GetOneTimeJogakListDto getDailyJogaks(LocalDate day);
     JogakResponseDto.GetDailyJogakListDto getDayJogaks(LocalDate day);

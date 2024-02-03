@@ -43,8 +43,21 @@ public class JogakConverter {
                 .build();
     }
 
-    public static JogakResponseDto.GetJogakDto toGetJogakResponseDto(Jogak jogak, List<String> days) {
-        return JogakResponseDto.GetJogakDto.builder()
+    public static JogakResponseDto.CreateJogakDto toCreateJogakResponseDto(Jogak jogak) {
+        return JogakResponseDto.CreateJogakDto.builder()
+                .jogakId(jogak.getId())
+                .mogakTitle(jogak.getMogak().getTitle())
+                .category(jogak.getCategory().getName())
+                .title(jogak.getTitle())
+                .isRoutine(jogak.getIsRoutine())
+                .achievements(jogak.getAchievements())
+                .startDate(jogak.getStartAt())
+                .endDate(jogak.getEndAt())
+                .build();
+    }
+
+    public static JogakResponseDto.CreateJogakDto toCreateJogakResponseDto(Jogak jogak, List<String> days) {
+        return JogakResponseDto.CreateJogakDto.builder()
                 .jogakId(jogak.getId())
                 .mogakTitle(jogak.getMogak().getTitle())
                 .category(jogak.getCategory().getName())

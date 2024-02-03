@@ -14,7 +14,6 @@ import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
@@ -81,7 +80,7 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.GetJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
+    public JogakResponseDto.CreateJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
         Mogak mogak = mogakRepository.findById(createJogakDto.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         // 조각 갯수 검증
@@ -114,10 +113,10 @@ public class JogakServiceImpl implements JogakService {
                 );
                 days.add(period.getDays());
             }
-            return JogakConverter.toGetJogakResponseDto(jogak, days);
+            return JogakConverter.toCreateJogakResponseDto(jogak, days);
         }
         // 루틴이 없는 경우
-        return JogakConverter.toGetJogakResponseDto(jogak);
+        return JogakConverter.toCreateJogakResponseDto(jogak);
     }
 
     // 모각의 조각 개수 검증
