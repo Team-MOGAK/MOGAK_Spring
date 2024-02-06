@@ -10,6 +10,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 
@@ -20,17 +21,17 @@ public class ErrorResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private final LocalDateTime time = LocalDateTime.now();
-    private int status;
+    private HttpStatus status;
     private String code;
     private String message;
 
     public ErrorResponse(ErrorCode errorCode) {
-        this.status = errorCode.getStatus().value();
+        this.status = errorCode.getStatus();
         this.code = errorCode.getCode();
         this.message = errorCode.getMessage();
     }
 
-    public ErrorResponse(int status, String code, String message) {
+    public ErrorResponse(HttpStatus status, String code, String message) {
         this.status = status;
         this.code = code;
         this.message = message;
@@ -38,7 +39,7 @@ public class ErrorResponse {
 
     public static ErrorResponse of(ErrorCode e) {
         return new ErrorResponse(
-                e.getStatus().value(),
+                e.getStatus(),
                 e.getCode(),
                 e.getMessage());
     }
