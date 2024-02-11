@@ -18,7 +18,7 @@ public class JogakRequestDto {
         @NotNull
         private Boolean isRoutine;
         private List<String> days;
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate today;
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate endDate;

@@ -7,7 +7,6 @@ import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
-import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.MogakException;
@@ -228,7 +227,7 @@ public class MogakServiceImpl implements MogakService {
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MOGAK));
         List<DailyJogak> dailyJogak = jogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1));
         return mogak.getJogaks().stream()
-                .filter(jogak -> jogak.getEndAt().isAfter(LocalDate.now().minusDays(1)))
+                .filter(jogak -> jogak.getEndAt() == null || jogak.getEndAt().isAfter(day.minusDays(1)))
                 .map(jogak -> JogakConverter.toGetJogakResponseDto(jogak, findCorrespondingDailyJogak(jogak, dailyJogak)))
                 .collect(Collectors.toList());
     }
