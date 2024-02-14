@@ -113,8 +113,10 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/mogaks/{mogakId}/jogaks")
-    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetJogakDto>>> getJogaks(@PathVariable Long mogakId,
-                                                                                      @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetJogakDto>>> getJogaks(
+            @PathVariable Long mogakId,
+            @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. 오늘 날짜를 주로 입력하시면 됩니다. format: YYYY-MM-DD", example = "2024-02-15")
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(new BaseResponse<>(mogakService.getJogaks(mogakId, date)));
     }
 }

@@ -46,7 +46,7 @@ public class JogakController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(jogakService.createJogak(createJogakDto)));
     }
 
-    @Operation(summary = "일회성 조각 조회", description = "일회성 조각들을 조회합니다",
+    @Operation(summary = "일회성 조각 조회", description = "일회성 조각들을 조회하는 API",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조회 성공"),
@@ -54,11 +54,13 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/daily")
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetOneTimeJogakListDto>> getDailyJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetOneTimeJogakListDto>> getDailyJogaks(
+            @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. format: YYYY-MM-DD", example = "2024-02-15")
+            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks(date)));
     }
 
-    @Operation(summary = "일별 데일리 조각 조회", description = "일별 데일리 조각들을 조회합니다",
+    @Operation(summary = "일별 데일리 조각 조회", description = "일별 데일리 조각들을 조회하는 API",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "조회 성공"),
@@ -66,7 +68,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/{date}")
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getDayJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getDayJogaks(
+            @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. format: YYYY-MM-DD", example = "2024-02-14")
+            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getDayJogaks(date)));
     }
 
@@ -78,8 +82,11 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/routines")
-    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetRoutineJogakDto>>> getRoutineJogaks(@RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate startDay,
-                                                                                                    @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate endDay) {
+    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetRoutineJogakDto>>> getRoutineJogaks(
+            @Parameter(description = "조회를 원하는 첫 날짜를 입력. format: YYYY-MM-DD", example = "2024-02-14")
+            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate startDay,
+            @Parameter(description = "조회를 원하는 마지막 날짜를 입력. format: YYYY-MM-DD", example = "2024-02-15")
+            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate endDay) {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogaks(startDay, endDay)));
     }
 
@@ -98,7 +105,7 @@ public class JogakController {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.startJogak(jogakId)));
     }
 
-    @Operation(summary = "조각 성공", description = "조각이 성공합니다",
+    @Operation(summary = "조각 성공", description = "오늘의 조각으로 등록된 조각을 성공시킵니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = @Parameter(name = "dailyJogakId", description = "데일리 조각 ID"),
             responses = {
