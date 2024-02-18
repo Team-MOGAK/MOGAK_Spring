@@ -139,7 +139,9 @@ public class JogakServiceImpl implements JogakService {
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         validatePeriod(Optional.ofNullable(updateJogakDto.getIsRoutine()), Optional.ofNullable(updateJogakDto.getDays()));
         jogak.update(updateJogakDto.getTitle(), updateJogakDto.getIsRoutine(), updateJogakDto.getEndDate());
-        updateJogakPeriod(jogak, updateJogakDto.getDays());
+        if (updateJogakDto.getDays() != null) {
+            updateJogakPeriod(jogak, updateJogakDto.getDays());
+        }
     }
 
     private void validatePeriod(Optional<Boolean> isRoutineOptional, Optional<List<String>> daysOptional) {
