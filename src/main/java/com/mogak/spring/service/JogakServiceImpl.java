@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -121,7 +122,14 @@ public class JogakServiceImpl implements JogakService {
 
     // 모각의 조각 개수 검증
     private boolean validateJogakNum(Mogak mogak) {
-        return mogak.getJogaks().size() < 8;
+        int nowJogakNum = 0;
+        // 현재 유효한 기간 및 종료 날짜가 없는 조각 개수 체크
+        for (Jogak jogak: mogak.getJogaks()) {
+            if (jogak.getEndAt() == null || jogak.getEndAt().isAfter(LocalDate.now()) ) {
+                nowJogakNum++;
+            }
+        }
+        return nowJogakNum < 8;
     }
 
     @Transactional
