@@ -25,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -134,7 +133,7 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public void updateJogak(Long jogakId, JogakRequestDto.UpdateJogakDto updateJogakDto) {
+    public JogakResponseDto.CreateJogakDto updateJogak(Long jogakId, JogakRequestDto.UpdateJogakDto updateJogakDto) {
         Jogak jogak = jogakRepository.findById(jogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         validatePeriod(Optional.ofNullable(updateJogakDto.getIsRoutine()), Optional.ofNullable(updateJogakDto.getDays()));
@@ -142,9 +141,10 @@ public class JogakServiceImpl implements JogakService {
         if (updateJogakDto.getDays() != null) {
             updateJogakPeriod(jogak, updateJogakDto.getDays());
         }
-        if (updateJogakDto.getIsRoutine() == false) {
+        if (updateJogakDto.getIsRoutine() != null && !updateJogakDto.getIsRoutine()) {
             jogakPeriodRepository.deleteAllByJogakId(jogakId);
         }
+        return JogakConverter.toCreateJogakResponseDto(jogak);
     }
 
     private void validatePeriod(Optional<Boolean> isRoutineOptional, Optional<List<String>> daysOptional) {
