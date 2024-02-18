@@ -142,6 +142,9 @@ public class JogakServiceImpl implements JogakService {
         if (updateJogakDto.getDays() != null) {
             updateJogakPeriod(jogak, updateJogakDto.getDays());
         }
+        if (updateJogakDto.getIsRoutine() == false) {
+            jogakPeriodRepository.deleteAllByJogakId(jogakId);
+        }
     }
 
     private void validatePeriod(Optional<Boolean> isRoutineOptional, Optional<List<String>> daysOptional) {
