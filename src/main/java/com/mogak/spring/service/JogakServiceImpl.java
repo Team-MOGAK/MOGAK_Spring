@@ -121,17 +121,30 @@ public class JogakServiceImpl implements JogakService {
 
     // 모각의 조각 개수 검증
     private boolean validateJogakNum(Mogak mogak) {
-        return mogak.getJogaks().size() < 8;
+        int nowJogakNum = 0;
+        // 현재 유효한 기간 및 종료 날짜가 없는 조각 개수 체크
+        for (Jogak jogak: mogak.getJogaks()) {
+            if (jogak.getEndAt() == null || jogak.getEndAt().isAfter(LocalDate.now()) ) {
+                nowJogakNum++;
+            }
+        }
+        return nowJogakNum < 8;
     }
 
     @Transactional
     @Override
-    public void updateJogak(Long jogakId, JogakRequestDto.UpdateJogakDto updateJogakDto) {
+    public JogakResponseDto.CreateJogakDto updateJogak(Long jogakId, JogakRequestDto.UpdateJogakDto updateJogakDto) {
         Jogak jogak = jogakRepository.findById(jogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         validatePeriod(Optional.ofNullable(updateJogakDto.getIsRoutine()), Optional.ofNullable(updateJogakDto.getDays()));
         jogak.update(updateJogakDto.getTitle(), updateJogakDto.getIsRoutine(), updateJogakDto.getEndDate());
-        updateJogakPeriod(jogak, updateJogakDto.getDays());
+        if (updateJogakDto.getDays() != null) {
+            updateJogakPeriod(jogak, updateJogakDto.getDays());
+        }
+        if (updateJogakDto.getIsRoutine() != null && !updateJogakDto.getIsRoutine()) {
+            jogakPeriodRepository.deleteAllByJogakId(jogakId);
+        }
+        return JogakConverter.toCreateJogakResponseDto(jogak);
     }
 
     private void validatePeriod(Optional<Boolean> isRoutineOptional, Optional<List<String>> daysOptional) {

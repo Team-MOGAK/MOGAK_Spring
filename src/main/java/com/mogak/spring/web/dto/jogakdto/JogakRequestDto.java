@@ -36,7 +36,6 @@ public class JogakRequestDto {
     public static class UpdateJogakDto {
         @Size(min = 1, max = 100)
         private String title;
-        @NotNull
         private Boolean isRoutine;
         @Schema(description = "isRoutine과 연관된 필드로, isRoutine 값이 True이면 여기에 MONDAY, TUESDAY 등의 날짜를 입력하시면 됩니다. " +
                 "isRoutine 값이 False 값인 경우에 이 필드에 값을 입력하면 안됩니다", example = "{MONDAY, TUESDAY, SUNDAY}")

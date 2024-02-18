@@ -149,10 +149,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/{jogakId}")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateJogak(@PathVariable Long jogakId,
+    public ResponseEntity<BaseResponse<JogakResponseDto.CreateJogakDto>> updateJogak(@PathVariable Long jogakId,
                                                                @Valid @RequestBody JogakRequestDto.UpdateJogakDto updateJogakDto) {
-        jogakService.updateJogak(jogakId, updateJogakDto);
-        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.updateJogak(jogakId, updateJogakDto)));
     }
 
     @Operation(summary = "조각 삭제", description = "조각을 삭제합니다",
