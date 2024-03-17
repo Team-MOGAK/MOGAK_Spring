@@ -172,9 +172,16 @@ public class JogakServiceImpl implements JogakService {
     private void updateJogakPeriod(Jogak jogak, List<String> days) {
         List<Period> periods = new ArrayList<>();
         for (String day : days) {
-            periods.add(periodRepository.findOneByDays(day)
-                    .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_DAY)));
+            Period period = periodRepository.findOneByDays(day)
+                    .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_DAY));
+            periods.add(period);
+
+            // 주기와 오늘이 일치하는 경우
+            if (dateToNum(LocalDate.now()) == period.getId()) {
+                dailyJogakRepository.save(JogakConverter.toInitialDailyJogak(jogak));
+            }
         }
+
         List<JogakPeriod> mogakPeriods = jogakPeriodRepository.findAllByJogak_Id(jogak.getId());
         int periodSize = periods.size();
         int mpSize = mogakPeriods.size();
