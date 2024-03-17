@@ -2,6 +2,7 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.auth.AppleOAuthUserProvider;
 import com.mogak.spring.auth.AppleUserResponse;
+import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.UserException;
@@ -19,6 +20,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -28,6 +32,8 @@ public class AuthService {
     private final ModaratRepository modaratRepository;
     private final MogakRepository mogakRepository;
     private final JogakRepository jogakRepository;
+    private final DailyJogakRepository dailyJogakRepository;
+    private final JogakPeriodRepository jogakPeriodRepository;
     private final AppleOAuthUserProvider appleOAuthUserProvider;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
@@ -149,13 +155,24 @@ public class AuthService {
         /**
          * TODO cascade로 변경
          */
+        deleteUserInfo(deleteUser);
+        return AuthResponse.WithdrawDto.builder()
+                .isDeleted(true)
+                .build();
+    }
+
+    public void deleteUserInfo(User deleteUser) {
+        Optional<List<Jogak>> optJogaks = jogakRepository.findAllByUserId(deleteUser.getId());
+        if (optJogaks.isPresent()) {
+            for (Jogak jogak : optJogaks.get()) {
+                dailyJogakRepository.deleteAllByJogakId(jogak.getId());
+                jogakPeriodRepository.deleteAllByJogakId(jogak.getId());
+            }
+        }
         jogakRepository.deleteByUserId(deleteUser.getId());
         mogakRepository.deleteByUserId(deleteUser.getId());
         modaratRepository.deleteByUserId(deleteUser.getId());
         userRepository.deleteById(deleteUser.getId());
         redisService.deleteValues(deleteUser.getEmail());
-        return AuthResponse.WithdrawDto.builder()
-                .isDeleted(true)
-                .build();
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface JogakRepository extends JpaRepository<Jogak, Long> {
 
@@ -37,6 +38,8 @@ public interface JogakRepository extends JpaRepository<Jogak, Long> {
     @Query("SELECT DISTINCT j FROM Jogak j JOIN FETCH j.jogakPeriods jp JOIN FETCH jp.period p " +
             "WHERE j.user.id = :userId AND j.isRoutine = true")
     List<Jogak> findAllRoutineJogaksByUser(@Param("userId") Long userId);
+
+    Optional<List<Jogak>> findAllByUserId(Long userId);
 
     void deleteByUserId(Long userId);
 }
