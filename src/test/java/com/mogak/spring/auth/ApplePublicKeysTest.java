@@ -1,6 +1,7 @@
 package com.mogak.spring.auth;
 
 
+import com.mogak.spring.exception.BaseException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +29,7 @@ public class ApplePublicKeysTest {
         ApplePublicKeys applePublicKeys = new ApplePublicKeys(List.of(expected));
 
         assertThatThrownBy(() -> applePublicKeys.getMatchesKey("invalid", "invalid"))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(BaseException.class);
     }
 
 }

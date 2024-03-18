@@ -234,6 +234,6 @@ public class MogakServiceImpl implements MogakService {
 
     private static Boolean findCorrespondingDailyJogak(Jogak jogak, List<DailyJogak> dailyJogaks) {
         return dailyJogaks.stream()
-                .anyMatch(dailyJogak -> dailyJogak.getJogakId() == jogak.getId());
+                .anyMatch(dailyJogak -> dailyJogak.getJogakId().equals(jogak.getId()));
     }
 }

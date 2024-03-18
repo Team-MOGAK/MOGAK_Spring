@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -100,8 +101,13 @@ public class JogakServiceImpl implements JogakService {
             List<String> days = new ArrayList<>();
             // 반복주기 추출
             for (String day: requestDays) {
-                periods.add(periodRepository.findOneByDays(day)
-                        .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_DAY)));
+                Period period = periodRepository.findOneByDays(day)
+                        .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_DAY));
+                periods.add(period);
+                // 주기와 오늘이 일치하는 경우
+                if (dateToNum(createJogakDto.getToday()) == period.getId()) {
+                    dailyJogakRepository.save(JogakConverter.toInitialDailyJogak(jogak));
+                }
             }
             // 다대다-조각주기 저장
             for (Period period: periods) {
@@ -166,9 +172,16 @@ public class JogakServiceImpl implements JogakService {
     private void updateJogakPeriod(Jogak jogak, List<String> days) {
         List<Period> periods = new ArrayList<>();
         for (String day : days) {
-            periods.add(periodRepository.findOneByDays(day)
-                    .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_DAY)));
+            Period period = periodRepository.findOneByDays(day)
+                    .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_DAY));
+            periods.add(period);
+
+            // 주기와 오늘이 일치하는 경우
+            if (dateToNum(LocalDate.now()) == period.getId()) {
+                dailyJogakRepository.save(JogakConverter.toInitialDailyJogak(jogak));
+            }
         }
+
         List<JogakPeriod> mogakPeriods = jogakPeriodRepository.findAllByJogak_Id(jogak.getId());
         int periodSize = periods.size();
         int mpSize = mogakPeriods.size();
@@ -289,17 +302,6 @@ public class JogakServiceImpl implements JogakService {
         return futureDates;
     }
 
-    private int dateToNum(LocalDate date) {
-        DayOfWeek dayOfWeek = date.getDayOfWeek();
-        return dayOfWeek.getValue();
-    }
-
-    private int getTodayNum() {
-        LocalDate today = LocalDate.now();
-        DayOfWeek dayOfWeek = today.getDayOfWeek();
-        return dayOfWeek.getValue();
-    }
-
     @Transactional
     @Override
     public JogakResponseDto.JogakDailyJogakDto startJogak(Long jogakId) {
@@ -350,5 +352,16 @@ public class JogakServiceImpl implements JogakService {
         jogakPeriodRepository.deleteAllByJogakId(jogakId);
         dailyJogakRepository.deleteAllByJogakId(jogakId);
         jogakRepository.deleteById(jogakId);
+    }
+
+    private int getTodayNum(LocalDateTime now) {
+        LocalDate today = now.toLocalDate();
+        DayOfWeek dayOfWeek = today.getDayOfWeek();
+        return dayOfWeek.getValue();
+    }
+
+    private int dateToNum(LocalDate date) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        return dayOfWeek.getValue();
     }
 }
