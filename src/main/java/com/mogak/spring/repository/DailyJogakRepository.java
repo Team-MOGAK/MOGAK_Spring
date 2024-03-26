@@ -1,6 +1,7 @@
 package com.mogak.spring.repository;
 
 import com.mogak.spring.domain.jogak.DailyJogak;
+import com.mogak.spring.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +19,13 @@ public interface DailyJogakRepository extends JpaRepository<DailyJogak, Long> {
                                                      @Param("endDateTime") LocalDateTime endDateTime,
                                                      @Param("id") Long jogakId
     );
+
+    @Query("SELECT j from DailyJogak j " +
+            "JOIN FETCH j.mogak jm JOIN FETCH jm.user " +
+            "WHERE jm.user = :user and j.createdAt BETWEEN :today AND :tomorrow")
+    List<DailyJogak> findDailyJogaks(@Param(value = "user") User user,
+                                     @Param(value = "today") LocalDateTime today,
+                                     @Param(value = "tomorrow") LocalDateTime tomorrow);
 
     void deleteAllByJogakId(Long jogakId);
 }

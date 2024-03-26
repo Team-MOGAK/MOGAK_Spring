@@ -36,6 +36,7 @@ public class MogakServiceImpl implements MogakService {
     private final MogakCategoryRepository categoryRepository;
     private final JogakRepository jogakRepository;
     private final JogakService jogakService;
+    private final DailyJogakRepository dailyJogakRepository;
     private final PostRepository postRepository;
     private final PostImgRepository postImgRepository;
     private final PostCommentRepository postCommentRepository;
@@ -225,7 +226,7 @@ public class MogakServiceImpl implements MogakService {
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MOGAK));
-        List<DailyJogak> dailyJogak = jogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1));
+        List<DailyJogak> dailyJogak = dailyJogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1));
         return mogak.getJogaks().stream()
                 .filter(jogak -> jogak.getEndAt() == null || jogak.getEndAt().isAfter(day.minusDays(1)))
                 .map(jogak -> JogakConverter.toGetJogakResponseDto(jogak, findCorrespondingDailyJogak(jogak, dailyJogak)))
