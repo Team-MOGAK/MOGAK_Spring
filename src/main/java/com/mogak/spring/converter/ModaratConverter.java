@@ -4,7 +4,8 @@ import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
-import com.mogak.spring.web.dto.modaratdto.ModaratResponseDto;
+
+import static com.mogak.spring.web.dto.modaratdto.ModaratResponseDto.ModaratDto;
 
 public class ModaratConverter {
     public static Modarat toModarat(User user, ModaratRequestDto.CreateModaratDto request) {
@@ -16,18 +17,11 @@ public class ModaratConverter {
                 .build();
     }
 
-    public static ModaratResponseDto.CreateModaratDto toCreateDto(Modarat modarat) {
-        return ModaratResponseDto.CreateModaratDto.builder()
+    public static ModaratDto toModaratDto(Modarat modarat) {
+        return ModaratDto.builder()
                 .id(modarat.getId())
                 .title(modarat.getTitle())
                 .color(modarat.getColor())
-                .build();
-    }
-
-    public static ModaratResponseDto.GetModaratTitleDto toGetModaratTitleDto(Modarat modarat) {
-        return ModaratResponseDto.GetModaratTitleDto.builder()
-                .id(modarat.getId())
-                .title(modarat.getTitle())
                 .build();
     }
 

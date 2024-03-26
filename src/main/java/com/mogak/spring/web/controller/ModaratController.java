@@ -22,8 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 
-import static com.mogak.spring.web.dto.modaratdto.ModaratResponseDto.CreateModaratDto;
-import static com.mogak.spring.web.dto.modaratdto.ModaratResponseDto.GetModaratTitleDto;
+import static com.mogak.spring.web.dto.modaratdto.ModaratResponseDto.ModaratDto;
 
 @Tag(name = "모다라트 API", description = "모다라트 API 명세서")
 @RequiredArgsConstructor
@@ -43,9 +42,9 @@ public class ModaratController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
-    public ResponseEntity<BaseResponse<CreateModaratDto>> createModarat(@Valid @RequestBody ModaratRequestDto.CreateModaratDto request) {
+    public ResponseEntity<BaseResponse<ModaratDto>> createModarat(@Valid @RequestBody ModaratRequestDto.CreateModaratDto request) {
         Modarat modarat = modaratService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(ModaratConverter.toCreateDto(modarat)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(ModaratConverter.toModaratDto(modarat)));
     }
 
     @Operation(summary = "모다라트 삭제", description = "모다라트를 삭제합니다",
@@ -65,10 +64,10 @@ public class ModaratController {
                     @ApiResponse(responseCode = "201", description = "모각 수정 성공"),
             })
     @PutMapping("/{modaratId}")
-    public ResponseEntity<BaseResponse<CreateModaratDto>> updateModarat(@PathVariable Long modaratId,
-                                                                        @Valid @RequestBody ModaratRequestDto.UpdateModaratDto request) {
+    public ResponseEntity<BaseResponse<ModaratDto>> updateModarat(@PathVariable Long modaratId,
+                                                                  @Valid @RequestBody ModaratRequestDto.UpdateModaratDto request) {
         Modarat modarat = modaratService.update(modaratId, request);
-        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(ModaratConverter.toCreateDto(modarat)));
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(ModaratConverter.toModaratDto(modarat)));
     }
 
     @Operation(summary = "단일 모다라트 상세조회", description = "단일 모다라트의 정보를 조회합니다",
@@ -91,8 +90,8 @@ public class ModaratController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("")
-    public ResponseEntity<BaseResponse<List<GetModaratTitleDto>>> getModaratTitleList() {
-        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(modaratService.getModaratTitleList()));
+    public ResponseEntity<BaseResponse<List<ModaratDto>>> getModaratList() {
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(modaratService.getModaratList()));
     }
 
 }

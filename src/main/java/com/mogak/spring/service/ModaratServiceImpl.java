@@ -67,12 +67,12 @@ public class ModaratServiceImpl implements ModaratService {
     }
 
     @Override
-    public List<ModaratResponseDto.GetModaratTitleDto> getModaratTitleList() {
+    public List<ModaratResponseDto.ModaratDto> getModaratList() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Long userId = user.getId();
         return modaratRepository.findModaratsByUserId(userId).stream()
-                .map(ModaratConverter::toGetModaratTitleDto)
+                .map(ModaratConverter::toModaratDto)
                 .collect(Collectors.toList());
     }
 }
