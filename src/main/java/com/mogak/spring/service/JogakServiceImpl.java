@@ -206,7 +206,7 @@ public class JogakServiceImpl implements JogakService {
                 .flatMap(mogak -> mogak.getJogaks().stream()
                         .filter(jogak -> !jogak.getIsRoutine()))
                 .collect(Collectors.toList());
-        List<DailyJogak> dailyJogak = jogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1));
+        List<DailyJogak> dailyJogak = dailyJogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1));
         return JogakConverter.toGetOneTimeJogakListResponseDto(jogakList, dailyJogak);
     }
 
@@ -224,7 +224,7 @@ public class JogakServiceImpl implements JogakService {
                             .map(JogakConverter::toDailyJogakResponseDto)
                             .collect(Collectors.toList()));
         }
-        return JogakConverter.toGetDailyJogakListResponseDto(jogakRepository.findDailyJogaks(
+        return JogakConverter.toGetDailyJogakListResponseDto(dailyJogakRepository.findDailyJogaks(
                 user, day.atStartOfDay(), day.atStartOfDay().plusDays(1)));
     }
 
