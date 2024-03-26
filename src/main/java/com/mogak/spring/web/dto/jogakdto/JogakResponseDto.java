@@ -46,6 +46,7 @@ public class JogakResponseDto {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class GetDailyJogakDto {
+        private Long jogakId;
         private Long dailyJogakId;
         private String mogakTitle;
         private String category;

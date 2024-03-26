@@ -126,6 +126,7 @@ public class JogakConverter {
 
     public static JogakResponseDto.GetDailyJogakDto toGetDailyJogakResponseDto(DailyJogak dailyJogak) {
         return JogakResponseDto.GetDailyJogakDto.builder()
+                .jogakId(dailyJogak.getJogakId())
                 .dailyJogakId(dailyJogak.getId())
                 .mogakTitle(dailyJogak.getMogak().getTitle())
                 .category(dailyJogak.getCategory().getName())
@@ -160,12 +161,12 @@ public class JogakConverter {
                 .anyMatch(dailyJogak -> dailyJogak.getJogakId() == jogak.getId());
     }
 
-    public static JogakResponseDto.GetDailyJogakListDto toGetDailyJogakListResponseDto(List<DailyJogak> jogaks) {
+    public static JogakResponseDto.GetDailyJogakListDto toGetDailyJogakListResponseDto(List<DailyJogak> dailyJogaks) {
         return JogakResponseDto.GetDailyJogakListDto.builder()
-                .dailyJogaks(jogaks.stream()
+                .dailyJogaks(dailyJogaks.stream()
                         .map(JogakConverter::toGetDailyJogakResponseDto)
                         .collect(Collectors.toList()))
-                .size(jogaks.size())
+                .size(dailyJogaks.size())
                 .build();
     }
 
