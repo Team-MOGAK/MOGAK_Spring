@@ -5,3 +5,6 @@ spring:
       local: local, aws
       dev: dev
 
+feature:
+  redis:
+    enabled: false

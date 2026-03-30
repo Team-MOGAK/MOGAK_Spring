@@ -1,9 +1,8 @@
 package com.mogak.spring.config;
 
-import com.mogak.spring.exception.BaseException;
-import com.mogak.spring.global.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.util.StringUtils;
@@ -15,9 +14,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-
+@Slf4j
 @Profile("local")
 @Configuration
+@ConditionalOnProperty(prefix = "feature.redis", name = "enabled", havingValue = "true")
 public class EmbeddedRedisConfig {
 
     @Value("${spring.data.redis.port}")
@@ -35,10 +35,11 @@ public class EmbeddedRedisConfig {
     @PostConstruct
     public void startRedis() {
         try {
-            int port = isRedisRunning()? findAvailablePort() : redisPort;
+            int port = isRedisRunning() ? findAvailablePort() : redisPort;
             redisServer = new RedisServer(port);
             redisServer.start();
         } catch (Exception e) {
+            log.warn("Embedded Redis start skipped", e);
         }
     }
 
@@ -60,7 +61,6 @@ public class EmbeddedRedisConfig {
      * 현재 PC/서버에서 사용가능한 포트 조회
      */
     public int findAvailablePort() throws IOException {
-
         for (int port = 10000; port <= 65535; port++) {
             Process process = executeGrepProcessCommand(port);
             if (!isRunning(process)) {
@@ -88,15 +88,13 @@ public class EmbeddedRedisConfig {
         StringBuilder pidInfo = new StringBuilder();
 
         try (BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-
             while ((line = input.readLine()) != null) {
                 pidInfo.append(line);
             }
-
         } catch (Exception e) {
+            log.debug("Failed to inspect redis process", e);
         }
 
         return !StringUtils.isEmpty(pidInfo.toString());
     }
-
 }

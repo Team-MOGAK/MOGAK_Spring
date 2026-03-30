@@ -64,3 +64,7 @@ cloud:
 
 server:
   domain: http://localhost
+
+feature:
+  redis:
+    enabled: false

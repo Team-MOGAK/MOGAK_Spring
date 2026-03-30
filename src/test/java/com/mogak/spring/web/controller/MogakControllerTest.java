@@ -8,7 +8,6 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtInterceptor;
 import com.mogak.spring.jwt.JwtTokenFilter;
 import com.mogak.spring.jwt.JwtTokenProvider;
-import com.mogak.spring.redis.RedisService;
 import com.mogak.spring.service.MogakService;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
@@ -57,8 +56,6 @@ class MogakControllerTest {
     private JwtInterceptor jwtInterceptor;
     @MockBean
     private JwtTokenFilter jwtTokenFilter;
-    @MockBean
-    private RedisService redisService;
     @MockBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 

@@ -9,7 +9,6 @@ import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.redis.RedisService;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.JogakService;
@@ -27,7 +26,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,9 +56,8 @@ class CoreFlowIntegrationTest {
     @Autowired private JogakPeriodRepository jogakPeriodRepository;
     @Autowired private EntityManager entityManager;
 
-    @MockBean private RedisService redisService;
-    @MockBean private AppleOAuthUserProvider appleOAuthUserProvider;
-    @MockBean private AwsS3Service awsS3Service;
+    @org.springframework.boot.test.mock.mockito.MockBean private AppleOAuthUserProvider appleOAuthUserProvider;
+    @org.springframework.boot.test.mock.mockito.MockBean private AwsS3Service awsS3Service;
 
     @AfterEach
     void tearDown() {

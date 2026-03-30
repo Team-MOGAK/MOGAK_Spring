@@ -7,7 +7,6 @@ import com.mogak.spring.jwt.JwtInterceptor;
 import com.mogak.spring.jwt.JwtTokenFilter;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.login.AuthHandler;
-import com.mogak.spring.redis.RedisService;
 import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.support.SecurityContextTestHelper;
@@ -62,8 +61,6 @@ class UserControllerTest {
     private JwtInterceptor jwtInterceptor;
     @MockBean
     private JwtTokenFilter jwtTokenFilter;
-    @MockBean
-    private RedisService redisService;
     @MockBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
