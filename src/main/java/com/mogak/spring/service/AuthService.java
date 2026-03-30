@@ -88,6 +88,7 @@ public class AuthService {
     private JwtTokens issueTokens(User user) {
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getEmail());
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
+        user.updateRefreshToken(refreshToken);
         return JwtTokens.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -100,21 +101,20 @@ public class AuthService {
         String email = jwtTokenProvider.getEmailByRefresh(refreshToken);
         System.out.println(email);
         User findUser = userRepository.findByEmail(email).orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
-        // redisService.deleteValues(email);
-        // storeRefresh(email, jwtTokens);
-        return jwtTokenProvider.refresh(refreshToken, findUser.getId(), email);
+        validateStoredRefreshToken(findUser, refreshToken);
+
+        JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), email);
+        findUser.updateRefreshToken(jwtTokens.getRefreshToken());
+        return jwtTokens;
     }
 
 
     @Transactional
     public void logout(String accessToken) {
-        // Redis blacklist is disabled, so logout only clears the current security context.
-        // String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        // if (redisService.getValues(email) != null) {
-        //     redisService.deleteValues(email);
-        // }
-        // redisService.setValues(accessToken, "logout", accessTokenExpiry);
-        SecurityContextHolder.getContext().getAuthentication().getName();
+        String email = resolveLogoutUserEmail(accessToken);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
+        user.clearRefreshToken();
     }
 
     /**
@@ -153,5 +153,30 @@ public class AuthService {
         modaratRepository.deleteByUserId(deleteUser.getId());
         userRepository.deleteById(deleteUser.getId());
         // redisService.deleteValues(deleteUser.getEmail());
+    }
+
+    private void validateStoredRefreshToken(User user, String refreshToken) {
+        if (user.getRefreshToken() == null || !user.getRefreshToken().equals(refreshToken)) {
+            throw new BaseException(ErrorCode.WRONG_TOKEN);
+        }
+    }
+
+    private String resolveLogoutUserEmail(String accessToken) {
+        if (accessToken != null && !accessToken.isBlank()) {
+            String token = accessToken.startsWith("Bearer ") ? accessToken.substring(7) : accessToken;
+            try {
+                String email = jwtTokenProvider.getUserPk(token);
+                if (email != null && !email.isBlank()) {
+                    return email;
+                }
+            } catch (RuntimeException ignored) {
+            }
+        }
+
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            return SecurityContextHolder.getContext().getAuthentication().getName();
+        }
+
+        throw new BaseException(ErrorCode.EMPTY_TOKEN);
     }
 }

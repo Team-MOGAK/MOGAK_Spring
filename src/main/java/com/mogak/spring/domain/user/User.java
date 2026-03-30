@@ -33,6 +33,8 @@ public class User extends BaseEntity {
     private String profileImgUrl;
     private String profileImgName;
     private String email;
+    @Column(length = 1000)
+    private String refreshToken;
     //@Column(nullable = false)
     private String validation;
     @Enumerated(EnumType.STRING)
@@ -58,6 +60,14 @@ public class User extends BaseEntity {
 
     public void updateValidation(String validation) {
         this.validation = validation;
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public void clearRefreshToken() {
+        this.refreshToken = null;
     }
 
     public void registerUser(String nickname, Job job, Address address, String profileImgUrl, String profileImgName) {
