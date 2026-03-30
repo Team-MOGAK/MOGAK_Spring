@@ -238,8 +238,7 @@ public class JogakServiceImpl implements JogakService {
             List<Jogak> userRoutineJogaks = jogakRepository.findDailyRoutineJogaks(user, dateToNum(day));
             return JogakConverter.toGetDailyJogakListResponseDto(
                     userRoutineJogaks.stream()
-                            // 여기서 npe 발생
-                            .filter(jogak -> jogak.getEndAt().isAfter(day))
+                            .filter(jogak -> jogak.getEndAt() == null || jogak.getEndAt().isAfter(day))
                             .map(JogakConverter::toDailyJogakResponseDto)
                             .collect(Collectors.toList()));
         }
@@ -290,7 +289,7 @@ public class JogakServiceImpl implements JogakService {
                         .forEach(i -> {
                             log.debug(i.getEndAt() + " , " + date);
                             // 기간에 해당하지 않는 조각은 가져오지 않는 로직
-                            if (i.getEndAt().isAfter(date)) {
+                            if (i.getEndAt() == null || i.getEndAt().isAfter(date)) {
                                 routineJogaks.add(DailyJogak.getFutureRoutineJogakDto(date, i.getTitle()));
                             }
                         });

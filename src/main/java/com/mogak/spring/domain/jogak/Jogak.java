@@ -34,8 +34,10 @@ public class Jogak extends BaseEntity {
     private MogakCategory category;
     @Column(nullable = false)
     private String title;
+    @Builder.Default
     @OneToMany(mappedBy = "jogak")
     private List<JogakPeriod> jogakPeriods = new ArrayList<>();
+    @Builder.Default
     @OneToMany(mappedBy = "jogak")
     private List<DailyJogak> dailyJogaks = new ArrayList<>();
     @Column(nullable = false)
