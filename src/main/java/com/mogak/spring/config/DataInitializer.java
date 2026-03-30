@@ -11,6 +11,7 @@ import com.mogak.spring.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.DayOfWeek;
@@ -22,6 +23,7 @@ import java.util.Optional;
 // 기존의 데이터가 존재하는 경우 중복 입력이 안되게 처리 필요
 @RequiredArgsConstructor
 @Component
+@Profile("!test")
 public class DataInitializer implements ApplicationRunner {
 
     private final MogakRepository mogakRepository;

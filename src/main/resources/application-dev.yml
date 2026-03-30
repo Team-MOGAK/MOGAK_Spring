@@ -16,7 +16,6 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -85,6 +84,10 @@ oauth:
     iss: https://appleid.apple.com
     client-id: ${APPLE_CLIENT_ID}
 #    nonce: ${APPLE_NONCE}
+
+feature:
+  redis:
+    enabled: false
 
 #security:
 #  oauth2:

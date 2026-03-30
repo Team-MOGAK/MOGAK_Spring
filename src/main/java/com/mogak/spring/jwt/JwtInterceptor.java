@@ -3,7 +3,6 @@ package com.mogak.spring.jwt;
 import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.redis.RedisService;
 import feign.Request;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
@@ -27,7 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 public class JwtInterceptor implements HandlerInterceptor {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final RedisService redisService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -42,10 +40,10 @@ public class JwtInterceptor implements HandlerInterceptor {
                 throw new BaseException(ErrorCode.EMPTY_TOKEN);
             }
             log.info("현재 accesstoken : " + accessToken);
-            //로그아웃 여부
-            if (isLogout(accessToken)) {
-                throw new IllegalStateException("Invalid Token");
-            }
+            // Redis-based logout token blacklist is intentionally disabled.
+            // if (isLogout(accessToken)) {
+            //     throw new IllegalStateException("Invalid Token");
+            // }
             //토큰 확인되면  유저 정보 받아오고 authectication 객체 저장
             if (jwtTokenProvider.validateAccessToken(accessToken)) {//access token 검증
                 setAuthentication(accessToken);
@@ -73,11 +71,11 @@ public class JwtInterceptor implements HandlerInterceptor {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    public boolean isLogout(String accessToken) {
-        String values = redisService.getValues(accessToken);
-        if (values != null) {
-            return "logout".equals(values);
-        }
-        return false;
-    }
+//    public boolean isLogout(String accessToken) {
+//        String values = redisService.getValues(accessToken);
+//        if (values != null) {
+//            return "logout".equals(values);
+//        }
+//        return false;
+//    }
 }

@@ -210,9 +210,10 @@ public class MogakServiceImpl implements MogakService {
     public void deleteMogak(Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        List<Jogak> jogaks = mogak.getJogaks();
+        List<Jogak> jogaks = jogakRepository.findAllByMogak(mogak);
         jogaks.forEach(jogak -> jogakService.deleteJogak(jogak.getId()));
-        jogakRepository.deleteAll(jogaks);
+        dailyJogakRepository.flush();
+        jogakRepository.flush();
 
 //        List<Post> posts = postRepository.findAllByMogak(mogak);
 //        if (!posts.isEmpty()) {

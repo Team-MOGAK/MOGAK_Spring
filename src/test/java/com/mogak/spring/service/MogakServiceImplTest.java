@@ -1,139 +1,190 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.repository.JogakRepository;
-import com.mogak.spring.repository.MogakRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import com.mogak.spring.domain.jogak.DailyJogak;
+import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.modarat.Modarat;
+import com.mogak.spring.domain.mogak.Mogak;
+import com.mogak.spring.domain.mogak.MogakCategory;
+import com.mogak.spring.domain.user.Address;
+import com.mogak.spring.domain.user.Job;
+import com.mogak.spring.domain.user.User;
+import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.repository.*;
+import com.mogak.spring.support.ErrorCodeAssertions;
+import com.mogak.spring.support.SecurityContextTestHelper;
+import com.mogak.spring.support.TestFixtureFactory;
+import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
+import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
+import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@SpringBootTest
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
 class MogakServiceImplTest {
 
-    @Autowired
-    private MogakService mogakService;
+    @Mock private UserRepository userRepository;
+    @Mock private ModaratRepository modaratRepository;
+    @Mock private MogakRepository mogakRepository;
+    @Mock private MogakCategoryRepository categoryRepository;
+    @Mock private JogakRepository jogakRepository;
+    @Mock private JogakService jogakService;
+    @Mock private DailyJogakRepository dailyJogakRepository;
 
-    @Autowired
-    private MogakRepository mogakRepository;
+    @InjectMocks
+    private MogakServiceImpl mogakService;
 
-    @Autowired
-    private JogakRepository jogakRepository;
-
-
-//    @Test
-//    @DisplayName("성취율 계산 테스트")
-//    void 성취율_계산_테스트() {
-//        //given
-//        User user = User.builder()
-//                .id(1L)
-//                .nickname("hyun1234!@")
-//                .validation("VALID")
-//                .build();
-//
-//        MogakCategory mogakCategory = MogakCategory.builder()
-//                .id(1)
-//                .name("고옹부")
-//                .build();
-//
-//        Mogak mogak1 = Mogak.builder()
-//                .user(user)
-//                .title("스프링 해야딩")
-//                .category(mogakCategory)
-//                .state("ONGOING")
-//                .startAt(LocalDate.now())
-//                .endAt(LocalDate.now().plusDays(7))
-//                .validation("VALID")
-//                .build();
-//
-//        Jogak jogak1 = Jogak.builder()
-//                .mogak(mogak1)
-//                .state(JogakState.ONGOING.name())
-//                .startTime(LocalDateTime.now())
-//                .build();
-//
-//        Jogak jogak2 = Jogak.builder()
-//                .mogak(mogak1)
-//                .state(JogakState.SUCCESS.name())
-//                .startTime(LocalDateTime.now())
-//                .build();
-//
-//        Jogak jogak3 = Jogak.builder()
-//                .mogak(mogak1)
-//                .state(JogakState.SUCCESS.name())
-//                .startTime(LocalDateTime.now().minusDays(1))
-//                .build();
-//
-//        Jogak jogak4 = Jogak.builder()
-//                .mogak(mogak1)
-//                .state(null)
-//                .startTime(LocalDateTime.now().minusDays(1))
-//                .build();
-//
-//        List<Jogak> jogaks = new ArrayList<>();
-//        jogaks.add(jogak1);
-//        jogaks.add(jogak2);
-//        jogaks.add(jogak3);
-//        jogaks.add(jogak4);
-//
-//        //when
-//        int success = 0;
-//        for (Jogak jogak: jogaks) {
-//            if (jogak.getState() == null) continue;
-//            if (jogak.getState().equals(JogakState.SUCCESS.name())) {
-//                success += 1;
-//            }
-//        }
-//        double rate = (double) success / jogaks.size() * 100;
-//
-//        //then
-//        assertThat(rate).isEqualTo(50.0);
-//    }
-    /*
-    @Test
-    @DisplayName("모각 결과 테스트")
-    public void 모각_결과_테스트() {
-        //given
-        User user = User.builder()
-                .id(1L)
-                .nickname("hyun1234!@")
-                .validation("VALID")
-                .build();
-
-        MogakCategory mogakCategory = MogakCategory.builder()
-                .id(1)
-                .name("고옹부")
-                .build();
-
-        Mogak mogak1 = Mogak.builder()
-                .user(user)
-                .title("스프링 해야딩")
-                .category(mogakCategory)
-                .state("ONGOING")
-                .startAt(LocalDate.now())
-                .endAt(LocalDate.now().plusDays(7))
-                .validation("VALID")
-                .build();
-
-        Jogak jogak1 = Jogak.builder()
-                .mogak(mogak1)
-                .state(JogakState.SUCCESS.name())
-                .startTime(LocalDateTime.now())
-                .endTime(LocalDateTime.now().plusHours(1))
-                .build();
-
-        Jogak jogak2 = Jogak.builder()
-                .mogak(mogak1)
-                .state(JogakState.SUCCESS.name())
-                .startTime(LocalDateTime.now())
-                .endTime(LocalDateTime.now().plusHours(3))
-                .build();
-
-        jogakRepository.save(jogak1);
-        jogakRepository.save(jogak2);
-
-        mogakService.judgeMogakByDay(LocalDate.now().plusDays(3));
-        Optional<Mogak> mogakOptional = mogakRepository.findById(5L);
-        assertThat(mogakOptional.get().getState()).isEqualTo(State.COMPLETE.name());
+    @AfterEach
+    void tearDown() {
+        SecurityContextTestHelper.clear();
     }
 
-     */
+    @Test
+    @DisplayName("유효한 모각 생성 요청을 처리하면 모각을 생성한다")
+    void createSuccess() {
+        Job job = TestFixtureFactory.job("개발/데이터");
+        Address address = TestFixtureFactory.address("서울특별시");
+        User user = TestFixtureFactory.user(1L, "user@test.com", "tester", job, address);
+        Modarat modarat = TestFixtureFactory.modarat(3L, user, "메인 모다라트", "#0000");
+        MogakCategory category = TestFixtureFactory.category(1, "자격증");
+        Mogak saved = TestFixtureFactory.mogak(5L, user, modarat, category, "정보처리기사", "#112233");
+        MogakRequestDto.CreateDto request = MogakRequestDto.CreateDto.builder()
+                .modaratId(3L)
+                .title("정보처리기사")
+                .bigCategory("자격증")
+                .smallCategory("필기")
+                .color("#112233")
+                .build();
 
+        SecurityContextTestHelper.setAuthentication("user@test.com");
+        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(modaratRepository.findById(3L)).thenReturn(Optional.of(modarat));
+        when(mogakRepository.findAllByModaratId(3L)).thenReturn(List.of());
+        when(categoryRepository.findMogakCategoryByName("자격증")).thenReturn(Optional.of(category));
+        when(mogakRepository.save(org.mockito.ArgumentMatchers.any(Mogak.class))).thenReturn(saved);
+
+        MogakResponseDto.GetMogakDto result = mogakService.create(request);
+
+        assertThat(result.getId()).isEqualTo(5L);
+        assertThat(result.getTitle()).isEqualTo("정보처리기사");
+        assertThat(result.getBigCategory().getName()).isEqualTo("자격증");
+    }
+
+    @Test
+    @DisplayName("모다라트에 모각이 8개 있으면 새 모각을 생성할 수 없다")
+    void createThrowsWhenMaxExceeded() {
+        User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
+        Modarat modarat = TestFixtureFactory.modarat(3L, user, "메인 모다라트", "#0000");
+        MogakRequestDto.CreateDto request = MogakRequestDto.CreateDto.builder()
+                .modaratId(3L)
+                .title("정보처리기사")
+                .bigCategory("자격증")
+                .build();
+
+        SecurityContextTestHelper.setAuthentication("user@test.com");
+        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(modaratRepository.findById(3L)).thenReturn(Optional.of(modarat));
+        when(mogakRepository.findAllByModaratId(3L)).thenReturn(
+                java.util.stream.IntStream.range(0, 8)
+                        .mapToObj(i -> TestFixtureFactory.mogak((long) i, user, modarat, TestFixtureFactory.category(1, "자격증"), "모각" + i, "#1234"))
+                        .collect(java.util.stream.Collectors.toList())
+        );
+
+        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.create(request));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.EXCEED_MAX_MOGAK);
+    }
+
+    @Test
+    @DisplayName("모각의 대분류를 변경하면 하위 조각의 카테고리도 함께 변경한다")
+    void updateMogakPropagatesCategoryToJogaks() {
+        User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
+        Modarat modarat = TestFixtureFactory.modarat(1L, user, "모다라트", "#0000");
+        MogakCategory oldCategory = TestFixtureFactory.category(1, "자격증");
+        MogakCategory newCategory = TestFixtureFactory.category(2, "직무공부");
+        Mogak mogak = TestFixtureFactory.mogak(2L, user, modarat, oldCategory, "원래 제목", "#1234");
+        Jogak jogak = TestFixtureFactory.jogak(3L, mogak, "조각", false, LocalDate.now(), null, 0);
+
+        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+        when(categoryRepository.findMogakCategoryByName("직무공부")).thenReturn(Optional.of(newCategory));
+        when(jogakRepository.findAllByMogak(mogak)).thenReturn(List.of(jogak));
+
+        MogakRequestDto.UpdateDto request = MogakRequestDto.UpdateDto.builder()
+                .mogakId(2L)
+                .title("새 제목")
+                .bigCategory("직무공부")
+                .smallCategory("백엔드")
+                .color("#9999")
+                .build();
+
+        MogakResponseDto.GetMogakDto result = mogakService.updateMogak(request);
+
+        assertThat(result.getTitle()).isEqualTo("새 제목");
+        assertThat(mogak.getBigCategory()).isEqualTo(newCategory);
+        assertThat(jogak.getCategory()).isEqualTo(newCategory);
+        assertThat(mogak.getSmallCategory()).isEqualTo("백엔드");
+    }
+
+    @Test
+    @DisplayName("모각을 삭제하면 하위 조각 삭제를 위임한 뒤 모각을 삭제한다")
+    void deleteMogakDeletesChildren() {
+        User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
+        Modarat modarat = TestFixtureFactory.modarat(1L, user, "모다라트", "#0000");
+        MogakCategory category = TestFixtureFactory.category(1, "자격증");
+        Mogak mogak = TestFixtureFactory.mogak(2L, user, modarat, category, "원래 제목", "#1234");
+        Jogak first = TestFixtureFactory.jogak(10L, mogak, "첫 조각", false, LocalDate.now(), null, 0);
+        Jogak second = TestFixtureFactory.jogak(11L, mogak, "둘째 조각", true, LocalDate.now(), null, 0);
+        TestFixtureFactory.attachJogaks(mogak, List.of(first, second));
+
+        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+        when(jogakRepository.findAllByMogak(mogak)).thenReturn(List.of(first, second));
+
+        mogakService.deleteMogak(2L);
+
+        verify(jogakService).deleteJogak(10L);
+        verify(jogakService).deleteJogak(11L);
+        verify(jogakRepository).findAllByMogak(mogak);
+        verify(dailyJogakRepository).flush();
+        verify(jogakRepository).flush();
+        verify(mogakRepository).deleteById(2L);
+    }
+
+    @Test
+    @DisplayName("모각의 조각 목록을 조회하면 종료된 조각을 제외하고 오늘 추가 여부를 반영한다")
+    void getJogaksFiltersExpiredAndMapsAlreadyAdded() {
+        Job job = TestFixtureFactory.job("개발/데이터");
+        Address address = TestFixtureFactory.address("서울특별시");
+        User user = TestFixtureFactory.user(1L, "user@test.com", "tester", job, address);
+        Modarat modarat = TestFixtureFactory.modarat(1L, user, "모다라트", "#0000");
+        MogakCategory category = TestFixtureFactory.category(1, "자격증");
+        Mogak mogak = TestFixtureFactory.mogak(2L, user, modarat, category, "모각", "#1234");
+        LocalDate day = LocalDate.of(2026, 3, 26);
+        Jogak active = TestFixtureFactory.jogak(10L, mogak, "활성 조각", false, day.minusDays(1), null, 1);
+        Jogak expired = TestFixtureFactory.jogak(11L, mogak, "만료 조각", false, day.minusDays(5), day.minusDays(2), 0);
+        DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, active, false);
+
+        TestFixtureFactory.attachJogaks(mogak, List.of(active, expired));
+        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+        when(dailyJogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1))).thenReturn(List.of(dailyJogak));
+        SecurityContextTestHelper.setAuthentication("user@test.com");
+
+        List<JogakResponseDto.GetJogakDto> result = mogakService.getJogaks(2L, day);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getJogakId()).isEqualTo(10L);
+        assertThat(result.get(0).getIsAlreadyAdded()).isTrue();
+    }
 }

@@ -69,7 +69,7 @@ public class JogakController {
     @GetMapping("/daily")
     public ResponseEntity<BaseResponse<JogakResponseDto.GetOneTimeJogakListDto>> getDailyJogaks(
             @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. format: YYYY-MM-DD", example = "2024-02-15")
-            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
+            @RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks(date)));
     }
 
@@ -80,10 +80,10 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/{date}")
+    @GetMapping
     public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getDayJogaks(
             @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. format: YYYY-MM-DD", example = "2024-02-14")
-            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
+            @RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getDayJogaks(date)));
     }
 
@@ -97,9 +97,9 @@ public class JogakController {
     @GetMapping("/routines")
     public ResponseEntity<BaseResponse<List<JogakResponseDto.GetRoutineJogakDto>>> getRoutineJogaks(
             @Parameter(description = "조회를 원하는 첫 날짜를 입력. format: YYYY-MM-DD", example = "2024-02-14")
-            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate startDay,
+            @RequestParam("startDay") @DateTimeFormat(iso = ISO.DATE) LocalDate startDay,
             @Parameter(description = "조회를 원하는 마지막 날짜를 입력. format: YYYY-MM-DD", example = "2024-02-15")
-            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate endDay) {
+            @RequestParam("endDay") @DateTimeFormat(iso = ISO.DATE) LocalDate endDay) {
         return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogaks(startDay, endDay)));
     }
 
