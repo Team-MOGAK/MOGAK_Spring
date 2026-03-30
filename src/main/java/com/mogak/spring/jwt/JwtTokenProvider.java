@@ -3,7 +3,6 @@ package com.mogak.spring.jwt;
 import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.redis.RedisService;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

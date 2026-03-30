@@ -9,13 +9,11 @@ import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
-import com.mogak.spring.redis.RedisService;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
 import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
 import com.mogak.spring.web.dto.authdto.AuthResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,13 +34,6 @@ public class AuthService {
     private final JogakPeriodRepository jogakPeriodRepository;
     private final AppleOAuthUserProvider appleOAuthUserProvider;
     private final JwtTokenProvider jwtTokenProvider;
-    private final RedisService redisService;
-    private static final String LOGOUT_ACCESS_TOKEN_PREFIX = "logout";
-
-    @Value("${jwt.access-token-expiry}")
-    private Long accessTokenExpiry;
-    @Value("${jwt.refresh-token-expiry}")
-    private Long refreshTokenExpiry;
 
     //로그인
     @Transactional
@@ -53,7 +44,8 @@ public class AuthService {
             User findUser = userRepository.findByEmail(appleUser.getEmail())
                     .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
             JwtTokens jwtTokens = issueTokens(findUser); //토큰 발급
-            storeRefresh(appleUser.getEmail(), jwtTokens); //리프레시 토큰 저장
+            // Redis-backed refresh token storage is intentionally disabled for now.
+            // storeRefresh(appleUser.getEmail(), jwtTokens);
             if (!isRegisterNickname(appleUser.getEmail())) { //해당 이메일로 가입한 유저의 닉네임 없으면 회원가입하도록
                 return AppleLoginResponse.builder()
                         .isRegistered(false)
@@ -103,39 +95,26 @@ public class AuthService {
 
     }
 
-    private void storeRefresh(String email, JwtTokens jwtTokens) {
-        redisService.setValues(
-                email,
-                jwtTokens.getRefreshToken(),
-                refreshTokenExpiry
-        );
-    }
-
-    /**
-     * 토큰 갱신
-     */
     @Transactional
     public JwtTokens reissue(String refreshToken) {
         String email = jwtTokenProvider.getEmailByRefresh(refreshToken);
         System.out.println(email);
         User findUser = userRepository.findByEmail(email).orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
-        JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), email);
-        redisService.deleteValues(email);
-        storeRefresh(email, jwtTokens);
-        return jwtTokens;
+        // redisService.deleteValues(email);
+        // storeRefresh(email, jwtTokens);
+        return jwtTokenProvider.refresh(refreshToken, findUser.getId(), email);
     }
 
 
     @Transactional
     public void logout(String accessToken) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName(); //email 갖고오기
-        System.out.println("현재 사용자의 이메일 : " + email);
-        //refresh 삭제
-        if (redisService.getValues(email) != null) {
-            redisService.deleteValues(email);
-        }
-        //블랙리스트 생성 - access저장
-        redisService.setValues(accessToken, "logout", accessTokenExpiry);
+        // Redis blacklist is disabled, so logout only clears the current security context.
+        // String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        // if (redisService.getValues(email) != null) {
+        //     redisService.deleteValues(email);
+        // }
+        // redisService.setValues(accessToken, "logout", accessTokenExpiry);
+        SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
     /**
@@ -173,6 +152,6 @@ public class AuthService {
         mogakRepository.deleteByUserId(deleteUser.getId());
         modaratRepository.deleteByUserId(deleteUser.getId());
         userRepository.deleteById(deleteUser.getId());
-        redisService.deleteValues(deleteUser.getEmail());
+        // redisService.deleteValues(deleteUser.getEmail());
     }
 }
