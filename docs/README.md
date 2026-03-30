@@ -21,17 +21,17 @@
 - `.codex/skills/README.md`: 저장소 전용 스킬 인덱스
 
 ## 빠른 링크
-- [루트 가이드](/Users/hyunseok/IdeaProjects/MOGAK_Spring/AGENTS.md)
-- [Claude Compatibility](/Users/hyunseok/IdeaProjects/MOGAK_Spring/CLAUDE.md)
-- [프로젝트 규약](/Users/hyunseok/IdeaProjects/MOGAK_Spring/docs/operations/policies/PROJECT_CONVENTIONS.md)
-- [외부 리뷰 워크플로우](/Users/hyunseok/IdeaProjects/MOGAK_Spring/docs/operations/policies/EXTERNAL_REVIEW_WORKFLOW.md)
-- [도메인 문서 레지스트리](/Users/hyunseok/IdeaProjects/MOGAK_Spring/docs/operations/policies/DOMAIN_DOCUMENT_REGISTRY.md)
-- [가이던스 스키마](/Users/hyunseok/IdeaProjects/MOGAK_Spring/docs/operations/policies/guidance-schema.md)
-- [Codex Rules](/Users/hyunseok/IdeaProjects/MOGAK_Spring/.codex/rules/README.md)
-- [Codex Workflows](/Users/hyunseok/IdeaProjects/MOGAK_Spring/.codex/workflows/README.md)
-- [Codex Subagents](/Users/hyunseok/IdeaProjects/MOGAK_Spring/.codex/subagents/README.md)
-- [Claude Agents Directory](/Users/hyunseok/IdeaProjects/MOGAK_Spring/.claude/agents)
-- [Codex Skills](/Users/hyunseok/IdeaProjects/MOGAK_Spring/.codex/skills/README.md)
+- [루트 가이드](../AGENTS.md)
+- [Claude Compatibility](../CLAUDE.md)
+- [프로젝트 규약](operations/policies/PROJECT_CONVENTIONS.md)
+- [외부 리뷰 워크플로우](operations/policies/EXTERNAL_REVIEW_WORKFLOW.md)
+- [도메인 문서 레지스트리](operations/policies/DOMAIN_DOCUMENT_REGISTRY.md)
+- [가이던스 스키마](operations/policies/guidance-schema.md)
+- [Codex Rules](../.codex/rules/README.md)
+- [Codex Workflows](../.codex/workflows/README.md)
+- [Codex Subagents](../.codex/subagents/README.md)
+- [Claude Agents Directory](../.claude/agents)
+- [Codex Skills](../.codex/skills/README.md)
 
 ## 비공개 정책 경계
 - 이 저장소에는 공개 가능한 운영 규칙만 둔다.
