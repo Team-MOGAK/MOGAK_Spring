@@ -33,7 +33,7 @@ public class User extends BaseEntity {
     private String profileImgUrl;
     private String profileImgName;
     private String email;
-    @Column(length = 1000)
+    @Column(length = 512)
     private String refreshToken;
     //@Column(nullable = false)
     private String validation;
