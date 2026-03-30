@@ -99,7 +99,6 @@ public class AuthService {
     @Transactional
     public JwtTokens reissue(String refreshToken) {
         String email = jwtTokenProvider.getEmailByRefresh(refreshToken);
-        System.out.println(email);
         User findUser = userRepository.findByEmail(email).orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
         validateStoredRefreshToken(findUser, refreshToken);
 

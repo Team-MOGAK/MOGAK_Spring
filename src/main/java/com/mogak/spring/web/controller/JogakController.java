@@ -80,7 +80,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/{date}")
+    @GetMapping
     public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getDayJogaks(
             @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. format: YYYY-MM-DD", example = "2024-02-14")
             @RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {

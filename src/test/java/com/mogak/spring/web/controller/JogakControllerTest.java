@@ -26,7 +26,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -151,6 +150,34 @@ class JogakControllerTest {
                 .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
                 .andExpect(jsonPath("$.result[0].title").value("루틴 조각"))
                 .andExpect(jsonPath("$.result[0].dailyJogakId").value(-1L));
+    }
+
+    @Test
+    @DisplayName("일별 데일리 조각 조회 요청이 성공하면 query parameter 날짜로 조회 응답 계약을 반환한다")
+    void getDayJogaksContract() throws Exception {
+        when(jogakService.getDayJogaks(LocalDate.of(2026, 3, 26))).thenReturn(JogakResponseDto.GetDailyJogakListDto.builder()
+                .size(1)
+                .dailyJogaks(List.of(JogakResponseDto.GetDailyJogakDto.builder()
+                        .jogakId(1L)
+                        .dailyJogakId(10L)
+                        .mogakTitle("정보처리기사")
+                        .category("자격증")
+                        .title("루틴 조각")
+                        .isRoutine(true)
+                        .isAchievement(false)
+                        .build()))
+                .build());
+
+        mockMvc.perform(get("/api/modarats/mogaks/jogaks")
+                        .param("date", "2026-03-26"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.time").exists())
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andExpect(jsonPath("$.code").value("success"))
+                .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
+                .andExpect(jsonPath("$.result.size").value(1))
+                .andExpect(jsonPath("$.result.dailyJogaks[0].title").value("루틴 조각"));
     }
 
     @Test
