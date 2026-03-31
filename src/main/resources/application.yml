@@ -6,5 +6,7 @@ spring:
       dev: dev
 
 feature:
+  storage:
+    enabled: false
   redis:
     enabled: false

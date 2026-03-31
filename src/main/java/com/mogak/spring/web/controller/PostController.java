@@ -6,8 +6,8 @@ import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.login.AuthHandler;
-import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.PostService;
+import com.mogak.spring.service.StorageService;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,7 +32,7 @@ import static com.mogak.spring.web.dto.postdto.PostResponseDto.*;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
-    private final AwsS3Service awsS3Service;
+    private final StorageService storageService;
     private final AuthHandler authHandler;
     private static String dirName = "img";
 
@@ -51,7 +51,7 @@ public class PostController {
     public ResponseEntity<BaseResponse<CreatePostDto>> createPost(@PathVariable Long mogakId,
                                                                   @RequestPart PostRequestDto.CreatePostDto request,
                                                                   @RequestPart(required = true) List<MultipartFile> multipartFile) {
-        List<CreatePostImgDto> postImgDtoList = awsS3Service.uploadImg(multipartFile, dirName);
+        List<CreatePostImgDto> postImgDtoList = storageService.uploadImg(multipartFile, dirName);
         Post post = postService.create(request, postImgDtoList, mogakId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toCreatePostDto(post)));
     }
@@ -125,7 +125,7 @@ public class PostController {
     public ResponseEntity<BaseResponse<DeletePostDto>> deletePost(@PathVariable Long postId) {
         Post post = postService.findById(postId);
         List<PostImg> postImgList = postService.findAllImgByPost(post);
-        awsS3Service.deleteImg(postImgList, dirName); //s3이미지 객체 삭제
+        storageService.deleteImg(postImgList, dirName); //s3이미지 객체 삭제
         postService.delete(postId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toDeletePostDto()));
     }

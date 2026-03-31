@@ -5,7 +5,7 @@ import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.login.AuthHandler;
-import com.mogak.spring.service.AwsS3Service;
+import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
@@ -31,7 +31,7 @@ import static com.mogak.spring.web.dto.userdto.UserRequestDto.*;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
-    private final AwsS3Service awsS3Service;
+    private final StorageService storageService;
     private final AuthHandler authHandler;
     private static String dirName = "profile";
 
@@ -69,7 +69,7 @@ public class UserController {
                     .imgName(null)
                     .build();
         } else {
-            uploadImageDto = awsS3Service.uploadProfileImg(multipartFile, dirName);
+            uploadImageDto = storageService.uploadProfileImg(multipartFile, dirName);
         }
         UserResponseDto.CreateDto createDto = userService.create(request, uploadImageDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(createDto));
@@ -144,14 +144,14 @@ public class UserController {
         UserRequestDto.UpdateImageDto updateImageDto;
         if (multipartFile == null || multipartFile.isEmpty()) {
             if (profileImgName != null) {
-                awsS3Service.deleteProfileImg(profileImgName);
+                storageService.deleteProfileImg(profileImgName);
             }
             updateImageDto = UpdateImageDto.builder()
                     .imgUrl(null)
                     .imgName(null)
                     .build();
         } else {
-            updateImageDto = awsS3Service.updateProfileImg(multipartFile, profileImgName, dirName);
+            updateImageDto = storageService.updateProfileImg(multipartFile, profileImgName, dirName);
         }
         userService.updateImg(updateImageDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));

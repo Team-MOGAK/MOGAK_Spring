@@ -16,14 +16,6 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
-  cloud:
-    aws:
-      s3:
-        bucket: ${bucket}
-      region:
-        static: ap-northeast-2
-      credentials: #aws의 instanceProfile을 사용함
-        instance-profile: true
   jpa:
     hibernate:
       ddl-auto: update
@@ -49,7 +41,7 @@ springdoc:
     display-request-duration: true
   api-docs:
     path: /api-docs
-  show-actuator: true
+  show-actuator: false
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
   paths-to-match:
@@ -83,6 +75,8 @@ oauth:
 #    nonce: ${APPLE_NONCE}
 
 feature:
+  storage:
+    enabled: false
   redis:
     enabled: false
 

@@ -13,15 +13,6 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
-  cloud:
-    aws:
-      s3:
-        bucket: test-bucket
-      region:
-        static: ap-northeast-2
-      credentials:
-        instance-profile: false
-
   jpa:
     hibernate:
       ddl-auto: create
@@ -62,5 +53,7 @@ server:
   domain: http://localhost
 
 feature:
+  storage:
+    enabled: false
   redis:
     enabled: false
