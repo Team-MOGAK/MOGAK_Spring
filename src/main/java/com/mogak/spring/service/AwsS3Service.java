@@ -12,8 +12,10 @@ import org.marvinproject.image.transform.scale.Scale;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -30,6 +32,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -37,6 +41,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "feature.storage", name = "enabled", havingValue = "true")
 public class AwsS3Service implements StorageService {
+
+    private static final Set<String> SUPPORTED_IMAGE_FORMATS = Set.of("jpg", "jpeg", "png", "gif", "webp");
 
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
@@ -47,19 +53,19 @@ public class AwsS3Service implements StorageService {
     public List<PostImgRequestDto.CreatePostImgDto> uploadImg(List<MultipartFile> multipartFile, String dirName) {
         List<PostImgRequestDto.CreatePostImgDto> postImgRequestDtoList = new ArrayList<>();
         if (multipartFile.isEmpty()) {
-            throw new IllegalArgumentException("이미지가 존재하지 않습니다");
+            throw new BaseException(ErrorCode.NOT_HAVE_IMAGE);
         }
         multipartFile.forEach(img -> {
-            String imgName = createImgName(img.getOriginalFilename(), dirName);
-            String imgUrl = uploadImgToS3(imgName, img);
+            String format = extractImageFormat(img);
+            String imgName = createImgName(format, dirName);
+            String imgUrl = uploadImgToS3(imgName, img, format);
             postImgRequestDtoList.add(PostImgRequestDto.CreatePostImgDto.builder()
                     .imgName(imgName)
                     .imgUrl(imgUrl)
                     .thumbnail(false)
                     .build());
             if (multipartFile.get(0) == img) {
-                String thumbnailImgName = createThumbnailImgName(img.getOriginalFilename(), dirName);
-                String format = createImgFormat(img);
+                String thumbnailImgName = createThumbnailImgName(format, dirName);
                 MultipartFile thumbnailImg = resizeImage(thumbnailImgName, format, img, 200, 200);
                 try (InputStream inputThumbnailStream = thumbnailImg.getInputStream()) {
                     s3Client.putObject(
@@ -67,7 +73,7 @@ public class AwsS3Service implements StorageService {
                                     .bucket(bucket)
                                     .key(thumbnailImgName)
                                     .contentLength(thumbnailImg.getSize())
-                                    .contentType("image/" + format)
+                                    .contentType(contentTypeForFormat(format))
                                     .acl(ObjectCannedACL.PUBLIC_READ)
                                     .build(),
                             RequestBody.fromInputStream(inputThumbnailStream, thumbnailImg.getSize())
@@ -85,14 +91,14 @@ public class AwsS3Service implements StorageService {
         return postImgRequestDtoList;
     }
 
-    private String uploadImgToS3(String imgName, MultipartFile multipartFile) {
+    private String uploadImgToS3(String imgName, MultipartFile multipartFile, String format) {
         try (InputStream inputStream = multipartFile.getInputStream()) {
             s3Client.putObject(
                     PutObjectRequest.builder()
                             .bucket(bucket)
                             .key(imgName)
                             .contentLength(multipartFile.getSize())
-                            .contentType(multipartFile.getContentType())
+                            .contentType(resolveContentType(multipartFile, format))
                             .acl(ObjectCannedACL.PUBLIC_READ)
                             .build(),
                     RequestBody.fromInputStream(inputStream, multipartFile.getSize())
@@ -106,6 +112,9 @@ public class AwsS3Service implements StorageService {
     private MultipartFile resizeImage(String thumbnailImgName, String imgFormat, MultipartFile multipartFile, int width, int height) {
         try {
             BufferedImage image = ImageIO.read(multipartFile.getInputStream());
+            if (image == null) {
+                throw invalidImageRequest();
+            }
             MarvinImage marvinImage = new MarvinImage(image);
             Scale scale = new Scale();
             scale.load();
@@ -125,17 +134,16 @@ public class AwsS3Service implements StorageService {
 
     @Override
     public UserRequestDto.UploadImageDto uploadProfileImg(MultipartFile request, String dirName) {
-        if (request.isEmpty()) {
-            throw new IllegalArgumentException("이미지가 존재하지 않습니다");
-        }
-        String imgName = createImgName(request.getOriginalFilename(), dirName);
+        validateImagePresent(request);
+        String format = extractImageFormat(request);
+        String imgName = createImgName(format, dirName);
         try (InputStream inputStream = request.getInputStream()) {
             s3Client.putObject(
                     PutObjectRequest.builder()
                             .bucket(bucket)
                             .key(imgName)
                             .contentLength(request.getSize())
-                            .contentType(request.getContentType())
+                            .contentType(resolveContentType(request, format))
                             .acl(ObjectCannedACL.PUBLIC_READ)
                             .build(),
                     RequestBody.fromInputStream(inputStream, request.getSize())
@@ -150,14 +158,10 @@ public class AwsS3Service implements StorageService {
                 .build();
     }
 
-    private String createImgFormat(MultipartFile multipartFile) {
-        return multipartFile.getContentType().substring(multipartFile.getContentType().lastIndexOf("/") + 1);
-    }
-
     @Override
     public void deleteImg(List<PostImg> postImgList, String dirName) {
         if (postImgList.isEmpty()) {
-            throw new IllegalArgumentException("삭제할 이미지가 없습니다");
+            throw new BaseException(ErrorCode.NOT_HAVE_IMAGE);
         }
         for (PostImg postImg : postImgList) {
             s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(postImg.getImgName()).build());
@@ -175,17 +179,19 @@ public class AwsS3Service implements StorageService {
 
     @Override
     public UserRequestDto.UpdateImageDto updateProfileImg(MultipartFile request, String profileImgName, String dirName) {
+        validateImagePresent(request);
         if (profileImgName != null) {
             deleteProfileImg(profileImgName);
         }
-        String imgName = createImgName(request.getOriginalFilename(), dirName);
+        String format = extractImageFormat(request);
+        String imgName = createImgName(format, dirName);
         try (InputStream inputStream = request.getInputStream()) {
             s3Client.putObject(
                     PutObjectRequest.builder()
                             .bucket(bucket)
                             .key(imgName)
                             .contentLength(request.getSize())
-                            .contentType(request.getContentType())
+                            .contentType(resolveContentType(request, format))
                             .acl(ObjectCannedACL.PUBLIC_READ)
                             .build(),
                     RequestBody.fromInputStream(inputStream, request.getSize())
@@ -200,14 +206,66 @@ public class AwsS3Service implements StorageService {
                 .build();
     }
 
-    private String createImgName(String imgName, String dirName) {
-        String end = imgName.substring(imgName.indexOf(".") + 1);
-        return dirName + "/" + UUID.randomUUID() + "." + end;
+    private void validateImagePresent(MultipartFile multipartFile) {
+        if (multipartFile == null || multipartFile.isEmpty()) {
+            throw new BaseException(ErrorCode.NOT_HAVE_IMAGE);
+        }
     }
 
-    private String createThumbnailImgName(String imgName, String dirName) {
-        String end = imgName.substring(imgName.indexOf(".") + 1);
-        return dirName + "/" + "s_" + UUID.randomUUID() + "." + end;
+    private String extractImageFormat(MultipartFile multipartFile) {
+        validateImagePresent(multipartFile);
+
+        String originalFilename = multipartFile.getOriginalFilename();
+        if (!StringUtils.hasText(originalFilename)) {
+            throw invalidImageRequest();
+        }
+
+        int extensionIndex = originalFilename.lastIndexOf(".");
+        if (extensionIndex < 0 || extensionIndex == originalFilename.length() - 1) {
+            throw invalidImageRequest();
+        }
+
+        String format = originalFilename.substring(extensionIndex + 1).toLowerCase(Locale.ROOT);
+        if (!SUPPORTED_IMAGE_FORMATS.contains(format)) {
+            throw invalidImageRequest();
+        }
+
+        String contentType = multipartFile.getContentType();
+        if (StringUtils.hasText(contentType) && !contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
+            throw invalidImageRequest();
+        }
+
+        return format;
+    }
+
+    private String resolveContentType(MultipartFile multipartFile, String format) {
+        String contentType = multipartFile.getContentType();
+        if (StringUtils.hasText(contentType)) {
+            return contentType;
+        }
+        return contentTypeForFormat(format);
+    }
+
+    private String contentTypeForFormat(String format) {
+        return switch (format) {
+            case "jpg", "jpeg" -> MediaType.IMAGE_JPEG_VALUE;
+            case "png" -> MediaType.IMAGE_PNG_VALUE;
+            case "gif" -> MediaType.IMAGE_GIF_VALUE;
+            case "webp" -> "image/webp";
+            default -> throw invalidImageRequest();
+        };
+    }
+
+    private String createImgName(String format, String dirName) {
+        return dirName + "/" + UUID.randomUUID() + "." + format;
+    }
+
+    private String createThumbnailImgName(String format, String dirName) {
+        return dirName + "/" + "s_" + UUID.randomUUID() + "." + format;
+    }
+
+    private BaseException invalidImageRequest() {
+        return new BaseException(ErrorCode.INVALID_PARAMETER_ERROR);
     }
 
     private String createObjectUrl(String key) {

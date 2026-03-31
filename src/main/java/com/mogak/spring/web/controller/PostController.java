@@ -112,7 +112,7 @@ public class PostController {
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toUpdatePostDto(post)));
     }
 
-    //Delete - s3 이미지 삭제,댓글 삭제도 구현
+    //Delete - 이미지 삭제,댓글 삭제도 구현
     @Operation(summary = "회고록 삭제", description = "회고록을 삭제합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = @Parameter(name = "postId", description = "게시물 ID"),
@@ -125,7 +125,7 @@ public class PostController {
     public ResponseEntity<BaseResponse<DeletePostDto>> deletePost(@PathVariable Long postId) {
         Post post = postService.findById(postId);
         List<PostImg> postImgList = postService.findAllImgByPost(post);
-        storageService.deleteImg(postImgList, dirName); //s3이미지 객체 삭제
+        storageService.deleteImg(postImgList, dirName);
         postService.delete(postId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toDeletePostDto()));
     }
