@@ -16,6 +16,14 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
+  cloud:
+    aws:
+      s3:
+        bucket: ${bucket}
+      region:
+        static: ap-northeast-2
+      credentials: #aws의 instanceProfile을 사용함
+        instance-profile: true
   jpa:
     hibernate:
       ddl-auto: update
@@ -24,17 +32,6 @@ spring:
       hibernate:
         #        show_sql: true
         format_sql: true
-
-cloud:
-  aws:
-    s3:
-      bucket: ${bucket}
-    region:
-      static: ap-northeast-2
-    stack:
-      auto: false
-    credentials: #aws의 instanceProfile을 사용함
-      instanceProfile: true
 logging.level:
   org.hibernate.SQL: debug
   org.hibernate.type: trace

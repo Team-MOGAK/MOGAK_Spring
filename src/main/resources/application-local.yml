@@ -9,7 +9,7 @@ spring:
       max-request-size: 20MB
 
   datasource:
-    url: jdbc:h2:tcp://localhost/~/test
+    url: jdbc:h2:mem:mogak-local;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password: 1111
     driver-class-name: org.h2.Driver
@@ -21,6 +21,16 @@ spring:
       host: 127.0.0.1
       port: 6379
 #      maxmemory: 128M
+  cloud:
+    aws:
+      s3:
+        bucket: mogak-local-bucket
+      region:
+        static: ap-northeast-2
+      credentials:
+        access-key: local-access-key
+        secret-key: local-secret-key
+        instance-profile: false
   jpa:
     hibernate:
       ddl-auto: create

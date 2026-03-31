@@ -4,16 +4,19 @@
 
 ## Stack Status
 - 현재:
-  - Java 11
-  - Spring Boot 2.7.x
+  - Java 17
+  - Spring Boot 3.5.x
   - 단일 모듈 Gradle
   - Spring Data JPA
   - MySQL / H2 흔적
 - 목표:
-  - Java 21
+  - Java 25
+  - Spring Boot 4.x
   - PostgreSQL
   - Flyway
   - Jakarta 네임스페이스
+- 대규모 스택 업그레이드는 `Spring Boot 2.7.x -> 3.5.x -> 4.x`의 단계형 마이그레이션을 기본 경로로 본다.
+- 현재 기준선은 `Java 17 + Spring Boot 3.5.x`이며, 다음 단계는 `Java 25 + Spring Boot 4.x`다.
 
 ## Implementation Rules
 - 생성자 주입만 사용한다. 필드 주입과 setter 주입은 금지한다.

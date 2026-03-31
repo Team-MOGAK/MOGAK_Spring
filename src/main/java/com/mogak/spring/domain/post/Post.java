@@ -6,7 +6,7 @@ import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 

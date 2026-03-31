@@ -6,7 +6,7 @@ import com.mogak.spring.global.BaseEntity;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Builder

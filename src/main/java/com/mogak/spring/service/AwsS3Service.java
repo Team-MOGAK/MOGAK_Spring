@@ -1,10 +1,5 @@
 package com.mogak.spring.service;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
@@ -21,6 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetUrlRequest;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -34,10 +35,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AwsS3Service {
 
-    @Value("${cloud.aws.s3.bucket}")
+    @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
 
-    private final AmazonS3Client amazonS3Client;
+    private final S3Client s3Client;
     private final PostImgRepository postImgRepository;
 
     // 이미지 파일&썸네일 s3 업로드
@@ -61,12 +62,17 @@ public class AwsS3Service {
                 String thumbnailImgName = createThumbnailImgName(img.getOriginalFilename(), dirName);
                 String format = createImgFormat(img);
                 MultipartFile thumbnailImg = resizeImage(thumbnailImgName, format, img, 200, 200);
-                ObjectMetadata objectThumbnailMetadata = new ObjectMetadata();
-                objectThumbnailMetadata.setContentLength(thumbnailImg.getSize());
-                objectThumbnailMetadata.setContentType("image/" + format);
                 try (InputStream inputThumbnailStream = thumbnailImg.getInputStream()) {
-                    amazonS3Client.putObject(new PutObjectRequest(bucket, thumbnailImgName, inputThumbnailStream, objectThumbnailMetadata)
-                            .withCannedAcl(CannedAccessControlList.PublicRead));
+                    s3Client.putObject(
+                            PutObjectRequest.builder()
+                                    .bucket(bucket)
+                                    .key(thumbnailImgName)
+                                    .contentLength(thumbnailImg.getSize())
+                                    .contentType("image/" + format)
+                                    .acl(ObjectCannedACL.PUBLIC_READ)
+                                    .build(),
+                            RequestBody.fromInputStream(inputThumbnailStream, thumbnailImg.getSize())
+                    );
                     //log.info("s3 썸네일 업로드 성공!");
                 } catch (IOException e) {
                     throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 썸네일 업로드 실패했습니다");
@@ -74,7 +80,7 @@ public class AwsS3Service {
                 //imgdto 저장
                 postImgRequestDtoList.add(PostImgRequestDto.CreatePostImgDto.builder()
                         .imgName(thumbnailImgName)
-                        .imgUrl(amazonS3Client.getUrl(bucket, thumbnailImgName).toString())
+                        .imgUrl(createObjectUrl(thumbnailImgName))
                         .thumbnail(true)
                         .build());
             }
@@ -84,14 +90,19 @@ public class AwsS3Service {
 
     //s3에 이미지 업로드 함수
     private String uploadImgToS3(String imgName, MultipartFile multipartFile, String dirName) {
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(multipartFile.getSize());
-        objectMetadata.setContentType(multipartFile.getContentType());
         //s3 업로드
         try (InputStream inputStream = multipartFile.getInputStream()) {
-            amazonS3Client.putObject(new PutObjectRequest(bucket, imgName, inputStream, objectMetadata)
-                    .withCannedAcl(CannedAccessControlList.PublicRead));
-            return amazonS3Client.getUrl(bucket, imgName).toString();
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(imgName)
+                            .contentLength(multipartFile.getSize())
+                            .contentType(multipartFile.getContentType())
+                            .acl(ObjectCannedACL.PUBLIC_READ)
+                            .build(),
+                    RequestBody.fromInputStream(inputStream, multipartFile.getSize())
+            );
+            return createObjectUrl(imgName);
             //log.info("s3 업로드 성공!");
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
@@ -127,20 +138,25 @@ public class AwsS3Service {
             throw new IllegalArgumentException("이미지가 존재하지 않습니다");
         }
         String imgName = createImgName(request.getOriginalFilename(), dirName);
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(request.getSize());
-        objectMetadata.setContentType(request.getContentType());
         //s3 업로드 - multipartfile 형식으로 업로드 x
         try (InputStream inputStream = request.getInputStream()) {
-            amazonS3Client.putObject(new PutObjectRequest(bucket, imgName, inputStream, objectMetadata)
-                    .withCannedAcl(CannedAccessControlList.PublicRead));
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(imgName)
+                            .contentLength(request.getSize())
+                            .contentType(request.getContentType())
+                            .acl(ObjectCannedACL.PUBLIC_READ)
+                            .build(),
+                    RequestBody.fromInputStream(inputStream, request.getSize())
+            );
             log.info("s3 업로드 성공!");
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
         }
         return UserRequestDto.UploadImageDto.builder()
                 .imgName(imgName)
-                .imgUrl(amazonS3Client.getUrl(bucket, imgName).toString())
+                .imgUrl(createObjectUrl(imgName))
                 .build();
     }
 
@@ -157,7 +173,7 @@ public class AwsS3Service {
         }
         for (PostImg postImg : postImgList) {
             String imgName = postImg.getImgName();
-            amazonS3Client.deleteObject(new DeleteObjectRequest(bucket, imgName));
+            s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(imgName).build());
         }
     }
 
@@ -166,7 +182,7 @@ public class AwsS3Service {
      */
     public void deleteProfileImg(String profileImgName) {
         if (profileImgName != null) {
-            amazonS3Client.deleteObject(new DeleteObjectRequest(bucket, profileImgName));
+            s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(profileImgName).build());
         } else {
             throw new BaseException(ErrorCode.NOT_HAVE_IMAGE);
         }
@@ -179,20 +195,25 @@ public class AwsS3Service {
         }
         //프로필 사진 업로드
         String imgName = createImgName(request.getOriginalFilename(), dirName);
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(request.getSize());
-        objectMetadata.setContentType(request.getContentType());
         //s3 업로드 - multipartfile 형식으로 업로드 x
         try (InputStream inputStream = request.getInputStream()) {
-            amazonS3Client.putObject(new PutObjectRequest(bucket, imgName, inputStream, objectMetadata)
-                    .withCannedAcl(CannedAccessControlList.PublicRead));
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(imgName)
+                            .contentLength(request.getSize())
+                            .contentType(request.getContentType())
+                            .acl(ObjectCannedACL.PUBLIC_READ)
+                            .build(),
+                    RequestBody.fromInputStream(inputStream, request.getSize())
+            );
             log.info("s3 업로드 성공!");
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
         }
         return UserRequestDto.UpdateImageDto.builder()
                 .imgName(imgName)
-                .imgUrl(amazonS3Client.getUrl(bucket, imgName).toString())
+                .imgUrl(createObjectUrl(imgName))
                 .build();
     }
 
@@ -205,6 +226,12 @@ public class AwsS3Service {
     private String createThumbnailImgName(String imgName, String dirName) {
         String end = imgName.substring(imgName.indexOf(".") + 1);
         return dirName + "/" + "s_" + UUID.randomUUID().toString() + "." + end;
+    }
+
+    private String createObjectUrl(String key) {
+        return s3Client.utilities()
+                .getUrl(GetUrlRequest.builder().bucket(bucket).key(key).build())
+                .toExternalForm();
     }
 
 }
