@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.5.5'
+	id 'org.springframework.boot' version '4.0.2'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -32,20 +32,18 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'io.jsonwebtoken:jjwt:0.9.1'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
+	implementation 'org.springframework.boot:spring-boot-starter-jackson'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client' //OAuth
+	implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client' //OAuth
 	implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.30.1' //for apple login
 	implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.70' //for apple login
-	implementation platform("org.springframework.cloud:spring-cloud-dependencies:2025.0.0") //for feignclient, apple login
-	implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.4.0")
+	implementation platform("org.springframework.cloud:spring-cloud-dependencies:2025.1.0") //for feignclient, apple login
+	implementation platform("software.amazon.awssdk:bom:2.27.21")
 	implementation "org.springframework.cloud:spring-cloud-starter-openfeign" //for feignclient, applelogin
-	implementation "io.awspring.cloud:spring-cloud-aws-starter"
-	implementation("io.awspring.cloud:spring-cloud-aws-starter-s3") {
-		exclude group: 'software.amazon.awssdk', module: 'netty-nio-client'
-	}
-	implementation 'software.amazon.awssdk:url-connection-client'
+	implementation "software.amazon.awssdk:s3"
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis' //disabled by default, kept for optional redis re-enable
 	implementation("com.github.codemonstur:embedded-redis:1.4.3") { exclude group: "org.slf4j", module: "slf4j-simple" }
 	implementation 'com.github.downgoon:marvin:1.5.5'
@@ -54,11 +52,13 @@ dependencies {
 	}
 	implementation 'org.springframework:spring-test' //mockmultipartfile을 위함
 	implementation 'javax.xml.bind:jaxb-api:2.3.1'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	runtimeOnly 'com.h2database:h2' //개발환경에서만 h2 db 사용
 	runtimeOnly 'com.mysql:mysql-connector-j'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-jackson-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
 
 	implementation 'org.awaitility:awaitility' // 스케줄러 테스트를 위한 시간 설정 의존성
 }

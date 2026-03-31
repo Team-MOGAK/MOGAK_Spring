@@ -1,6 +1,7 @@
 package com.mogak.spring.exception;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,18 +22,19 @@ public class ErrorResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private final LocalDateTime time = LocalDateTime.now();
-    private HttpStatus status;
+    @JsonIgnore
+    private HttpStatus httpStatus;
     private String code;
     private String message;
 
     public ErrorResponse(ErrorCode errorCode) {
-        this.status = errorCode.getStatus();
+        this.httpStatus = errorCode.getStatus();
         this.code = errorCode.getCode();
         this.message = errorCode.getMessage();
     }
 
     public ErrorResponse(HttpStatus status, String code, String message) {
-        this.status = status;
+        this.httpStatus = status;
         this.code = code;
         this.message = message;
     }
@@ -47,5 +49,9 @@ public class ErrorResponse {
     public String convertToJson() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.registerModule(new JavaTimeModule()).writeValueAsString(this);
+    }
+
+    public String getStatus() {
+        return httpStatus.name();
     }
 }
