@@ -5,20 +5,21 @@
 ## Stack Status
 - 현재:
   - Java 25
-  - Spring Boot 3.5.x
+  - Spring Boot 4.0.2
   - Gradle 9.1.0
   - 단일 모듈 Gradle
   - Spring Data JPA
   - MySQL / H2 흔적
 - 목표:
   - Java 25
-  - Spring Boot 4.x
+  - Spring Boot 4.x 유지
   - PostgreSQL
   - Flyway
   - Jakarta 네임스페이스
 - 대규모 스택 업그레이드는 `Spring Boot 2.7.x -> 3.5.x -> 4.x`의 단계형 마이그레이션을 기본 경로로 본다.
-- 현재 기준선은 `Java 25 + Spring Boot 3.5.x + Gradle 9.1.0`이며, 다음 단계는 `Spring Boot 4.x`다.
-- Java 25 기준선에서 `jdeps` 잔여는 허용 리스크로 기록하고, Boot 4 단계에서 다시 점검한다.
+- 현재 기준선은 `Java 25 + Spring Boot 4.0.2 + Gradle 9.1.0`이다.
+- Java 25 기준선에서 `jdeps` 잔여는 허용 리스크로 기록하고, Boot 4 기준으로 다시 점검한다.
+- storage 기능은 현재 비활성 기본값(`feature.storage.enabled=false`)을 사용하며, 이미지 업로드/삭제 요청은 `503 fail-fast`로 처리한다.
 
 ## Implementation Rules
 - 생성자 주입만 사용한다. 필드 주입과 setter 주입은 금지한다.

@@ -3,9 +3,9 @@
 이 문서는 `MOGAK_Spring`의 공개 스택 마이그레이션 기준 문서다.
 
 ## Scope
-- 현재 기준: Java 25, Spring Boot 3.5.5, Gradle wrapper 9.1.0
+- 현재 기준: Java 25, Spring Boot 4.0.2, Gradle wrapper 9.1.0
 - 최종 목표: Java 25, Spring Boot 4.x
-- 기본 전략: 현재 `3.5.x` 브리지 기준선에서 `4.x` 최종 단계로 올라간다.
+- 기본 전략: `2.7.x -> 3.5.x -> 4.0.2`의 단계형 업그레이드를 완료했고, 이후에는 Boot 4 기준의 후속 정리를 이어간다.
 
 ## Why Staged Migration
 - Spring Boot 2.7.x는 Java 21까지의 호환성을 기준으로 운영되므로 Java 25의 최종 안착 지점이 될 수 없다.
@@ -73,10 +73,12 @@
   - 처리 원칙: Stage 2를 막지 않고, Boot 4 단계에서 다시 검토한다.
 
 ### Stage 3. Boot 4 Finalization
-- Spring Boot를 4.0.x로 올린다.
-- Spring Framework 7, Spring Security 7, Hibernate 7.1, Jackson 3.0 기준으로 코드를 재검증한다.
-- Servlet 6.1, Validation 3.1, Persistence 3.2 기준의 API 변화와 동작 차이를 점검한다.
-- Boot 4에서 지원되지 않는 선택지는 제거한다.
+- Spring Boot를 `4.0.2`로 올렸다.
+- Spring Framework 7, Spring Security 7, Hibernate 7, Jackson 3 기준으로 `clean test`와 `bootRun`을 재검증했다.
+- Spring Security disable DSL은 별도 선행 브랜치에서 정리한 뒤 본 브랜치로 병합했다.
+- storage는 Boot 4 blocker인 AWS 경로를 제거하고 `StorageService` 포트 + `DisabledStorageService` 조합으로 비활성 기본값을 적용했다.
+- 이미지 업로드/삭제 요청은 `feature.storage.enabled=false` 상태에서 `503 STORAGE_DISABLED`로 fail-fast 한다.
+- springdoc은 `3.0.2`와 actuator starter 조합으로 유지했고, `/swagger-ui.html`, `/api-docs`, `/v3/api-docs` 경로를 모두 보장한다.
 
 ## Dependency Direction
 ### Build Tooling
@@ -84,21 +86,21 @@
 - Lombok: `1.18.26 -> JDK 25 지원 버전`
 
 ### Framework
-- Spring Boot: `3.5.5 -> 4.0.x`
-- Spring Cloud BOM: `2025.0.0 -> Boot 4.x 호환 release train`
+- Spring Boot: `3.5.5 -> 4.0.2`
+- Spring Cloud BOM: `2025.0.0 -> 2025.1.0`
 
 ### API Docs
-- `org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8`
-  - Boot 4.x 전환 시 호환 라인을 다시 맞춘다.
+- `org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2`
+  - `/swagger-ui.html`, `/api-docs`, `/v3/api-docs` 경로를 유지한다.
 
 ### JWT
 - `io.jsonwebtoken:jjwt:0.9.1`
   - 최신 API, impl, jackson 분리 구조로 이동을 우선 검토한다.
 
 ### AWS
-- `io.awspring.cloud:spring-cloud-aws-starter:3.4.0`
-- `io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.0`
-  - Boot 4.x 전환 시 호환 라인과 설정 키를 다시 확인한다.
+- 현재 스코프에서는 제거했다.
+  - storage 기능은 비활성 기본값으로 운영한다.
+  - 이미지 업로드/삭제 요청은 `503 STORAGE_DISABLED`로 실패한다.
 
 ### JAXB / Legacy Java EE
 - `javax.xml.bind:jaxb-api:2.3.1`
@@ -113,8 +115,9 @@
 ## Execution Order
 1. 문서와 현재 기준선을 고정한다.
 2. Gradle과 Lombok을 정리한 뒤 Java 25를 활성화했다.
-3. JWT와 남은 deprecated 경고를 정리한다.
-4. 마지막으로 Boot 4.x로 올리고 4.x 전용 회귀 검증을 수행한다.
+3. Spring Security deprecated DSL을 정리하고 storage를 비활성 fail-fast 정책으로 분리했다.
+4. Boot 4.0.2와 springdoc 3.0.2를 적용하고 회귀 검증을 통과했다.
+5. 남은 후속 작업은 JWT 구조 개편과 기타 deprecated 경고 정리다.
 
 ## Verification Gates
 - 각 단계마다 `sh gradlew test`를 기본 게이트로 사용한다.
