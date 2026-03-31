@@ -6,8 +6,8 @@ import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.login.AuthHandler;
-import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.PostService;
+import com.mogak.spring.service.StorageService;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,7 +32,7 @@ import static com.mogak.spring.web.dto.postdto.PostResponseDto.*;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
-    private final AwsS3Service awsS3Service;
+    private final StorageService storageService;
     private final AuthHandler authHandler;
     private static String dirName = "img";
 
@@ -51,7 +51,7 @@ public class PostController {
     public ResponseEntity<BaseResponse<CreatePostDto>> createPost(@PathVariable Long mogakId,
                                                                   @RequestPart PostRequestDto.CreatePostDto request,
                                                                   @RequestPart(required = true) List<MultipartFile> multipartFile) {
-        List<CreatePostImgDto> postImgDtoList = awsS3Service.uploadImg(multipartFile, dirName);
+        List<CreatePostImgDto> postImgDtoList = storageService.uploadImg(multipartFile, dirName);
         Post post = postService.create(request, postImgDtoList, mogakId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toCreatePostDto(post)));
     }
@@ -112,7 +112,7 @@ public class PostController {
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toUpdatePostDto(post)));
     }
 
-    //Delete - s3 이미지 삭제,댓글 삭제도 구현
+    //Delete - 이미지 삭제,댓글 삭제도 구현
     @Operation(summary = "회고록 삭제", description = "회고록을 삭제합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             parameters = @Parameter(name = "postId", description = "게시물 ID"),
@@ -125,7 +125,7 @@ public class PostController {
     public ResponseEntity<BaseResponse<DeletePostDto>> deletePost(@PathVariable Long postId) {
         Post post = postService.findById(postId);
         List<PostImg> postImgList = postService.findAllImgByPost(post);
-        awsS3Service.deleteImg(postImgList, dirName); //s3이미지 객체 삭제
+        storageService.deleteImg(postImgList, dirName);
         postService.delete(postId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toDeletePostDto()));
     }

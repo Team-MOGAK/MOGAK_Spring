@@ -16,12 +16,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -41,22 +42,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(GlobalExceptionHandler.class)
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(MogakController.class)
+@ActiveProfiles("test")
 class MogakControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
-    @MockBean
+    @MockitoBean
     private MogakService mogakService;
-    @MockBean
+    @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
-    @MockBean
+    @MockitoBean
     private JwtInterceptor jwtInterceptor;
-    @MockBean
+    @MockitoBean
     private JwtTokenFilter jwtTokenFilter;
-    @MockBean
+    @MockitoBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
     @BeforeEach

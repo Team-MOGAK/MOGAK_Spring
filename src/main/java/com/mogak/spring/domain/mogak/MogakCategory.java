@@ -2,7 +2,7 @@ package com.mogak.spring.domain.mogak;
 
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Builder
 @Getter

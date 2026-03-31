@@ -4,7 +4,7 @@ import com.mogak.spring.global.BaseEntity;
 import com.mogak.spring.domain.user.User;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Builder
 @Getter

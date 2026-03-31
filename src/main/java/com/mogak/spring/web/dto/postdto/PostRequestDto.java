@@ -1,6 +1,5 @@
 package com.mogak.spring.web.dto.postdto;
 
-import com.sun.istack.NotNull;
 import lombok.Getter;
 
 public class PostRequestDto {

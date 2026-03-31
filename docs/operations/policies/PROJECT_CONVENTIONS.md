@@ -4,16 +4,21 @@
 
 ## Stack Status
 - 현재:
-  - Java 11
-  - Spring Boot 2.7.x
+  - Java 25
+  - Spring Boot 4.0.2
+  - Gradle 9.1.0
   - 단일 모듈 Gradle
   - Spring Data JPA
   - MySQL / H2 흔적
 - 목표:
-  - Java 21
+  - Java 25
+  - Spring Boot 4.x 유지
   - PostgreSQL
-  - Flyway
   - Jakarta 네임스페이스
+- 대규모 스택 업그레이드는 `Spring Boot 2.7.x -> 3.5.x -> 4.x`의 단계형 마이그레이션을 기본 경로로 본다.
+- 현재 기준선은 `Java 25 + Spring Boot 4.0.2 + Gradle 9.1.0`이다.
+- Java 25 기준선에서 `jdeps` 잔여는 허용 리스크로 기록하고, Boot 4 기준으로 다시 점검한다.
+- storage 기능은 현재 비활성 기본값(`feature.storage.enabled=false`)을 사용하며, 이미지 업로드/삭제 요청은 `503 fail-fast`로 처리한다.
 
 ## Implementation Rules
 - 생성자 주입만 사용한다. 필드 주입과 setter 주입은 금지한다.
@@ -71,7 +76,7 @@
 - 목록 조회, 상세 조회, 배치/스케줄러 로직, 응답 조립 구간에서는 N+1 위험을 점검한다.
 - N+1 위험이 있으면 fetch join, `@EntityGraph`, projection, 조회 전용 쿼리 분리 등을 사용한다.
 - 연관 엔티티를 순회하거나 컬렉션 기반 응답을 조립할 때는 쿼리 수 증가를 의식적으로 확인한다.
-- 스키마 변경은 목표 상태 기준으로 Flyway 도입 방향에 맞춘다. 이번 셋업에서 실제 Flyway는 도입하지 않는다.
+- 스키마 변경은 현재 적용된 DB 전략과 검증 경로를 기준으로 일관되게 관리한다.
 
 ## Dependency and Reference Rules
 - Service 간 직접 양방향 의존을 만들지 않는다.

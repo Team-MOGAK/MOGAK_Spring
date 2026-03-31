@@ -13,7 +13,6 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
-
   jpa:
     hibernate:
       ddl-auto: create
@@ -50,21 +49,9 @@ oauth:
   apple:
     iss: https://appleid.apple.com
     client-id: test-client-id
-
-cloud:
-  aws:
-    s3:
-      bucket: test-bucket
-    stack:
-      auto: false
-    region:
-      static: ap-northeast-2
-    credentials:
-      instanceProfile: false
-
 server:
   domain: http://localhost
 
 feature:
-  redis:
+  storage:
     enabled: false

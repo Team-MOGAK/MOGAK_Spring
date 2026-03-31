@@ -2,10 +2,8 @@ package com.mogak.spring.domain.user;
 
 import com.mogak.spring.global.BaseEntity;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Builder
 @Getter

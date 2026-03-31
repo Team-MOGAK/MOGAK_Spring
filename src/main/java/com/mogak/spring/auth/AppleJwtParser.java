@@ -7,9 +7,9 @@ import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import io.jsonwebtoken.*;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Base64Utils;
 
 import java.security.PublicKey;
+import java.util.Base64;
 import java.util.Map;
 
 /*
@@ -29,7 +29,7 @@ public class AppleJwtParser {
     public Map<String, String> parseHeaders(String identityToken) {
         try {
             String encodedHeader = identityToken.split(IDENTITY_TOKEN_VALUE_DELIMITER)[HEADER_INDEX];
-            String decodedHeader = new String(Base64Utils.decodeFromUrlSafeString(encodedHeader));
+            String decodedHeader = new String(Base64.getUrlDecoder().decode(encodedHeader));
             return OBJECT_MAPPER.readValue(decodedHeader, Map.class);
         } catch (JsonProcessingException | ArrayIndexOutOfBoundsException e) { //Token header가 올바르지 않으면 예외발생
             throw new BaseException(ErrorCode.INVALID_APPLE_ID_TOKEN);
@@ -52,4 +52,3 @@ public class AppleJwtParser {
         }
     }
 }
-

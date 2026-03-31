@@ -21,7 +21,7 @@
 | scheduler | `PROJECT_CONVENTIONS.md`, `.codex/rules/testing.md`, `.codex/workflows/full-delivery.md` | yes |
 | storage | `PROJECT_CONVENTIONS.md`, `.codex/rules/persistence.md`, `.codex/workflows/full-delivery.md` | yes |
 | persistence | `PROJECT_CONVENTIONS.md`, `.codex/rules/persistence.md`, `EXTERNAL_REVIEW_WORKFLOW.md` | no |
-| platform-common | `PROJECT_CONVENTIONS.md`, `.codex/rules/spring-core.md`, `.codex/workflows/refactor-guarded.md` | no |
+| platform-common | `PROJECT_CONVENTIONS.md`, `STACK_MIGRATION_GUIDE.md`, `.codex/rules/spring-core.md`, `.codex/workflows/refactor-guarded.md` | no |
 
 ## Consult Triggers
 - 도메인 동작이 바뀌는 구현

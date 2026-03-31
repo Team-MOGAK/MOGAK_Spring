@@ -3,7 +3,6 @@ package com.mogak.spring.auth;
 import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
-import org.apache.http.auth.AuthenticationException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

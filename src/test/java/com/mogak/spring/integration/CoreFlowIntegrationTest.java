@@ -10,9 +10,9 @@ import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
-import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.service.MogakService;
+import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
@@ -27,9 +27,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -56,8 +57,8 @@ class CoreFlowIntegrationTest {
     @Autowired private JogakPeriodRepository jogakPeriodRepository;
     @Autowired private EntityManager entityManager;
 
-    @org.springframework.boot.test.mock.mockito.MockBean private AppleOAuthUserProvider appleOAuthUserProvider;
-    @org.springframework.boot.test.mock.mockito.MockBean private AwsS3Service awsS3Service;
+    @MockitoBean private AppleOAuthUserProvider appleOAuthUserProvider;
+    @MockitoBean private StorageService storageService;
 
     @AfterEach
     void tearDown() {

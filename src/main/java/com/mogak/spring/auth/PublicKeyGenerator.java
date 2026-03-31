@@ -4,9 +4,9 @@ import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Base64Utils;
 
 import java.math.BigInteger;
+import java.util.Base64;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -31,8 +31,8 @@ public class PublicKeyGenerator {
     }
 
     private PublicKey generatePublicKeyWithApplePublicKey(ApplePublicKey publicKey) {
-        byte[] nBytes = Base64Utils.decodeFromUrlSafeString(publicKey.getN());
-        byte[] eBytes = Base64Utils.decodeFromUrlSafeString(publicKey.getE());
+        byte[] nBytes = Base64.getUrlDecoder().decode(publicKey.getN());
+        byte[] eBytes = Base64.getUrlDecoder().decode(publicKey.getE());
 
         BigInteger n = new BigInteger(POSITIVE_SIGN_NUMBER, nBytes);
         BigInteger e = new BigInteger(POSITIVE_SIGN_NUMBER, eBytes);

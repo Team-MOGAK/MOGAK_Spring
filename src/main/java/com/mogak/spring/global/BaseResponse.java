@@ -1,5 +1,6 @@
 package com.mogak.spring.global;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -19,7 +20,8 @@ public class BaseResponse<T> {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private final LocalDateTime time = LocalDateTime.now();
-    private final HttpStatus status;
+    @JsonIgnore
+    private final HttpStatus httpStatus;
     private final String code;
     private final String message;
 
@@ -28,7 +30,7 @@ public class BaseResponse<T> {
 
     // 요청에 성공한 경우
     public BaseResponse(T result) {
-        this.status = SUCCESS.getStatus();
+        this.httpStatus = SUCCESS.getStatus();
         this.code = SUCCESS.getCode();
         this.message = SUCCESS.getMessage();
         this.result = result;
@@ -36,9 +38,12 @@ public class BaseResponse<T> {
 
     // 요청에 실패한 경우
     public BaseResponse(ErrorCode code) {
-        this.status = code.getStatus();
+        this.httpStatus = code.getStatus();
         this.code = code.getCode();
         this.message = code.getMessage();
     }
-    
+
+    public String getStatus() {
+        return httpStatus.name();
+    }
 }

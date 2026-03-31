@@ -2,8 +2,8 @@ package com.mogak.spring.web.dto.userdto;
 
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class UserRequestDto {
     @Builder
@@ -18,6 +18,8 @@ public class UserRequestDto {
 
     @Builder
     @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class CreateUserDto {
         @NotBlank(message = "닉네임을 입력해주세요.")
         @Size(min = 2, max = 10, message = "닉네임은 2자 이상, 10자 이하입니다.")

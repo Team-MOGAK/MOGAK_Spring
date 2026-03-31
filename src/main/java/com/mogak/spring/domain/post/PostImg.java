@@ -3,7 +3,7 @@ package com.mogak.spring.domain.post;
 import com.mogak.spring.global.BaseEntity;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Builder
 @Getter

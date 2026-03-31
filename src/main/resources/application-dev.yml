@@ -12,10 +12,6 @@ spring:
     url: ${url}
     username: ${rds_username}
     password: ${rds_password}
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
   jpa:
     hibernate:
       ddl-auto: update
@@ -24,17 +20,6 @@ spring:
       hibernate:
         #        show_sql: true
         format_sql: true
-
-cloud:
-  aws:
-    s3:
-      bucket: ${bucket}
-    region:
-      static: ap-northeast-2
-    stack:
-      auto: false
-    credentials: #aws의 instanceProfile을 사용함
-      instanceProfile: true
 logging.level:
   org.hibernate.SQL: debug
   org.hibernate.type: trace
@@ -52,7 +37,7 @@ springdoc:
     display-request-duration: true
   api-docs:
     path: /api-docs
-  show-actuator: true
+  show-actuator: false
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
   paths-to-match:
@@ -86,7 +71,7 @@ oauth:
 #    nonce: ${APPLE_NONCE}
 
 feature:
-  redis:
+  storage:
     enabled: false
 
 #security:

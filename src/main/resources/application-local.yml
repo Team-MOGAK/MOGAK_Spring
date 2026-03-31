@@ -9,18 +9,13 @@ spring:
       max-request-size: 20MB
 
   datasource:
-    url: jdbc:h2:tcp://localhost/~/test
+    url: jdbc:h2:mem:mogak-local;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password: 1111
     driver-class-name: org.h2.Driver
   devtools:
     livereload:
       enabled: true
-  data:
-    redis:
-      host: 127.0.0.1
-      port: 6379
-#      maxmemory: 128M
   jpa:
     hibernate:
       ddl-auto: create
@@ -41,7 +36,7 @@ springdoc:
     display-request-duration: true
   api-docs:
     path: /api-docs
-  show-actuator: true
+  show-actuator: false
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
   paths-to-match:
@@ -70,7 +65,7 @@ oauth:
 #    nonce: ${APPLE_NONCE}
 
 feature:
-  redis:
+  storage:
     enabled: false
 
 #security:

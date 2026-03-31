@@ -7,7 +7,7 @@ import com.mogak.spring.jwt.JwtInterceptor;
 import com.mogak.spring.jwt.JwtTokenFilter;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.login.AuthHandler;
-import com.mogak.spring.service.AwsS3Service;
+import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
@@ -17,13 +17,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -41,27 +42,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(GlobalExceptionHandler.class)
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(UserController.class)
+@ActiveProfiles("test")
 class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
-    @MockBean
-    private AwsS3Service awsS3Service;
-    @MockBean
+    @MockitoBean
+    private StorageService storageService;
+    @MockitoBean
     private AuthHandler authHandler;
-    @MockBean
+    @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
-    @MockBean
+    @MockitoBean
     private JwtInterceptor jwtInterceptor;
-    @MockBean
+    @MockitoBean
     private JwtTokenFilter jwtTokenFilter;
-    @MockBean
+    @MockitoBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
     @AfterEach
@@ -125,7 +126,7 @@ class UserControllerTest {
                 MediaType.IMAGE_PNG_VALUE,
                 "png".getBytes()
         );
-        when(awsS3Service.uploadProfileImg(any(), any())).thenReturn(UserRequestDto.UploadImageDto.builder()
+        when(storageService.uploadProfileImg(any(), any())).thenReturn(UserRequestDto.UploadImageDto.builder()
                 .imgName("profile.png")
                 .imgUrl("https://cdn/profile.png")
                 .build());
@@ -146,6 +147,40 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
                 .andExpect(jsonPath("$.result.userId").value(1L))
                 .andExpect(jsonPath("$.result.nickname").value("tester"));
+    }
+
+    @Test
+    @DisplayName("이미지가 포함된 회원 가입 요청은 storage 비활성 상태에서 503 에러 응답 계약을 반환한다")
+    void createUserMultipartStorageDisabledContract() throws Exception {
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                "{\"userId\":1,\"nickname\":\"tester\",\"job\":\"개발/데이터\",\"address\":\"서울특별시\"}".getBytes()
+        );
+        MockMultipartFile image = new MockMultipartFile(
+                "multipartFile",
+                "profile.png",
+                MediaType.IMAGE_PNG_VALUE,
+                "png".getBytes()
+        );
+
+        doThrow(new com.mogak.spring.exception.BaseException(ErrorCode.STORAGE_DISABLED))
+                .when(storageService).uploadProfileImg(any(), any());
+
+        mockMvc.perform(multipart("/api/users/join")
+                        .file(requestPart)
+                        .file(image)
+                        .with(request -> {
+                            request.setMethod("POST");
+                            return request;
+                        }))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.time").exists())
+                .andExpect(jsonPath("$.status").value("SERVICE_UNAVAILABLE"))
+                .andExpect(jsonPath("$.code").value("Z006"))
+                .andExpect(jsonPath("$.message").value("스토리지 기능이 비활성화되어 있습니다"));
     }
 
     @Test
@@ -186,5 +221,32 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.status").value("CONFLICT"))
                 .andExpect(jsonPath("$.code").value("U006"))
                 .andExpect(jsonPath("$.message").value("이미 존재하는 유저입니다"));
+    }
+
+    @Test
+    @DisplayName("프로필 이미지 변경 요청은 storage 비활성 상태에서 503 에러 응답 계약을 반환한다")
+    void updateImageStorageDisabledContract() throws Exception {
+        MockMultipartFile image = new MockMultipartFile(
+                "multipartFile",
+                "profile.png",
+                MediaType.IMAGE_PNG_VALUE,
+                "png".getBytes()
+        );
+
+        doThrow(new com.mogak.spring.exception.BaseException(ErrorCode.STORAGE_DISABLED))
+                .when(storageService).updateProfileImg(any(), any(), any());
+
+        mockMvc.perform(multipart("/api/users/profile/image")
+                        .file(image)
+                        .with(request -> {
+                            request.setMethod("PUT");
+                            return request;
+                        }))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.time").exists())
+                .andExpect(jsonPath("$.status").value("SERVICE_UNAVAILABLE"))
+                .andExpect(jsonPath("$.code").value("Z006"))
+                .andExpect(jsonPath("$.message").value("스토리지 기능이 비활성화되어 있습니다"));
     }
 }
