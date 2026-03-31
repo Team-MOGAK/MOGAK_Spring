@@ -18,7 +18,6 @@
 - Spring Boot 4.x
 - Gradle 9.1+
 - PostgreSQL
-- Flyway
 - Jakarta namespace only
 
 ## Repo-Specific Hotspots
@@ -128,5 +127,5 @@
 
 ## Non-Goals
 - 이번 가이드는 실제 버전 변경을 자동 수행하지 않는다.
-- 이번 가이드는 PostgreSQL/Flyway 실마이그레이션을 즉시 수행하지 않는다.
+- 이번 가이드는 PostgreSQL 실마이그레이션을 즉시 수행하지 않는다.
 - 비공개 정책이 필요한 인증/보안 판단 기준은 이 문서에 적지 않는다.
