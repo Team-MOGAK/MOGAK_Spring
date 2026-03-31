@@ -10,9 +10,9 @@ import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
-import com.mogak.spring.service.AwsS3Service;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.service.MogakService;
+import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
@@ -58,7 +58,7 @@ class CoreFlowIntegrationTest {
     @Autowired private EntityManager entityManager;
 
     @MockitoBean private AppleOAuthUserProvider appleOAuthUserProvider;
-    @MockitoBean private AwsS3Service awsS3Service;
+    @MockitoBean private StorageService storageService;
 
     @AfterEach
     void tearDown() {
