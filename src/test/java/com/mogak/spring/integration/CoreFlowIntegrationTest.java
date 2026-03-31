@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
@@ -56,8 +57,8 @@ class CoreFlowIntegrationTest {
     @Autowired private JogakPeriodRepository jogakPeriodRepository;
     @Autowired private EntityManager entityManager;
 
-    @org.springframework.boot.test.mock.mockito.MockBean private AppleOAuthUserProvider appleOAuthUserProvider;
-    @org.springframework.boot.test.mock.mockito.MockBean private AwsS3Service awsS3Service;
+    @MockitoBean private AppleOAuthUserProvider appleOAuthUserProvider;
+    @MockitoBean private AwsS3Service awsS3Service;
 
     @AfterEach
     void tearDown() {
