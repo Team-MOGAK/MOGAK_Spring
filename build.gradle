@@ -8,9 +8,9 @@ group = 'com.mogak'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '17'
+	sourceCompatibility = '25'
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(25)
 	}
 }
 
@@ -42,11 +42,16 @@ dependencies {
 	implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.4.0")
 	implementation "org.springframework.cloud:spring-cloud-starter-openfeign" //for feignclient, applelogin
 	implementation "io.awspring.cloud:spring-cloud-aws-starter"
-	implementation "io.awspring.cloud:spring-cloud-aws-starter-s3"
+	implementation("io.awspring.cloud:spring-cloud-aws-starter-s3") {
+		exclude group: 'software.amazon.awssdk', module: 'netty-nio-client'
+	}
+	implementation 'software.amazon.awssdk:url-connection-client'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis' //disabled by default, kept for optional redis re-enable
 	implementation("it.ozimov:embedded-redis:0.7.2") { exclude group: "org.slf4j", module: "slf4j-simple" }
 	implementation 'com.github.downgoon:marvin:1.5.5'
-	implementation 'com.github.downgoon:MarvinPlugins:1.5.5'
+	implementation('com.github.downgoon:MarvinPlugins:1.5.5') {
+		exclude group: 'org.bytedeco', module: 'javacv-platform'
+	}
 	implementation 'org.springframework:spring-test' //mockmultipartfile을 위함
 	implementation 'javax.xml.bind:jaxb-api:2.3.1'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -60,4 +65,8 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.release = 25
 }

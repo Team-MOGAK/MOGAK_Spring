@@ -3,7 +3,7 @@
 이 문서는 `MOGAK_Spring`의 공개 스택 마이그레이션 기준 문서다.
 
 ## Scope
-- 현재 기준: Java 17, Spring Boot 3.5.5, Gradle wrapper 8.10.2
+- 현재 기준: Java 25, Spring Boot 3.5.5, Gradle wrapper 9.1.0
 - 최종 목표: Java 25, Spring Boot 4.x
 - 기본 전략: 현재 `3.5.x` 브리지 기준선에서 `4.x` 최종 단계로 올라간다.
 
@@ -45,8 +45,8 @@
 - Legacy/nullability:
   - `build.gradle`의 `javax.xml.bind:jaxb-api:2.3.1`
 - Build/JDK pins:
-  - `build.gradle`의 Java toolchain 17
-  - `gradle/wrapper/gradle-wrapper.properties`의 Gradle 8.10.2
+  - `build.gradle`의 Java toolchain 25
+  - `gradle/wrapper/gradle-wrapper.properties`의 Gradle 9.1.0
 
 ## Mandatory Migration Path
 ### Stage 0. Baseline Lock
@@ -63,11 +63,14 @@
 - 남은 작업은 JWT 교체 검토와 deprecated 경고 정리다.
 
 ### Stage 2. Java 25 Enablement
-- Gradle wrapper를 9.1+로 올린다.
-- Lombok을 JDK 25 지원 버전으로 올린다.
-- Java toolchain과 release target을 25로 올린다.
-- JDK 25에서 애플리케이션 기동과 테스트를 확인한다.
-- `jdeps`로 JDK 내부 API 의존 여부를 확인한다.
+- Gradle wrapper를 `9.1.0`으로 올렸다.
+- Java toolchain과 release target을 `25`로 올렸다.
+- JDK 25에서 테스트와 애플리케이션 기동을 확인했다.
+- AWS S3는 `url-connection-client` 기준으로 정리했고, `MarvinPlugins`의 `javacv-platform` 전이 의존성은 제거했다.
+- `jdeps` 기준 잔여는 허용 리스크로 기록한다.
+  - 현재 잔여: `aspectjweaver`, `guava`, `reactor-core`, `netty-*`, `spring-core`
+  - 의미: 현재 Boot 3.5/JPA auditing/optional Redis 경로와 프레임워크 내부 구현에 걸친 잔여다.
+  - 처리 원칙: Stage 2를 막지 않고, Boot 4 단계에서 다시 검토한다.
 
 ### Stage 3. Boot 4 Finalization
 - Spring Boot를 4.0.x로 올린다.
@@ -77,7 +80,7 @@
 
 ## Dependency Direction
 ### Build Tooling
-- Gradle wrapper: `8.10.2 -> 9.1+`
+- Gradle wrapper: `9.1.0`
 - Lombok: `1.18.26 -> JDK 25 지원 버전`
 
 ### Framework
@@ -109,7 +112,7 @@
 
 ## Execution Order
 1. 문서와 현재 기준선을 고정한다.
-2. Gradle과 Lombok을 정리한 뒤 Java 25를 활성화한다.
+2. Gradle과 Lombok을 정리한 뒤 Java 25를 활성화했다.
 3. JWT와 남은 deprecated 경고를 정리한다.
 4. 마지막으로 Boot 4.x로 올리고 4.x 전용 회귀 검증을 수행한다.
 
@@ -117,6 +120,7 @@
 - 각 단계마다 `sh gradlew test`를 기본 게이트로 사용한다.
 - Stage 1 이후에는 인증, Swagger/OpenAPI, S3 업로드, Apple login 연동, Feign 호출 경로를 우선 검증한다.
 - Stage 2 이후에는 JDK 25에서 테스트와 애플리케이션 기동을 모두 확인한다.
+- Stage 2의 `jdeps` 잔여는 허용 리스크로 남기고, 직접 통제 가능한 전이 의존성 정리만 적용한다.
 - Stage 3 이후에는 직렬화, JPA 매핑, 보안 필터 동작, 설정 바인딩 회귀를 확인한다.
 
 ## Non-Goals

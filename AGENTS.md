@@ -21,8 +21,9 @@
 
 ## 현재 상태와 목표 상태
 - 현재 상태:
-  - Java 17
+  - Java 25
   - Spring Boot 3.5.x
+  - Gradle 9.1.0
   - 단일 모듈 Gradle 프로젝트
   - JPA 기반
   - MySQL / H2 흔적 존재
@@ -34,7 +35,8 @@
   - Jakarta 네임스페이스 기준
 - 새 코드와 리팩터링은 목표 상태 방향을 우선한다.
 - 대규모 스택 업그레이드는 `Spring Boot 2.7.x -> 3.5.x -> 4.x`의 단계형 마이그레이션을 기본 경로로 본다.
-- 현재 기준선은 `Java 17 + Spring Boot 3.5.x`이며, 다음 단계는 `Java 25 + Spring Boot 4.x`다.
+- 현재 기준선은 `Java 25 + Spring Boot 3.5.x + Gradle 9.1.0`이며, 다음 단계는 `Spring Boot 4.x`다.
+- Java 25 기준선에서 `jdeps` 잔여는 허용 리스크로 기록하고, Stage 3에서 다시 정리한다.
 - 단, 이번 저장소 셋업은 실제 마이그레이션을 수행하지 않는다.
 
 ## Java / Spring 핵심 원칙
