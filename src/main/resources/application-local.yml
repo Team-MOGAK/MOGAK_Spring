@@ -16,11 +16,6 @@ spring:
   devtools:
     livereload:
       enabled: true
-  data:
-    redis:
-      host: 127.0.0.1
-      port: 6379
-#      maxmemory: 128M
   jpa:
     hibernate:
       ddl-auto: create
@@ -71,8 +66,6 @@ oauth:
 
 feature:
   storage:
-    enabled: false
-  redis:
     enabled: false
 
 #security:

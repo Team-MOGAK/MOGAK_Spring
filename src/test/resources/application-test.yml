@@ -55,5 +55,3 @@ server:
 feature:
   storage:
     enabled: false
-  redis:
-    enabled: false

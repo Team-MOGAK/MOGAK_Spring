@@ -12,10 +12,6 @@ spring:
     url: ${url}
     username: ${rds_username}
     password: ${rds_password}
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
   jpa:
     hibernate:
       ddl-auto: update
@@ -76,8 +72,6 @@ oauth:
 
 feature:
   storage:
-    enabled: false
-  redis:
     enabled: false
 
 #security:

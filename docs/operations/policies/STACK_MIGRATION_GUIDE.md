@@ -68,8 +68,8 @@
 - JDK 25에서 테스트와 애플리케이션 기동을 확인했다.
 - AWS S3는 `url-connection-client` 기준으로 정리했고, `MarvinPlugins`의 `javacv-platform` 전이 의존성은 제거했다.
 - `jdeps` 기준 잔여는 허용 리스크로 기록한다.
-  - 현재 잔여: `aspectjweaver`, `guava`, `reactor-core`, `netty-*`, `spring-core`
-  - 의미: 현재 Boot 3.5/JPA auditing/optional Redis 경로와 프레임워크 내부 구현에 걸친 잔여다.
+  - 현재 잔여: `aspectjweaver`, `netty-*`, `spring-core`
+  - 의미: 현재 Boot 3.5/JPA auditing, AWS SDK 경로, 프레임워크 내부 구현에 걸친 잔여다.
   - 처리 원칙: Stage 2를 막지 않고, Boot 4 단계에서 다시 검토한다.
 
 ### Stage 3. Boot 4 Finalization

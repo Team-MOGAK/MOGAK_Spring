@@ -40,10 +40,6 @@ public class JwtInterceptor implements HandlerInterceptor {
                 throw new BaseException(ErrorCode.EMPTY_TOKEN);
             }
             log.info("현재 accesstoken : " + accessToken);
-            // Redis-based logout token blacklist is intentionally disabled.
-            // if (isLogout(accessToken)) {
-            //     throw new IllegalStateException("Invalid Token");
-            // }
             //토큰 확인되면  유저 정보 받아오고 authectication 객체 저장
             if (jwtTokenProvider.validateAccessToken(accessToken)) {//access token 검증
                 setAuthentication(accessToken);
@@ -70,12 +66,4 @@ public class JwtInterceptor implements HandlerInterceptor {
         Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
-
-//    public boolean isLogout(String accessToken) {
-//        String values = redisService.getValues(accessToken);
-//        if (values != null) {
-//            return "logout".equals(values);
-//        }
-//        return false;
-//    }
 }

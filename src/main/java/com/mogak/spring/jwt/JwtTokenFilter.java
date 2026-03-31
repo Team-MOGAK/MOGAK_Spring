@@ -36,10 +36,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             if(accessToken==null){
                 throw new BaseException(ErrorCode.EMPTY_TOKEN);
             }
-            // Redis-based logout token blacklist is intentionally disabled.
-            // if (isLogout(accessToken)) {
-            //     throw new BaseException(ErrorCode.LOGOUT_TOKEN);
-            // }
             if(jwtTokenProvider.validateAccessToken(accessToken)){//access token 검증
                 setAuthentication(accessToken); //검증된 토큰만 securitycontextholder에 토큰 등록
                 log.info("인증 성공");
@@ -61,17 +57,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
-
-//    /**
-//     * 해당 토큰이 로그아웃된 토큰인지 체크
-//     */
-//    public boolean isLogout(String accessToken){
-//        String values = redisService.getValues(accessToken);
-//        if(values != null){
-//            return "logout".equals(values);
-//        }
-//        return false;
-//    }
 
     /**
      * 해당 uri는 filter x

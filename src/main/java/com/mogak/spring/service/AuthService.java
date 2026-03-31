@@ -44,8 +44,6 @@ public class AuthService {
             User findUser = userRepository.findByEmail(appleUser.getEmail())
                     .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
             JwtTokens jwtTokens = issueTokens(findUser); //토큰 발급
-            // Redis-backed refresh token storage is intentionally disabled for now.
-            // storeRefresh(appleUser.getEmail(), jwtTokens);
             if (!isRegisterNickname(appleUser.getEmail())) { //해당 이메일로 가입한 유저의 닉네임 없으면 회원가입하도록
                 return AppleLoginResponse.builder()
                         .isRegistered(false)
@@ -151,7 +149,6 @@ public class AuthService {
         mogakRepository.deleteByUserId(deleteUser.getId());
         modaratRepository.deleteByUserId(deleteUser.getId());
         userRepository.deleteById(deleteUser.getId());
-        // redisService.deleteValues(deleteUser.getEmail());
     }
 
     private void validateStoredRefreshToken(User user, String refreshToken) {
