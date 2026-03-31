@@ -38,8 +38,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client' //OAuth
-	implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.30.1' //for apple login
-	implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.70' //for apple login
+	implementation 'com.nimbusds:nimbus-jose-jwt:9.30.1' //for apple login
+	implementation 'org.bouncycastle:bcpkix-jdk15on:1.70' //for apple login
 	implementation platform("org.springframework.cloud:spring-cloud-dependencies:2025.1.0") //for feignclient, apple login
 	implementation platform("software.amazon.awssdk:bom:2.27.21")
 	implementation "org.springframework.cloud:spring-cloud-starter-openfeign" //for feignclient, applelogin
