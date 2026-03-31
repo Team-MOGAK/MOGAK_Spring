@@ -1,18 +1,19 @@
 package com.mogak.spring.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.util.StringUtils;
 import redis.embedded.RedisServer;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Profile("local")
@@ -20,24 +21,30 @@ import java.io.InputStreamReader;
 @ConditionalOnProperty(prefix = "feature.redis", name = "enabled", havingValue = "true")
 public class EmbeddedRedisConfig {
 
+    private static final String REDIS_PING_COMMAND = "*1\r\n$4\r\nPING\r\n";
+    private static final String REDIS_PONG_PREFIX = "+PONG";
+
     @Value("${spring.data.redis.port}")
     private int redisPort;
-//    @Value("${spring.data.redis.maxmemory}")
-//    private String redisMaxMemory;
 
     private RedisServer redisServer;
-//    @PostConstruct
-//    public void redisServer() throws IOException {
-//        redisServer = new RedisServer(port);
-//        redisServer.start();
-//    }
 
     @PostConstruct
     public void startRedis() {
         try {
-            int port = isRedisRunning() ? findAvailablePort() : redisPort;
-            redisServer = new RedisServer(port);
-            redisServer.start();
+            if (isPortAvailable(redisPort)) {
+                redisServer = new RedisServer(redisPort);
+                redisServer.start();
+                log.info("Embedded Redis started on port {}", redisPort);
+                return;
+            }
+
+            if (isRedisResponsive(redisPort)) {
+                log.info("Redis is already reachable on port {}. Embedded Redis startup skipped.", redisPort);
+                return;
+            }
+
+            log.warn("Port {} is occupied by a non-Redis process. Embedded Redis startup skipped.", redisPort);
         } catch (Exception e) {
             log.warn("Embedded Redis start skipped", e);
         }
@@ -46,55 +53,35 @@ public class EmbeddedRedisConfig {
     @PreDestroy
     public void stopRedis() {
         if (redisServer != null) {
-            redisServer.stop();
-        }
-    }
-
-    /**
-     * Embedded Redis가 현재 실행중인지 확인
-     */
-    private boolean isRedisRunning() throws IOException {
-        return isRunning(executeGrepProcessCommand(redisPort));
-    }
-
-    /**
-     * 현재 PC/서버에서 사용가능한 포트 조회
-     */
-    public int findAvailablePort() throws IOException {
-        for (int port = 10000; port <= 65535; port++) {
-            Process process = executeGrepProcessCommand(port);
-            if (!isRunning(process)) {
-                return port;
+            try {
+                redisServer.stop();
+            } catch (IOException e) {
+                log.warn("Embedded Redis stop skipped", e);
             }
         }
-
-        throw new IllegalArgumentException("Not Found Available port: 10000 ~ 65535");
     }
 
-    /**
-     * 해당 port를 사용중인 프로세스 확인하는 sh 실행
-     */
-    private Process executeGrepProcessCommand(int port) throws IOException {
-        String command = String.format("netstat -nao | find \"LISTEN\" | find \"%d\"", port);
-        String[] shell = {"cmd.exe", "/y", "/c", command};
-        return Runtime.getRuntime().exec(shell);
-    }
-
-    /**
-     * 해당 Process가 현재 실행중인지 확인
-     */
-    private boolean isRunning(Process process) {
-        String line;
-        StringBuilder pidInfo = new StringBuilder();
-
-        try (BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            while ((line = input.readLine()) != null) {
-                pidInfo.append(line);
-            }
-        } catch (Exception e) {
-            log.debug("Failed to inspect redis process", e);
+    private boolean isPortAvailable(int port) {
+        try (ServerSocket socket = new ServerSocket()) {
+            socket.setReuseAddress(false);
+            socket.bind(new InetSocketAddress("127.0.0.1", port));
+            return true;
+        } catch (IOException e) {
+            return false;
         }
+    }
 
-        return !StringUtils.isEmpty(pidInfo.toString());
+    private boolean isRedisResponsive(int port) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress("127.0.0.1", port), 200);
+            socket.setSoTimeout(200);
+            socket.getOutputStream().write(REDIS_PING_COMMAND.getBytes(StandardCharsets.US_ASCII));
+            socket.getOutputStream().flush();
+
+            byte[] response = socket.getInputStream().readNBytes(16);
+            return new String(response, StandardCharsets.US_ASCII).startsWith(REDIS_PONG_PREFIX);
+        } catch (IOException e) {
+            return false;
+        }
     }
 }

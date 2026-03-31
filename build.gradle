@@ -47,7 +47,7 @@ dependencies {
 	}
 	implementation 'software.amazon.awssdk:url-connection-client'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis' //disabled by default, kept for optional redis re-enable
-	implementation("it.ozimov:embedded-redis:0.7.2") { exclude group: "org.slf4j", module: "slf4j-simple" }
+	implementation("com.github.codemonstur:embedded-redis:1.4.3") { exclude group: "org.slf4j", module: "slf4j-simple" }
 	implementation 'com.github.downgoon:marvin:1.5.5'
 	implementation('com.github.downgoon:MarvinPlugins:1.5.5') {
 		exclude group: 'org.bytedeco', module: 'javacv-platform'
