@@ -216,10 +216,10 @@ CREATE TABLE IF NOT EXISTS report (
 
 CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
 CREATE INDEX IF NOT EXISTS idx_users_nickname ON users (nickname);
-CREATE INDEX IF NOT EXISTS idx_job_name ON job (name);
-CREATE INDEX IF NOT EXISTS idx_address_name ON address (name);
-CREATE INDEX IF NOT EXISTS idx_mogak_category_name ON mogak_category (name);
-CREATE INDEX IF NOT EXISTS idx_period_days ON period (days);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_job_name ON job (name);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_address_name ON address (name);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_mogak_category_name ON mogak_category (name);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_period_days ON period (days);
 CREATE INDEX IF NOT EXISTS idx_mogak_modarat_id ON mogak (modarat_id);
 CREATE INDEX IF NOT EXISTS idx_jogak_mogak_id ON jogak (mogak_id);
 CREATE INDEX IF NOT EXISTS idx_daily_jogak_jogak_id ON daily_jogak (jogak_id);

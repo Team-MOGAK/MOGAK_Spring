@@ -1,7 +1,6 @@
-package com.mogak.spring.config;
+package com.mogak.spring.repository;
 
 import com.mogak.spring.domain.mogak.MogakCategory;
-import com.mogak.spring.repository.MogakCategoryRepository;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,13 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 
 @DataJpaTest
 @ActiveProfiles("test")
-class DataInitializerTest {
+class MogakCategoryRepositoryTest {
 
     @Autowired
     private MogakCategoryRepository mogakCategoryRepository;
@@ -47,13 +45,12 @@ class DataInitializerTest {
         Optional<MogakCategory> certificationInJPA = mogakCategoryRepository.findMogakCategoryByName("자격증");
         Optional<MogakCategory> jobStudyInJPA = mogakCategoryRepository.findMogakCategoryByName("직무공부");
         Optional<MogakCategory> noDataInJPA = mogakCategoryRepository.findMogakCategoryByName("노우");
-        System.out.println(noDataInJPA);
 
         //then
         SoftAssertions softly = new SoftAssertions();
-        softly.assertThat(certificationInJPA.get().getName()).isEqualTo("자격증");
-        softly.assertThat(jobStudyInJPA.get().getName()).isEqualTo("직무공부");
-        softly.assertThatThrownBy(noDataInJPA::get).isInstanceOf(NoSuchElementException.class);
+        softly.assertThat(certificationInJPA).hasValueSatisfying(category -> softly.assertThat(category.getName()).isEqualTo("자격증"));
+        softly.assertThat(jobStudyInJPA).hasValueSatisfying(category -> softly.assertThat(category.getName()).isEqualTo("직무공부"));
+        softly.assertThat(noDataInJPA).isEmpty();
         softly.assertAll();
     }
 

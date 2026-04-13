@@ -69,7 +69,7 @@ feign:
 oauth:
   apple:
     iss: https://appleid.apple.com
-    client-id: ${APPLE_CLIENT_ID:test-client-id}
+    client-id: ${APPLE_CLIENT_ID}
 #    nonce: ${APPLE_NONCE}
 
 feature:
