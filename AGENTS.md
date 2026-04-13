@@ -31,7 +31,6 @@
   - Java 25
   - Spring Boot 4.x 유지
   - PostgreSQL
-  - Flyway 기반 스키마 관리
   - Jakarta 네임스페이스 기준
 - 새 코드와 리팩터링은 목표 상태 방향을 우선한다.
 - 대규모 스택 업그레이드는 `Spring Boot 2.7.x -> 3.5.x -> 4.x`의 단계형 마이그레이션을 기본 경로로 본다.
