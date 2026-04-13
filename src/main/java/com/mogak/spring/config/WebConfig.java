@@ -51,8 +51,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/v3/api-docs",
                         "/swagger-resources/**",
                         "/webjars/**",
-                        "/api-docs/**",
-                        "/h2-console/*"
+                        "/api-docs/**"
                 );
     }
 

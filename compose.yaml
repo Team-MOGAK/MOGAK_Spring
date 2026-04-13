@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: mogak-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mogak_local
+      POSTGRES_USER: mogak
+      POSTGRES_PASSWORD: mogak
+      TZ: Asia/Seoul
+    ports:
+      - "5435:5432"
+    volumes:
+      - mogak-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mogak -d mogak_local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mogak-postgres-data:
