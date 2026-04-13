@@ -9,20 +9,25 @@ spring:
       max-request-size: 20MB
 
   datasource:
-    url: jdbc:h2:mem:mogak-local;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password: 1111
-    driver-class-name: org.h2.Driver
+    url: ${LOCAL_DB_URL:jdbc:postgresql://localhost:5435/mogak_local}
+    username: ${LOCAL_DB_USERNAME:mogak}
+    password: ${LOCAL_DB_PASSWORD:mogak}
+    driver-class-name: org.postgresql.Driver
   devtools:
     livereload:
       enabled: true
   jpa:
+    defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         #        show_sql: true
         format_sql: true
+  sql:
+    init:
+      mode: always
+      data-locations: file:./sql/seed/*.sql
 logging.level:
   org.hibernate.SQL: debug
   org.hibernate.type: trace
@@ -49,7 +54,7 @@ jwt:
   refresh-token-expiry: 2678400000 #31일
 
 server:
-  domain: ${SERVER_DOMAIN}
+  domain: ${SERVER_DOMAIN:http://localhost:8080}
 
 feign:
   client:
@@ -61,7 +66,7 @@ feign:
 oauth:
   apple:
     iss: https://appleid.apple.com
-    client-id: ${APPLE_CLIENT_ID}
+    client-id: ${APPLE_CLIENT_ID:test-client-id}
 #    nonce: ${APPLE_NONCE}
 
 feature:

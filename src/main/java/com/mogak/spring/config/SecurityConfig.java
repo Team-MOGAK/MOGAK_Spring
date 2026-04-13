@@ -30,7 +30,7 @@ public class SecurityConfig {
 //                .authorizeRequests()
 //                .antMatchers("/","/swagger-ui/index.html","/swagger-ui.html",
 //                        "/swagger-ui/**", "/v3/api-docs", "/swagger-resources/**",
-//                        "/webjars/**","/api-docs/**","/h2-console/*",
+//                        "/webjars/**","/api-docs/**",
 //                        "/api/auth/login","/api/auth/logout","/api/auth/refresh",
 //                        "/api/users/nickname/verify","/api/users/join").permitAll()
 //                .antMatchers("/api/**").hasRole("USER")
