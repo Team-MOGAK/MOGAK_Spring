@@ -1,0 +1,95 @@
+name: Close linked issue
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  issues: write
+
+jobs:
+  close-linked-issue:
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Close issue referenced in PR title
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title;
+            const prNumber = context.payload.pull_request.number;
+            const issueNumbers = [
+              ...new Set([...title.matchAll(/#(\d+)/g)].map((match) => Number(match[1]))),
+            ];
+
+            if (issueNumbers.length === 0) {
+              core.info(`No issue reference found in PR title: ${title}`);
+              return;
+            }
+
+            const { owner, repo } = context.repo;
+            const closeFailures = [];
+
+            for (const issue_number of issueNumbers) {
+              let issue;
+
+              try {
+                const response = await github.rest.issues.get({
+                  owner,
+                  repo,
+                  issue_number,
+                });
+                issue = response.data;
+              } catch (error) {
+                if (error.status === 404 || error.status === 410) {
+                  core.warning(`#${issue_number} could not be found. Skipping.`);
+                  continue;
+                }
+
+                closeFailures.push(`#${issue_number}: failed to load issue (${error.message})`);
+                continue;
+              }
+
+              if (issue.pull_request) {
+                core.warning(`#${issue_number} is a pull request, not an issue. Skipping.`);
+                continue;
+              }
+
+              if (issue.state === "closed") {
+                core.info(`#${issue_number} is already closed. Skipping.`);
+                continue;
+              }
+
+              try {
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number,
+                  state: "closed",
+                  state_reason: "completed",
+                });
+
+                core.info(`Closed issue #${issue_number} from merged PR #${prNumber}.`);
+              } catch (error) {
+                closeFailures.push(`#${issue_number}: failed to close issue (${error.message})`);
+                continue;
+              }
+
+              try {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number,
+                  body: `Merged PR #${prNumber} and closed this issue automatically.`,
+                });
+              } catch (error) {
+                core.warning(`Closed #${issue_number}, but could not add a comment: ${error.message}`);
+              }
+            }
+
+            if (closeFailures.length > 0) {
+              core.setFailed(`Failed to close linked issue(s): ${closeFailures.join("; ")}`);
+            }
