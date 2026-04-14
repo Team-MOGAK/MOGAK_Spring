@@ -1,5 +1,6 @@
 package com.mogak.spring.jwt;
 
+import com.mogak.spring.security.SecurityAuthority;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
@@ -23,7 +24,7 @@ class JwtAuthenticationProviderTest {
     @Test
     @DisplayName("필수 access claim이 있으면 AuthenticatedUser 인증으로 변환한다")
     void authenticatesAccessTokenWithRequiredClaims() {
-        String token = encodeToken(JwtTokenProvider.ACCESS_TOKEN_TYPE, JwtTokenProvider.ROLE_PENDING);
+        String token = encodeToken(JwtTokenProvider.ACCESS_TOKEN_TYPE, SecurityAuthority.PENDING.getAuthority());
 
         Authentication authentication = jwtAuthenticationProvider.authenticate(new JwtAuthenticationToken(token));
 
@@ -32,14 +33,14 @@ class JwtAuthenticationProviderTest {
         AuthenticatedUser principal = (AuthenticatedUser) authentication.getPrincipal();
         assertThat(principal.getUserId()).isEqualTo(10L);
         assertThat(principal.getUsername()).isEqualTo("pending@test.com");
-        assertThat(principal.getRole()).isEqualTo(JwtTokenProvider.ROLE_PENDING);
-        assertThat(authentication.getAuthorities()).extracting("authority").containsExactly(JwtTokenProvider.ROLE_PENDING);
+        assertThat(principal.getRole()).isEqualTo(SecurityAuthority.PENDING.getAuthority());
+        assertThat(authentication.getAuthorities()).extracting("authority").containsExactly(SecurityAuthority.PENDING.getAuthority());
     }
 
     @Test
     @DisplayName("token_type이 access가 아니면 인증을 거부한다")
     void rejectsNonAccessTokenType() {
-        String token = encodeToken(JwtTokenProvider.REFRESH_TOKEN_TYPE, JwtTokenProvider.ROLE_USER);
+        String token = encodeToken(JwtTokenProvider.REFRESH_TOKEN_TYPE, SecurityAuthority.USER.getAuthority());
 
         assertThatThrownBy(() -> jwtAuthenticationProvider.authenticate(new JwtAuthenticationToken(token)))
                 .isInstanceOf(JwtAuthenticationException.class)
@@ -73,7 +74,7 @@ class JwtAuthenticationProviderTest {
         String token = jwtTokenCodec.encode(JwtClaimsSet.builder()
                 .claim("id", 10L)
                 .claim("email", "pending@test.com")
-                .claim("role", JwtTokenProvider.ROLE_PENDING)
+                .claim("role", SecurityAuthority.PENDING.getAuthority())
                 .claim("token_type", JwtTokenProvider.ACCESS_TOKEN_TYPE)
                 .subject("pending@test.com")
                 .issuedAt(now.minusSeconds(120))

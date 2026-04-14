@@ -8,6 +8,7 @@ import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.security.ApiAccessDeniedHandler;
 import com.mogak.spring.security.ApiAuthenticationEntryPoint;
+import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.service.AuthService;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
@@ -44,7 +45,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest({UserController.class, AuthController.class})
 @Import({
         SecurityConfig.class,
-        WebConfig.class,
         JwtAuthenticationProvider.class,
         ApiAuthenticationEntryPoint.class,
         ApiAccessDeniedHandler.class,
@@ -122,7 +122,7 @@ class SecurityConfigTest {
     @Test
     @DisplayName("ROLE_USER access token은 회원 등록 API에 접근할 수 없다")
     void joinRejectsUserRole() throws Exception {
-        mockMvc.perform(joinRequest(JwtTokenProvider.ROLE_USER)
+        mockMvc.perform(joinRequest(SecurityAuthority.USER.getAuthority())
                         .header("Origin", "http://localhost")
                         .with(request -> {
                             request.setServerName("api.localhost");
@@ -146,7 +146,7 @@ class SecurityConfigTest {
                                 .build())
                         .build());
 
-        mockMvc.perform(joinRequest(JwtTokenProvider.ROLE_PENDING))
+        mockMvc.perform(joinRequest(SecurityAuthority.PENDING.getAuthority()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.result.userId").value(10L))
                 .andExpect(jsonPath("$.result.tokens.accessToken").value("access-token"));
@@ -189,7 +189,7 @@ class SecurityConfigTest {
         return jwtTokenCodec.encode(JwtClaimsSet.builder()
                 .claim("id", 10L)
                 .claim("email", "user@test.com")
-                .claim("role", JwtTokenProvider.ROLE_USER)
+                .claim("role", SecurityAuthority.USER.getAuthority())
                 .claim("token_type", JwtTokenProvider.ACCESS_TOKEN_TYPE)
                 .subject("user@test.com")
                 .issuedAt(now.minusSeconds(120))

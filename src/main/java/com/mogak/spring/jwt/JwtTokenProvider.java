@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.security.SecurityAuthority;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -34,11 +35,9 @@ public class JwtTokenProvider {
     public static final String refresh_header = "RefreshToken";
     public static final String ACCESS_TOKEN_TYPE = "access";
     public static final String REFRESH_TOKEN_TYPE = "refresh";
-    public static final String ROLE_USER = "ROLE_USER";
-    public static final String ROLE_PENDING = "ROLE_PENDING";
 
     public String createAccessToken(Long userId, String email) {
-        return createAccessToken(userId, email, ROLE_USER);
+        return createAccessToken(userId, email, SecurityAuthority.USER.getAuthority());
     }
 
     public String createAccessToken(Long userId, String email, String role) {
@@ -114,7 +113,7 @@ public class JwtTokenProvider {
      * 토큰 갱신
      */
     public JwtTokens refresh(String refreshToken, Long userId, String email) {
-        return refresh(refreshToken, userId, email, ROLE_USER);
+        return refresh(refreshToken, userId, email, SecurityAuthority.USER.getAuthority());
     }
 
     public JwtTokens refresh(String refreshToken, Long userId, String email, String role) {

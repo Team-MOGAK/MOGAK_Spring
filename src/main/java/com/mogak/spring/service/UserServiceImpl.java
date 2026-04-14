@@ -12,6 +12,7 @@ import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.util.Regex;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
@@ -138,7 +139,7 @@ public class UserServiceImpl implements UserService {
         if (user.getNickname() != null && !user.getNickname().isEmpty() && user.getRole() != null) {
             return user.getRole().getKey();
         }
-        return JwtTokenProvider.ROLE_PENDING;
+        return SecurityAuthority.PENDING.getAuthority();
     }
 
 

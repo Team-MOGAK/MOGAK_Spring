@@ -1,6 +1,7 @@
 package com.mogak.spring.jwt;
 
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class JwtTokenProviderTest {
 
         assertThat(((Number) parsed.getClaim("id")).longValue()).isEqualTo(1L);
         assertThat(parsed.getClaimAsString("email")).isEqualTo("user@test.com");
-        assertThat(parsed.getClaimAsString("role")).isEqualTo(JwtTokenProvider.ROLE_USER);
+        assertThat(parsed.getClaimAsString("role")).isEqualTo(SecurityAuthority.USER.getAuthority());
         assertThat(parsed.getClaimAsString("token_type")).isEqualTo(JwtTokenProvider.ACCESS_TOKEN_TYPE);
         assertThat(parsed.getSubject()).isEqualTo("user@test.com");
     }

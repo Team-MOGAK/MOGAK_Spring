@@ -1,7 +1,7 @@
 package com.mogak.spring.support;
 
 import com.mogak.spring.jwt.AuthenticatedUser;
-import com.mogak.spring.jwt.JwtTokenProvider;
+import com.mogak.spring.security.SecurityAuthority;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -11,7 +11,7 @@ public final class SecurityContextTestHelper {
     }
 
     public static void setAuthentication(String email) {
-        setAuthentication(1L, email, JwtTokenProvider.ROLE_USER);
+        setAuthentication(1L, email, SecurityAuthority.USER.getAuthority());
     }
 
     public static void setAuthentication(Long userId, String email, String role) {

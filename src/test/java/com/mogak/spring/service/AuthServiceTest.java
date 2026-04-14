@@ -13,6 +13,7 @@ import com.mogak.spring.repository.JogakRepository;
 import com.mogak.spring.repository.ModaratRepository;
 import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
@@ -66,7 +67,7 @@ class AuthServiceTest {
         when(appleOAuthUserProvider.getAppleUser("apple-id-token")).thenReturn(new AppleUserResponse("user@test.com"));
         when(userRepository.existsByEmail("user@test.com")).thenReturn(true);
         when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
-        when(jwtTokenProvider.createAccessToken(1L, "user@test.com", JwtTokenProvider.ROLE_USER)).thenReturn("access-token");
+        when(jwtTokenProvider.createAccessToken(1L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken("user@test.com")).thenReturn("refresh-token");
 
         AppleLoginResponse response = authService.appleLogin(request);
@@ -97,7 +98,7 @@ class AuthServiceTest {
 
         when(jwtTokenProvider.getEmailByRefresh("stored-refresh-token")).thenReturn("user@test.com");
         when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
-        when(jwtTokenProvider.refresh("stored-refresh-token", 1L, "user@test.com", JwtTokenProvider.ROLE_USER)).thenReturn(
+        when(jwtTokenProvider.refresh("stored-refresh-token", 1L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn(
                 JwtTokens.builder()
                         .accessToken("new-access-token")
                         .refreshToken("rotated-refresh-token")

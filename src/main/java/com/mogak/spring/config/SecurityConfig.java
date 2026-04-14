@@ -5,6 +5,7 @@ import com.mogak.spring.jwt.JwtAuthenticationProvider;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.security.ApiAccessDeniedHandler;
 import com.mogak.spring.security.ApiAuthenticationEntryPoint;
+import com.mogak.spring.security.SecurityAuthority;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +44,13 @@ public class SecurityConfig {
             "/api/users/nickname/verify",
             "/api/users/login"
     );
+    private static final List<String> CORS_ALLOWED_METHODS = List.of(
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH"
+    );
 
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
     private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
@@ -66,11 +74,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(PUBLIC_API_PATTERNS.toArray(String[]::new)).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/join")
-                        .hasAuthority(JwtTokenProvider.ROLE_PENDING)
+                        .hasAuthority(SecurityAuthority.PENDING.getAuthority())
                         .requestMatchers("/api/auth/logout")
                         .authenticated()
                         .requestMatchers("/api/**")
-                        .hasAnyAuthority(JwtTokenProvider.ROLE_USER, "ROLE_ADMIN")
+                        .hasAnyAuthority(
+                                SecurityAuthority.USER.getAuthority(),
+                                SecurityAuthority.ADMIN.getAuthority())
                         .anyRequest().permitAll())
                 .addFilterBefore(
                         new JwtAuthenticationFilter(
@@ -85,13 +95,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedOriginPatterns(List.of(domain));
-        corsConfiguration.setAllowedMethods(List.of(
-                HttpMethod.GET.name(),
-                HttpMethod.POST.name(),
-                HttpMethod.PUT.name(),
-                HttpMethod.DELETE.name(),
-                HttpMethod.PATCH.name()
-        ));
+        corsConfiguration.setAllowedMethods(CORS_ALLOWED_METHODS);
         corsConfiguration.setAllowedHeaders(List.of("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", corsConfiguration);

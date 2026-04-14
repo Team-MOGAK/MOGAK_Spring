@@ -11,6 +11,7 @@ import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.repository.*;
+import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
 import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
 import com.mogak.spring.web.dto.authdto.AuthResponse;
@@ -161,6 +162,6 @@ public class AuthService {
         if (isRegisterNickname(user) && user.getRole() != null) {
             return user.getRole().getKey();
         }
-        return JwtTokenProvider.ROLE_PENDING;
+        return SecurityAuthority.PENDING.getAuthority();
     }
 }
