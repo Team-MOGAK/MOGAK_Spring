@@ -2,11 +2,9 @@ package com.mogak.spring.login;
 
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Value;
+import com.mogak.spring.jwt.JwtTokenCodec;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -15,33 +13,30 @@ import org.springframework.web.util.WebUtils;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Date;
+import java.time.Instant;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class JwtTokenHandler {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    private final JwtTokenCodec jwtTokenCodec;
 
     public static final String AUTHORIZATION = "Authorization";
 
     private final long TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 365; // 24시간 * 30 => 한달
 
     public String createJwtToken(String userPk) {
-        Date now = new Date();
-        return Jwts.builder()
-                .setHeaderParam("type","jwt")
-                .claim("userPk", userPk)
-                .setIssuedAt(now)
-                .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALID_TIME))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
-                .compact();
+        Instant now = Instant.now();
+        return jwtTokenCodec.encode(JwtClaimsSet.builder()
+                .claim("id", userPk)
+                .issuedAt(now)
+                .expiresAt(now.plusMillis(TOKEN_VALID_TIME))
+                .build());
     }
 
     public String getUserPk(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
-                .getBody().get("userPk", String.class);
+        return jwtTokenCodec.decode(token).getClaimAsString("id");
     }
 
     public String resolveAccessToken(HttpServletRequest request) {
@@ -57,14 +52,7 @@ public class JwtTokenHandler {
     }
 
     public void validateToken(String token) {
-        try {
-            token = parseToken(token);
-            if (!validateExpireToken(token)) {
-                throw new BaseException(ErrorCode.EXPIRE_TOKEN);
-            }
-        } catch (RuntimeException e) {
-            throw new BaseException(ErrorCode.WRONG_TOKEN);
-        }
+        jwtTokenCodec.decode(parseToken(token));
     }
 
     private String parseToken(String token) {
@@ -72,18 +60,6 @@ public class JwtTokenHandler {
             return token.substring("Bearer ".length());
         }
         throw new BaseException(ErrorCode.WRONG_TOKEN);
-    }
-
-    /**
-     * 토큰 만료 검증
-     * */
-    private boolean validateExpireToken(String jwtToken) {
-        try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
-            return !claims.getBody().getExpiration().before(new Date());
-        } catch (Exception e) {
-            throw new BaseException(ErrorCode.EXPIRE_TOKEN);
-        }
     }
 
     public Long getUserId() {

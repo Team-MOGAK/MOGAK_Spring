@@ -1,19 +1,17 @@
 package com.mogak.spring.jwt;
 
 import com.mogak.spring.exception.AuthException;
-import com.mogak.spring.exception.BaseException;
-import com.mogak.spring.global.ErrorCode;
-import io.jsonwebtoken.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -23,68 +21,57 @@ import java.util.TimeZone;
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
     @Value("${jwt.access-token-expiry}")
     private Long accessTokenValidTime;
     @Value("${jwt.refresh-token-expiry}")
     private Long refreshTokenValidTime;
     private final CustomUserDetailsService userDetailsService;
+    private final JwtTokenCodec jwtTokenCodec;
 
     public static final String access_header = "Authorization";
     public static final String refresh_header = "RefreshToken";
 
     public String createAccessToken(Long userId, String email) {
-        Date now = new Date();
-        return Jwts.builder()
-                .setHeaderParam("type", "jwt")
+        java.time.Instant now = java.time.Instant.now();
+        return jwtTokenCodec.encode(org.springframework.security.oauth2.jwt.JwtClaimsSet.builder()
                 .claim("id", userId)
                 .claim("email", email)
-                .setSubject(email)
-                .setIssuedAt(now)
-                .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidTime))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
-                .compact();
+                .subject(email)
+                .issuedAt(now)
+                .expiresAt(now.plusMillis(accessTokenValidTime))
+                .build());
     }
 
     public String createRefreshToken(String email) {
-        Date now = new Date();
-        return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(now)
-                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidTime))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
-                .compact();
+        java.time.Instant now = java.time.Instant.now();
+        return jwtTokenCodec.encode(org.springframework.security.oauth2.jwt.JwtClaimsSet.builder()
+                .subject(email)
+                .issuedAt(now)
+                .expiresAt(now.plusMillis(refreshTokenValidTime))
+                .build());
     }
 
     /**
      * access token 검증
      */
     public boolean validateAccessToken(String accessToken) {
-        try {
-            parseToken(accessToken);
-        } catch (ExpiredJwtException e) {
-            throw new AuthException(ErrorCode.EXPIRE_TOKEN);
-        } catch (SignatureException | UnsupportedJwtException e) {
-            throw new AuthException(ErrorCode.WRONG_TOKEN);
-        }
+        parseToken(accessToken);
         return true;
     }
 
     /**
      * claims 추출
      */
-    public Jws<Claims> parseToken(String token) {
-        Jws<Claims> jws = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
-        return jws;
+    public Jwt parseToken(String token) {
+        return jwtTokenCodec.decode(token);
     }
 
     public boolean isExpired(String token, Date date) {
         try {
-            Jws<Claims> claims = parseToken(token);
-            return !claims.getBody().getExpiration().before(date); //만료시간이 현재시간 이전이 아니라면 true, 만료되었다면 false
-        } catch (Exception e) {
-            throw new BaseException(ErrorCode.EXPIRE_TOKEN);
+            Jwt claims = parseToken(token);
+            return claims.getExpiresAt() != null && !claims.getExpiresAt().isBefore(date.toInstant()); //만료시간이 현재시간 이전이 아니라면 true, 만료되었다면 false
+        } catch (AuthException e) {
+            throw e;
         }
     }
 
@@ -111,8 +98,7 @@ public class JwtTokenProvider {
 
     //user email 검색
     public String getUserPk(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
-                .getBody().get("email").toString();
+        return parseToken(token).getClaimAsString("email");
     }
 
     /**
@@ -138,14 +124,8 @@ public class JwtTokenProvider {
     /**
      * refresh 토큰 이메일 추출
      */
-    public String getEmailByRefresh(String refreshToken) throws JwtException {
-        try {
-            Jws<Claims> claims = parseToken(refreshToken);
-            String email = claims.getBody().getSubject();
-            return email;
-        } catch (JwtException e) {
-            throw new JwtException("Invalid Refresh Token");
-        }
+    public String getEmailByRefresh(String refreshToken) {
+        return parseToken(refreshToken).getSubject();
     }
 
     /**
