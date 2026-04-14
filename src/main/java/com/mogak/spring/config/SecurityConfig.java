@@ -1,10 +1,10 @@
 package com.mogak.spring.config;
 
-import com.mogak.spring.jwt.JwtAccessDeniedHandler;
-import com.mogak.spring.jwt.JwtAuthenticationEntryPoint;
 import com.mogak.spring.jwt.JwtAuthenticationFilter;
 import com.mogak.spring.jwt.JwtAuthenticationProvider;
 import com.mogak.spring.jwt.JwtTokenProvider;
+import com.mogak.spring.security.ApiAccessDeniedHandler;
+import com.mogak.spring.security.ApiAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -45,8 +45,8 @@ public class SecurityConfig {
     );
 
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
+    private final ApiAccessDeniedHandler apiAccessDeniedHandler;
 
     @Value("${server.domain}")
     private String domain;
@@ -60,8 +60,8 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                        .accessDeniedHandler(jwtAccessDeniedHandler))
+                        .authenticationEntryPoint(apiAuthenticationEntryPoint)
+                        .accessDeniedHandler(apiAccessDeniedHandler))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(PUBLIC_API_PATTERNS.toArray(String[]::new)).permitAll()
@@ -75,7 +75,7 @@ public class SecurityConfig {
                 .addFilterBefore(
                         new JwtAuthenticationFilter(
                                 jwtAuthenticationProvider,
-                                jwtAuthenticationEntryPoint,
+                                apiAuthenticationEntryPoint,
                                 PUBLIC_API_PATTERNS),
                         UsernamePasswordAuthenticationFilter.class)
                 .build();

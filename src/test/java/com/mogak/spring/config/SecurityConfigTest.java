@@ -2,12 +2,12 @@ package com.mogak.spring.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mogak.spring.exception.GlobalExceptionHandler;
-import com.mogak.spring.jwt.JwtAccessDeniedHandler;
-import com.mogak.spring.jwt.JwtAuthenticationEntryPoint;
 import com.mogak.spring.jwt.JwtAuthenticationProvider;
 import com.mogak.spring.jwt.JwtTokenCodec;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
+import com.mogak.spring.security.ApiAccessDeniedHandler;
+import com.mogak.spring.security.ApiAuthenticationEntryPoint;
 import com.mogak.spring.service.AuthService;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
@@ -46,8 +46,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         SecurityConfig.class,
         WebConfig.class,
         JwtAuthenticationProvider.class,
-        JwtAuthenticationEntryPoint.class,
-        JwtAccessDeniedHandler.class,
+        ApiAuthenticationEntryPoint.class,
+        ApiAccessDeniedHandler.class,
         JwtTokenCodec.class,
         GlobalExceptionHandler.class
 })

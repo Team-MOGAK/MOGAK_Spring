@@ -1,4 +1,4 @@
-package com.mogak.spring.jwt;
+package com.mogak.spring.security;
 
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.ErrorCode;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
-public final class JwtAccessDeniedHandler implements AccessDeniedHandler {
+public final class ApiAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
