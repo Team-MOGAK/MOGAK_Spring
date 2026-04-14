@@ -1,16 +1,26 @@
 package com.mogak.spring.auth;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
-import io.jsonwebtoken.*;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
+import org.springframework.security.oauth2.jwt.JwtValidationException;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
 import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /*
 identy token에서 alg, kid 추출 -> id_token를 public key로 파싱
@@ -30,8 +40,9 @@ public class AppleJwtParser {
         try {
             String encodedHeader = identityToken.split(IDENTITY_TOKEN_VALUE_DELIMITER)[HEADER_INDEX];
             String decodedHeader = new String(Base64.getUrlDecoder().decode(encodedHeader));
-            return OBJECT_MAPPER.readValue(decodedHeader, Map.class);
-        } catch (JsonProcessingException | ArrayIndexOutOfBoundsException e) { //Token header가 올바르지 않으면 예외발생
+            return OBJECT_MAPPER.readValue(decodedHeader, new TypeReference<>() {
+            });
+        } catch (JsonProcessingException | IllegalArgumentException | ArrayIndexOutOfBoundsException e) { //Token header가 올바르지 않으면 예외발생
             throw new BaseException(ErrorCode.INVALID_APPLE_ID_TOKEN);
         }
     }
@@ -39,16 +50,33 @@ public class AppleJwtParser {
     /*
     id token 파싱
      */
-    public Claims parsePublicKeyAndGetClaims(String idToken, PublicKey publicKey) {
+    public Jwt parsePublicKeyAndGetClaims(String idToken, PublicKey publicKey) {
+        if (!(publicKey instanceof RSAPublicKey rsaPublicKey)) {
+            throw new BaseException(ErrorCode.WRONG_APPLE_PUBLIC_KEY);
+        }
         try {
-            return Jwts.parser()
-                    .setSigningKey(publicKey)
-                    .parseClaimsJws(idToken)
-                    .getBody();
-        } catch (ExpiredJwtException e) {
-            throw new BaseException(ErrorCode.EXPIRE_APPLE_ID_TOKEN);
-        } catch (UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
+            NimbusJwtDecoder decoder = NimbusJwtDecoder.withPublicKey(rsaPublicKey)
+                    .signatureAlgorithm(SignatureAlgorithm.RS256)
+                    .validateType(false)
+                    .build();
+            decoder.setJwtValidator(new JwtTimestampValidator(Duration.ZERO));
+            return decoder.decode(idToken);
+        } catch (JwtValidationException e) {
+            if (isExpired(e)) {
+                throw new BaseException(ErrorCode.EXPIRE_APPLE_ID_TOKEN);
+            }
+            throw new BaseException(ErrorCode.INVALID_APPLE_ID_TOKEN);
+        } catch (JwtException | IllegalArgumentException e) {
             throw new BaseException(ErrorCode.INVALID_APPLE_ID_TOKEN);
         }
+    }
+
+    private boolean isExpired(JwtValidationException exception) {
+        return exception.getErrors()
+                .stream()
+                .map(OAuth2Error::getDescription)
+                .filter(Objects::nonNull)
+                .map(description -> description.toLowerCase(Locale.ROOT))
+                .anyMatch(description -> description.contains("expired"));
     }
 }

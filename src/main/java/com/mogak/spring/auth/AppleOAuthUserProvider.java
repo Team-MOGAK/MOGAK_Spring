@@ -1,10 +1,9 @@
 package com.mogak.spring.auth;
 
 import com.mogak.spring.exception.BaseException;
-import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 import java.security.PublicKey;
@@ -28,12 +27,12 @@ public class AppleOAuthUserProvider {
 
         PublicKey publicKey = publicKeyGenerator.generatePublicKey(headers, applePublicKeys);
 
-        Claims claims = appleJwtParser.parsePublicKeyAndGetClaims(identityToken, publicKey);
+        Jwt claims = appleJwtParser.parsePublicKeyAndGetClaims(identityToken, publicKey);
         validateClaims(claims);
-        return new AppleUserResponse(claims.get("email", String.class));
+        return new AppleUserResponse(claims.getClaimAsString("email"));
     }
 
-    private void validateClaims(Claims claims) {
+    private void validateClaims(Jwt claims) {
         if (!appleClaimsValidator.isValid(claims)) {
             throw new BaseException(ErrorCode.NOT_VALID_APPLE_CLAIMS) {
             };
