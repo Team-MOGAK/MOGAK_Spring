@@ -5,14 +5,11 @@ import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.exception.GlobalExceptionHandler;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.JwtInterceptor;
-import com.mogak.spring.jwt.JwtTokenFilter;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.MogakService;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
 import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,16 +51,7 @@ class MogakControllerTest {
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
     @MockitoBean
-    private JwtInterceptor jwtInterceptor;
-    @MockitoBean
-    private JwtTokenFilter jwtTokenFilter;
-    @MockitoBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
-
-    @BeforeEach
-    void setUp() throws Exception {
-        when(jwtInterceptor.preHandle(any(), any(), any())).thenReturn(true);
-    }
 
     @Test
     @DisplayName("모각 생성 요청이 성공하면 생성 응답 계약을 반환한다")

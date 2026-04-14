@@ -1,5 +1,6 @@
 package com.mogak.spring.jwt;
 
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,8 +10,11 @@ import java.util.List;
 
 public final class AuthenticatedUser implements UserDetails {
 
+    @Getter
     private final Long userId;
+    @Getter
     private final String email;
+    @Getter
     private final String role;
     private final List<GrantedAuthority> authorities;
 
@@ -19,14 +23,6 @@ public final class AuthenticatedUser implements UserDetails {
         this.email = email;
         this.role = role;
         this.authorities = List.of(new SimpleGrantedAuthority(role));
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public String getRole() {
-        return role;
     }
 
     @Override

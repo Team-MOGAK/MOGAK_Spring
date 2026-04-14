@@ -1,13 +1,7 @@
 package com.mogak.spring.jwt;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +22,6 @@ public class JwtTokenProvider {
     private Long accessTokenValidTime;
     @Value("${jwt.refresh-token-expiry}")
     private Long refreshTokenValidTime;
-    private final CustomUserDetailsService userDetailsService;
     private final JwtTokenCodec jwtTokenCodec;
 
     public static final String access_header = "Authorization";
@@ -83,32 +76,6 @@ public class JwtTokenProvider {
         return claims.getExpiresAt() != null && !claims.getExpiresAt().plus(JwtTokenCodec.JWT_CLOCK_SKEW).isBefore(date.toInstant());
     }
 
-    public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(getUserPk(token));
-        if (userDetails == null) {
-            throw new UsernameNotFoundException("User not found for useremail: " + getUserPk(token));
-        }
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
-    }
-
-    //현재 인증된 user 정보 조회
-    public CustomUserDetails getSecurityContextHolder() {
-        return (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    }
-
-    //header에서 access token 가져오기
-    public String resolveAccessToken(HttpServletRequest request) {
-        if (request.getHeader(access_header) != null && request.getHeader(access_header).startsWith("Bearer ")) {
-            return request.getHeader(access_header).substring(7);
-        }
-        return null;
-    }
-
-    //user email 검색
-    public String getUserPk(String token) {
-        return parseToken(token).getClaimAsString("email");
-    }
-
     /**
      * 토큰 갱신
      */
@@ -121,7 +88,7 @@ public class JwtTokenProvider {
         if (!isNotExpiredAt(refreshToken, date)) {
             throw new AuthException(ErrorCode.EXPIRE_TOKEN);
         }
-        validateRefreshTokenType(refreshToken);
+        parseRefreshToken(refreshToken);
         String accessToken = createAccessToken(userId, email, role);
 
         String localRefreshToken = refreshToken;
@@ -138,11 +105,15 @@ public class JwtTokenProvider {
      * refresh 토큰 이메일 추출
      */
     public String getEmailByRefresh(String refreshToken) {
+        return parseRefreshToken(refreshToken).getSubject();
+    }
+
+    private Jwt parseRefreshToken(String refreshToken) {
         Jwt claims = parseToken(refreshToken);
         if (!REFRESH_TOKEN_TYPE.equals(claims.getClaimAsString("token_type"))) {
             throw new AuthException(ErrorCode.WRONG_TOKEN);
         }
-        return claims.getSubject();
+        return claims;
     }
 
     /**
@@ -155,7 +126,4 @@ public class JwtTokenProvider {
         return !isNotExpiredAt(refreshToken, calendar.getTime());
     }
 
-    private void validateRefreshTokenType(String refreshToken) {
-        getEmailByRefresh(refreshToken);
-    }
 }

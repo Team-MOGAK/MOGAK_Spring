@@ -108,9 +108,8 @@ public class AuthService {
 
 
     @Transactional
-    public void logout() {
-        String email = currentUserProvider.currentEmail();
-        User user = userRepository.findByEmail(email)
+    public void logout(Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
         user.clearRefreshToken();
     }

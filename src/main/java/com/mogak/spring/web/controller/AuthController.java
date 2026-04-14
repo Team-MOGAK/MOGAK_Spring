@@ -2,6 +2,7 @@ package com.mogak.spring.web.controller;
 
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.service.AuthService;
 import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /*
@@ -55,8 +57,8 @@ public class AuthController {
     @Operation(summary = "로그아웃", description = "로그아웃을 합니다",
             responses = {@ApiResponse(responseCode = "200", description = "로그아웃 성공"),})
     @PostMapping("/logout")
-    public ResponseEntity<BaseResponse<ErrorCode>> logout() {
-        authService.logout();
+    public ResponseEntity<BaseResponse<ErrorCode>> logout(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        authService.logout(authenticatedUser.getUserId());
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 

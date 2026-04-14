@@ -161,7 +161,7 @@ class JwtTokenProviderTest {
     }
 
     private JwtTokenProvider createProvider(String secret, long accessTokenValidTime, long refreshTokenValidTime) {
-        JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(null, new JwtTokenCodec(secret));
+        JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(new JwtTokenCodec(secret));
         ReflectionTestUtils.setField(jwtTokenProvider, "accessTokenValidTime", accessTokenValidTime);
         ReflectionTestUtils.setField(jwtTokenProvider, "refreshTokenValidTime", refreshTokenValidTime);
         return jwtTokenProvider;

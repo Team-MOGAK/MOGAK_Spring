@@ -24,13 +24,10 @@
 - JWT:
   - `build.gradle`의 `io.jsonwebtoken:jjwt:0.9.1`
   - `src/main/java/com/mogak/spring/jwt/*`
-  - `src/main/java/com/mogak/spring/login/JwtTokenHandler.java`
   - `src/main/java/com/mogak/spring/auth/*`
 - OpenAPI / Swagger:
   - `build.gradle`의 `org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8`
   - `src/main/java/com/mogak/spring/config/SwaggerConfig.java`
-  - `src/main/java/com/mogak/spring/config/WebConfig.java`
-  - `src/main/java/com/mogak/spring/jwt/JwtTokenFilter.java`
 - Spring Cloud / Feign:
   - `build.gradle`의 `org.springframework.cloud:spring-cloud-dependencies:2025.0.0`
   - `src/main/java/com/mogak/spring/auth/AppleClient.java`
@@ -39,7 +36,6 @@
   - `build.gradle`의 `io.awspring.cloud:spring-cloud-aws-starter`
   - `build.gradle`의 `io.awspring.cloud:spring-cloud-aws-starter-s3`
   - `src/main/java/com/mogak/spring/service/AwsS3Service.java`
-  - `src/main/java/com/mogak/spring/config/WebConfig.java`
   - `src/main/resources/application-dev.yml`
 - Legacy/nullability:
   - `build.gradle`의 `javax.xml.bind:jaxb-api:2.3.1`
@@ -77,7 +73,7 @@
 - Spring Security disable DSL은 별도 선행 브랜치에서 정리한 뒤 본 브랜치로 병합했다.
 - storage는 Boot 4 blocker인 AWS 경로를 제거하고 `StorageService` 포트 + `DisabledStorageService` 조합으로 비활성 기본값을 적용했다.
 - 이미지 업로드/삭제 요청은 `feature.storage.enabled=false` 상태에서 `503 STORAGE_DISABLED`로 fail-fast 한다.
-- springdoc은 `3.0.2`와 actuator starter 조합으로 유지했고, `/swagger-ui.html`, `/api-docs`, `/v3/api-docs` 경로를 모두 보장한다.
+- springdoc은 `3.0.2`와 actuator starter 조합으로 유지했고, 표준 `/v3/api-docs` 경로를 기준으로 한다.
 
 ## Dependency Direction
 ### Build Tooling
@@ -90,7 +86,7 @@
 
 ### API Docs
 - `org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2`
-  - `/swagger-ui.html`, `/api-docs`, `/v3/api-docs` 경로를 유지한다.
+  - `/swagger-ui.html`, `/v3/api-docs` 경로를 유지한다.
 
 ### JWT
 - `io.jsonwebtoken:jjwt:0.9.1`

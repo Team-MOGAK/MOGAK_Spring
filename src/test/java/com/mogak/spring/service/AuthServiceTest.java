@@ -116,10 +116,9 @@ class AuthServiceTest {
     void logoutClearsStoredRefreshToken() {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
         ReflectionTestUtils.setField(user, "refreshToken", "stored-refresh-token");
-        SecurityContextTestHelper.setAuthentication("user@test.com");
-        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        authService.logout();
+        authService.logout(1L);
 
         assertThat(ReflectionTestUtils.getField(user, "refreshToken")).isNull();
     }
