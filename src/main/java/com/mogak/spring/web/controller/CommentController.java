@@ -81,7 +81,7 @@ public class CommentController {
                     @ApiResponse(responseCode = "200", description = "댓글 수정 성공"),
                     @ApiResponse(responseCode = "403", description = "댓글 수정 권한 없음",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "404", description = "존재하지 않은 게시물, 존재하지 않은 댓글",
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 게시물, 존재하지 않는 댓글",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/api/posts/{postId}/comments/{commentId}")
@@ -103,7 +103,7 @@ public class CommentController {
                     @ApiResponse(responseCode = "200", description = "댓글 삭제 성공"),
                     @ApiResponse(responseCode = "403", description = "댓글 삭제 권한 없음",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "404", description = "존재하지 않은 게시물, 존재하지 않은 댓글",
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 게시물, 존재하지 않는 댓글",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @DeleteMapping("/api/posts/{postId}/comments/{commentId}")
