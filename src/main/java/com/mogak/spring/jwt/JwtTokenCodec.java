@@ -30,6 +30,7 @@ public class JwtTokenCodec {
 
     private static final int MIN_HMAC_SHA_256_KEY_BYTES = 32;
     private static final String HMAC_SHA_256 = "HmacSHA256";
+    static final Duration JWT_CLOCK_SKEW = Duration.ofSeconds(30);
 
     private final JwtEncoder jwtEncoder;
     private final JwtDecoder jwtDecoder;
@@ -42,7 +43,7 @@ public class JwtTokenCodec {
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
-        decoder.setJwtValidator(new JwtTimestampValidator(Duration.ZERO));
+        decoder.setJwtValidator(new JwtTimestampValidator(JWT_CLOCK_SKEW));
         this.jwtDecoder = decoder;
     }
 

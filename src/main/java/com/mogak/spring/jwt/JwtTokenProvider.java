@@ -1,6 +1,5 @@
 package com.mogak.spring.jwt;
 
-import com.mogak.spring.exception.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,13 +65,9 @@ public class JwtTokenProvider {
         return jwtTokenCodec.decode(token);
     }
 
-    public boolean isExpired(String token, Date date) {
-        try {
-            Jwt claims = parseToken(token);
-            return claims.getExpiresAt() != null && !claims.getExpiresAt().isBefore(date.toInstant()); //만료시간이 현재시간 이전이 아니라면 true, 만료되었다면 false
-        } catch (AuthException e) {
-            throw e;
-        }
+    public boolean isNotExpiredAt(String token, Date date) {
+        Jwt claims = parseToken(token);
+        return claims.getExpiresAt() != null && !claims.getExpiresAt().plus(JwtTokenCodec.JWT_CLOCK_SKEW).isBefore(date.toInstant());
     }
 
     public Authentication getAuthentication(String token) {
@@ -106,7 +101,7 @@ public class JwtTokenProvider {
      */
     public JwtTokens refresh(String refreshToken, Long userId, String email) {
         Date date = new Date();
-        if (!isExpired(refreshToken, date)) { //만료되었으면
+        if (!isNotExpiredAt(refreshToken, date)) {
             throw new IllegalStateException("EXPIRED_REFRESH_TOKEN");
         }
         String accessToken = createAccessToken(userId, email);
@@ -135,6 +130,6 @@ public class JwtTokenProvider {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"), Locale.KOREA);
         calendar.setTime(new Date());
         calendar.add(Calendar.DATE, 3);//현재시간으로부터 3일 후까지 리프레시 가능하도록
-        return !isExpired(refreshToken, calendar.getTime());
+        return !isNotExpiredAt(refreshToken, calendar.getTime());
     }
 }

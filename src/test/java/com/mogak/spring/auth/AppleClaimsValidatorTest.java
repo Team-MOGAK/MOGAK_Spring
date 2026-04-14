@@ -29,11 +29,23 @@ public class AppleClaimsValidatorTest {
     }
 
     @Test
-    @DisplayName("URL로 변환할 수 없는 issuer는 false를 반환한다")
-    void returnsFalseWhenIssuerCannotBeConvertedToUrl() {
+    @DisplayName("issuer가 기대값이 아니면 false를 반환한다")
+    void returnsFalseWhenIssuerDoesNotMatchExpectedValue() {
         Jwt claims = Jwt.withTokenValue("token")
                 .header("alg", "RS256")
                 .claim("iss", "not-apple")
+                .claim("aud", java.util.List.of(CLIENT_ID))
+                .build();
+
+        assertThat(appleClaimsValidator.isValid(claims)).isFalse();
+    }
+
+    @Test
+    @DisplayName("issuer가 Apple issuer를 포함하더라도 정확히 일치하지 않으면 false를 반환한다")
+    void returnsFalseWhenIssuerOnlyContainsExpectedValue() {
+        Jwt claims = Jwt.withTokenValue("token")
+                .header("alg", "RS256")
+                .claim("iss", ISS + ".evil.example")
                 .claim("aud", java.util.List.of(CLIENT_ID))
                 .build();
 

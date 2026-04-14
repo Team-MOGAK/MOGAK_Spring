@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
@@ -30,6 +31,7 @@ public class AppleJwtParser {
 
     private static final String IDENTITY_TOKEN_VALUE_DELIMITER = "\\.";
     private static final int HEADER_INDEX = 0;
+    private static final Duration APPLE_ID_TOKEN_CLOCK_SKEW = Duration.ofSeconds(30);
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -39,7 +41,7 @@ public class AppleJwtParser {
     public Map<String, String> parseHeaders(String identityToken) {
         try {
             String encodedHeader = identityToken.split(IDENTITY_TOKEN_VALUE_DELIMITER)[HEADER_INDEX];
-            String decodedHeader = new String(Base64.getUrlDecoder().decode(encodedHeader));
+            String decodedHeader = new String(Base64.getUrlDecoder().decode(encodedHeader), StandardCharsets.UTF_8);
             return OBJECT_MAPPER.readValue(decodedHeader, new TypeReference<>() {
             });
         } catch (JsonProcessingException | IllegalArgumentException | ArrayIndexOutOfBoundsException e) { //Token header가 올바르지 않으면 예외발생
@@ -59,7 +61,7 @@ public class AppleJwtParser {
                     .signatureAlgorithm(SignatureAlgorithm.RS256)
                     .validateType(false)
                     .build();
-            decoder.setJwtValidator(new JwtTimestampValidator(Duration.ZERO));
+            decoder.setJwtValidator(new JwtTimestampValidator(APPLE_ID_TOKEN_CLOCK_SKEW));
             return decoder.decode(idToken);
         } catch (JwtValidationException e) {
             if (isExpired(e)) {

@@ -58,11 +58,24 @@ public class AppleJwtParserTest {
         String expected = "19281729";
         KeyPair keyPair = generateKeyPair();
         PublicKey publicKey = keyPair.getPublic();
-        String identityToken = createIdentityToken(keyPair, expected, Instant.now().minusSeconds(1));
+        String identityToken = createIdentityToken(keyPair, expected, Instant.now().minusSeconds(60));
 
         Throwable throwable = catchThrowable(() -> appleJwtParser.parsePublicKeyAndGetClaims(identityToken, publicKey));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.EXPIRE_APPLE_ID_TOKEN);
+    }
+
+    @Test
+    @DisplayName("30초 이내 clock skew가 있는 Apple identity token은 허용한다")
+    void parseTokenWithinClockSkew() throws NoSuchAlgorithmException {
+        String expected = "19281729";
+        KeyPair keyPair = generateKeyPair();
+        PublicKey publicKey = keyPair.getPublic();
+        String identityToken = createIdentityToken(keyPair, expected, Instant.now().minusSeconds(10));
+
+        Jwt claims = appleJwtParser.parsePublicKeyAndGetClaims(identityToken, publicKey);
+
+        assertThat(claims.getSubject()).isEqualTo(expected);
     }
 
     @Test

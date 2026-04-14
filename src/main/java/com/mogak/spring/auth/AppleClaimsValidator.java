@@ -24,7 +24,7 @@ public class AppleClaimsValidator {
     public boolean isValid(Jwt claims) {
         String issuer = claims.getClaimAsString("iss");
         return issuer != null &&
-                issuer.contains(iss) &&
+                iss.equals(issuer) &&
                 claims.getAudience().contains(clientId);
     }
 }

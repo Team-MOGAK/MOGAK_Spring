@@ -33,7 +33,7 @@ public class JwtInterceptor implements HandlerInterceptor {
             log.info("token이 존재하지 않습니다");
             throw new BaseException(ErrorCode.EMPTY_TOKEN);
         }
-        log.info("현재 accesstoken : " + accessToken);
+        log.info("access token이 존재합니다");
         //토큰 확인되면  유저 정보 받아오고 authectication 객체 저장
         if (jwtTokenProvider.validateAccessToken(accessToken)) {//access token 검증
             setAuthentication(accessToken);

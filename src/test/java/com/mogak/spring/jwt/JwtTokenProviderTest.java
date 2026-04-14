@@ -11,6 +11,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -74,6 +75,38 @@ class JwtTokenProviderTest {
         Throwable throwable = catchThrowable(() -> jwtTokenProvider.validateAccessToken(token));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.EXPIRE_TOKEN);
+    }
+
+    @Test
+    @DisplayName("30초 이내 clock skew가 있는 access token은 허용한다")
+    void validateAccessTokenWithinClockSkew() {
+        JwtTokenProvider jwtTokenProvider = createProvider(SECRET, 7_200_000L, 2_678_400_000L);
+        Instant now = Instant.now();
+        String token = new JwtTokenCodec(SECRET).encode(JwtClaimsSet.builder()
+                .claim("id", 1L)
+                .claim("email", "user@test.com")
+                .subject("user@test.com")
+                .issuedAt(now.minusSeconds(120))
+                .expiresAt(now.minusSeconds(10))
+                .build());
+
+        assertThat(jwtTokenProvider.validateAccessToken(token)).isTrue();
+    }
+
+    @Test
+    @DisplayName("수동 만료 비교도 30초 이내 clock skew를 허용한다")
+    void isNotExpiredAtAllowsClockSkew() {
+        JwtTokenProvider jwtTokenProvider = createProvider(SECRET, 7_200_000L, 2_678_400_000L);
+        Instant now = Instant.now();
+        String token = new JwtTokenCodec(SECRET).encode(JwtClaimsSet.builder()
+                .claim("id", 1L)
+                .claim("email", "user@test.com")
+                .subject("user@test.com")
+                .issuedAt(now.minusSeconds(120))
+                .expiresAt(now.minusSeconds(10))
+                .build());
+
+        assertThat(jwtTokenProvider.isNotExpiredAt(token, Date.from(now))).isTrue();
     }
 
     @Test
