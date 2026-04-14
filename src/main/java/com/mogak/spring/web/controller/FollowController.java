@@ -3,7 +3,6 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.FollowService;
 import com.mogak.spring.web.dto.userdto.FollowRequestDto.CountDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +27,6 @@ import static com.mogak.spring.web.dto.userdto.UserResponseDto.UserDto;
 public class FollowController {
 
     private final FollowService followService;
-    private final AuthHandler authHandler;
 
     @Operation(summary = "팔로우", description = "원하는 유저를 팔로우 합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),

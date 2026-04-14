@@ -3,14 +3,10 @@ package com.mogak.spring.web.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mogak.spring.exception.GlobalExceptionHandler;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.JwtInterceptor;
-import com.mogak.spring.jwt.JwtTokenFilter;
 import com.mogak.spring.jwt.JwtTokenProvider;
-import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.service.StorageService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,20 +45,9 @@ class PostControllerTest {
     @MockitoBean
     private StorageService storageService;
     @MockitoBean
-    private AuthHandler authHandler;
-    @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
     @MockitoBean
-    private JwtInterceptor jwtInterceptor;
-    @MockitoBean
-    private JwtTokenFilter jwtTokenFilter;
-    @MockitoBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
-
-    @BeforeEach
-    void setUp() throws Exception {
-        when(jwtInterceptor.preHandle(any(), any(), any())).thenReturn(true);
-    }
 
     @Test
     @DisplayName("이미지 포함 게시글 생성 요청은 storage 비활성 상태에서 503 에러 응답 계약을 반환한다")

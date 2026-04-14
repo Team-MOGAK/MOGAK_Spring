@@ -9,6 +9,7 @@ import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.repository.DailyJogakRepository;
 import com.mogak.spring.repository.JogakPeriodRepository;
 import com.mogak.spring.repository.JogakRepository;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -49,6 +51,7 @@ class JogakServiceImplTest {
     @Mock private JogakPeriodRepository jogakPeriodRepository;
     @Mock private PeriodRepository periodRepository;
     @Mock private DailyJogakRepository dailyJogakRepository;
+    @Spy private CurrentUserProvider currentUserProvider = new CurrentUserProvider();
 
     @InjectMocks
     private JogakServiceImpl jogakService;

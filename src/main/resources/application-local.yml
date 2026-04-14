@@ -39,8 +39,6 @@ springdoc:
     operationsSorter: method
     disable-swagger-default-url: true
     display-request-duration: true
-  api-docs:
-    path: /api-docs
   show-actuator: false
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
@@ -50,7 +48,7 @@ springdoc:
 
 jwt:
   secret: ${JWT_SECRET_KEY}
-  access-token-expiry: 7200000 #2시간
+  access-token-expiry: 900000 #15분
   refresh-token-expiry: 2678400000 #31일
 
 server:

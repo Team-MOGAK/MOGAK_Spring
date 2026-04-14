@@ -12,12 +12,12 @@ import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
 import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +40,7 @@ public class MogakServiceImpl implements MogakService {
     private final PostRepository postRepository;
     private final PostImgRepository postImgRepository;
     private final PostCommentRepository postCommentRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     /**
      * 모각 생성
@@ -47,7 +48,7 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public MogakResponseDto.GetMogakDto create(MogakRequestDto.CreateDto request) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String email = currentUserProvider.currentEmail();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Modarat modarat = modaratRepository.findById(request.getModaratId())
@@ -154,7 +155,7 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Override
     public MogakResponseDto.GetMogakListDto getMogakDtoList(Long modaratId) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String email = currentUserProvider.currentEmail();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return MogakConverter.toGetMogakListDto(mogakRepository.findAllByModaratId(modaratId));
@@ -232,7 +233,7 @@ public class MogakServiceImpl implements MogakService {
 
     @Override
     public List<JogakResponseDto.GetJogakDto> getJogaks(Long mogakId, LocalDate day) {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+        User user = userRepository.findByEmail(currentUserProvider.currentEmail())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MOGAK));

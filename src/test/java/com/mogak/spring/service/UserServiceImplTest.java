@@ -4,10 +4,12 @@ import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -39,6 +42,8 @@ class UserServiceImplTest {
     private AddressRepository addressRepository;
     @Mock
     private JwtTokenProvider jwtTokenProvider;
+    @Spy
+    private CurrentUserProvider currentUserProvider = new CurrentUserProvider();
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -102,15 +107,20 @@ class UserServiceImplTest {
                 .imgUrl("https://cdn/profile.png")
                 .build();
 
+        SecurityContextTestHelper.setAuthentication(10L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
         when(userRepository.findOneByNickname("tester")).thenReturn(Optional.empty());
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(job));
         when(addressRepository.findAddressByName("서울특별시")).thenReturn(Optional.of(address));
         when(userRepository.findById(10L)).thenReturn(Optional.of(user));
+        when(jwtTokenProvider.createAccessToken(10L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
+        when(jwtTokenProvider.createRefreshToken("user@test.com")).thenReturn("refresh-token");
 
         UserResponseDto.CreateDto result = userService.create(request, uploadImageDto);
 
         assertThat(result.getUserId()).isEqualTo(10L);
         assertThat(result.getNickname()).isEqualTo("tester");
+        assertThat(result.getTokens().getAccessToken()).isEqualTo("access-token");
+        assertThat(result.getTokens().getRefreshToken()).isEqualTo("refresh-token");
         assertThat(user.getJob()).isEqualTo(job);
         assertThat(user.getAddress()).isEqualTo(address);
         assertThat(user.getProfileImgUrl()).isEqualTo("https://cdn/profile.png");
@@ -130,6 +140,7 @@ class UserServiceImplTest {
                 .build();
         UserRequestDto.UploadImageDto uploadImageDto = UserRequestDto.UploadImageDto.builder().build();
 
+        SecurityContextTestHelper.setAuthentication(10L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
         when(userRepository.findOneByNickname("tester")).thenReturn(Optional.empty());
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(job));
         when(addressRepository.findAddressByName("서울특별시")).thenReturn(Optional.of(address));
@@ -202,7 +213,7 @@ class UserServiceImplTest {
     @DisplayName("토큰을 생성하면 JwtTokenProvider가 발급한 액세스 토큰을 반환한다")
     void getTokenDelegatesToProvider() {
         User user = TestFixtureFactory.user(11L, "user@test.com", "tester", null, null);
-        when(jwtTokenProvider.createAccessToken(11L, "user@test.com")).thenReturn("access-token");
+        when(jwtTokenProvider.createAccessToken(11L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
 
         assertThat(userService.getToken(user)).isEqualTo("access-token");
     }

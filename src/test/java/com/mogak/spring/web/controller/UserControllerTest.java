@@ -3,17 +3,13 @@ package com.mogak.spring.web.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mogak.spring.exception.GlobalExceptionHandler;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.JwtInterceptor;
-import com.mogak.spring.jwt.JwtTokenFilter;
 import com.mogak.spring.jwt.JwtTokenProvider;
-import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,24 +51,13 @@ class UserControllerTest {
     @MockitoBean
     private StorageService storageService;
     @MockitoBean
-    private AuthHandler authHandler;
-    @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
-    @MockitoBean
-    private JwtInterceptor jwtInterceptor;
-    @MockitoBean
-    private JwtTokenFilter jwtTokenFilter;
     @MockitoBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
     @AfterEach
     void tearDown() {
         SecurityContextTestHelper.clear();
-    }
-
-    @BeforeEach
-    void setUp() throws Exception {
-        when(jwtInterceptor.preHandle(any(), any(), any())).thenReturn(true);
     }
 
     @Test
