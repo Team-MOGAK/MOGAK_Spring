@@ -4,7 +4,6 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
@@ -32,7 +31,6 @@ import static com.mogak.spring.web.dto.userdto.UserRequestDto.*;
 public class UserController {
     private final UserService userService;
     private final StorageService storageService;
-    private final AuthHandler authHandler;
     private static String dirName = "profile";
 
     @Operation(summary = "닉네임 검증", description = "PathVariable로 입력받은 닉네임을 검증합니다",

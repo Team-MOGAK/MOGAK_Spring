@@ -7,13 +7,12 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.PostException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CustomUserDetails;
+import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.repository.PostLikeRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,14 +24,13 @@ public class PostLikeServiceImpl implements PostLikeService{
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     //좋아요 생성 및 삭제
     @Transactional
     @Override
     public String updateLike(PostLikeRequestDto.LikeDto request){
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
+        String email = currentUserProvider.currentEmail();
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         User user = userRepository.findByEmail(email)

@@ -5,7 +5,6 @@ import com.mogak.spring.converter.PostConverter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
-import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
@@ -34,7 +33,6 @@ public class NetworkController {
 
     private final PostLikeService postLikeService;
     private final PostService postService;
-    private final AuthHandler authHandler;
 
     //좋아요 생성&삭제
     @Operation(summary = "좋아요 생성/삭제",

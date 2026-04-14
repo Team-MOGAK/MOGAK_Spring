@@ -4,6 +4,7 @@ import com.mogak.spring.auth.AppleOAuthUserProvider;
 import com.mogak.spring.auth.AppleUserResponse;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.repository.DailyJogakRepository;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -43,6 +45,7 @@ class AuthServiceTest {
     @Mock private JogakPeriodRepository jogakPeriodRepository;
     @Mock private AppleOAuthUserProvider appleOAuthUserProvider;
     @Mock private JwtTokenProvider jwtTokenProvider;
+    @Spy private CurrentUserProvider currentUserProvider = new CurrentUserProvider();
 
     @InjectMocks
     private AuthService authService;
@@ -63,7 +66,7 @@ class AuthServiceTest {
         when(appleOAuthUserProvider.getAppleUser("apple-id-token")).thenReturn(new AppleUserResponse("user@test.com"));
         when(userRepository.existsByEmail("user@test.com")).thenReturn(true);
         when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
-        when(jwtTokenProvider.createAccessToken(1L, "user@test.com")).thenReturn("access-token");
+        when(jwtTokenProvider.createAccessToken(1L, "user@test.com", JwtTokenProvider.ROLE_USER)).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken("user@test.com")).thenReturn("refresh-token");
 
         AppleLoginResponse response = authService.appleLogin(request);
@@ -94,7 +97,7 @@ class AuthServiceTest {
 
         when(jwtTokenProvider.getEmailByRefresh("stored-refresh-token")).thenReturn("user@test.com");
         when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
-        when(jwtTokenProvider.refresh("stored-refresh-token", 1L, "user@test.com")).thenReturn(
+        when(jwtTokenProvider.refresh("stored-refresh-token", 1L, "user@test.com", JwtTokenProvider.ROLE_USER)).thenReturn(
                 JwtTokens.builder()
                         .accessToken("new-access-token")
                         .refreshToken("rotated-refresh-token")
@@ -115,7 +118,7 @@ class AuthServiceTest {
         SecurityContextTestHelper.setAuthentication("user@test.com");
         when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
 
-        authService.logout("Bearer access-token");
+        authService.logout();
 
         assertThat(ReflectionTestUtils.getField(user, "refreshToken")).isNull();
     }

@@ -7,6 +7,7 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.repository.*;
@@ -14,7 +15,6 @@ import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
 import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
 import com.mogak.spring.web.dto.authdto.AuthResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +34,7 @@ public class AuthService {
     private final JogakPeriodRepository jogakPeriodRepository;
     private final AppleOAuthUserProvider appleOAuthUserProvider;
     private final JwtTokenProvider jwtTokenProvider;
+    private final CurrentUserProvider currentUserProvider;
 
     //로그인
     @Transactional
@@ -44,7 +45,7 @@ public class AuthService {
             User findUser = userRepository.findByEmail(appleUser.getEmail())
                     .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
             JwtTokens jwtTokens = issueTokens(findUser); //토큰 발급
-            if (!isRegisterNickname(appleUser.getEmail())) { //해당 이메일로 가입한 유저의 닉네임 없으면 회원가입하도록
+            if (!isRegisterNickname(findUser)) { //해당 이메일로 가입한 유저의 닉네임 없으면 회원가입하도록
                 return AppleLoginResponse.builder()
                         .isRegistered(false)
                         .userId(findUser.getId())
@@ -71,8 +72,7 @@ public class AuthService {
     /**
      * 닉네임 등록 여부
      */
-    private boolean isRegisterNickname(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
+    private boolean isRegisterNickname(User user) {
         if (user.getNickname() != null && !user.getNickname().isEmpty()) {
             return true;
         } else {
@@ -84,7 +84,7 @@ public class AuthService {
      * 토큰 발급
      */
     private JwtTokens issueTokens(User user) {
-        String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getEmail());
+        String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getEmail(), resolveTokenRole(user));
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
         user.updateRefreshToken(refreshToken);
         return JwtTokens.builder()
@@ -100,15 +100,15 @@ public class AuthService {
         User findUser = userRepository.findByEmail(email).orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
         validateStoredRefreshToken(findUser, refreshToken);
 
-        JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), email);
+        JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), email, resolveTokenRole(findUser));
         findUser.updateRefreshToken(jwtTokens.getRefreshToken());
         return jwtTokens;
     }
 
 
     @Transactional
-    public void logout(String accessToken) {
-        String email = resolveLogoutUserEmail(accessToken);
+    public void logout() {
+        String email = currentUserProvider.currentEmail();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
         user.clearRefreshToken();
@@ -119,7 +119,7 @@ public class AuthService {
      */
     @Transactional
     public AuthResponse.WithdrawDto deleteUser() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String email = currentUserProvider.currentEmail();
         User deleteUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (deleteUser == null) {
@@ -157,22 +157,10 @@ public class AuthService {
         }
     }
 
-    private String resolveLogoutUserEmail(String accessToken) {
-        if (accessToken != null && !accessToken.isBlank()) {
-            String token = accessToken.startsWith("Bearer ") ? accessToken.substring(7) : accessToken;
-            try {
-                String email = jwtTokenProvider.getUserPk(token);
-                if (email != null && !email.isBlank()) {
-                    return email;
-                }
-            } catch (RuntimeException ignored) {
-            }
+    private String resolveTokenRole(User user) {
+        if (isRegisterNickname(user) && user.getRole() != null) {
+            return user.getRole().getKey();
         }
-
-        if (SecurityContextHolder.getContext().getAuthentication() != null) {
-            return SecurityContextHolder.getContext().getAuthentication().getName();
-        }
-
-        throw new BaseException(ErrorCode.EMPTY_TOKEN);
+        return JwtTokenProvider.ROLE_PENDING;
     }
 }

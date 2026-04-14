@@ -25,15 +25,17 @@ class JwtTokenProviderTest {
             .encodeToString("mogak-other-jwt-secret-for-hs256".getBytes(StandardCharsets.UTF_8));
 
     @Test
-    @DisplayName("access token은 id와 email claim을 담아 발급한다")
+    @DisplayName("access token은 id와 email, role, token_type claim을 담아 발급한다")
     void createAccessTokenContainsIdAndEmailClaims() {
-        JwtTokenProvider jwtTokenProvider = createProvider(SECRET, 7_200_000L, 2_678_400_000L);
+        JwtTokenProvider jwtTokenProvider = createProvider(SECRET, 900_000L, 2_678_400_000L);
 
         String token = jwtTokenProvider.createAccessToken(1L, "user@test.com");
         Jwt parsed = jwtTokenProvider.parseToken(token);
 
         assertThat(((Number) parsed.getClaim("id")).longValue()).isEqualTo(1L);
         assertThat(parsed.getClaimAsString("email")).isEqualTo("user@test.com");
+        assertThat(parsed.getClaimAsString("role")).isEqualTo(JwtTokenProvider.ROLE_USER);
+        assertThat(parsed.getClaimAsString("token_type")).isEqualTo(JwtTokenProvider.ACCESS_TOKEN_TYPE);
         assertThat(parsed.getSubject()).isEqualTo("user@test.com");
     }
 
@@ -44,6 +46,23 @@ class JwtTokenProviderTest {
         String refreshToken = jwtTokenProvider.createRefreshToken("user@test.com");
 
         assertThat(jwtTokenProvider.getEmailByRefresh(refreshToken)).isEqualTo("user@test.com");
+        assertThat(jwtTokenProvider.parseToken(refreshToken).getClaimAsString("token_type")).isEqualTo(JwtTokenProvider.REFRESH_TOKEN_TYPE);
+    }
+
+    @Test
+    @DisplayName("token_type이 없는 레거시 refresh token은 거부한다")
+    void getEmailByRefreshRejectsLegacyRefreshTokenWithoutTokenType() {
+        JwtTokenProvider jwtTokenProvider = createProvider(SECRET, 900_000L, 2_678_400_000L);
+        Instant now = Instant.now();
+        String legacyRefreshToken = new JwtTokenCodec(SECRET).encode(JwtClaimsSet.builder()
+                .subject("user@test.com")
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(60))
+                .build());
+
+        Throwable throwable = catchThrowable(() -> jwtTokenProvider.getEmailByRefresh(legacyRefreshToken));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.WRONG_TOKEN);
     }
 
     @Test

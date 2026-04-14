@@ -1,9 +1,9 @@
 package com.mogak.spring.support;
 
+import com.mogak.spring.jwt.AuthenticatedUser;
+import com.mogak.spring.jwt.JwtTokenProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.util.Collections;
 
 public final class SecurityContextTestHelper {
 
@@ -11,8 +11,13 @@ public final class SecurityContextTestHelper {
     }
 
     public static void setAuthentication(String email) {
+        setAuthentication(1L, email, JwtTokenProvider.ROLE_USER);
+    }
+
+    public static void setAuthentication(Long userId, String email, String role) {
+        AuthenticatedUser principal = new AuthenticatedUser(userId, email, role);
         SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(email, "password", Collections.emptyList())
+                new UsernamePasswordAuthenticationToken(principal, "password", principal.getAuthorities())
         );
     }
 

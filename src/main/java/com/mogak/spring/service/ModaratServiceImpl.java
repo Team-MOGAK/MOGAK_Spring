@@ -7,6 +7,7 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.repository.ModaratRepository;
 import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -15,7 +16,6 @@ import com.mogak.spring.repository.query.SingleDetailModaratDto;
 import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
 import com.mogak.spring.web.dto.modaratdto.ModaratResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,11 +30,12 @@ public class ModaratServiceImpl implements ModaratService {
     private final ModaratRepository modaratRepository;
     private final MogakRepository mogakRepository;
     private final MogakService mogakService;
+    private final CurrentUserProvider currentUserProvider;
 
     @Transactional
     @Override
     public Modarat create(ModaratRequestDto.CreateModaratDto request) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String email = currentUserProvider.currentEmail();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return modaratRepository.save(ModaratConverter.toModarat(user, request));
     }
@@ -68,7 +69,7 @@ public class ModaratServiceImpl implements ModaratService {
 
     @Override
     public List<ModaratResponseDto.ModaratDto> getModaratList() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String email = currentUserProvider.currentEmail();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Long userId = user.getId();
         return modaratRepository.findModaratsByUserId(userId).stream()

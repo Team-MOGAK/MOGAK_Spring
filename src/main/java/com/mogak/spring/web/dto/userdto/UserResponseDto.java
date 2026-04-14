@@ -1,5 +1,6 @@
 package com.mogak.spring.web.dto.userdto;
 
+import com.mogak.spring.jwt.JwtTokens;
 import lombok.*;
 
 public class UserResponseDto {
@@ -11,6 +12,7 @@ public class UserResponseDto {
     public static class CreateDto {
         private Long userId;
         private String nickname;
+        private JwtTokens tokens;
     }
 
     @Getter

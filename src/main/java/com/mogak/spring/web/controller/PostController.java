@@ -5,7 +5,6 @@ import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
-import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
@@ -33,7 +32,6 @@ import static com.mogak.spring.web.dto.postdto.PostResponseDto.*;
 public class PostController {
     private final PostService postService;
     private final StorageService storageService;
-    private final AuthHandler authHandler;
     private static String dirName = "img";
 
     //create

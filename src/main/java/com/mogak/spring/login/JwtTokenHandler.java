@@ -5,7 +5,6 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenCodec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -16,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.Optional;
 
-@Component
 @RequiredArgsConstructor
 public class JwtTokenHandler {
 

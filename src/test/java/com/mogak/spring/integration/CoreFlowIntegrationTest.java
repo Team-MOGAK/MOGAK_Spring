@@ -9,6 +9,7 @@ import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.service.MogakService;
@@ -73,6 +74,7 @@ class CoreFlowIntegrationTest {
         MogakCategory category = saveCategory("자격증");
         ensureStandardPeriods();
         User rawUser = userRepository.save(new User("flow@test.com"));
+        SecurityContextTestHelper.setAuthentication(rawUser.getId(), rawUser.getEmail(), JwtTokenProvider.ROLE_PENDING);
 
         userService.create(
                 UserRequestDto.CreateUserDto.builder()

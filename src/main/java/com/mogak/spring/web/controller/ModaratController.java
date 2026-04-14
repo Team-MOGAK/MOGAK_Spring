@@ -4,7 +4,6 @@ import com.mogak.spring.converter.ModaratConverter;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
-import com.mogak.spring.login.AuthHandler;
 import com.mogak.spring.repository.query.SingleDetailModaratDto;
 import com.mogak.spring.service.ModaratService;
 import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
@@ -30,7 +29,6 @@ import static com.mogak.spring.web.dto.modaratdto.ModaratResponseDto.ModaratDto;
 @RequestMapping("/api/modarats")
 public class ModaratController {
     private final ModaratService modaratService;
-    private final AuthHandler authHandler;
 
     @Operation(summary = "모다라트 생성", description = "입력값을 이용해 모다라트를 생성합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),

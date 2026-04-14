@@ -1,6 +1,5 @@
 package com.mogak.spring.web.controller;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokens;
@@ -56,8 +55,8 @@ public class AuthController {
     @Operation(summary = "로그아웃", description = "로그아웃을 합니다",
             responses = {@ApiResponse(responseCode = "200", description = "로그아웃 성공"),})
     @PostMapping("/logout")
-    public ResponseEntity<BaseResponse<ErrorCode>> logout(@RequestHeader(value = "Authorization") String accessToken) {
-        authService.logout(accessToken);
+    public ResponseEntity<BaseResponse<ErrorCode>> logout() {
+        authService.logout();
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 

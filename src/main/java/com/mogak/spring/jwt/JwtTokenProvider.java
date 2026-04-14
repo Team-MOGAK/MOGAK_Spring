@@ -11,6 +11,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
+import com.mogak.spring.exception.AuthException;
+import com.mogak.spring.global.ErrorCode;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -29,12 +32,22 @@ public class JwtTokenProvider {
 
     public static final String access_header = "Authorization";
     public static final String refresh_header = "RefreshToken";
+    public static final String ACCESS_TOKEN_TYPE = "access";
+    public static final String REFRESH_TOKEN_TYPE = "refresh";
+    public static final String ROLE_USER = "ROLE_USER";
+    public static final String ROLE_PENDING = "ROLE_PENDING";
 
     public String createAccessToken(Long userId, String email) {
+        return createAccessToken(userId, email, ROLE_USER);
+    }
+
+    public String createAccessToken(Long userId, String email, String role) {
         java.time.Instant now = java.time.Instant.now();
         return jwtTokenCodec.encode(org.springframework.security.oauth2.jwt.JwtClaimsSet.builder()
                 .claim("id", userId)
                 .claim("email", email)
+                .claim("role", role)
+                .claim("token_type", ACCESS_TOKEN_TYPE)
                 .subject(email)
                 .issuedAt(now)
                 .expiresAt(now.plusMillis(accessTokenValidTime))
@@ -44,6 +57,7 @@ public class JwtTokenProvider {
     public String createRefreshToken(String email) {
         java.time.Instant now = java.time.Instant.now();
         return jwtTokenCodec.encode(org.springframework.security.oauth2.jwt.JwtClaimsSet.builder()
+                .claim("token_type", REFRESH_TOKEN_TYPE)
                 .subject(email)
                 .issuedAt(now)
                 .expiresAt(now.plusMillis(refreshTokenValidTime))
@@ -100,11 +114,16 @@ public class JwtTokenProvider {
      * 토큰 갱신
      */
     public JwtTokens refresh(String refreshToken, Long userId, String email) {
+        return refresh(refreshToken, userId, email, ROLE_USER);
+    }
+
+    public JwtTokens refresh(String refreshToken, Long userId, String email, String role) {
         Date date = new Date();
         if (!isNotExpiredAt(refreshToken, date)) {
-            throw new IllegalStateException("EXPIRED_REFRESH_TOKEN");
+            throw new AuthException(ErrorCode.EXPIRE_TOKEN);
         }
-        String accessToken = createAccessToken(userId, email);
+        validateRefreshTokenType(refreshToken);
+        String accessToken = createAccessToken(userId, email, role);
 
         String localRefreshToken = refreshToken;
         if (isRefreshable(refreshToken)) { //만료되었으면 재발급
@@ -120,7 +139,11 @@ public class JwtTokenProvider {
      * refresh 토큰 이메일 추출
      */
     public String getEmailByRefresh(String refreshToken) {
-        return parseToken(refreshToken).getSubject();
+        Jwt claims = parseToken(refreshToken);
+        if (!REFRESH_TOKEN_TYPE.equals(claims.getClaimAsString("token_type"))) {
+            throw new AuthException(ErrorCode.WRONG_TOKEN);
+        }
+        return claims.getSubject();
     }
 
     /**
@@ -131,5 +154,9 @@ public class JwtTokenProvider {
         calendar.setTime(new Date());
         calendar.add(Calendar.DATE, 3);//현재시간으로부터 3일 후까지 리프레시 가능하도록
         return !isNotExpiredAt(refreshToken, calendar.getTime());
+    }
+
+    private void validateRefreshTokenType(String refreshToken) {
+        getEmailByRefresh(refreshToken);
     }
 }
