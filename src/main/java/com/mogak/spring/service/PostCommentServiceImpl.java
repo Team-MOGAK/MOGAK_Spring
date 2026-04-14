@@ -4,11 +4,11 @@ import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.exception.PostCommentException;
 import com.mogak.spring.exception.PostException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CustomUserDetails;
 import com.mogak.spring.repository.PostCommentRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -33,13 +34,9 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public PostComment create(CommentRequestDto.CreateCommentDto request, Long postId) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails)principal;
-        String email = ((CustomUserDetails) principal).getUsername();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = getCurrentUser();
         if (request.getContents().length() > 200) {
             throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
         }
@@ -61,15 +58,10 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public PostComment update(CommentRequestDto.UpdateCommentDto request, Long postId, Long commentId) {
-        /**
-         * TODO 유저 확인 체크하는 부분 추가해야함
-         */
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        PostComment comment = postCommentRepository.findByPostAndId(post, commentId);
-        if (comment == null) {
-            throw new PostCommentException(ErrorCode.NOT_EXIST_COMMENT);
-        }
+        PostComment comment = getCommentInPost(post, commentId);
+        validateOwner(comment, getCurrentUser());
         if (request.getContents().length() > 200 ) {
             throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
         }
@@ -84,10 +76,30 @@ public class PostCommentServiceImpl implements PostCommentService {
     public void delete(Long postId, Long commentId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        post.subtractPostLike();
-        PostComment postComment = postCommentRepository.findById(commentId)
-                .orElseThrow(() -> new PostCommentException(ErrorCode.NOT_EXIST_COMMENT));
-        postCommentRepository.deleteByPostAndId(post, commentId);
+        PostComment comment = getCommentInPost(post, commentId);
+        validateOwner(comment, getCurrentUser());
+        post.subtractCommentCnt();
+        postCommentRepository.delete(comment);
+    }
+
+    private User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    }
+
+    private PostComment getCommentInPost(Post post, Long commentId) {
+        PostComment comment = postCommentRepository.findByPostAndId(post, commentId);
+        if (comment == null) {
+            throw new PostCommentException(ErrorCode.NOT_EXIST_COMMENT);
+        }
+        return comment;
+    }
+
+    private void validateOwner(PostComment comment, User user) {
+        if (!Objects.equals(comment.getUser().getId(), user.getId())) {
+            throw new AuthException(ErrorCode.INVALID_PERMISSION);
+        }
     }
 
 }
