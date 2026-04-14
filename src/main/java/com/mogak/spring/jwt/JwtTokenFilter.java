@@ -1,11 +1,11 @@
 package com.mogak.spring.jwt;
 
-import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -13,10 +13,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -31,21 +27,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         String accessToken = jwtTokenProvider.resolveAccessToken(request);
-        log.info("현재 accessToken : " + accessToken);
-        try {
-            if(accessToken==null){
-                throw new BaseException(ErrorCode.EMPTY_TOKEN);
-            }
-            if(jwtTokenProvider.validateAccessToken(accessToken)){//access token 검증
-                setAuthentication(accessToken); //검증된 토큰만 securitycontextholder에 토큰 등록
-                log.info("인증 성공");
-            }
-        } catch (ExpiredJwtException e){//만료기간 체크
-            log.info("만료된 토큰입니다");
-            throw new BaseException(ErrorCode.EXPIRE_TOKEN);
-        } catch (SignatureException | UnsupportedJwtException | AuthException e){ //기존서명확인불가&jwt 구조 문제
-            log.info("잘못된 토큰입니다");
-            throw new BaseException(ErrorCode.WRONG_TOKEN);
+        if (accessToken == null) {
+            throw new BaseException(ErrorCode.EMPTY_TOKEN);
+        }
+        if (jwtTokenProvider.validateAccessToken(accessToken)) {
+            setAuthentication(accessToken);
+            log.info("인증 성공");
         }
         filterChain.doFilter(request, response);
     }
@@ -58,17 +45,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    /**
-     * 해당 uri는 filter x
-     */
-
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
         String[] excludePath = {"/","/swagger-ui/**", "/v3/api-docs", "/swagger-resources/**",
                 "/webjars/**", "/swagger-ui.html", "/swagger-ui/index.html","/api-docs/**",
                 "/api/auth/login","/api/auth/refresh","/api/auth/logout",
                 "/api/users/nickname/verify","/api/users/join"};
-        String path=request.getRequestURI();
+        String path = request.getRequestURI();
         return Arrays.stream(excludePath).anyMatch(path::startsWith);
     }
 }

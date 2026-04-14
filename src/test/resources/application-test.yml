@@ -41,7 +41,7 @@ springdoc:
     - /**
 
 jwt:
-  secret: test-secret-key-for-jwt-token
+  secret: bW9nYWstdGVzdC1qd3Qtc2VjcmV0LWZvci1oczI1NiE=
   access-token-expiry: 7200000
   refresh-token-expiry: 2678400000
 

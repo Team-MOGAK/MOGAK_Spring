@@ -1,21 +1,16 @@
 package com.mogak.spring.jwt;
 
-import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import feign.Request;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * request를 intercept해 jwt 검증
@@ -32,25 +27,17 @@ public class JwtInterceptor implements HandlerInterceptor {
         if (preflight(request)) {
             return true;
         }
-        try {
-            //헤더에서 토큰 받아옴
-            String accessToken = jwtTokenProvider.resolveAccessToken(request);
-            if (accessToken == null) {
-                log.info("token이 존재하지 않습니다");
-                throw new BaseException(ErrorCode.EMPTY_TOKEN);
-            }
-            log.info("현재 accesstoken : " + accessToken);
-            //토큰 확인되면  유저 정보 받아오고 authectication 객체 저장
-            if (jwtTokenProvider.validateAccessToken(accessToken)) {//access token 검증
-                setAuthentication(accessToken);
-                log.info("인증 성공");
-            }
-        } catch (ExpiredJwtException e) {//만료기간 체크
-            log.info("만료된 토큰입니다");
-            throw new AuthException(ErrorCode.EXPIRE_TOKEN);
-        } catch (SignatureException | UnsupportedJwtException | AuthException e) { //기존서명확인불가&jwt 구조 문제
-            log.info("잘못된 토큰입니다");
-            throw new AuthException(ErrorCode.WRONG_TOKEN);
+        //헤더에서 토큰 받아옴
+        String accessToken = jwtTokenProvider.resolveAccessToken(request);
+        if (accessToken == null) {
+            log.info("token이 존재하지 않습니다");
+            throw new BaseException(ErrorCode.EMPTY_TOKEN);
+        }
+        log.info("access token이 존재합니다");
+        //토큰 확인되면  유저 정보 받아오고 authectication 객체 저장
+        if (jwtTokenProvider.validateAccessToken(accessToken)) {//access token 검증
+            setAuthentication(accessToken);
+            log.info("인증 성공");
         }
         return true;
     }
