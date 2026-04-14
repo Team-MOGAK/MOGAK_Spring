@@ -37,12 +37,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 @WebMvcTest({UserController.class, AuthController.class})
 @Import({
         SecurityConfig.class,
+        WebConfig.class,
         JwtAuthenticationProvider.class,
         JwtAuthenticationEntryPoint.class,
         JwtAccessDeniedHandler.class,
@@ -71,8 +73,14 @@ class SecurityConfigTest {
     @Test
     @DisplayName("보호 API는 토큰 없이 호출하면 401을 반환한다")
     void protectedApiRejectsMissingToken() throws Exception {
-        mockMvc.perform(get("/api/users/profile"))
+        mockMvc.perform(get("/api/users/profile")
+                        .header("Origin", "http://localhost")
+                        .with(request -> {
+                            request.setServerName("api.localhost");
+                            return request;
+                        }))
                 .andExpect(status().isUnauthorized())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost"))
                 .andExpect(jsonPath("$.code").value("T003"));
     }
 
@@ -114,8 +122,14 @@ class SecurityConfigTest {
     @Test
     @DisplayName("ROLE_USER access token은 회원 등록 API에 접근할 수 없다")
     void joinRejectsUserRole() throws Exception {
-        mockMvc.perform(joinRequest(JwtTokenProvider.ROLE_USER))
+        mockMvc.perform(joinRequest(JwtTokenProvider.ROLE_USER)
+                        .header("Origin", "http://localhost")
+                        .with(request -> {
+                            request.setServerName("api.localhost");
+                            return request;
+                        }))
                 .andExpect(status().isForbidden())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost"))
                 .andExpect(jsonPath("$.code").value("T004"));
     }
 

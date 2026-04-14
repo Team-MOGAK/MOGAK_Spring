@@ -1,5 +1,7 @@
 package com.mogak.spring.jwt;
 
+import com.mogak.spring.exception.AuthException;
+import com.mogak.spring.global.ErrorCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -22,7 +24,7 @@ public final class CurrentUserProvider {
     }
 
     public AuthenticatedUser requireCurrentUser() {
-        return currentUser().orElseThrow(() -> new IllegalStateException("Authenticated user is not available"));
+        return currentUser().orElseThrow(() -> new AuthException(ErrorCode.EMPTY_TOKEN));
     }
 
     public Long currentUserId() {
