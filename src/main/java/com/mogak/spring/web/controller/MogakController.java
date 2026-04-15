@@ -74,8 +74,9 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PutMapping("/mogaks")
-    public ResponseEntity<BaseResponse<MogakResponseDto.GetMogakDto>> updateMogak(@Valid @RequestBody MogakRequestDto.UpdateDto request) {
-        return ResponseEntity.ok(new BaseResponse<>(mogakService.updateMogak(request)));
+    public ResponseEntity<BaseResponse<MogakResponseDto.GetMogakDto>> updateMogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                  @Valid @RequestBody MogakRequestDto.UpdateDto request) {
+        return ResponseEntity.ok(new BaseResponse<>(mogakService.updateMogak(authenticatedUser.getUserId(), request)));
     }
 
     @Operation(summary = "모각 조회", description = "입력값을 이용해 모각을 조회합니다",
@@ -102,8 +103,9 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @DeleteMapping("/mogaks/{mogakId}")
-    public ResponseEntity<BaseResponse<ErrorCode>> deleteMogak(@PathVariable Long mogakId) {
-        mogakService.deleteMogak(mogakId);
+    public ResponseEntity<BaseResponse<ErrorCode>> deleteMogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                               @PathVariable Long mogakId) {
+        mogakService.deleteMogak(authenticatedUser.getUserId(), mogakId);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 

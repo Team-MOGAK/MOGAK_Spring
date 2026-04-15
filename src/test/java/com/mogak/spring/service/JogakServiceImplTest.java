@@ -9,23 +9,19 @@ import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.repository.DailyJogakRepository;
-import com.mogak.spring.repository.JogakPeriodRepository;
-import com.mogak.spring.repository.JogakRepository;
-import com.mogak.spring.repository.MogakRepository;
-import com.mogak.spring.repository.PeriodRepository;
-import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.repository.*;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -34,9 +30,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class JogakServiceImplTest {
@@ -61,15 +55,15 @@ class JogakServiceImplTest {
         TestFixtureFactory.attachJogaks(mogak, List.of());
         Jogak saved = TestFixtureFactory.jogak(10L, mogak, "일회성 조각", false, LocalDate.of(2026, 3, 26), null, 0);
         JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto();
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "mogakId", 2L);
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "title", "일회성 조각");
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "isRoutine", false);
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
+        ReflectionTestUtils.setField(request, "mogakId", 2L);
+        ReflectionTestUtils.setField(request, "title", "일회성 조각");
+        ReflectionTestUtils.setField(request, "isRoutine", false);
+        ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
 
         when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.save(any(Jogak.class))).thenReturn(saved);
 
-        JogakResponseDto.CreateJogakDto result = jogakService.createJogak(request);
+        JogakResponseDto.CreateJogakDto result = jogakService.createJogak(1L, request);
 
         assertThat(result.getJogakId()).isEqualTo(10L);
         assertThat(result.getIsRoutine()).isFalse();
@@ -89,18 +83,18 @@ class JogakServiceImplTest {
         Period monday = TestFixtureFactory.period(1, "MONDAY");
         Period tuesday = TestFixtureFactory.period(2, "TUESDAY");
         JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto();
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "mogakId", 2L);
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "title", "루틴 조각");
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "isRoutine", true);
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "today", today);
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "days", List.of("MONDAY", "TUESDAY"));
+        ReflectionTestUtils.setField(request, "mogakId", 2L);
+        ReflectionTestUtils.setField(request, "title", "루틴 조각");
+        ReflectionTestUtils.setField(request, "isRoutine", true);
+        ReflectionTestUtils.setField(request, "today", today);
+        ReflectionTestUtils.setField(request, "days", List.of("MONDAY", "TUESDAY"));
 
         when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.save(any(Jogak.class))).thenReturn(saved);
         when(periodRepository.findOneByDays("MONDAY")).thenReturn(Optional.of(monday));
         when(periodRepository.findOneByDays("TUESDAY")).thenReturn(Optional.of(tuesday));
 
-        JogakResponseDto.CreateJogakDto result = jogakService.createJogak(request);
+        JogakResponseDto.CreateJogakDto result = jogakService.createJogak(1L, request);
 
         assertThat(result.getIsRoutine()).isTrue();
         assertThat(result.getDays()).containsExactly("MONDAY", "TUESDAY");
@@ -118,17 +112,56 @@ class JogakServiceImplTest {
         TestFixtureFactory.attachJogaks(mogak, List.of());
         Jogak saved = TestFixtureFactory.jogak(10L, mogak, "루틴 조각", true, LocalDate.of(2026, 3, 26), null, 0);
         JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto();
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "mogakId", 2L);
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "title", "루틴 조각");
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "isRoutine", true);
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
+        ReflectionTestUtils.setField(request, "mogakId", 2L);
+        ReflectionTestUtils.setField(request, "title", "루틴 조각");
+        ReflectionTestUtils.setField(request, "isRoutine", true);
+        ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
 
         when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.save(any(Jogak.class))).thenReturn(saved);
 
-        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> jogakService.createJogak(request));
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.createJogak(1L, request));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_VALID_PERIOD);
+    }
+
+    @Test
+    @DisplayName("타인 모각에 조각 생성 요청을 하면 권한 오류를 반환한다")
+    void createJogakThrowsWhenOwnerMismatch() {
+        User owner = TestFixtureFactory.user(1L, "owner@test.com", "owner", null, null);
+        User other = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
+        Modarat modarat = TestFixtureFactory.modarat(1L, owner, "모다라트", "#0000");
+        MogakCategory category = TestFixtureFactory.category(1, "자격증");
+        Mogak mogak = TestFixtureFactory.mogak(2L, owner, modarat, category, "모각", "#1234");
+        TestFixtureFactory.attachJogaks(mogak, List.of());
+        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto();
+        ReflectionTestUtils.setField(request, "mogakId", 2L);
+        ReflectionTestUtils.setField(request, "title", "조각");
+        ReflectionTestUtils.setField(request, "isRoutine", false);
+        ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
+
+        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.createJogak(other.getId(), request));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+        verify(jogakRepository, times(0)).save(any(Jogak.class));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 모각에 조각 생성 요청을 하면 기존 not-exist 응답을 반환한다")
+    void createJogakThrowsWhenMogakMissing() {
+        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto();
+        ReflectionTestUtils.setField(request, "mogakId", 999L);
+        ReflectionTestUtils.setField(request, "title", "조각");
+        ReflectionTestUtils.setField(request, "isRoutine", false);
+        ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
+
+        when(mogakRepository.findById(999L)).thenReturn(Optional.empty());
+
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.createJogak(1L, request));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_EXIST_MOGAK);
     }
 
     @Test
@@ -143,14 +176,14 @@ class JogakServiceImplTest {
                 .collect(Collectors.toList());
         TestFixtureFactory.attachJogaks(mogak, existing);
         JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto();
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "mogakId", 2L);
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "title", "새 조각");
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "isRoutine", false);
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
+        ReflectionTestUtils.setField(request, "mogakId", 2L);
+        ReflectionTestUtils.setField(request, "title", "새 조각");
+        ReflectionTestUtils.setField(request, "isRoutine", false);
+        ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
 
         when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
 
-        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> jogakService.createJogak(request));
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.createJogak(1L, request));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.EXCEED_MAX_JOGAK);
     }
@@ -190,7 +223,7 @@ class JogakServiceImplTest {
                 .thenReturn(Optional.empty());
         when(dailyJogakRepository.save(any(DailyJogak.class))).thenReturn(dailyJogak);
 
-        JogakResponseDto.JogakDailyJogakDto result = jogakService.startJogak(10L);
+        JogakResponseDto.JogakDailyJogakDto result = jogakService.startJogak(1L, 10L);
 
         assertThat(result.getDailyJogakId()).isEqualTo(100L);
         assertThat(result.getAchievements()).isZero();
@@ -209,9 +242,29 @@ class JogakServiceImplTest {
         when(dailyJogakRepository.findByCreatedAtBetweenAndId(LocalDate.now().atStartOfDay(), LocalDate.now().atStartOfDay().plusDays(1), jogak))
                 .thenReturn(Optional.of(TestFixtureFactory.dailyJogak(100L, jogak, false)));
 
-        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> jogakService.startJogak(10L));
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.startJogak(1L, 10L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.ALREADY_START_JOGAK);
+    }
+
+    @Test
+    @DisplayName("타인 조각 시작 요청을 하면 권한 오류를 반환한다")
+    void startJogakThrowsWhenOwnerMismatch() {
+        User owner = TestFixtureFactory.user(1L, "owner@test.com", "owner", null, null);
+        User other = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
+        Jogak jogak = TestFixtureFactory.jogak(10L, TestFixtureFactory.mogak(2L,
+                owner,
+                TestFixtureFactory.modarat(1L, owner, "모다라트", "#0000"),
+                TestFixtureFactory.category(1, "자격증"),
+                "모각",
+                "#1234"), "조각", false, LocalDate.now(), null, 0);
+
+        when(jogakRepository.findById(10L)).thenReturn(Optional.of(jogak));
+
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.startJogak(other.getId(), 10L));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+        verify(dailyJogakRepository, times(0)).save(any(DailyJogak.class));
     }
 
     @Test
@@ -225,10 +278,9 @@ class JogakServiceImplTest {
                 "#1234"), "조각", false, LocalDate.now(), null, 0);
         DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, jogak, false);
 
-        when(dailyJogakRepository.findById(100L)).thenReturn(Optional.of(dailyJogak));
-        when(jogakRepository.findByDailyJogak(dailyJogak)).thenReturn(Optional.of(jogak));
+        when(dailyJogakRepository.findByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
 
-        JogakResponseDto.JogakDailyJogakDto result = jogakService.successJogak(100L);
+        JogakResponseDto.JogakDailyJogakDto result = jogakService.successJogak(1L, 100L);
 
         assertThat(result.getIsAchievement()).isTrue();
         assertThat(result.getAchievements()).isEqualTo(1);
@@ -245,12 +297,146 @@ class JogakServiceImplTest {
                 "#1234"), "조각", false, LocalDate.now(), null, 1);
         DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, jogak, false);
 
-        when(dailyJogakRepository.findById(100L)).thenReturn(Optional.of(dailyJogak));
-        when(jogakRepository.findByDailyJogak(dailyJogak)).thenReturn(Optional.of(jogak));
+        when(dailyJogakRepository.findByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
 
-        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> jogakService.failJogak(100L));
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.failJogak(1L, 100L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_SUCCESS_DAILY_JOGAK);
+    }
+
+    @Test
+    @DisplayName("타인 데일리 조각 성공 요청을 하면 권한 오류를 반환한다")
+    void successJogakThrowsWhenOwnerMismatch() {
+        User owner = TestFixtureFactory.user(1L, "owner@test.com", "owner", null, null);
+        User other = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
+        Jogak jogak = TestFixtureFactory.jogak(10L, TestFixtureFactory.mogak(2L,
+                owner,
+                TestFixtureFactory.modarat(1L, owner, "모다라트", "#0000"),
+                TestFixtureFactory.category(1, "자격증"),
+                "모각",
+                "#1234"), "조각", false, LocalDate.now(), null, 0);
+        DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, jogak, false);
+
+        when(dailyJogakRepository.findByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
+
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.successJogak(other.getId(), 100L));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+    }
+
+    @Test
+    @DisplayName("타인 데일리 조각 실패 요청을 하면 권한 오류를 반환한다")
+    void failJogakThrowsWhenOwnerMismatch() {
+        User owner = TestFixtureFactory.user(1L, "owner@test.com", "owner", null, null);
+        User other = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
+        Jogak jogak = TestFixtureFactory.jogak(10L, TestFixtureFactory.mogak(2L,
+                owner,
+                TestFixtureFactory.modarat(1L, owner, "모다라트", "#0000"),
+                TestFixtureFactory.category(1, "자격증"),
+                "모각",
+                "#1234"), "조각", false, LocalDate.now(), null, 1);
+        DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, jogak, false);
+
+        when(dailyJogakRepository.findByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
+
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.failJogak(other.getId(), 100L));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+    }
+
+    @Test
+    @DisplayName("타인 조각 상세 조회를 하면 권한 오류를 반환한다")
+    void getJogakDetailThrowsWhenOwnerMismatch() {
+        User owner = TestFixtureFactory.user(1L, "owner@test.com", "owner", null, null);
+        User other = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
+        Jogak jogak = TestFixtureFactory.jogak(10L, TestFixtureFactory.mogak(2L,
+                owner,
+                TestFixtureFactory.modarat(1L, owner, "모다라트", "#0000"),
+                TestFixtureFactory.category(1, "자격증"),
+                "모각",
+                "#1234"), "조각", true, LocalDate.now(), null, 0);
+
+        when(jogakRepository.findById(10L)).thenReturn(Optional.of(jogak));
+
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.getJogakDetail(other.getId(), 10L));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 조각 상세 조회는 기존 not-exist 응답을 반환한다")
+    void getJogakDetailThrowsWhenJogakMissing() {
+        when(jogakRepository.findById(10L)).thenReturn(Optional.empty());
+
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.getJogakDetail(1L, 10L));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_EXIST_JOGAK);
+    }
+
+    @Test
+    @DisplayName("타인 조각 수정 요청을 하면 권한 오류를 반환한다")
+    void updateJogakThrowsWhenOwnerMismatch() {
+        User owner = TestFixtureFactory.user(1L, "owner@test.com", "owner", null, null);
+        User other = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
+        Jogak jogak = TestFixtureFactory.jogak(10L, TestFixtureFactory.mogak(2L,
+                owner,
+                TestFixtureFactory.modarat(1L, owner, "모다라트", "#0000"),
+                TestFixtureFactory.category(1, "자격증"),
+                "모각",
+                "#1234"), "조각", false, LocalDate.now(), null, 0);
+        JogakRequestDto.UpdateJogakDto request = new JogakRequestDto.UpdateJogakDto();
+        ReflectionTestUtils.setField(request, "title", "수정");
+        ReflectionTestUtils.setField(request, "isRoutine", false);
+
+        when(jogakRepository.findById(10L)).thenReturn(Optional.of(jogak));
+
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.updateJogak(other.getId(), 10L, request));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 조각 수정은 기존 not-exist 응답을 반환한다")
+    void updateJogakThrowsWhenJogakMissing() {
+        JogakRequestDto.UpdateJogakDto request = new JogakRequestDto.UpdateJogakDto();
+        ReflectionTestUtils.setField(request, "title", "수정");
+        ReflectionTestUtils.setField(request, "isRoutine", false);
+
+        when(jogakRepository.findById(10L)).thenReturn(Optional.empty());
+
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.updateJogak(1L, 10L, request));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_EXIST_JOGAK);
+    }
+
+    @Test
+    @DisplayName("타인 조각 삭제 요청을 하면 권한 오류를 반환한다")
+    void deleteJogakThrowsWhenOwnerMismatch() {
+        User owner = TestFixtureFactory.user(1L, "owner@test.com", "owner", null, null);
+        User other = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
+        Jogak jogak = TestFixtureFactory.jogak(10L, TestFixtureFactory.mogak(2L,
+                owner,
+                TestFixtureFactory.modarat(1L, owner, "모다라트", "#0000"),
+                TestFixtureFactory.category(1, "자격증"),
+                "모각",
+                "#1234"), "조각", false, LocalDate.now(), null, 0);
+
+        when(jogakRepository.findById(10L)).thenReturn(Optional.of(jogak));
+
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.deleteJogak(other.getId(), 10L));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+        verify(jogakRepository, times(0)).deleteById(10L);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 조각 삭제는 기존 not-exist 응답을 반환한다")
+    void deleteJogakThrowsWhenJogakMissing() {
+        when(jogakRepository.findById(10L)).thenReturn(Optional.empty());
+
+        Throwable throwable = Assertions.catchThrowable(() -> jogakService.deleteJogak(1L, 10L));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_EXIST_JOGAK);
     }
 
     @Test

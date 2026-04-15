@@ -83,6 +83,26 @@ class DailyJogakRepositoryTest {
         assertThat(result.getTitle()).isEqualTo("문제풀이");
     }
 
+    @Test
+    @DisplayName("그래프 조회 메서드는 조각과 상위 사용자 정보를 함께 반환한다")
+    void findByIdWithJogakGraph() {
+        User user = persistUser("graph@test.com");
+        Modarat modarat = entityManager.persist(TestFixtureFactory.modarat(null, user, "메인", "#1111"));
+        MogakCategory category = entityManager.persist(TestFixtureFactory.category(null, "자격증"));
+        Mogak mogak = entityManager.persist(TestFixtureFactory.mogak(null, user, modarat, category, "정보처리기사", "#aaaa"));
+        Jogak jogak = entityManager.persist(TestFixtureFactory.jogak(null, mogak, "문제풀이", false, LocalDate.now(), null, 0));
+        DailyJogak dailyJogak = entityManager.persist(TestFixtureFactory.dailyJogak(null, jogak, false));
+        TestFixtureFactory.setCreatedAt(dailyJogak, LocalDate.of(2026, 3, 26).atTime(10, 0));
+        entityManager.flush();
+        entityManager.clear();
+
+        DailyJogak result = dailyJogakRepository.findByIdWithJogakGraph(dailyJogak.getId()).orElseThrow();
+
+        assertThat(result.getJogak().getUser().getId()).isEqualTo(user.getId());
+        assertThat(result.getTitle()).isEqualTo("문제풀이");
+        assertThat(result.getMogak().getTitle()).isEqualTo("정보처리기사");
+    }
+
     private User persistUser(String email) {
         Job job = entityManager.persist(TestFixtureFactory.job("개발/데이터"));
         Address address = entityManager.persist(TestFixtureFactory.address("서울특별시"));

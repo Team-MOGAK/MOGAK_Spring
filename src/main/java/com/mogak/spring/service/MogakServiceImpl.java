@@ -8,6 +8,7 @@ import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
@@ -48,8 +49,7 @@ public class MogakServiceImpl implements MogakService {
     public MogakResponseDto.GetMogakDto create(Long userId, MogakRequestDto.CreateDto request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        Modarat modarat = modaratRepository.findById(request.getModaratId())
-                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
+        Modarat modarat = getOwnedModarat(request.getModaratId(), userId);
         if (!validateMogakNum(modarat)) {
             throw new BaseException(ErrorCode.EXCEED_MAX_MOGAK);
         }
@@ -131,9 +131,8 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Transactional
     @Override
-    public MogakResponseDto.GetMogakDto updateMogak(MogakRequestDto.UpdateDto request) {
-        Mogak mogak = mogakRepository.findById(request.getMogakId())
-                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
+    public MogakResponseDto.GetMogakDto updateMogak(Long userId, MogakRequestDto.UpdateDto request) {
+        Mogak mogak = getOwnedMogak(request.getMogakId(), userId);
         Optional<String> categoryOptional = Optional.ofNullable(request.getBigCategory());
         categoryOptional.ifPresent(categoryValue -> {
             MogakCategory category = categoryRepository.findMogakCategoryByName(categoryValue)
@@ -154,7 +153,8 @@ public class MogakServiceImpl implements MogakService {
     public MogakResponseDto.GetMogakListDto getMogakDtoList(Long userId, Long modaratId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        return MogakConverter.toGetMogakListDto(mogakRepository.findAllByModaratId(modaratId));
+        Modarat modarat = getOwnedModarat(modaratId, userId);
+        return MogakConverter.toGetMogakListDto(mogakRepository.findAllByModaratId(modarat.getId()));
     }
 
     /**
@@ -204,11 +204,18 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Transactional
     @Override
-    public void deleteMogak(Long mogakId) {
+    public void deleteMogak(Long userId, Long mogakId) {
+        Mogak mogak = getOwnedMogak(mogakId, userId);
+        deleteMogakCascadeAfterParentAuthorization(mogak.getId());
+    }
+
+    @Transactional
+    @Override
+    public void deleteMogakCascadeAfterParentAuthorization(Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId)
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         List<Jogak> jogaks = jogakRepository.findAllByMogak(mogak);
-        jogaks.forEach(jogak -> jogakService.deleteJogak(jogak.getId()));
+        jogaks.forEach(jogak -> jogakService.deleteJogakCascadeAfterParentAuthorization(jogak.getId()));
         dailyJogakRepository.flush();
         jogakRepository.flush();
 
@@ -231,8 +238,7 @@ public class MogakServiceImpl implements MogakService {
     public List<JogakResponseDto.GetJogakDto> getJogaks(Long userId, Long mogakId, LocalDate day) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        Mogak mogak = mogakRepository.findById(mogakId)
-                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MOGAK));
+        Mogak mogak = getOwnedMogak(mogakId, userId);
         List<DailyJogak> dailyJogak = dailyJogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1));
         return mogak.getJogaks().stream()
                 .filter(jogak -> jogak.getEndAt() == null || jogak.getEndAt().isAfter(day.minusDays(1)))
@@ -243,5 +249,23 @@ public class MogakServiceImpl implements MogakService {
     private static Boolean findCorrespondingDailyJogak(Jogak jogak, List<DailyJogak> dailyJogaks) {
         return dailyJogaks.stream()
                 .anyMatch(dailyJogak -> dailyJogak.getJogak().equals(jogak));
+    }
+
+    private Modarat getOwnedModarat(Long modaratId, Long userId) {
+        Modarat modarat = modaratRepository.findById(modaratId)
+                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
+        if (!modarat.getUser().getId().equals(userId)) {
+            throw new AuthException(ErrorCode.INVALID_PERMISSION);
+        }
+        return modarat;
+    }
+
+    private Mogak getOwnedMogak(Long mogakId, Long userId) {
+        Mogak mogak = mogakRepository.findById(mogakId)
+                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
+        if (!mogak.getUser().getId().equals(userId)) {
+            throw new AuthException(ErrorCode.INVALID_PERMISSION);
+        }
+        return mogak;
     }
 }

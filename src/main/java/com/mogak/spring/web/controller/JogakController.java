@@ -44,8 +44,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
-    public ResponseEntity<BaseResponse<JogakResponseDto.CreateJogakDto>> create(@Valid @RequestBody JogakRequestDto.CreateJogakDto createJogakDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(jogakService.createJogak(createJogakDto)));
+    public ResponseEntity<BaseResponse<JogakResponseDto.CreateJogakDto>> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                 @Valid @RequestBody JogakRequestDto.CreateJogakDto createJogakDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(jogakService.createJogak(authenticatedUser.getUserId(), createJogakDto)));
     }
 
     @Operation(summary = "단일 조각 조회", description = "조각 ID를 통해 조각 정보를 조회하는 API",
@@ -56,8 +57,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/{jogakId}/detail")
-    public ResponseEntity<BaseResponse<JogakResponseDto.DetailJogakDto>> getJogakDetail(@PathVariable Long jogakId) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getJogakDetail(jogakId)));
+    public ResponseEntity<BaseResponse<JogakResponseDto.DetailJogakDto>> getJogakDetail(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                         @PathVariable Long jogakId) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getJogakDetail(authenticatedUser.getUserId(), jogakId)));
     }
 
 
@@ -116,8 +118,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("{jogakId}/start")
-    public ResponseEntity<BaseResponse<JogakResponseDto.JogakDailyJogakDto>> startJogak(@PathVariable Long jogakId) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.startJogak(jogakId)));
+    public ResponseEntity<BaseResponse<JogakResponseDto.JogakDailyJogakDto>> startJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                        @PathVariable Long jogakId) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.startJogak(authenticatedUser.getUserId(), jogakId)));
     }
 
     @Operation(summary = "조각 성공", description = "오늘의 조각으로 등록된 조각을 성공시킵니다",
@@ -133,8 +136,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("{dailyJogakId}/success")
-    public ResponseEntity<BaseResponse<JogakResponseDto.JogakDailyJogakDto>> successJogak(@PathVariable Long dailyJogakId) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.successJogak(dailyJogakId)));
+    public ResponseEntity<BaseResponse<JogakResponseDto.JogakDailyJogakDto>> successJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                           @PathVariable Long dailyJogakId) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.successJogak(authenticatedUser.getUserId(), dailyJogakId)));
     }
 
     @Operation(summary = "조각 실패", description = "성공한 조각을 취소합니다",
@@ -150,8 +154,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("{dailyJogakId}/fail")
-    public ResponseEntity<BaseResponse<JogakResponseDto.JogakDailyJogakDto>> failJogak(@PathVariable Long dailyJogakId) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.failJogak(dailyJogakId)));
+    public ResponseEntity<BaseResponse<JogakResponseDto.JogakDailyJogakDto>> failJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                        @PathVariable Long dailyJogakId) {
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.failJogak(authenticatedUser.getUserId(), dailyJogakId)));
     }
 
     @Operation(summary = "조각 수정", description = "입력값을 이용해 조각을 수정합니다",
@@ -164,9 +169,10 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/{jogakId}")
-    public ResponseEntity<BaseResponse<JogakResponseDto.CreateJogakDto>> updateJogak(@PathVariable Long jogakId,
+    public ResponseEntity<BaseResponse<JogakResponseDto.CreateJogakDto>> updateJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                               @PathVariable Long jogakId,
                                                                @Valid @RequestBody JogakRequestDto.UpdateJogakDto updateJogakDto) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.updateJogak(jogakId, updateJogakDto)));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.updateJogak(authenticatedUser.getUserId(), jogakId, updateJogakDto)));
     }
 
     @Operation(summary = "조각 삭제", description = "조각을 삭제합니다",
@@ -178,8 +184,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @DeleteMapping("/{jogakId}")
-    public ResponseEntity<BaseResponse<ErrorCode>> deleteJogak(@PathVariable Long jogakId) {
-        jogakService.deleteJogak(jogakId);
+    public ResponseEntity<BaseResponse<ErrorCode>> deleteJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                               @PathVariable Long jogakId) {
+        jogakService.deleteJogak(authenticatedUser.getUserId(), jogakId);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 

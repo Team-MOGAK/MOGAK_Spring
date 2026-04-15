@@ -10,6 +10,7 @@ import com.mogak.spring.domain.jogak.Period;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.BaseException;
+import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
@@ -80,9 +81,11 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.CreateJogakDto createJogak(JogakRequestDto.CreateJogakDto createJogakDto) {
+    public JogakResponseDto.CreateJogakDto createJogak(Long userId, JogakRequestDto.CreateJogakDto createJogakDto) {
         Mogak mogak = mogakRepository.findById(createJogakDto.getMogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
+        validateMogakOwner(userId, mogak);
+
         // 조각 갯수 검증
         if (!validateJogakNum(mogak)) {
             throw new BaseException(ErrorCode.EXCEED_MAX_JOGAK);
@@ -138,9 +141,11 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.CreateJogakDto updateJogak(Long jogakId, JogakRequestDto.UpdateJogakDto updateJogakDto) {
+    public JogakResponseDto.CreateJogakDto updateJogak(Long userId, Long jogakId, JogakRequestDto.UpdateJogakDto updateJogakDto) {
         Jogak jogak = jogakRepository.findById(jogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        validateJogakOwner(userId, jogak);
+
         validatePeriod(Optional.ofNullable(updateJogakDto.getIsRoutine()), Optional.ofNullable(updateJogakDto.getDays()));
         jogak.update(updateJogakDto.getTitle(), updateJogakDto.getIsRoutine(), updateJogakDto.getEndDate());
 
@@ -156,7 +161,7 @@ public class JogakServiceImpl implements JogakService {
             updateJogakPeriod(jogak, updateJogakDto.getDays());
         }
         if (updateJogakDto.getIsRoutine() != null && !updateJogakDto.getIsRoutine()) {
-            jogakPeriodRepository.deleteAllByJogakId(jogakId);
+            jogakPeriodRepository.deleteAllByJogakId(jogak.getId());
         }
 
         return JogakConverter.toCreateJogakResponseDto(jogak);
@@ -317,9 +322,11 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.JogakDailyJogakDto startJogak(Long jogakId) {
+    public JogakResponseDto.JogakDailyJogakDto startJogak(Long userId, Long jogakId) {
         Jogak jogak = jogakRepository.findById(jogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        validateJogakOwner(userId, jogak);
+
         if (jogak.getIsRoutine() ||
                 dailyJogakRepository.findByCreatedAtBetweenAndId(
                         LocalDate.now().atStartOfDay(),
@@ -333,34 +340,36 @@ public class JogakServiceImpl implements JogakService {
 
     @Transactional
     @Override
-    public JogakResponseDto.JogakDailyJogakDto successJogak(Long dailyJogakId) {
-        DailyJogak dailyJogak = dailyJogakRepository.findById(dailyJogakId)
+    public JogakResponseDto.JogakDailyJogakDto successJogak(Long userId, Long dailyJogakId) {
+        DailyJogak dailyJogak = dailyJogakRepository.findByIdWithJogakGraph(dailyJogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
-        Jogak jogak = jogakRepository.findByDailyJogak(dailyJogak)
-                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        validateDailyJogakOwner(userId, dailyJogak);
+        Jogak jogak = dailyJogak.getJogak();
+
         if (dailyJogak.getIsAchievement()) {
             throw new BaseException(ErrorCode.ALREADY_END_JOGAK);
         }
 
         updateAchievement(true, jogak, dailyJogak);
 
-        return JogakConverter.toJogakDailyJogakDto(dailyJogak.getJogak(), dailyJogak);
+        return JogakConverter.toJogakDailyJogakDto(jogak, dailyJogak);
     }
 
     @Transactional
     @Override
-    public JogakResponseDto.JogakDailyJogakDto failJogak(Long dailyJogakId) {
-        DailyJogak dailyJogak = dailyJogakRepository.findById(dailyJogakId)
+    public JogakResponseDto.JogakDailyJogakDto failJogak(Long userId, Long dailyJogakId) {
+        DailyJogak dailyJogak = dailyJogakRepository.findByIdWithJogakGraph(dailyJogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
-        Jogak jogak = jogakRepository.findByDailyJogak(dailyJogak)
-                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        validateDailyJogakOwner(userId, dailyJogak);
+        Jogak jogak = dailyJogak.getJogak();
+
         if (!dailyJogak.getIsAchievement()) {
             throw new BaseException(ErrorCode.NOT_SUCCESS_DAILY_JOGAK);
         }
 
         updateAchievement(false, jogak, dailyJogak);
-        
-        return JogakConverter.toJogakDailyJogakDto(dailyJogak.getJogak(), dailyJogak);
+
+        return JogakConverter.toJogakDailyJogakDto(jogak, dailyJogak);
     }
 
     private void updateAchievement(boolean achievement, Jogak jogak, DailyJogak dailyJogak) {
@@ -376,10 +385,7 @@ public class JogakServiceImpl implements JogakService {
         jogak.decreaseAchievements();
     }
 
-    @Override
-    public JogakResponseDto.DetailJogakDto getJogakDetail(Long jogakId) {
-        Jogak jogak = jogakRepository.findById(jogakId)
-                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+    private JogakResponseDto.DetailJogakDto getJogakDetail(Jogak jogak) {
         Mogak mogak = mogakRepository.findByJogak(jogak)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MOGAK));
 
@@ -392,14 +398,49 @@ public class JogakServiceImpl implements JogakService {
         return JogakConverter.toGetJogakDetailResponseDto(jogak, mogak.getColor());
     }
 
+    @Override
+    public JogakResponseDto.DetailJogakDto getJogakDetail(Long userId, Long jogakId) {
+        Jogak jogak = jogakRepository.findById(jogakId)
+                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        validateJogakOwner(userId, jogak);
+        return getJogakDetail(jogak);
+    }
+
     @Transactional
     @Override
-    public void deleteJogak(Long jogakId) {
+    public void deleteJogakCascadeAfterParentAuthorization(Long jogakId) {
         Jogak jogak = jogakRepository.findById(jogakId)
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         jogakPeriodRepository.deleteAllByJogakId(jogakId);
         dailyJogakRepository.deleteAllByJogak(jogak);
         jogakRepository.deleteById(jogakId);
+    }
+
+    @Transactional
+    @Override
+    public void deleteJogak(Long userId, Long jogakId) {
+        Jogak jogak = jogakRepository.findById(jogakId)
+                .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        validateJogakOwner(userId, jogak);
+        deleteJogakCascadeAfterParentAuthorization(jogakId);
+    }
+
+    private void validateMogakOwner(Long userId, Mogak mogak) {
+        if (!Objects.equals(mogak.getUser().getId(), userId)) {
+            throw new AuthException(ErrorCode.INVALID_PERMISSION);
+        }
+    }
+
+    private void validateJogakOwner(Long userId, Jogak jogak) {
+        if (!Objects.equals(jogak.getUser().getId(), userId)) {
+            throw new AuthException(ErrorCode.INVALID_PERMISSION);
+        }
+    }
+
+    private void validateDailyJogakOwner(Long userId, DailyJogak dailyJogak) {
+        if (!Objects.equals(dailyJogak.getJogak().getUser().getId(), userId)) {
+            throw new AuthException(ErrorCode.INVALID_PERMISSION);
+        }
     }
 
     private int getTodayNum(LocalDateTime now) {

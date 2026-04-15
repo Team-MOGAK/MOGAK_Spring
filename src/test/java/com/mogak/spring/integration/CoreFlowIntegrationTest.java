@@ -89,9 +89,9 @@ class CoreFlowIntegrationTest {
                 .color("#1234")
                 .build());
 
-        JogakResponseDto.CreateJogakDto createdJogak = jogakService.createJogak(createOneTimeJogakRequest(mogak.getId(), "문제풀이", LocalDate.now()));
-        JogakResponseDto.JogakDailyJogakDto started = jogakService.startJogak(createdJogak.getJogakId());
-        JogakResponseDto.JogakDailyJogakDto succeeded = jogakService.successJogak(started.getDailyJogakId());
+        JogakResponseDto.CreateJogakDto createdJogak = jogakService.createJogak(userId, createOneTimeJogakRequest(mogak.getId(), "문제풀이", LocalDate.now()));
+        JogakResponseDto.JogakDailyJogakDto started = jogakService.startJogak(userId, createdJogak.getJogakId());
+        JogakResponseDto.JogakDailyJogakDto succeeded = jogakService.successJogak(userId, started.getDailyJogakId());
 
         Jogak persistedJogak = jogakRepository.findById(createdJogak.getJogakId()).orElseThrow();
         DailyJogak persistedDailyJogak = dailyJogakRepository.findById(started.getDailyJogakId()).orElseThrow();
@@ -120,7 +120,7 @@ class CoreFlowIntegrationTest {
                 .color("#1234")
                 .build()).getId()).orElseThrow();
 
-        JogakResponseDto.CreateJogakDto createdJogak = jogakService.createJogak(createRoutineJogakRequest(
+        JogakResponseDto.CreateJogakDto createdJogak = jogakService.createJogak(user.getId(), createRoutineJogakRequest(
                 mogak.getId(),
                 "루틴 조각",
                 LocalDate.now(),
@@ -154,10 +154,10 @@ class CoreFlowIntegrationTest {
                 .color("#1234")
                 .build());
 
-        JogakResponseDto.CreateJogakDto createdJogak = jogakService.createJogak(createOneTimeJogakRequest(mogak.getId(), "임시 조각", LocalDate.now()));
-        JogakResponseDto.JogakDailyJogakDto started = jogakService.startJogak(createdJogak.getJogakId());
+        JogakResponseDto.CreateJogakDto createdJogak = jogakService.createJogak(user.getId(), createOneTimeJogakRequest(mogak.getId(), "임시 조각", LocalDate.now()));
+        JogakResponseDto.JogakDailyJogakDto started = jogakService.startJogak(user.getId(), createdJogak.getJogakId());
 
-        mogakService.deleteMogak(mogak.getId());
+        mogakService.deleteMogak(user.getId(), mogak.getId());
         entityManager.flush();
         entityManager.clear();
 

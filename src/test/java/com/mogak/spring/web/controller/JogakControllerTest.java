@@ -67,7 +67,7 @@ class JogakControllerTest {
     @Test
     @DisplayName("조각 생성 요청이 성공하면 생성 응답 계약을 반환한다")
     void createJogakContract() throws Exception {
-        when(jogakService.createJogak(any(JogakRequestDto.CreateJogakDto.class))).thenReturn(JogakResponseDto.CreateJogakDto.builder()
+        when(jogakService.createJogak(eq(1L), any(JogakRequestDto.CreateJogakDto.class))).thenReturn(JogakResponseDto.CreateJogakDto.builder()
                 .jogakId(1L)
                 .mogakTitle("정보처리기사")
                 .category("자격증")
@@ -187,7 +187,7 @@ class JogakControllerTest {
     @Test
     @DisplayName("조각 시작 요청이 성공하면 성공 응답 계약을 반환한다")
     void startJogakContract() throws Exception {
-        when(jogakService.startJogak(1L)).thenReturn(JogakResponseDto.JogakDailyJogakDto.builder()
+        when(jogakService.startJogak(1L, 1L)).thenReturn(JogakResponseDto.JogakDailyJogakDto.builder()
                 .jogakId(1L)
                 .dailyJogakId(10L)
                 .title("문제풀이")
@@ -212,7 +212,7 @@ class JogakControllerTest {
     @Test
     @DisplayName("이미 시작한 조각의 시작을 요청하면 에러 응답 계약을 반환한다")
     void startJogakAlreadyStartedErrorContract() throws Exception {
-        when(jogakService.startJogak(1L)).thenThrow(new JogakException(ErrorCode.ALREADY_START_JOGAK));
+        when(jogakService.startJogak(1L, 1L)).thenThrow(new JogakException(ErrorCode.ALREADY_START_JOGAK));
 
         mockMvc.perform(post("/api/modarats/mogaks/jogaks/1/start"))
                 .andExpect(status().isConflict())
@@ -226,7 +226,7 @@ class JogakControllerTest {
     @Test
     @DisplayName("조각 성공 요청이 성공하면 성공 응답 계약을 반환한다")
     void successJogakContract() throws Exception {
-        when(jogakService.successJogak(10L)).thenReturn(JogakResponseDto.JogakDailyJogakDto.builder()
+        when(jogakService.successJogak(1L, 10L)).thenReturn(JogakResponseDto.JogakDailyJogakDto.builder()
                 .jogakId(1L)
                 .dailyJogakId(10L)
                 .title("문제풀이")
@@ -251,7 +251,7 @@ class JogakControllerTest {
     @Test
     @DisplayName("이미 종료한 조각의 성공을 요청하면 에러 응답 계약을 반환한다")
     void successJogakAlreadyEndedErrorContract() throws Exception {
-        when(jogakService.successJogak(10L)).thenThrow(new JogakException(ErrorCode.ALREADY_END_JOGAK));
+        when(jogakService.successJogak(1L, 10L)).thenThrow(new JogakException(ErrorCode.ALREADY_END_JOGAK));
 
         mockMvc.perform(put("/api/modarats/mogaks/jogaks/10/success"))
                 .andExpect(status().isConflict())
@@ -265,7 +265,7 @@ class JogakControllerTest {
     @Test
     @DisplayName("존재하지 않는 조각의 성공을 요청하면 에러 응답 계약을 반환한다")
     void successJogakNotFoundErrorContract() throws Exception {
-        when(jogakService.successJogak(999L)).thenThrow(new JogakException(ErrorCode.NOT_EXIST_JOGAK));
+        when(jogakService.successJogak(1L, 999L)).thenThrow(new JogakException(ErrorCode.NOT_EXIST_JOGAK));
 
         mockMvc.perform(put("/api/modarats/mogaks/jogaks/999/success"))
                 .andExpect(status().isNotFound())

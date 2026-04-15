@@ -5,6 +5,7 @@ import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
+import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.query.SingleDetailModaratDto;
 import com.mogak.spring.service.ModaratService;
 import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
@@ -54,9 +55,10 @@ public class ModaratController {
                     @ApiResponse(responseCode = "200", description = "모각 삭제 성공")
             })
     @DeleteMapping("{modaratId}")
-    public ResponseEntity<BaseResponse<Void>> deleteModarat(@PathVariable Long modaratId) {
-        modaratService.delete(modaratId);
-        return ResponseEntity.status(HttpStatus.OK).build();
+    public ResponseEntity<BaseResponse<ErrorCode>> deleteModarat(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                 @PathVariable Long modaratId) {
+        modaratService.delete(authenticatedUser.getUserId(), modaratId);
+        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
     @Operation(summary = "모다라트 수정", description = "입력값을 이용해 모다라트를 수정합니다",
@@ -65,9 +67,10 @@ public class ModaratController {
                     @ApiResponse(responseCode = "201", description = "모각 수정 성공"),
             })
     @PutMapping("/{modaratId}")
-    public ResponseEntity<BaseResponse<ModaratDto>> updateModarat(@PathVariable Long modaratId,
+    public ResponseEntity<BaseResponse<ModaratDto>> updateModarat(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                  @PathVariable Long modaratId,
                                                                   @Valid @RequestBody ModaratRequestDto.UpdateModaratDto request) {
-        Modarat modarat = modaratService.update(modaratId, request);
+        Modarat modarat = modaratService.update(authenticatedUser.getUserId(), modaratId, request);
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(ModaratConverter.toModaratDto(modarat)));
     }
 
@@ -79,8 +82,9 @@ public class ModaratController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @GetMapping("/{modaratId}")
-    public ResponseEntity<BaseResponse<SingleDetailModaratDto>> getSingleDetailModarat(@PathVariable Long modaratId) {
-        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(modaratService.getDetailModarat(modaratId)));
+    public ResponseEntity<BaseResponse<SingleDetailModaratDto>> getSingleDetailModarat(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                       @PathVariable Long modaratId) {
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(modaratService.getDetailModarat(authenticatedUser.getUserId(), modaratId)));
     }
 
     @Operation(summary = "모다라트 리스트 조회", description = "사용자의 모다라트 리스트를 조회합니다",
