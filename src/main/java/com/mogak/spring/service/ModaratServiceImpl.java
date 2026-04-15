@@ -7,7 +7,6 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.repository.ModaratRepository;
 import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -30,13 +29,11 @@ public class ModaratServiceImpl implements ModaratService {
     private final ModaratRepository modaratRepository;
     private final MogakRepository mogakRepository;
     private final MogakService mogakService;
-    private final CurrentUserProvider currentUserProvider;
 
     @Transactional
     @Override
-    public Modarat create(ModaratRequestDto.CreateModaratDto request) {
-        String email = currentUserProvider.currentEmail();
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    public Modarat create(Long userId, ModaratRequestDto.CreateModaratDto request) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return modaratRepository.save(ModaratConverter.toModarat(user, request));
     }
 
@@ -68,10 +65,8 @@ public class ModaratServiceImpl implements ModaratService {
     }
 
     @Override
-    public List<ModaratResponseDto.ModaratDto> getModaratList() {
-        String email = currentUserProvider.currentEmail();
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        Long userId = user.getId();
+    public List<ModaratResponseDto.ModaratDto> getModaratList(Long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return modaratRepository.findModaratsByUserId(userId).stream()
                 .map(ModaratConverter::toModaratDto)
                 .collect(Collectors.toList());

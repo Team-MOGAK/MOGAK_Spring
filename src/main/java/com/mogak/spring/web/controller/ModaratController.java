@@ -2,6 +2,7 @@ package com.mogak.spring.web.controller;
 
 import com.mogak.spring.converter.ModaratConverter;
 import com.mogak.spring.domain.modarat.Modarat;
+import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.repository.query.SingleDetailModaratDto;
@@ -22,6 +23,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 import static com.mogak.spring.web.dto.modaratdto.ModaratResponseDto.ModaratDto;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @Tag(name = "모다라트 API", description = "모다라트 API 명세서")
 @RequiredArgsConstructor
@@ -40,8 +42,9 @@ public class ModaratController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
-    public ResponseEntity<BaseResponse<ModaratDto>> createModarat(@Valid @RequestBody ModaratRequestDto.CreateModaratDto request) {
-        Modarat modarat = modaratService.create(request);
+    public ResponseEntity<BaseResponse<ModaratDto>> createModarat(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                   @Valid @RequestBody ModaratRequestDto.CreateModaratDto request) {
+        Modarat modarat = modaratService.create(authenticatedUser.getUserId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(ModaratConverter.toModaratDto(modarat)));
     }
 
@@ -88,8 +91,8 @@ public class ModaratController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("")
-    public ResponseEntity<BaseResponse<List<ModaratDto>>> getModaratList() {
-        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(modaratService.getModaratList()));
+    public ResponseEntity<BaseResponse<List<ModaratDto>>> getModaratList(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(modaratService.getModaratList(authenticatedUser.getUserId())));
     }
 
 }
