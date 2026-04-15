@@ -4,21 +4,17 @@ import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.repository.PostCommentRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.support.ErrorCodeAssertions;
-import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.commentdto.CommentRequestDto;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -27,6 +23,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,16 +37,9 @@ class PostCommentServiceImplTest {
     private PostRepository postRepository;
     @Mock
     private UserRepository userRepository;
-    @Spy
-    private CurrentUserProvider currentUserProvider = new CurrentUserProvider();
 
     @InjectMocks
     private PostCommentServiceImpl postCommentService;
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextTestHelper.clear();
-    }
 
     @Test
     @DisplayName("인증 사용자가 댓글을 생성하면 댓글을 저장하고 댓글 수를 증가시킨다")
@@ -58,12 +48,11 @@ class PostCommentServiceImplTest {
         Post post = post(10L, writer, 3, 0);
         CommentRequestDto.CreateCommentDto request = createRequest("새 댓글");
 
-        SecurityContextTestHelper.setAuthentication("writer@test.com");
         when(postRepository.findById(10L)).thenReturn(Optional.of(post));
-        when(userRepository.findByEmail("writer@test.com")).thenReturn(Optional.of(writer));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(writer));
         when(postCommentRepository.save(any(PostComment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        PostComment result = postCommentService.create(request, 10L);
+        PostComment result = postCommentService.create(1L, request, 10L);
 
         assertThat(result.getPost()).isSameAs(post);
         assertThat(result.getUser()).isSameAs(writer);
@@ -79,12 +68,11 @@ class PostCommentServiceImplTest {
         Post post = post(10L, writer, 3, 1);
         PostComment comment = comment(100L, post, writer, "기존 댓글");
 
-        SecurityContextTestHelper.setAuthentication("writer@test.com");
         when(postRepository.findById(10L)).thenReturn(Optional.of(post));
         when(postCommentRepository.findByPostAndId(post, 100L)).thenReturn(comment);
-        when(userRepository.findByEmail("writer@test.com")).thenReturn(Optional.of(writer));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(writer));
 
-        PostComment result = postCommentService.update(updateRequest("수정 댓글"), 10L, 100L);
+        PostComment result = postCommentService.update(1L, updateRequest("수정 댓글"), 10L, 100L);
 
         assertThat(result.getContents()).isEqualTo("수정 댓글");
         assertThat(comment.getContents()).isEqualTo("수정 댓글");
@@ -98,12 +86,11 @@ class PostCommentServiceImplTest {
         Post post = post(10L, writer, 3, 1);
         PostComment comment = comment(100L, post, writer, "기존 댓글");
 
-        SecurityContextTestHelper.setAuthentication("other@test.com");
         when(postRepository.findById(10L)).thenReturn(Optional.of(post));
         when(postCommentRepository.findByPostAndId(post, 100L)).thenReturn(comment);
-        when(userRepository.findByEmail("other@test.com")).thenReturn(Optional.of(other));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(other));
 
-        Throwable throwable = catchThrowable(() -> postCommentService.update(updateRequest("수정 댓글"), 10L, 100L));
+        Throwable throwable = catchThrowable(() -> postCommentService.update(2L, updateRequest("수정 댓글"), 10L, 100L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
         assertThat(comment.getContents()).isEqualTo("기존 댓글");
@@ -117,12 +104,11 @@ class PostCommentServiceImplTest {
         Post post = post(10L, writer, 3, 1);
         PostComment comment = comment(100L, post, writer, "기존 댓글");
 
-        SecurityContextTestHelper.setAuthentication("other@test.com");
         when(postRepository.findById(10L)).thenReturn(Optional.of(post));
         when(postCommentRepository.findByPostAndId(post, 100L)).thenReturn(comment);
-        when(userRepository.findByEmail("other@test.com")).thenReturn(Optional.of(other));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(other));
 
-        Throwable throwable = catchThrowable(() -> postCommentService.delete(10L, 100L));
+        Throwable throwable = catchThrowable(() -> postCommentService.delete(2L, 10L, 100L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
         assertThat(post.getCommentCnt()).isEqualTo(1);
@@ -139,12 +125,12 @@ class PostCommentServiceImplTest {
         when(postRepository.findById(10L)).thenReturn(Optional.of(post));
         when(postCommentRepository.findByPostAndId(post, 100L)).thenReturn(null);
 
-        Throwable throwable = catchThrowable(() -> postCommentService.delete(10L, 100L));
+        Throwable throwable = catchThrowable(() -> postCommentService.delete(1L, 10L, 100L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_EXIST_COMMENT);
         assertThat(post.getCommentCnt()).isEqualTo(1);
         assertThat(post.getLikeCnt()).isEqualTo(3);
-        verify(userRepository, never()).findByEmail(any());
+        verify(userRepository, never()).findById(anyLong());
         verify(postCommentRepository, never()).delete(any(PostComment.class));
     }
 
@@ -155,12 +141,11 @@ class PostCommentServiceImplTest {
         Post post = post(10L, writer, 3, 2);
         PostComment comment = comment(100L, post, writer, "기존 댓글");
 
-        SecurityContextTestHelper.setAuthentication("writer@test.com");
         when(postRepository.findById(10L)).thenReturn(Optional.of(post));
         when(postCommentRepository.findByPostAndId(post, 100L)).thenReturn(comment);
-        when(userRepository.findByEmail("writer@test.com")).thenReturn(Optional.of(writer));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(writer));
 
-        postCommentService.delete(10L, 100L);
+        postCommentService.delete(1L, 10L, 100L);
 
         assertThat(post.getCommentCnt()).isEqualTo(1);
         assertThat(post.getLikeCnt()).isEqualTo(3);

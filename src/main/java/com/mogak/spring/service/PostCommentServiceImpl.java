@@ -9,7 +9,6 @@ import com.mogak.spring.exception.PostCommentException;
 import com.mogak.spring.exception.PostException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.repository.PostCommentRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -29,15 +28,14 @@ public class PostCommentServiceImpl implements PostCommentService {
     private final PostCommentRepository postCommentRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final CurrentUserProvider currentUserProvider;
 
     //댓글 생성 - dto
     @Transactional
     @Override
-    public PostComment create(CommentRequestDto.CreateCommentDto request, Long postId) {
+    public PostComment create(Long userId, CommentRequestDto.CreateCommentDto request, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        User user = getCurrentUser();
+        User user = getUser(userId);
         if (request.getContents().length() > 200) {
             throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
         }
@@ -58,11 +56,11 @@ public class PostCommentServiceImpl implements PostCommentService {
     //댓글 수정
     @Transactional
     @Override
-    public PostComment update(CommentRequestDto.UpdateCommentDto request, Long postId, Long commentId) {
+    public PostComment update(Long userId, CommentRequestDto.UpdateCommentDto request, Long postId, Long commentId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         PostComment comment = getCommentInPost(post, commentId);
-        validateOwner(comment, getCurrentUser());
+        validateOwner(comment, getUser(userId));
         if (request.getContents().length() > 200 ) {
             throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
         }
@@ -74,18 +72,17 @@ public class PostCommentServiceImpl implements PostCommentService {
     //댓글 삭제
     @Transactional
     @Override
-    public void delete(Long postId, Long commentId) {
+    public void delete(Long userId, Long postId, Long commentId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         PostComment comment = getCommentInPost(post, commentId);
-        validateOwner(comment, getCurrentUser());
+        validateOwner(comment, getUser(userId));
         post.subtractCommentCnt();
         postCommentRepository.delete(comment);
     }
 
-    private User getCurrentUser() {
-        String email = currentUserProvider.currentEmail();
-        return userRepository.findByEmail(email)
+    private User getUser(Long userId) {
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
     }
 

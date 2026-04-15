@@ -12,7 +12,6 @@ import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.PostException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
@@ -38,7 +37,6 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final PostImgRepository postImgRepository;
     private final PostCommentRepository postCommentRepository;
-    private final CurrentUserProvider currentUserProvider;
 
     /**
      * TODO 회고록 - user id로 조회되도록 수정
@@ -47,10 +45,9 @@ public class PostServiceImpl implements PostService {
     //회고록 & 회고록 이미지 생성 => 리팩토링 필요
     @Transactional
     @Override
-    public Post create(PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList,Long mogakId) {
-        String email = currentUserProvider.currentEmail();
+    public Post create(Long userId, PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, Long mogakId) {
         Mogak mogak = mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (request.getContents().length() > 350) {
             throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
         }
@@ -117,9 +114,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<NetworkPostDto> getPacemakerPosts(int cursor, int size) {
-        String email = currentUserProvider.currentEmail();
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    public List<NetworkPostDto> getPacemakerPosts(Long userId, int cursor, int size) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Pageable pageable = PageRequest.of(cursor, size);
         List<Post> posts = postRepository.findPacemakerPostsByUser(user, pageable);
         //postImg 중 썸네일 이미지는 제외
@@ -146,9 +142,8 @@ public class PostServiceImpl implements PostService {
 
     //전체 네트워킹 조회 - 이미지 썸네일 제외 반환
     @Override
-    public Slice<Post> getNetworkPosts(int page, int size, String sort, String address /*List<String> categoryList,*/){
-        String email = currentUserProvider.currentEmail();
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    public Slice<Post> getNetworkPosts(Long userId, int page, int size, String sort, String address /*List<String> categoryList,*/){
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if(address == null){
             address = user.getAddress().getName();
         }
