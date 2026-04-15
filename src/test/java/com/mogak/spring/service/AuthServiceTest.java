@@ -2,9 +2,11 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.auth.AppleOAuthUserProvider;
 import com.mogak.spring.auth.AppleUserResponse;
+import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.modarat.Modarat;
+import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.repository.DailyJogakRepository;
@@ -15,20 +17,19 @@ import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.support.ErrorCodeAssertions;
-import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
 import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
-import org.junit.jupiter.api.AfterEach;
+import com.mogak.spring.web.dto.authdto.AuthResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,15 +47,9 @@ class AuthServiceTest {
     @Mock private JogakPeriodRepository jogakPeriodRepository;
     @Mock private AppleOAuthUserProvider appleOAuthUserProvider;
     @Mock private JwtTokenProvider jwtTokenProvider;
-    @Spy private CurrentUserProvider currentUserProvider = new CurrentUserProvider();
 
     @InjectMocks
     private AuthService authService;
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextTestHelper.clear();
-    }
 
     @Test
     @DisplayName("기존 사용자가 애플 로그인하면 발급한 refresh 토큰을 사용자 DB에 저장한다")
@@ -121,5 +116,23 @@ class AuthServiceTest {
         authService.logout(1L);
 
         assertThat(ReflectionTestUtils.getField(user, "refreshToken")).isNull();
+    }
+
+    @Test
+    @DisplayName("회원탈퇴는 사용자 id 기준으로 계정을 비활성화하고 관련 데이터를 제거한다")
+    void deleteUserMarksInactiveAndDeletesRelatedData() {
+        User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
+        Modarat modarat = TestFixtureFactory.modarat(11L, user, "모다라트", "#ffffff");
+        Mogak mogak = TestFixtureFactory.mogak(21L, user, modarat, TestFixtureFactory.category(1, "대분류"), "모각", "#aaaaaa");
+        Jogak jogak = TestFixtureFactory.jogak(31L, mogak, "조각", false, null, null, 0);
+        ReflectionTestUtils.setField(user, "validation", "ACTIVE");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(jogakRepository.findAllByUserId(1L)).thenReturn(Optional.of(List.of(jogak)));
+
+        AuthResponse.WithdrawDto result = authService.deleteUser(1L);
+
+        assertThat(result.isDeleted()).isTrue();
+        assertThat(ReflectionTestUtils.getField(user, "validation")).isEqualTo("INACTIVE");
     }
 }

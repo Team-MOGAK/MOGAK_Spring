@@ -7,7 +7,6 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.repository.*;
@@ -35,7 +34,6 @@ public class AuthService {
     private final JogakPeriodRepository jogakPeriodRepository;
     private final AppleOAuthUserProvider appleOAuthUserProvider;
     private final JwtTokenProvider jwtTokenProvider;
-    private final CurrentUserProvider currentUserProvider;
 
     //로그인
     @Transactional
@@ -118,15 +116,9 @@ public class AuthService {
      * 로그인한 사용자 탈퇴
      */
     @Transactional
-    public AuthResponse.WithdrawDto deleteUser() {
-        String email = currentUserProvider.currentEmail();
-        User deleteUser = userRepository.findByEmail(email)
+    public AuthResponse.WithdrawDto deleteUser(Long userId) {
+        User deleteUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        if (deleteUser == null) {
-            return AuthResponse.WithdrawDto.builder()
-                    .isDeleted(false)
-                    .build();
-        }
         deleteUser.updateValidation("INACTIVE");
         /**
          * TODO cascade로 변경
