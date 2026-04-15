@@ -206,13 +206,19 @@ public class PostServiceImpl implements PostService {
     }
 
     private void validateContents(PostRequestDto.CreatePostDto request) {
-        if (request == null || request.getContents() == null || request.getContents().length() > 350) {
+        if (request == null || request.getContents() == null) {
+            throw new PostException(ErrorCode.INVALID_PARAMETER_ERROR);
+        }
+        if (request.getContents().length() > 350) {
             throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
         }
     }
 
     private void validateContents(PostRequestDto.UpdatePostDto request) {
-        if (request == null || request.contents == null || request.contents.length() > 350) {
+        if (request == null || request.contents == null) {
+            throw new PostException(ErrorCode.INVALID_PARAMETER_ERROR);
+        }
+        if (request.contents.length() > 350) {
             throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
         }
     }

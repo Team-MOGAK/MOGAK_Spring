@@ -80,6 +80,22 @@ class PostServiceImplTest {
     }
 
     @Test
+    @DisplayName("게시글 생성 preflight는 본문이 없으면 입력값 오류를 반환한다")
+    void validateCreateAccessThrowsInvalidParameterWhenContentsMissing() {
+        User owner = user(1L, "owner@test.com");
+        Mogak mogak = mogak(10L, owner);
+        PostRequestDto.CreatePostDto request = createRequest(null);
+        List<MultipartFile> images = List.of(image("post.png"));
+
+        when(mogakRepository.findById(10L)).thenReturn(Optional.of(mogak));
+
+        Throwable throwable = catchThrowable(() -> postService.validateCreateAccess(1L, request, images, 10L));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PARAMETER_ERROR);
+        verify(postRepository, never()).findById(anyLong());
+    }
+
+    @Test
     @DisplayName("게시글 생성에 성공하면 이미지와 게시글을 저장한다")
     void createSavesPostAfterValidationWithImages() {
         User writer = user(1L, "writer@test.com");
@@ -152,6 +168,21 @@ class PostServiceImplTest {
         Throwable throwable = catchThrowable(() -> postService.update(2L, 10L, request));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+        assertThat(post.getContents()).isEqualTo("content");
+    }
+
+    @Test
+    @DisplayName("게시글 수정은 본문이 없으면 입력값 오류를 반환하고 내용은 유지된다")
+    void updateThrowsInvalidParameterWhenContentsMissing() {
+        User owner = user(1L, "owner@test.com");
+        Post post = post(10L, owner);
+        PostRequestDto.UpdatePostDto request = updateRequest(null);
+
+        when(postRepository.findById(10L)).thenReturn(Optional.of(post));
+
+        Throwable throwable = catchThrowable(() -> postService.update(1L, 10L, request));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PARAMETER_ERROR);
         assertThat(post.getContents()).isEqualTo("content");
     }
 

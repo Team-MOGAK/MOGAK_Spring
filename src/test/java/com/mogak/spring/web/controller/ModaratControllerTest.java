@@ -128,12 +128,7 @@ class ModaratControllerTest {
     void deleteModaratForwardsUserId() throws Exception {
         mockMvc.perform(delete("/api/modarats/10"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.time").exists())
-                .andExpect(jsonPath("$.status").value("OK"))
-                .andExpect(jsonPath("$.code").value("success"))
-                .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
-                .andExpect(jsonPath("$.result").doesNotExist());
+                .andExpect(content().string(""));
 
         verify(modaratService).delete(1L, 10L);
     }

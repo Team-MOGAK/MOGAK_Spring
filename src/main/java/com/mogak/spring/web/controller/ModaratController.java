@@ -5,7 +5,6 @@ import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
-import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.query.SingleDetailModaratDto;
 import com.mogak.spring.service.ModaratService;
 import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
@@ -52,19 +51,19 @@ public class ModaratController {
     @Operation(summary = "모다라트 삭제", description = "모다라트를 삭제합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
-                    @ApiResponse(responseCode = "200", description = "모각 삭제 성공")
+                    @ApiResponse(responseCode = "200", description = "모다라트 삭제 성공")
             })
     @DeleteMapping("{modaratId}")
-    public ResponseEntity<BaseResponse<ErrorCode>> deleteModarat(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                                 @PathVariable Long modaratId) {
+    public ResponseEntity<Void> deleteModarat(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                              @PathVariable Long modaratId) {
         modaratService.delete(authenticatedUser.getUserId(), modaratId);
-        return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "모다라트 수정", description = "입력값을 이용해 모다라트를 수정합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
-                    @ApiResponse(responseCode = "201", description = "모각 수정 성공"),
+                    @ApiResponse(responseCode = "200", description = "모다라트 수정 성공"),
             })
     @PutMapping("/{modaratId}")
     public ResponseEntity<BaseResponse<ModaratDto>> updateModarat(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
