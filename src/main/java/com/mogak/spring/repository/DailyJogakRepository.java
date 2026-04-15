@@ -33,8 +33,6 @@ public interface DailyJogakRepository extends JpaRepository<DailyJogak, Long> {
             "JOIN FETCH j.user " +
             "JOIN FETCH j.mogak " +
             "JOIN FETCH j.category " +
-            "JOIN FETCH dj.mogak " +
-            "JOIN FETCH dj.category " +
             "WHERE dj.id = :dailyJogakId")
     Optional<DailyJogak> findByIdWithJogakGraph(@Param("dailyJogakId") Long dailyJogakId);
 

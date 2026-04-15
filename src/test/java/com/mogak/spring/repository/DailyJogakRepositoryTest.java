@@ -84,7 +84,7 @@ class DailyJogakRepositoryTest {
     }
 
     @Test
-    @DisplayName("그래프 조회 메서드는 조각과 상위 사용자 정보를 함께 반환한다")
+    @DisplayName("그래프 조회 메서드는 조각 owner 검증과 응답 변환에 필요한 정보를 함께 반환한다")
     void findByIdWithJogakGraph() {
         User user = persistUser("graph@test.com");
         Modarat modarat = entityManager.persist(TestFixtureFactory.modarat(null, user, "메인", "#1111"));
@@ -99,8 +99,9 @@ class DailyJogakRepositoryTest {
         DailyJogak result = dailyJogakRepository.findByIdWithJogakGraph(dailyJogak.getId()).orElseThrow();
 
         assertThat(result.getJogak().getUser().getId()).isEqualTo(user.getId());
+        assertThat(result.getJogak().getMogak().getTitle()).isEqualTo("정보처리기사");
+        assertThat(result.getJogak().getCategory().getName()).isEqualTo("자격증");
         assertThat(result.getTitle()).isEqualTo("문제풀이");
-        assertThat(result.getMogak().getTitle()).isEqualTo("정보처리기사");
     }
 
     private User persistUser(String email) {
