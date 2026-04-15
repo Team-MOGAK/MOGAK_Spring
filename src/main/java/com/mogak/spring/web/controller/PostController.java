@@ -19,8 +19,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -34,7 +34,7 @@ import static com.mogak.spring.web.dto.postdto.PostResponseDto.*;
 public class PostController {
     private final PostService postService;
     private final StorageService storageService;
-    private static String dirName = "img";
+    private static final String DIR_NAME = "img";
 
     //create
     @Operation(summary = "회고록 생성", description = "회고록을 생성합니다",
@@ -52,7 +52,8 @@ public class PostController {
                                                                   @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                   @RequestPart PostRequestDto.CreatePostDto request,
                                                                   @RequestPart(required = true) List<MultipartFile> multipartFile) {
-        List<CreatePostImgDto> postImgDtoList = storageService.uploadImg(multipartFile, dirName);
+        postService.validateCreateAccess(authenticatedUser.getUserId(), request, multipartFile, mogakId);
+        List<CreatePostImgDto> postImgDtoList = storageService.uploadImg(multipartFile, DIR_NAME);
         Post post = postService.create(authenticatedUser.getUserId(), request, postImgDtoList, mogakId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toCreatePostDto(post)));
     }
@@ -72,9 +73,10 @@ public class PostController {
             })
     @GetMapping("/api/mogaks/{mogakId}/posts")
     public ResponseEntity<BaseResponse<Slice<GetPostDto>>> getPostList(@PathVariable Long mogakId,
+                                                                       @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                        @RequestParam(value = "page", defaultValue = "0") int page,
                                                                        @RequestParam(value = "size") int size) {
-        Slice<Post> posts = postService.getAllPosts(page, mogakId, size);
+        Slice<Post> posts = postService.getAllPosts(authenticatedUser.getUserId(), page, mogakId, size);
         //다음페이지 존재 여부 전달 필요
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostPagingDto(posts)));
     }
@@ -89,8 +91,9 @@ public class PostController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/api/mogaks/posts/{postId}")
-    public ResponseEntity<BaseResponse<PostDto>> getPostDetail(@PathVariable Long postId) {
-        Post post = postService.findById(postId);
+    public ResponseEntity<BaseResponse<PostDto>> getPostDetail(@PathVariable Long postId,
+                                                               @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        Post post = postService.findById(authenticatedUser.getUserId(), postId);
         List<String> imgUrls = postService.findNotThumbnailImg(post); //썸네일은 제외하고 보여주기
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostDto(post, imgUrls)));
     }
@@ -108,8 +111,9 @@ public class PostController {
             })
     @PutMapping("/api/mogaks/posts/{postId}")
     public ResponseEntity<BaseResponse<UpdatePostDto>> updatePost(@PathVariable Long postId,
+                                                                  @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                   @RequestBody PostRequestDto.UpdatePostDto request) {
-        Post post = postService.update(postId, request);
+        Post post = postService.update(authenticatedUser.getUserId(), postId, request);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toUpdatePostDto(post)));
     }
 
@@ -123,11 +127,12 @@ public class PostController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @DeleteMapping("/api/mogaks/posts/{postId}")
-    public ResponseEntity<BaseResponse<DeletePostDto>> deletePost(@PathVariable Long postId) {
-        Post post = postService.findById(postId);
+    public ResponseEntity<BaseResponse<DeletePostDto>> deletePost(@PathVariable Long postId,
+                                                                  @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        Post post = postService.findById(authenticatedUser.getUserId(), postId);
         List<PostImg> postImgList = postService.findAllImgByPost(post);
-        storageService.deleteImg(postImgList, dirName);
-        postService.delete(postId);
+        storageService.deleteImg(postImgList, DIR_NAME);
+        postService.delete(authenticatedUser.getUserId(), postId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toDeletePostDto()));
     }
 
