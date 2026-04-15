@@ -5,6 +5,7 @@ import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
 import org.springframework.data.domain.Slice;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -12,11 +13,12 @@ import static com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkPostDto;
 
 public interface PostService {
 
+    void validateCreateAccess(Long userId, PostRequestDto.CreatePostDto request, List<MultipartFile> multipartFile, Long mogakId);
     Post create(Long userId, PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, Long mogakId);
-    Slice<Post> getAllPosts(int page, Long mogakId, int size);
-    Post findById(Long postId);
-    Post update(Long postId, PostRequestDto.UpdatePostDto request);
-    void delete(Long postId);
+    Slice<Post> getAllPosts(Long userId, int page, Long mogakId, int size);
+    Post findById(Long userId, Long postId);
+    Post update(Long userId, Long postId, PostRequestDto.UpdatePostDto request);
+    void delete(Long userId, Long postId);
     List<NetworkPostDto> getPacemakerPosts(Long userId, int cursor, int size);
     Slice<Post> getNetworkPosts(Long userId, int page, int size, String sort, String address);
     List<String> findImgUrlByPost(Long postId);

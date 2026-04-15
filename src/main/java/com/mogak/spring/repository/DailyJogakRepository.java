@@ -28,6 +28,14 @@ public interface DailyJogakRepository extends JpaRepository<DailyJogak, Long> {
                                      @Param(value = "today") LocalDateTime today,
                                      @Param(value = "tomorrow") LocalDateTime tomorrow);
 
+    @Query("SELECT dj FROM DailyJogak dj " +
+            "JOIN FETCH dj.jogak j " +
+            "JOIN FETCH j.user " +
+            "JOIN FETCH j.mogak " +
+            "JOIN FETCH j.category " +
+            "WHERE dj.id = :dailyJogakId")
+    Optional<DailyJogak> findByIdWithJogakGraph(@Param("dailyJogakId") Long dailyJogakId);
+
     void deleteAllByJogak(Jogak jogak);
 
     List<DailyJogak> findAllByJogak(Jogak jogak);

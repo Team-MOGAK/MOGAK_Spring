@@ -32,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -97,6 +98,8 @@ class MogakControllerTest {
                 .andExpect(jsonPath("$.result.id").value(1L))
                 .andExpect(jsonPath("$.result.title").value("정보처리기사"))
                 .andExpect(jsonPath("$.result.smallCategory").value("필기"));
+
+        verify(mogakService).create(eq(1L), any(MogakRequestDto.CreateDto.class));
     }
 
     @Test
@@ -136,6 +139,8 @@ class MogakControllerTest {
                 .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
                 .andExpect(jsonPath("$.result.size").value(1))
                 .andExpect(jsonPath("$.result.mogaks[0].title").value("정보처리기사"));
+
+        verify(mogakService).getMogakDtoList(1L, 10L);
     }
 
     @Test
@@ -164,6 +169,8 @@ class MogakControllerTest {
                 .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
                 .andExpect(jsonPath("$.result[0].jogakId").value(100L))
                 .andExpect(jsonPath("$.result[0].isAlreadyAdded").value(true));
+
+        verify(mogakService).getJogaks(1L, 1L, LocalDate.of(2026, 3, 26));
     }
 
     @Test
@@ -177,13 +184,41 @@ class MogakControllerTest {
                 .andExpect(jsonPath("$.code").value("success"))
                 .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
                 .andExpect(jsonPath("$.result").doesNotExist());
+
+        verify(mogakService).deleteMogak(1L, 1L);
+    }
+
+    @Test
+    @DisplayName("모각 수정 요청이 성공하면 userId를 서비스로 전달한다")
+    void updateMogakForwardsUserId() throws Exception {
+        when(mogakService.updateMogak(eq(1L), any(MogakRequestDto.UpdateDto.class))).thenReturn(MogakResponseDto.GetMogakDto.builder()
+                .id(1L)
+                .title("수정된 모각")
+                .bigCategory(MogakCategory.builder().id(1).name("자격증").build())
+                .smallCategory("필기")
+                .color("#112233")
+                .build());
+
+        mockMvc.perform(put("/api/modarats/mogaks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(MogakRequestDto.UpdateDto.builder()
+                                .mogakId(1L)
+                                .title("수정된 모각")
+                                .bigCategory("자격증")
+                                .smallCategory("필기")
+                                .color("#112233")
+                                .build())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.title").value("수정된 모각"));
+
+        verify(mogakService).updateMogak(eq(1L), any(MogakRequestDto.UpdateDto.class));
     }
 
     @Test
     @DisplayName("존재하지 않는 모각 삭제를 요청하면 에러 응답 계약을 반환한다")
     void deleteMogakNotFoundContract() throws Exception {
         doThrow(new MogakException(ErrorCode.NOT_EXIST_MOGAK))
-                .when(mogakService).deleteMogak(99L);
+                .when(mogakService).deleteMogak(1L, 99L);
 
         mockMvc.perform(delete("/api/modarats/mogaks/99"))
                 .andExpect(status().isNotFound())

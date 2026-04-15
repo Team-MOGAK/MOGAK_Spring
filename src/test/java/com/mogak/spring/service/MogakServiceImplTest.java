@@ -75,6 +75,28 @@ class MogakServiceImplTest {
     }
 
     @Test
+    @DisplayName("다른 사용자의 모다라트에 모각을 생성하면 권한 오류를 반환한다")
+    void createThrowsWhenModaratNotOwned() {
+        User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
+        User otherUser = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
+        Modarat modarat = TestFixtureFactory.modarat(3L, otherUser, "메인 모다라트", "#0000");
+        MogakRequestDto.CreateDto request = MogakRequestDto.CreateDto.builder()
+                .modaratId(3L)
+                .title("정보처리기사")
+                .bigCategory("자격증")
+                .build();
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(modaratRepository.findById(3L)).thenReturn(Optional.of(modarat));
+
+        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.create(1L, request));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+        verify(mogakRepository, org.mockito.Mockito.never()).findAllByModaratId(3L);
+        verify(mogakRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any(Mogak.class));
+    }
+
+    @Test
     @DisplayName("모다라트에 모각이 8개 있으면 새 모각을 생성할 수 없다")
     void createThrowsWhenMaxExceeded() {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
@@ -120,7 +142,7 @@ class MogakServiceImplTest {
                 .color("#9999")
                 .build();
 
-        MogakResponseDto.GetMogakDto result = mogakService.updateMogak(request);
+        MogakResponseDto.GetMogakDto result = mogakService.updateMogak(1L, request);
 
         assertThat(result.getTitle()).isEqualTo("새 제목");
         assertThat(mogak.getBigCategory()).isEqualTo(newCategory);
@@ -142,14 +164,71 @@ class MogakServiceImplTest {
         when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.findAllByMogak(mogak)).thenReturn(List.of(first, second));
 
-        mogakService.deleteMogak(2L);
+        mogakService.deleteMogak(1L, 2L);
 
-        verify(jogakService).deleteJogak(10L);
-        verify(jogakService).deleteJogak(11L);
+        verify(jogakService).deleteJogakCascadeAfterParentAuthorization(10L);
+        verify(jogakService).deleteJogakCascadeAfterParentAuthorization(11L);
         verify(jogakRepository).findAllByMogak(mogak);
         verify(dailyJogakRepository).flush();
         verify(jogakRepository).flush();
         verify(mogakRepository).deleteById(2L);
+    }
+
+    @Test
+    @DisplayName("다른 사용자의 모각을 수정하면 권한 오류를 반환한다")
+    void updateThrowsWhenMogakNotOwned() {
+        User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
+        User otherUser = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
+        Modarat modarat = TestFixtureFactory.modarat(1L, otherUser, "모다라트", "#0000");
+        MogakCategory category = TestFixtureFactory.category(1, "자격증");
+        Mogak mogak = TestFixtureFactory.mogak(2L, otherUser, modarat, category, "원래 제목", "#1234");
+        MogakRequestDto.UpdateDto request = MogakRequestDto.UpdateDto.builder()
+                .mogakId(2L)
+                .title("새 제목")
+                .bigCategory("자격증")
+                .smallCategory("백엔드")
+                .color("#9999")
+                .build();
+
+        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+
+        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.updateMogak(1L, request));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+        verify(categoryRepository, org.mockito.Mockito.never()).findMogakCategoryByName("자격증");
+    }
+
+    @Test
+    @DisplayName("다른 사용자의 모각을 삭제하면 권한 오류를 반환한다")
+    void deleteThrowsWhenMogakNotOwned() {
+        User otherUser = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
+        Modarat modarat = TestFixtureFactory.modarat(1L, otherUser, "모다라트", "#0000");
+        MogakCategory category = TestFixtureFactory.category(1, "자격증");
+        Mogak mogak = TestFixtureFactory.mogak(2L, otherUser, modarat, category, "원래 제목", "#1234");
+
+        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+
+        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.deleteMogak(1L, 2L));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+        verify(jogakService, org.mockito.Mockito.never()).deleteJogakCascadeAfterParentAuthorization(org.mockito.ArgumentMatchers.anyLong());
+        verify(mogakRepository, org.mockito.Mockito.never()).deleteById(org.mockito.ArgumentMatchers.anyLong());
+    }
+
+    @Test
+    @DisplayName("다른 사용자의 모다라트 모각 목록을 조회하면 권한 오류를 반환한다")
+    void getMogakDtoListThrowsWhenModaratNotOwned() {
+        User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
+        User otherUser = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
+        Modarat modarat = TestFixtureFactory.modarat(3L, otherUser, "메인 모다라트", "#0000");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(modaratRepository.findById(3L)).thenReturn(Optional.of(modarat));
+
+        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.getMogakDtoList(1L, 3L));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+        verify(mogakRepository, org.mockito.Mockito.never()).findAllByModaratId(3L);
     }
 
     @Test
