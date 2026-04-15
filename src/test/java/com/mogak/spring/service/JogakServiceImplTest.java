@@ -9,7 +9,6 @@ import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.repository.DailyJogakRepository;
 import com.mogak.spring.repository.JogakPeriodRepository;
 import com.mogak.spring.repository.JogakRepository;
@@ -17,18 +16,15 @@ import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.PeriodRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.support.ErrorCodeAssertions;
-import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -51,15 +47,9 @@ class JogakServiceImplTest {
     @Mock private JogakPeriodRepository jogakPeriodRepository;
     @Mock private PeriodRepository periodRepository;
     @Mock private DailyJogakRepository dailyJogakRepository;
-    @Spy private CurrentUserProvider currentUserProvider = new CurrentUserProvider();
 
     @InjectMocks
     private JogakServiceImpl jogakService;
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextTestHelper.clear();
-    }
 
     @Test
     @DisplayName("일회성 조각 생성 요청을 처리하면 일회성 조각을 생성한다")
@@ -175,11 +165,10 @@ class JogakServiceImplTest {
         Mogak mogak = TestFixtureFactory.mogak(2L, user, modarat, category, "모각", "#1234");
         Jogak routine = TestFixtureFactory.jogak(10L, mogak, "루틴 조각", true, LocalDate.now(), null, 0);
 
-        SecurityContextTestHelper.setAuthentication("user@test.com");
-        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(jogakRepository.findDailyRoutineJogaks(user, futureDay.getDayOfWeek().getValue())).thenReturn(List.of(routine));
 
-        JogakResponseDto.GetDailyJogakListDto result = jogakService.getDayJogaks(futureDay);
+        JogakResponseDto.GetDailyJogakListDto result = jogakService.getDayJogaks(1L, futureDay);
 
         assertThat(result.getSize()).isEqualTo(1);
         assertThat(result.getDailyJogaks().get(0).getTitle()).isEqualTo("루틴 조각");
@@ -281,12 +270,11 @@ class JogakServiceImplTest {
         DailyJogak pastDailyJogak = TestFixtureFactory.dailyJogak(100L, routine, true);
         TestFixtureFactory.setCreatedAt(pastDailyJogak, today.minusDays(1).atStartOfDay());
 
-        SecurityContextTestHelper.setAuthentication("user@test.com");
-        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
-        when(dailyJogakRepository.findByDateRange(start.atStartOfDay(), end.atStartOfDay())).thenReturn(List.of(pastDailyJogak));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(dailyJogakRepository.findDailyJogaks(user, start.atStartOfDay(), end.atStartOfDay())).thenReturn(List.of(pastDailyJogak));
         when(jogakRepository.findAllRoutineJogaksByUser(1L)).thenReturn(List.of(routine));
 
-        List<JogakResponseDto.GetRoutineJogakDto> result = jogakService.getRoutineJogaks(start, end);
+        List<JogakResponseDto.GetRoutineJogakDto> result = jogakService.getRoutineJogaks(1L, start, end);
 
         assertThat(result).isNotEmpty();
         assertThat(result).extracting(JogakResponseDto.GetRoutineJogakDto::getTitle).contains("루틴 조각");

@@ -4,6 +4,7 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -59,6 +61,7 @@ public class UserController {
      */
     @PostMapping("/join")
     public ResponseEntity<BaseResponse<UserResponseDto.CreateDto>> createUser(@Valid @RequestPart CreateUserDto request,
+                                                                              @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                               @RequestPart(required = false) MultipartFile multipartFile) {
         UploadImageDto uploadImageDto;
         if (multipartFile == null || multipartFile.isEmpty()) {
@@ -69,7 +72,7 @@ public class UserController {
         } else {
             uploadImageDto = storageService.uploadProfileImg(multipartFile, dirName);
         }
-        UserResponseDto.CreateDto createDto = userService.create(request, uploadImageDto);
+        UserResponseDto.CreateDto createDto = userService.create(authenticatedUser.getUserId(), request, uploadImageDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(createDto));
     }
 
@@ -95,8 +98,8 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/profile")
-    public ResponseEntity<BaseResponse<UserResponseDto.GetUserDto>> getUserProfile() {
-        UserResponseDto.GetUserDto getUserDto = userService.getUserProfile();
+    public ResponseEntity<BaseResponse<UserResponseDto.GetUserDto>> getUserProfile(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        UserResponseDto.GetUserDto getUserDto = userService.getUserProfile(authenticatedUser.getUserId());
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(getUserDto));
     }
 
@@ -111,8 +114,9 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/nickname")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@Valid @RequestBody UpdateNicknameDto nicknameDto) {
-        userService.updateNickname(nicknameDto);
+    public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                   @Valid @RequestBody UpdateNicknameDto nicknameDto) {
+        userService.updateNickname(authenticatedUser.getUserId(), nicknameDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -124,8 +128,9 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/job")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@Valid @RequestBody UpdateJobDto jobDto) {
-        userService.updateJob(jobDto);
+    public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                             @Valid @RequestBody UpdateJobDto jobDto) {
+        userService.updateJob(authenticatedUser.getUserId(), jobDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -137,8 +142,9 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/profile/image")
-    public ResponseEntity<BaseResponse<ErrorCode>> updateImage(@RequestPart MultipartFile multipartFile) {
-        String profileImgName = userService.getProfileImgName(); //기존 프로필사진받아오기
+    public ResponseEntity<BaseResponse<ErrorCode>> updateImage(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                               @RequestPart MultipartFile multipartFile) {
+        String profileImgName = userService.getProfileImgName(authenticatedUser.getUserId()); //기존 프로필사진받아오기
         UserRequestDto.UpdateImageDto updateImageDto;
         if (multipartFile == null || multipartFile.isEmpty()) {
             if (profileImgName != null) {
@@ -151,7 +157,7 @@ public class UserController {
         } else {
             updateImageDto = storageService.updateProfileImg(multipartFile, profileImgName, dirName);
         }
-        userService.updateImg(updateImageDto);
+        userService.updateImg(authenticatedUser.getUserId(), updateImageDto);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 

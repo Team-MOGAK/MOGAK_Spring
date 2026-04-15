@@ -3,6 +3,7 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.FollowService;
 import com.mogak.spring.web.dto.userdto.FollowRequestDto.CountDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,8 +42,9 @@ public class FollowController {
                     @ApiResponse(responseCode = "409", description = "이미 존재하는 팔로우입니다"),
             })
     @PostMapping("{nickname}")
-    public ResponseEntity<BaseResponse<ErrorCode>> follow(@PathVariable String nickname) {
-        followService.follow(nickname);
+    public ResponseEntity<BaseResponse<ErrorCode>> follow(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                           @PathVariable String nickname) {
+        followService.follow(authenticatedUser.getUserId(), nickname);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -57,8 +60,9 @@ public class FollowController {
                     @ApiResponse(responseCode = "409", description = "존재하지 않는 팔로우"),
             })
     @DeleteMapping("{nickname}")
-    public ResponseEntity<BaseResponse<ErrorCode>> unfollow(@PathVariable String nickname) {
-        followService.unfollow(nickname);
+    public ResponseEntity<BaseResponse<ErrorCode>> unfollow(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                             @PathVariable String nickname) {
+        followService.unfollow(authenticatedUser.getUserId(), nickname);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 

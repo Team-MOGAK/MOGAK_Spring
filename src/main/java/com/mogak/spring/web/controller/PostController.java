@@ -5,6 +5,7 @@ import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
+import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -47,10 +49,11 @@ public class PostController {
             })
     @PostMapping("/api/mogaks/{mogakId}/posts")
     public ResponseEntity<BaseResponse<CreatePostDto>> createPost(@PathVariable Long mogakId,
+                                                                  @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                   @RequestPart PostRequestDto.CreatePostDto request,
                                                                   @RequestPart(required = true) List<MultipartFile> multipartFile) {
         List<CreatePostImgDto> postImgDtoList = storageService.uploadImg(multipartFile, dirName);
-        Post post = postService.create(request, postImgDtoList, mogakId);
+        Post post = postService.create(authenticatedUser.getUserId(), request, postImgDtoList, mogakId);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toCreatePostDto(post)));
     }
 

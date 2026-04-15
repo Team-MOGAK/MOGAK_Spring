@@ -8,13 +8,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface MogakService {
-    MogakResponseDto.GetMogakDto create(MogakRequestDto.CreateDto createDto);
+    MogakResponseDto.GetMogakDto create(Long userId, MogakRequestDto.CreateDto createDto);
 //    MogakResponseDto.UpdateStateDto achieveMogak(Long id);
     MogakResponseDto.GetMogakDto updateMogak(MogakRequestDto.UpdateDto request);
-    MogakResponseDto.GetMogakListDto getMogakDtoList(Long modaratId);
+    MogakResponseDto.GetMogakListDto getMogakDtoList(Long userId, Long modaratId);
     void deleteMogak(Long mogakId);
 
-    List<JogakResponseDto.GetJogakDto> getJogaks(Long mogakId, LocalDate day);
+    List<JogakResponseDto.GetJogakDto> getJogaks(Long userId, Long mogakId, LocalDate day);
 //    List<Mogak> getOngoingTodayMogakList(int name);
 //    void judgeMogakByDay(LocalDate day);
 }

@@ -4,6 +4,7 @@ import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
+import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.PostCommentService;
 import com.mogak.spring.web.dto.commentdto.CommentRequestDto;
 import com.mogak.spring.web.dto.commentdto.CommentResponseDto.CommentListDto;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.List;
 
@@ -47,9 +49,10 @@ public class CommentController {
     @PostMapping("/api/posts/{postId}/comments")
     public ResponseEntity<BaseResponse<CreateCommentDto>> createComment(
             @PathVariable Long postId,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @RequestBody CommentRequestDto.CreateCommentDto request
             ) {
-        PostComment comment = postCommentService.create(request, postId);
+        PostComment comment = postCommentService.create(authenticatedUser.getUserId(), request, postId);
         return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toCreateCommentDto(comment)));
     }
 
@@ -85,8 +88,9 @@ public class CommentController {
     @PutMapping("/api/posts/{postId}/comments/{commentId}")
     public ResponseEntity<BaseResponse<UpdateCommentDto>> updateComment(@PathVariable(name = "postId") Long postId,
                                                                         @PathVariable(name = "commentId") Long commentId,
+                                                                        @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                         @RequestBody CommentRequestDto.UpdateCommentDto request) {
-        PostComment comment = postCommentService.update(request, postId, commentId);
+        PostComment comment = postCommentService.update(authenticatedUser.getUserId(), request, postId, commentId);
         return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toUpdateCommentDto(comment)));
     }
 
@@ -106,8 +110,9 @@ public class CommentController {
             })
     @DeleteMapping("/api/posts/{postId}/comments/{commentId}")
     public ResponseEntity<BaseResponse<DeleteCommentDto>> deleteComment(@PathVariable(name = "postId") Long postId,
+                                                                        @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                         @PathVariable(name = "commentId") Long commentId) {
-        postCommentService.delete(postId, commentId);
+        postCommentService.delete(authenticatedUser.getUserId(), postId, commentId);
         return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toDeleteCommentDto()));
     }
 }

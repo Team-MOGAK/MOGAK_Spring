@@ -10,19 +10,16 @@ import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.*;
-import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.service.MogakService;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
-import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
 import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,11 +58,6 @@ class CoreFlowIntegrationTest {
     @MockitoBean private AppleOAuthUserProvider appleOAuthUserProvider;
     @MockitoBean private StorageService storageService;
 
-    @AfterEach
-    void tearDown() {
-        SecurityContextTestHelper.clear();
-    }
-
     @Test
     @DisplayName("회원 가입 후 모각과 조각을 생성하고 조각을 성공 처리할 수 있다")
     void registrationToJogakSuccessFlow() {
@@ -74,11 +66,10 @@ class CoreFlowIntegrationTest {
         MogakCategory category = saveCategory("자격증");
         ensureStandardPeriods();
         User rawUser = userRepository.save(new User("flow@test.com"));
-        SecurityContextTestHelper.setAuthentication(rawUser.getId(), rawUser.getEmail(), SecurityAuthority.PENDING.getAuthority());
 
         userService.create(
+                rawUser.getId(),
                 UserRequestDto.CreateUserDto.builder()
-                        .userId(rawUser.getId())
                         .nickname("flow-user")
                         .job(job.getName())
                         .address(address.getName())
@@ -87,10 +78,10 @@ class CoreFlowIntegrationTest {
         );
 
         User savedUser = userRepository.findById(rawUser.getId()).orElseThrow();
-        SecurityContextTestHelper.setAuthentication(savedUser.getEmail());
         Modarat modarat = modaratRepository.save(TestFixtureFactory.modarat(null, savedUser, "메인 모다라트", "#1111"));
+        Long userId = savedUser.getId();
 
-        MogakResponseDto.GetMogakDto mogak = mogakService.create(MogakRequestDto.CreateDto.builder()
+        MogakResponseDto.GetMogakDto mogak = mogakService.create(userId, MogakRequestDto.CreateDto.builder()
                 .modaratId(modarat.getId())
                 .title("정보처리기사")
                 .bigCategory(category.getName())
@@ -120,9 +111,8 @@ class CoreFlowIntegrationTest {
         ensureStandardPeriods();
 
         User user = userRepository.save(TestFixtureFactory.user(null, "routine@test.com", "routine-user", job, address));
-        SecurityContextTestHelper.setAuthentication(user.getEmail());
         Modarat modarat = modaratRepository.save(TestFixtureFactory.modarat(null, user, "메인 모다라트", "#1111"));
-        Mogak mogak = mogakRepository.findById(mogakService.create(MogakRequestDto.CreateDto.builder()
+        Mogak mogak = mogakRepository.findById(mogakService.create(user.getId(), MogakRequestDto.CreateDto.builder()
                 .modaratId(modarat.getId())
                 .title("루틴 모각")
                 .bigCategory(category.getName())
@@ -137,9 +127,9 @@ class CoreFlowIntegrationTest {
                 List.of(LocalDate.now().getDayOfWeek().name(), futureDate.getDayOfWeek().name())
         ));
 
-        JogakResponseDto.GetDailyJogakListDto todayResult = jogakService.getDayJogaks(LocalDate.now());
-        JogakResponseDto.GetDailyJogakListDto futureResult = jogakService.getDayJogaks(futureDate);
-        List<JogakResponseDto.GetRoutineJogakDto> routineRange = jogakService.getRoutineJogaks(LocalDate.now().minusDays(1), futureDate.plusDays(1));
+        JogakResponseDto.GetDailyJogakListDto todayResult = jogakService.getDayJogaks(user.getId(), LocalDate.now());
+        JogakResponseDto.GetDailyJogakListDto futureResult = jogakService.getDayJogaks(user.getId(), futureDate);
+        List<JogakResponseDto.GetRoutineJogakDto> routineRange = jogakService.getRoutineJogaks(user.getId(), LocalDate.now().minusDays(1), futureDate.plusDays(1));
 
         assertThat(createdJogak.getIsRoutine()).isTrue();
         assertThat(todayResult.getDailyJogaks()).extracting(JogakResponseDto.GetDailyJogakDto::getTitle).contains("루틴 조각");
@@ -155,9 +145,8 @@ class CoreFlowIntegrationTest {
         MogakCategory category = saveCategory("자격증");
         ensureStandardPeriods();
         User user = userRepository.save(TestFixtureFactory.user(null, "delete@test.com", "delete-user", job, address));
-        SecurityContextTestHelper.setAuthentication(user.getEmail());
         Modarat modarat = modaratRepository.save(TestFixtureFactory.modarat(null, user, "메인 모다라트", "#1111"));
-        MogakResponseDto.GetMogakDto mogak = mogakService.create(MogakRequestDto.CreateDto.builder()
+        MogakResponseDto.GetMogakDto mogak = mogakService.create(user.getId(), MogakRequestDto.CreateDto.builder()
                 .modaratId(modarat.getId())
                 .title("삭제 대상")
                 .bigCategory(category.getName())

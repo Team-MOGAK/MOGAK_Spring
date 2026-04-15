@@ -9,21 +9,17 @@ import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.support.ErrorCodeAssertions;
-import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
 import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -44,15 +40,9 @@ class MogakServiceImplTest {
     @Mock private JogakRepository jogakRepository;
     @Mock private JogakService jogakService;
     @Mock private DailyJogakRepository dailyJogakRepository;
-    @Spy private CurrentUserProvider currentUserProvider = new CurrentUserProvider();
 
     @InjectMocks
     private MogakServiceImpl mogakService;
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextTestHelper.clear();
-    }
 
     @Test
     @DisplayName("유효한 모각 생성 요청을 처리하면 모각을 생성한다")
@@ -71,14 +61,13 @@ class MogakServiceImplTest {
                 .color("#112233")
                 .build();
 
-        SecurityContextTestHelper.setAuthentication("user@test.com");
-        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(modaratRepository.findById(3L)).thenReturn(Optional.of(modarat));
         when(mogakRepository.findAllByModaratId(3L)).thenReturn(List.of());
         when(categoryRepository.findMogakCategoryByName("자격증")).thenReturn(Optional.of(category));
         when(mogakRepository.save(org.mockito.ArgumentMatchers.any(Mogak.class))).thenReturn(saved);
 
-        MogakResponseDto.GetMogakDto result = mogakService.create(request);
+        MogakResponseDto.GetMogakDto result = mogakService.create(1L, request);
 
         assertThat(result.getId()).isEqualTo(5L);
         assertThat(result.getTitle()).isEqualTo("정보처리기사");
@@ -96,8 +85,7 @@ class MogakServiceImplTest {
                 .bigCategory("자격증")
                 .build();
 
-        SecurityContextTestHelper.setAuthentication("user@test.com");
-        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(modaratRepository.findById(3L)).thenReturn(Optional.of(modarat));
         when(mogakRepository.findAllByModaratId(3L)).thenReturn(
                 java.util.stream.IntStream.range(0, 8)
@@ -105,7 +93,7 @@ class MogakServiceImplTest {
                         .collect(java.util.stream.Collectors.toList())
         );
 
-        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.create(request));
+        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.create(1L, request));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.EXCEED_MAX_MOGAK);
     }
@@ -179,12 +167,11 @@ class MogakServiceImplTest {
         DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, active, false);
 
         TestFixtureFactory.attachJogaks(mogak, List.of(active, expired));
-        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
         when(dailyJogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1))).thenReturn(List.of(dailyJogak));
-        SecurityContextTestHelper.setAuthentication("user@test.com");
 
-        List<JogakResponseDto.GetJogakDto> result = mogakService.getJogaks(2L, day);
+        List<JogakResponseDto.GetJogakDto> result = mogakService.getJogaks(1L, 2L, day);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getJogakId()).isEqualTo(10L);

@@ -3,6 +3,7 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.MogakService;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
@@ -24,6 +25,8 @@ import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 
 @Tag(name = "모각 API", description = "모각 API 명세서")
 @RequiredArgsConstructor
@@ -44,8 +47,9 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/mogaks")
-    public ResponseEntity<BaseResponse<MogakResponseDto.GetMogakDto>> createMogak(@Valid @RequestBody MogakRequestDto.CreateDto request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(mogakService.create(request)));
+    public ResponseEntity<BaseResponse<MogakResponseDto.GetMogakDto>> createMogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                  @Valid @RequestBody MogakRequestDto.CreateDto request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(mogakService.create(authenticatedUser.getUserId(), request)));
     }
 
 //    @Operation(summary = "모각 달성", description = "해당하는 모각을 달성합니다",
@@ -82,8 +86,9 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/{modaratId}/mogaks")
-    public ResponseEntity<BaseResponse<MogakResponseDto.GetMogakListDto>> getMogakList(@PathVariable Long modaratId) {
-            return ResponseEntity.ok(new BaseResponse<>(mogakService.getMogakDtoList(modaratId)));
+    public ResponseEntity<BaseResponse<MogakResponseDto.GetMogakListDto>> getMogakList(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                       @PathVariable Long modaratId) {
+            return ResponseEntity.ok(new BaseResponse<>(mogakService.getMogakDtoList(authenticatedUser.getUserId(), modaratId)));
     }
 
     @Operation(summary = "모각 삭제", description = "모각을 삭제합니다",
@@ -113,10 +118,10 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/mogaks/{mogakId}/jogaks")
-    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetJogakDto>>> getJogaks(
+    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetJogakDto>>> getJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @PathVariable Long mogakId,
             @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. 오늘 날짜를 주로 입력하시면 됩니다. format: YYYY-MM-DD", example = "2024-02-15")
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(new BaseResponse<>(mogakService.getJogaks(mogakId, date)));
+        return ResponseEntity.ok(new BaseResponse<>(mogakService.getJogaks(authenticatedUser.getUserId(), mogakId, date)));
     }
 }

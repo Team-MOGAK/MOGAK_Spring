@@ -33,6 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -136,7 +137,7 @@ class SecurityConfigTest {
     @Test
     @DisplayName("ROLE_PENDING access token은 회원 등록 API에 접근할 수 있다")
     void joinAllowsPendingRole() throws Exception {
-        when(userService.create(any(UserRequestDto.CreateUserDto.class), any(UserRequestDto.UploadImageDto.class)))
+        when(userService.create(anyLong(), any(UserRequestDto.CreateUserDto.class), any(UserRequestDto.UploadImageDto.class)))
                 .thenReturn(UserResponseDto.CreateDto.builder()
                         .userId(10L)
                         .nickname("tester")
@@ -159,7 +160,6 @@ class SecurityConfigTest {
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
                 objectMapper.writeValueAsBytes(UserRequestDto.CreateUserDto.builder()
-                        .userId(10L)
                         .nickname("tester")
                         .job("개발/데이터")
                         .address("서울특별시")

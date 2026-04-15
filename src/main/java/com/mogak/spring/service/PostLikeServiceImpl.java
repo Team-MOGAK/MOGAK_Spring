@@ -7,7 +7,6 @@ import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.PostException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.repository.PostLikeRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
@@ -24,16 +23,14 @@ public class PostLikeServiceImpl implements PostLikeService{
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final CurrentUserProvider currentUserProvider;
 
     //좋아요 생성 및 삭제
     @Transactional
     @Override
-    public String updateLike(PostLikeRequestDto.LikeDto request){
-        String email = currentUserProvider.currentEmail();
+    public String updateLike(Long userId, PostLikeRequestDto.LikeDto request){
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 
         //이미 좋아요를 누른 게시물에 대한 처리

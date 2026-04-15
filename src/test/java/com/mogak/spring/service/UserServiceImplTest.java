@@ -4,26 +4,22 @@ import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.support.ErrorCodeAssertions;
-import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.util.Regex;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -42,16 +38,9 @@ class UserServiceImplTest {
     private AddressRepository addressRepository;
     @Mock
     private JwtTokenProvider jwtTokenProvider;
-    @Spy
-    private CurrentUserProvider currentUserProvider = new CurrentUserProvider();
 
     @InjectMocks
     private UserServiceImpl userService;
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextTestHelper.clear();
-    }
 
     @Test
     @DisplayName("닉네임은 현재 정규식 정책을 따른다")
@@ -97,7 +86,6 @@ class UserServiceImplTest {
         Address address = TestFixtureFactory.address("서울특별시");
         User user = TestFixtureFactory.user(10L, "user@test.com", null, null, null);
         UserRequestDto.CreateUserDto request = UserRequestDto.CreateUserDto.builder()
-                .userId(10L)
                 .nickname("tester")
                 .job("개발/데이터")
                 .address("서울특별시")
@@ -107,7 +95,6 @@ class UserServiceImplTest {
                 .imgUrl("https://cdn/profile.png")
                 .build();
 
-        SecurityContextTestHelper.setAuthentication(10L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
         when(userRepository.findOneByNickname("tester")).thenReturn(Optional.empty());
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(job));
         when(addressRepository.findAddressByName("서울특별시")).thenReturn(Optional.of(address));
@@ -115,7 +102,7 @@ class UserServiceImplTest {
         when(jwtTokenProvider.createAccessToken(10L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken("user@test.com")).thenReturn("refresh-token");
 
-        UserResponseDto.CreateDto result = userService.create(request, uploadImageDto);
+        UserResponseDto.CreateDto result = userService.create(10L, request, uploadImageDto);
 
         assertThat(result.getUserId()).isEqualTo(10L);
         assertThat(result.getNickname()).isEqualTo("tester");
@@ -133,20 +120,18 @@ class UserServiceImplTest {
         Address address = TestFixtureFactory.address("서울특별시");
         User user = TestFixtureFactory.user(10L, "user@test.com", "existing", null, null);
         UserRequestDto.CreateUserDto request = UserRequestDto.CreateUserDto.builder()
-                .userId(10L)
                 .nickname("tester")
                 .job("개발/데이터")
                 .address("서울특별시")
                 .build();
         UserRequestDto.UploadImageDto uploadImageDto = UserRequestDto.UploadImageDto.builder().build();
 
-        SecurityContextTestHelper.setAuthentication(10L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
         when(userRepository.findOneByNickname("tester")).thenReturn(Optional.empty());
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(job));
         when(addressRepository.findAddressByName("서울특별시")).thenReturn(Optional.of(address));
         when(userRepository.findById(10L)).thenReturn(Optional.of(user));
 
-        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> userService.create(request, uploadImageDto));
+        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> userService.create(10L, request, uploadImageDto));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.ALREADY_EXIST_USER);
     }
@@ -159,11 +144,10 @@ class UserServiceImplTest {
         Address address = TestFixtureFactory.address("서울특별시");
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", currentJob, address);
 
-        SecurityContextTestHelper.setAuthentication("user@test.com");
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(updatedJob));
-        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        userService.updateJob(new UserRequestDto.UpdateJobDto() {{
+        userService.updateJob(1L, new UserRequestDto.UpdateJobDto() {{
             org.springframework.test.util.ReflectionTestUtils.setField(this, "job", "개발/데이터");
         }});
 
@@ -177,15 +161,14 @@ class UserServiceImplTest {
         Address address = TestFixtureFactory.address("서울특별시");
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", job, address);
 
-        SecurityContextTestHelper.setAuthentication("user@test.com");
-        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         UserRequestDto.UpdateImageDto dto = UserRequestDto.UpdateImageDto.builder()
                 .imgName("updated.png")
                 .imgUrl("https://cdn/updated.png")
                 .build();
 
-        userService.updateImg(dto);
+        userService.updateImg(1L, dto);
 
         assertThat(user.getProfileImgName()).isEqualTo("updated.png");
         assertThat(user.getProfileImgUrl()).isEqualTo("https://cdn/updated.png");
@@ -199,10 +182,9 @@ class UserServiceImplTest {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", job, address);
         user.updateProfileImg("https://cdn/profile.png", "profile.png");
 
-        SecurityContextTestHelper.setAuthentication("user@test.com");
-        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        UserResponseDto.GetUserDto result = userService.getUserProfile();
+        UserResponseDto.GetUserDto result = userService.getUserProfile(1L);
 
         assertThat(result.getNickname()).isEqualTo("tester");
         assertThat(result.getJob()).isEqualTo("개발/데이터");

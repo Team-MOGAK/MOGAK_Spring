@@ -14,7 +14,6 @@ import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.jwt.CurrentUserProvider;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
@@ -42,7 +41,6 @@ public class JogakServiceImpl implements JogakService {
     private final JogakPeriodRepository jogakPeriodRepository;
     private final PeriodRepository periodRepository;
     private final DailyJogakRepository dailyJogakRepository;
-    private final CurrentUserProvider currentUserProvider;
 
     /**
      * 자정에 Ongoing인 모든 모각 생성
@@ -217,9 +215,8 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public JogakResponseDto.GetOneTimeJogakListDto getDailyJogaks(LocalDate day) {
-        String email = currentUserProvider.currentEmail();
-        User user = userRepository.findByEmail(email)
+    public JogakResponseDto.GetOneTimeJogakListDto getDailyJogaks(Long userId, LocalDate day) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<Jogak> jogakList = mogakRepository.findAllByUser(user).stream()
                 .flatMap(mogak -> mogak.getJogaks().stream()
@@ -230,9 +227,8 @@ public class JogakServiceImpl implements JogakService {
     }
 
     @Override
-    public JogakResponseDto.GetDailyJogakListDto getDayJogaks(LocalDate day) {
-        String email = currentUserProvider.currentEmail();
-        User user = userRepository.findByEmail(email)
+    public JogakResponseDto.GetDailyJogakListDto getDayJogaks(Long userId, LocalDate day) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if (day.isAfter(LocalDate.now())) {
             // 미래 루틴 조각 가져오기
@@ -251,18 +247,16 @@ public class JogakServiceImpl implements JogakService {
      * 주간/월간 루틴 가져오는 API
      * */
     @Override
-    public List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(LocalDate startDate, LocalDate endDate) {
-        String email = currentUserProvider.currentEmail();
-        User user = userRepository.findByEmail(email)
+    public List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDate, LocalDate endDate) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        Long userId = user.getId();
         List<LocalDate> pastDates = getPastDates(startDate, endDate);
         List<LocalDate> futureDates = getFutureDates(startDate, endDate);
         List<JogakResponseDto.GetRoutineJogakDto> routineJogaks = new ArrayList<>();
 
         // 오늘 + 이전 가져오기
         if (!pastDates.isEmpty()) {
-            List<DailyJogak> pastJogaks = dailyJogakRepository.findByDateRange(startDate.atStartOfDay(), endDate.atStartOfDay());
+            List<DailyJogak> pastJogaks = dailyJogakRepository.findDailyJogaks(user, startDate.atStartOfDay(), endDate.atStartOfDay());
             routineJogaks.addAll(pastJogaks.stream()
                     .map(DailyJogak::getRoutineJogakDto)
                     .collect(Collectors.toList()));

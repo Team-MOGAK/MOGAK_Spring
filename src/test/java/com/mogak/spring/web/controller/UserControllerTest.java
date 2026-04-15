@@ -6,6 +6,7 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
+import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -92,18 +94,19 @@ class UserControllerTest {
     @Test
     @DisplayName("회원 가입 multipart 요청이 성공하면 생성 응답 계약을 반환한다")
     void createUserMultipartContract() throws Exception {
+        SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
         UserResponseDto.CreateDto response = UserResponseDto.CreateDto.builder()
                 .userId(1L)
                 .nickname("tester")
                 .build();
-        when(userService.create(any(UserRequestDto.CreateUserDto.class), any(UserRequestDto.UploadImageDto.class)))
+        when(userService.create(anyLong(), any(UserRequestDto.CreateUserDto.class), any(UserRequestDto.UploadImageDto.class)))
                 .thenReturn(response);
 
         MockMultipartFile requestPart = new MockMultipartFile(
                 "request",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                "{\"userId\":1,\"nickname\":\"tester\",\"job\":\"개발/데이터\",\"address\":\"서울특별시\"}".getBytes()
+                "{\"nickname\":\"tester\",\"job\":\"개발/데이터\",\"address\":\"서울특별시\"}".getBytes()
         );
         MockMultipartFile image = new MockMultipartFile(
                 "multipartFile",
@@ -137,11 +140,12 @@ class UserControllerTest {
     @Test
     @DisplayName("이미지가 포함된 회원 가입 요청은 storage 비활성 상태에서 503 에러 응답 계약을 반환한다")
     void createUserMultipartStorageDisabledContract() throws Exception {
+        SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
         MockMultipartFile requestPart = new MockMultipartFile(
                 "request",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                "{\"userId\":1,\"nickname\":\"tester\",\"job\":\"개발/데이터\",\"address\":\"서울특별시\"}".getBytes()
+                "{\"nickname\":\"tester\",\"job\":\"개발/데이터\",\"address\":\"서울특별시\"}".getBytes()
         );
         MockMultipartFile image = new MockMultipartFile(
                 "multipartFile",
@@ -171,7 +175,8 @@ class UserControllerTest {
     @Test
     @DisplayName("프로필 조회 요청이 성공하면 조회 응답 계약을 반환한다")
     void getUserProfileContract() throws Exception {
-        when(userService.getUserProfile()).thenReturn(UserResponseDto.GetUserDto.builder()
+        SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.USER.getAuthority());
+        when(userService.getUserProfile(1L)).thenReturn(UserResponseDto.GetUserDto.builder()
                 .nickname("tester")
                 .job("개발/데이터")
                 .imgUrl("https://cdn/profile.png")
@@ -192,8 +197,9 @@ class UserControllerTest {
     @Test
     @DisplayName("중복 닉네임으로 변경을 요청하면 에러 응답 계약을 반환한다")
     void updateNicknameErrorContract() throws Exception {
+        SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.USER.getAuthority());
         doThrow(new com.mogak.spring.exception.UserException(ErrorCode.ALREADY_EXIST_USER))
-                .when(userService).updateNickname(any(UserRequestDto.UpdateNicknameDto.class));
+                .when(userService).updateNickname(anyLong(), any(UserRequestDto.UpdateNicknameDto.class));
 
         mockMvc.perform(put("/api/users/profile/nickname")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -211,6 +217,7 @@ class UserControllerTest {
     @Test
     @DisplayName("프로필 이미지 변경 요청은 storage 비활성 상태에서 503 에러 응답 계약을 반환한다")
     void updateImageStorageDisabledContract() throws Exception {
+        SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.USER.getAuthority());
         MockMultipartFile image = new MockMultipartFile(
                 "multipartFile",
                 "profile.png",

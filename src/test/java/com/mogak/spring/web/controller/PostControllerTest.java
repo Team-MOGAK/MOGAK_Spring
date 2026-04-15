@@ -7,7 +7,9 @@ import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.service.StorageService;
+import com.mogak.spring.support.SecurityContextTestHelper;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -49,9 +51,15 @@ class PostControllerTest {
     @MockitoBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
+    @AfterEach
+    void tearDown() {
+        SecurityContextTestHelper.clear();
+    }
+
     @Test
     @DisplayName("이미지 포함 게시글 생성 요청은 storage 비활성 상태에서 503 에러 응답 계약을 반환한다")
     void createPostStorageDisabledContract() throws Exception {
+        SecurityContextTestHelper.setAuthentication("writer@test.com");
         MockMultipartFile requestPart = new MockMultipartFile(
                 "request",
                 "",

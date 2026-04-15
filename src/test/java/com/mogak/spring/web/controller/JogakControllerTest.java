@@ -6,8 +6,11 @@ import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.JogakService;
+import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -48,6 +53,16 @@ class JogakControllerTest {
     private JwtTokenProvider jwtTokenProvider;
     @MockitoBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
+
+    @BeforeEach
+    void setUp() {
+        SecurityContextTestHelper.setAuthentication("user@test.com");
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextTestHelper.clear();
+    }
 
     @Test
     @DisplayName("조각 생성 요청이 성공하면 생성 응답 계약을 반환한다")
@@ -92,7 +107,7 @@ class JogakControllerTest {
     @Test
     @DisplayName("일회성 조각 조회 요청이 성공하면 조회 응답 계약을 반환한다")
     void getDailyJogaksContract() throws Exception {
-        when(jogakService.getDailyJogaks(LocalDate.of(2026, 3, 26))).thenReturn(JogakResponseDto.GetOneTimeJogakListDto.builder()
+        when(jogakService.getDailyJogaks(anyLong(), eq(LocalDate.of(2026, 3, 26)))).thenReturn(JogakResponseDto.GetOneTimeJogakListDto.builder()
                 .size(1)
                 .jogaks(List.of(JogakResponseDto.GetOneTimeJogakDto.builder()
                         .jogakId(1L)
@@ -119,7 +134,7 @@ class JogakControllerTest {
     @Test
     @DisplayName("루틴 조각 조회 요청이 성공하면 조회 응답 계약을 반환한다")
     void getRoutineJogaksContract() throws Exception {
-        when(jogakService.getRoutineJogaks(LocalDate.of(2026, 3, 26), LocalDate.of(2026, 3, 30))).thenReturn(List.of(
+        when(jogakService.getRoutineJogaks(anyLong(), eq(LocalDate.of(2026, 3, 26)), eq(LocalDate.of(2026, 3, 30)))).thenReturn(List.of(
                 JogakResponseDto.GetRoutineJogakDto.builder()
                         .dailyJogakId(-1L)
                         .date(LocalDate.of(2026, 3, 27))
@@ -144,7 +159,7 @@ class JogakControllerTest {
     @Test
     @DisplayName("일별 데일리 조각 조회 요청이 성공하면 query parameter 날짜로 조회 응답 계약을 반환한다")
     void getDayJogaksContract() throws Exception {
-        when(jogakService.getDayJogaks(LocalDate.of(2026, 3, 26))).thenReturn(JogakResponseDto.GetDailyJogakListDto.builder()
+        when(jogakService.getDayJogaks(anyLong(), eq(LocalDate.of(2026, 3, 26)))).thenReturn(JogakResponseDto.GetDailyJogakListDto.builder()
                 .size(1)
                 .dailyJogaks(List.of(JogakResponseDto.GetDailyJogakDto.builder()
                         .jogakId(1L)

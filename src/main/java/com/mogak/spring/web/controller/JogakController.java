@@ -3,6 +3,7 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.springframework.format.annotation.DateTimeFormat.ISO;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @Tag(name = "조각 API", description = "조각 API 명세서")
 @RequiredArgsConstructor
@@ -67,10 +69,10 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/daily")
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetOneTimeJogakListDto>> getDailyJogaks(
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetOneTimeJogakListDto>> getDailyJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. format: YYYY-MM-DD", example = "2024-02-15")
             @RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks(date)));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDailyJogaks(authenticatedUser.getUserId(), date)));
     }
 
     @Operation(summary = "일별 데일리 조각 조회", description = "일별 데일리 조각들을 조회하는 API",
@@ -81,10 +83,10 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getDayJogaks(
+    public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getDayJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. format: YYYY-MM-DD", example = "2024-02-14")
             @RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDayJogaks(date)));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getDayJogaks(authenticatedUser.getUserId(), date)));
     }
 
     @Operation(summary = "주간/월간 루틴 조각 조회", description = "주간/월간 루틴 조각을 조회합니다",
@@ -95,12 +97,12 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/routines")
-    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetRoutineJogakDto>>> getRoutineJogaks(
+    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetRoutineJogakDto>>> getRoutineJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @Parameter(description = "조회를 원하는 첫 날짜를 입력. format: YYYY-MM-DD", example = "2024-02-14")
             @RequestParam("startDay") @DateTimeFormat(iso = ISO.DATE) LocalDate startDay,
             @Parameter(description = "조회를 원하는 마지막 날짜를 입력. format: YYYY-MM-DD", example = "2024-02-15")
             @RequestParam("endDay") @DateTimeFormat(iso = ISO.DATE) LocalDate endDay) {
-        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogaks(startDay, endDay)));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogaks(authenticatedUser.getUserId(), startDay, endDay)));
     }
 
     @Operation(summary = "일일 조각 시작", description = "일일 조각을 시작합니다",
