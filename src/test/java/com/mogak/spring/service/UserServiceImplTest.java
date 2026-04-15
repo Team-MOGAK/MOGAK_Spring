@@ -86,7 +86,6 @@ class UserServiceImplTest {
         Address address = TestFixtureFactory.address("서울특별시");
         User user = TestFixtureFactory.user(10L, "user@test.com", null, null, null);
         UserRequestDto.CreateUserDto request = UserRequestDto.CreateUserDto.builder()
-                .userId(10L)
                 .nickname("tester")
                 .job("개발/데이터")
                 .address("서울특별시")
@@ -121,7 +120,6 @@ class UserServiceImplTest {
         Address address = TestFixtureFactory.address("서울특별시");
         User user = TestFixtureFactory.user(10L, "user@test.com", "existing", null, null);
         UserRequestDto.CreateUserDto request = UserRequestDto.CreateUserDto.builder()
-                .userId(10L)
                 .nickname("tester")
                 .job("개발/데이터")
                 .address("서울특별시")

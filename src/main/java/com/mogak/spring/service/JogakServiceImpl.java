@@ -250,7 +250,6 @@ public class JogakServiceImpl implements JogakService {
     public List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDate, LocalDate endDate) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        Long resolvedUserId = user.getId();
         List<LocalDate> pastDates = getPastDates(startDate, endDate);
         List<LocalDate> futureDates = getFutureDates(startDate, endDate);
         List<JogakResponseDto.GetRoutineJogakDto> routineJogaks = new ArrayList<>();
@@ -267,7 +266,7 @@ public class JogakServiceImpl implements JogakService {
         if (!futureDates.isEmpty()) {
             Map<Integer, List<Jogak>> dailyRoutineJogaks = new HashMap<>();
             // 월~금 루틴 조각 가져오기
-            List<Jogak> userRoutineJogaks = jogakRepository.findAllRoutineJogaksByUser(resolvedUserId);
+            List<Jogak> userRoutineJogaks = jogakRepository.findAllRoutineJogaksByUser(userId);
             IntStream.rangeClosed(1, 7).forEach(i -> {
                 List<Jogak> matchingJogaks = userRoutineJogaks.stream()
                         .filter(jogak -> jogak.getJogakPeriods().stream()

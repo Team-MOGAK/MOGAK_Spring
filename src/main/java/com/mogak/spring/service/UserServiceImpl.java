@@ -34,11 +34,11 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserResponseDto.CreateDto create(Long userId, CreateUserDto response, UploadImageDto uploadImageDto) {
-        inputVerify(response);
-        Job job = jobRepository.findJobByName(response.getJob())
+    public UserResponseDto.CreateDto create(Long userId, CreateUserDto request, UploadImageDto uploadImageDto) {
+        inputVerify(request);
+        Job job = jobRepository.findJobByName(request.getJob())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
-        Address address = addressRepository.findAddressByName(response.getAddress())
+        Address address = addressRepository.findAddressByName(request.getAddress())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_ADDRESS));
         String profileImgUrl = uploadImageDto.getImgUrl();
         String profileImgName = uploadImageDto.getImgName();
@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
         if (user.getNickname() != null) {
             throw new UserException(ErrorCode.ALREADY_EXIST_USER);
         }
-        user.registerUser(response.getNickname(), job, address, profileImgUrl, profileImgName);
+        user.registerUser(request.getNickname(), job, address, profileImgUrl, profileImgName);
         JwtTokens tokens = issueUserTokens(user);
         return UserResponseDto.CreateDto.builder()
                 .userId(user.getId())
@@ -60,10 +60,8 @@ public class UserServiceImpl implements UserService {
         return userRepository.findOneByNickname(nickname);
     }
 
-    protected void inputVerify(CreateUserDto response) {
-//        if (!Regex.EMAIL_REGEX.matchRegex(response.getEmail(), "EMAIL"))
-//            throw new UserException(ErrorCode.NOT_VALID_EMAIL);
-        if (findUserByNickname(response.getNickname()).isPresent())
+    protected void inputVerify(CreateUserDto request) {
+        if (findUserByNickname(request.getNickname()).isPresent())
             throw new UserException(ErrorCode.ALREADY_EXIST_USER);
     }
 
@@ -139,6 +137,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Override
     public String getProfileImgName(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));

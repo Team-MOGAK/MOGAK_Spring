@@ -70,7 +70,6 @@ class CoreFlowIntegrationTest {
         userService.create(
                 rawUser.getId(),
                 UserRequestDto.CreateUserDto.builder()
-                        .userId(rawUser.getId())
                         .nickname("flow-user")
                         .job(job.getName())
                         .address(address.getName())

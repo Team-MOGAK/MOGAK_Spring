@@ -160,7 +160,6 @@ class SecurityConfigTest {
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
                 objectMapper.writeValueAsBytes(UserRequestDto.CreateUserDto.builder()
-                        .userId(10L)
                         .nickname("tester")
                         .job("개발/데이터")
                         .address("서울특별시")

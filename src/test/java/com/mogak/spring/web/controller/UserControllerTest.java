@@ -106,7 +106,7 @@ class UserControllerTest {
                 "request",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                "{\"userId\":1,\"nickname\":\"tester\",\"job\":\"개발/데이터\",\"address\":\"서울특별시\"}".getBytes()
+                "{\"nickname\":\"tester\",\"job\":\"개발/데이터\",\"address\":\"서울특별시\"}".getBytes()
         );
         MockMultipartFile image = new MockMultipartFile(
                 "multipartFile",
@@ -145,7 +145,7 @@ class UserControllerTest {
                 "request",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                "{\"userId\":1,\"nickname\":\"tester\",\"job\":\"개발/데이터\",\"address\":\"서울특별시\"}".getBytes()
+                "{\"nickname\":\"tester\",\"job\":\"개발/데이터\",\"address\":\"서울특별시\"}".getBytes()
         );
         MockMultipartFile image = new MockMultipartFile(
                 "multipartFile",
