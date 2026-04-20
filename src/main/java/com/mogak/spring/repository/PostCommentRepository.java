@@ -24,6 +24,9 @@ public interface PostCommentRepository extends JpaRepository<PostComment, Long> 
     @Query("select pc from PostComment pc join pc.user u where pc.post = :post and pc.deletedAt is null and u.deletedAt is null")
     List<PostComment> findActiveAllByPost(@Param("post") Post post);
 
+    @Query("select pc from PostComment pc where pc.post = :post and pc.deletedAt is null")
+    List<PostComment> findActiveAllByPostForCleanup(@Param("post") Post post);
+
     @Query("select pc from PostComment pc where pc.user.id = :userId and pc.deletedAt is null")
     List<PostComment> findActiveAllByUserId(@Param("userId") Long userId);
 

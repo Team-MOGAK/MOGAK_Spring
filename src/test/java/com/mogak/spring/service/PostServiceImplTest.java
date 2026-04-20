@@ -2,6 +2,7 @@ package com.mogak.spring.service;
 
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
+import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.jogak.DailyJogakStatus;
 import com.mogak.spring.domain.user.User;
@@ -230,13 +231,41 @@ class PostServiceImplTest {
 
         when(postRepository.findActiveById(10L)).thenReturn(Optional.of(post));
         when(postImgRepository.findAllByPost(post)).thenReturn(List.of());
-        when(postCommentRepository.findActiveAllByPost(post)).thenReturn(List.of());
+        when(postCommentRepository.findActiveAllByPostForCleanup(post)).thenReturn(List.of());
 
         postService.delete(1L, 10L);
 
         assertThat(post.isDeleted()).isTrue();
         verify(storageCleanupService, never()).deletePostImagesAfterCommit(anyList(), any());
         verify(postImgRepository, never()).deleteAllByPost(post);
+    }
+
+    @Test
+    @DisplayName("게시글 삭제는 탈퇴 유저가 작성한 활성 댓글도 soft delete 하고 댓글 수를 감소시킨다")
+    void deleteSoftDeletesActiveCommentsWrittenByDeletedUser() {
+        User owner = user(1L, "owner@test.com");
+        User deletedCommenter = user(2L, "deleted@test.com");
+        deletedCommenter.delete();
+        Post post = post(10L, owner);
+        ReflectionTestUtils.setField(post, "commentCnt", 1);
+        PostComment comment = PostComment.builder()
+                .id(20L)
+                .post(post)
+                .user(deletedCommenter)
+                .contents("comment")
+                .build();
+
+        when(postRepository.findActiveById(10L)).thenReturn(Optional.of(post));
+        when(postImgRepository.findAllByPost(post)).thenReturn(List.of());
+        when(postCommentRepository.findActiveAllByPostForCleanup(post)).thenReturn(List.of(comment));
+
+        postService.delete(1L, 10L);
+
+        assertThat(comment.isDeleted()).isTrue();
+        assertThat(post.getCommentCnt()).isZero();
+        assertThat(post.isDeleted()).isTrue();
+        verify(postCommentRepository).findActiveAllByPostForCleanup(post);
+        verify(postCommentRepository, never()).findActiveAllByPost(post);
     }
 
     private User user(Long id, String email) {

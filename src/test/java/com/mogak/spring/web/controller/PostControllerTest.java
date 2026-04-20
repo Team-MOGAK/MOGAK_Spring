@@ -207,6 +207,39 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("게시글 생성은 targetDate가 없으면 서비스 호출 전에 입력값 오류를 반환한다")
+    void createPostRejectsMissingTargetDateBeforeServiceCall() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        PostRequestDto.CreatePostDto request = new PostRequestDto.CreatePostDto();
+        ReflectionTestUtils.setField(request, "contents", "content");
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+        MockMultipartFile image = new MockMultipartFile(
+                "multipartFile",
+                "post.png",
+                MediaType.IMAGE_PNG_VALUE,
+                "png".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
+                        .file(requestPart)
+                        .file(image)
+                        .with(mockRequest -> {
+                            mockRequest.setMethod("POST");
+                            return mockRequest;
+                        }))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("Z005"));
+
+        verify(postService, never()).validateCreateAccess(any(), any(), anyList(), any());
+        verify(storageService, never()).uploadImg(any(), any());
+    }
+
+    @Test
     @DisplayName("모각별 게시글 조회는 인증 사용자의 id를 서비스에 전달한다")
     void getPostListUsesAuthenticatedUserId() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");

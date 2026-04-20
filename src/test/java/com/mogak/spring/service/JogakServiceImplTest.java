@@ -459,10 +459,12 @@ class JogakServiceImplTest {
                 .viewCnt(0)
                 .commentCnt(1)
                 .build();
+        User deletedCommenter = TestFixtureFactory.user(3L, "deleted@test.com", "deleted", null, null);
+        deletedCommenter.delete();
         PostComment comment = PostComment.builder()
                 .id(300L)
                 .post(post)
-                .user(owner)
+                .user(deletedCommenter)
                 .contents("댓글")
                 .build();
         PostImg postImg = PostImg.builder()
@@ -475,7 +477,7 @@ class JogakServiceImplTest {
         when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
         when(dailyJogakRepository.findActiveAllByJogak(jogak)).thenReturn(List.of(dailyJogak));
         when(postRepository.findActiveAllByDailyJogakId(100L)).thenReturn(List.of(post));
-        when(postCommentRepository.findActiveAllByPost(post)).thenReturn(List.of(comment));
+        when(postCommentRepository.findActiveAllByPostForCleanup(post)).thenReturn(List.of(comment));
         when(postImgRepository.findAllByPost(post)).thenReturn(List.of(postImg));
 
         jogakService.deleteJogak(owner.getId(), 10L);

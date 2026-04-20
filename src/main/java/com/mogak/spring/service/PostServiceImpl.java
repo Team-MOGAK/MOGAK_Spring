@@ -56,7 +56,7 @@ public class PostServiceImpl implements PostService {
     public void validateCreateAccess(Long userId, PostRequestDto.CreatePostDto request, List<MultipartFile> multipartFile, Long jogakId) {
         validateContents(request);
         validateSourceImages(multipartFile);
-        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request == null ? null : request.getTargetDate());
+        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request.getTargetDate());
         validateTargetDate(dailyJogak.getJogak(), dailyJogak.getTargetDate());
         if (postRepository.existsByDailyJogakIdAndDeletedAtIsNull(dailyJogak.getId())) {
             throw new PostException(ErrorCode.ALREADY_EXISTS_POST);
@@ -133,7 +133,7 @@ public class PostServiceImpl implements PostService {
             storageCleanupService.deletePostImagesAfterCommit(postImgList, DIR_NAME);
             postImgRepository.deleteAllByPost(post);
         }
-        postCommentRepository.findActiveAllByPost(post).forEach(comment -> {
+        postCommentRepository.findActiveAllByPostForCleanup(post).forEach(comment -> {
             comment.delete();
             post.subtractCommentCnt();
         });

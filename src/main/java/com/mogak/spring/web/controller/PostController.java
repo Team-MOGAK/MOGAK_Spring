@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Slice;
@@ -53,7 +54,7 @@ public class PostController {
     @PostMapping("/api/jogaks/{jogakId}/posts")
     public ResponseEntity<BaseResponse<CreatePostDto>> createPost(@PathVariable Long jogakId,
                                                                   @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                                  @RequestPart PostRequestDto.CreatePostDto request,
+                                                                  @Valid @RequestPart PostRequestDto.CreatePostDto request,
                                                                   @RequestPart(required = true) List<MultipartFile> multipartFile) {
         postService.validateCreateAccess(authenticatedUser.getUserId(), request, multipartFile, jogakId);
         List<CreatePostImgDto> postImgDtoList = storageService.uploadImg(multipartFile, DIR_NAME);

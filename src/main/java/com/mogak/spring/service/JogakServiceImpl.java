@@ -449,7 +449,7 @@ public class JogakServiceImpl implements JogakService {
     private void deletePostCascade(DailyJogak dailyJogak) {
         postRepository.findActiveAllByDailyJogakId(dailyJogak.getId())
                 .forEach(post -> {
-                    postCommentRepository.findActiveAllByPost(post).forEach(comment -> {
+                    postCommentRepository.findActiveAllByPostForCleanup(post).forEach(comment -> {
                         comment.delete();
                         post.subtractCommentCnt();
                     });
