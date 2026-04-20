@@ -4,6 +4,9 @@ import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.converter.PostConverter;
 import com.mogak.spring.converter.PostImgConverter;
 import com.mogak.spring.converter.UserConverter;
+import com.mogak.spring.domain.jogak.DailyJogak;
+import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.jogak.JogakPeriod;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -37,31 +41,42 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final MogakRepository mogakRepository;
+    private final DailyJogakRepository dailyJogakRepository;
     private final UserRepository userRepository;
     private final PostImgRepository postImgRepository;
     private final PostCommentRepository postCommentRepository;
+    private final StorageCleanupService storageCleanupService;
+    private static final String DIR_NAME = "img";
 
     /**
      * TODO 회고록 - user id로 조회되도록 수정
      */
 
     @Override
-    public void validateCreateAccess(Long userId, PostRequestDto.CreatePostDto request, List<MultipartFile> multipartFile, Long mogakId) {
-        Mogak mogak = getMogak(mogakId);
-        validateOwner(mogak.getUser().getId(), userId);
+    public void validateCreateAccess(Long userId, PostRequestDto.CreatePostDto request, List<MultipartFile> multipartFile, Long jogakId) {
         validateContents(request);
         validateSourceImages(multipartFile);
+        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request == null ? null : request.getTargetDate());
+        validateTargetDate(dailyJogak.getJogak(), dailyJogak.getTargetDate());
+        if (postRepository.existsByDailyJogakIdAndDeletedAtIsNull(dailyJogak.getId())) {
+            throw new PostException(ErrorCode.ALREADY_EXISTS_POST);
+        }
     }
 
     //회고록 & 회고록 이미지 생성 => 리팩토링 필요
     @Transactional
     @Override
-    public Post create(Long userId, PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, Long mogakId) {
-        Mogak mogak = getOwnedMogak(userId, mogakId);
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    public Post create(Long userId, PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, Long jogakId) {
         validateContents(request);
         validateCreatedImages(postImgDtoList);
-        Post post = PostConverter.toPost(request, user, mogak);
+        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request.getTargetDate());
+        validateTargetDate(dailyJogak.getJogak(), request.getTargetDate());
+        if (postRepository.existsByDailyJogakIdAndDeletedAtIsNull(dailyJogak.getId())) {
+            throw new PostException(ErrorCode.ALREADY_EXISTS_POST);
+        }
+        User user = userRepository.findActiveById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        Post post = PostConverter.toPost(request, user, dailyJogak);
         for (PostImgRequestDto.CreatePostImgDto postImgDto : postImgDtoList) {
             PostImg postImg = PostImgConverter.toPostImg(postImgDto, post);
             //썸네일이미지인지 체크 필요
@@ -90,6 +105,13 @@ public class PostServiceImpl implements PostService {
         return getOwnedPost(userId, postId);
     }
 
+    @Override
+    public Post getByJogakAndTargetDate(Long userId, Long jogakId, LocalDate targetDate) {
+        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, targetDate);
+        return postRepository.findActiveByDailyJogakId(dailyJogak.getId())
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
+    }
+
 
     //회고록 수정
     @Transactional
@@ -106,23 +128,28 @@ public class PostServiceImpl implements PostService {
     @Override
     public void delete(Long userId, Long postId) {
         Post post = getOwnedPost(userId, postId);
-        //이미지 삭제
-        postImgRepository.deleteAllByPost(post);
-        //댓글 삭제
-        postCommentRepository.deleteAllByPost(post);
-        //회고록 삭제
-        postRepository.deleteById(postId);
+        List<PostImg> postImgList = postImgRepository.findAllByPost(post);
+        if (!postImgList.isEmpty()) {
+            storageCleanupService.deletePostImagesAfterCommit(postImgList, DIR_NAME);
+            postImgRepository.deleteAllByPost(post);
+        }
+        postCommentRepository.findActiveAllByPost(post).forEach(comment -> {
+            comment.delete();
+            post.subtractCommentCnt();
+        });
+        post.delete();
     }
 
     @Override
     public List<NetworkPostDto> getPacemakerPosts(Long userId, int cursor, int size) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findActiveById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Pageable pageable = PageRequest.of(cursor, size);
         List<Post> posts = postRepository.findPacemakerPostsByUser(user, pageable);
         //postImg 중 썸네일 이미지는 제외
         return posts.stream()
                 .map(p -> {
-                    List<String> imgUrls = p.getPostImgs().stream()
+                    List<String> imgUrls = postImgRepository.findAllByPost(p).stream()
                             .filter(img -> !Objects.equals(img.getImgUrl(), p.getPostThumbnailUrl()))
                             .map(PostImg::getImgUrl)
                             .collect(Collectors.toList());
@@ -130,7 +157,7 @@ public class PostServiceImpl implements PostService {
                             .user(UserConverter.toUserDto(p.getUser()))
                             .contents(p.getContents())
                             .imgUrls(imgUrls)
-                            .comments(p.getPostComments().stream()
+                            .comments(postCommentRepository.findActiveAllByPost(p).stream()
                                     .map(CommentConverter::toNetworkCommentDto)
                                     .collect(Collectors.toList()))
                             .likeCnt(p.getLikeCnt())
@@ -144,7 +171,8 @@ public class PostServiceImpl implements PostService {
     //전체 네트워킹 조회 - 이미지 썸네일 제외 반환
     @Override
     public Slice<Post> getNetworkPosts(Long userId, int page, int size, String sort, String address /*List<String> categoryList,*/){
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findActiveById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if(address == null){
             address = user.getAddress().getName();
         }
@@ -159,7 +187,7 @@ public class PostServiceImpl implements PostService {
     //postId로 해당 회고록에 대한 이미지 url 반환
     @Override
     public List<String> findImgUrlByPost(Long postId){
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findActiveById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         List<PostImg> postImgList = postImgRepository.findAllByPost(post);
         List<String> imgUrlList = new ArrayList<>();
@@ -173,7 +201,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<String> findNotThumbnailImg(Post post) {
         String thumbnailUrl = post.getPostThumbnailUrl();
-        List<PostImg> postImgList = post.getPostImgs();
+        List<PostImg> postImgList = postImgRepository.findAllByPost(post);
         List<String> imgUrls = new ArrayList<>();
         for (PostImg postImg : postImgList) {
             if (!thumbnailUrl.equals(postImg.getImgUrl())) {
@@ -189,7 +217,7 @@ public class PostServiceImpl implements PostService {
     }
 
     private Mogak getMogak(Long mogakId) {
-        return mogakRepository.findById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
+        return mogakRepository.findActiveById(mogakId).orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
     }
 
     private Mogak getOwnedMogak(Long userId, Long mogakId) {
@@ -199,10 +227,37 @@ public class PostServiceImpl implements PostService {
     }
 
     private Post getOwnedPost(Long userId, Long postId) {
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findActiveById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         validateOwner(post.getUser().getId(), userId);
         return post;
+    }
+
+    private DailyJogak getOwnedDailyJogak(Long userId, Long jogakId, LocalDate targetDate) {
+        if (targetDate == null) {
+            throw new PostException(ErrorCode.INVALID_TARGET_DATE);
+        }
+        DailyJogak dailyJogak = dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(jogakId, targetDate)
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_DAILY_JOGAK));
+        validateOwner(dailyJogak.getJogak().getUser().getId(), userId);
+        return dailyJogak;
+    }
+
+    private void validateTargetDate(Jogak jogak, LocalDate targetDate) {
+        if (jogak.getStartAt() == null
+                || targetDate.isBefore(jogak.getStartAt())
+                || (jogak.getEndAt() != null && targetDate.isAfter(jogak.getEndAt()))) {
+            throw new PostException(ErrorCode.INVALID_TARGET_DATE);
+        }
+        if (jogak.getIsRoutine()) {
+            int dayOfWeek = targetDate.getDayOfWeek().getValue();
+            boolean containsTargetDay = jogak.getJogakPeriods().stream()
+                    .map(JogakPeriod::getPeriod)
+                    .anyMatch(period -> period.getId() == dayOfWeek);
+            if (!containsTargetDay) {
+                throw new PostException(ErrorCode.INVALID_TARGET_DATE);
+            }
+        }
     }
 
     private void validateContents(PostRequestDto.CreatePostDto request) {

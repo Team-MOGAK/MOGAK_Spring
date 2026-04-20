@@ -33,7 +33,7 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public PostComment create(Long userId, CommentRequestDto.CreateCommentDto request, Long postId) {
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findActiveById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         User user = getUser(userId);
         if (request.getContents().length() > 200) {
@@ -48,16 +48,16 @@ public class PostCommentServiceImpl implements PostCommentService {
     //댓글 조회
     @Override
     public List<PostComment> findByPostId(Long postId) {
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findActiveById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
-        return postCommentRepository.findAllByPost(post);
+        return postCommentRepository.findActiveAllByPost(post);
     }
 
     //댓글 수정
     @Transactional
     @Override
     public PostComment update(Long userId, CommentRequestDto.UpdateCommentDto request, Long postId, Long commentId) {
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findActiveById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         PostComment comment = getCommentInPost(post, commentId);
         validateOwner(comment, getUser(userId));
@@ -73,21 +73,21 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public void delete(Long userId, Long postId, Long commentId) {
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findActiveById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         PostComment comment = getCommentInPost(post, commentId);
         validateOwner(comment, getUser(userId));
         post.subtractCommentCnt();
-        postCommentRepository.delete(comment);
+        comment.delete();
     }
 
     private User getUser(Long userId) {
-        return userRepository.findById(userId)
+        return userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
     }
 
     private PostComment getCommentInPost(Post post, Long commentId) {
-        PostComment comment = postCommentRepository.findByPostAndId(post, commentId);
+        PostComment comment = postCommentRepository.findActiveByPostAndId(post, commentId);
         if (comment == null) {
             throw new PostCommentException(ErrorCode.NOT_EXIST_COMMENT);
         }

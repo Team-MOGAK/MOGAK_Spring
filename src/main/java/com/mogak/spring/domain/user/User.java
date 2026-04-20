@@ -1,6 +1,6 @@
 package com.mogak.spring.domain.user;
 
-import com.mogak.spring.global.BaseEntity;
+import com.mogak.spring.global.SoftDeletableEntity;
 import lombok.*;
 
 import jakarta.persistence.*;
@@ -13,7 +13,7 @@ import jakarta.persistence.*;
 //@Where(clause = "deleted=false")
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User extends BaseEntity {
+public class User extends SoftDeletableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
@@ -33,8 +33,6 @@ public class User extends BaseEntity {
     private String email;
     @Column(length = 512)
     private String refreshToken;
-    //@Column(nullable = false)
-    private String validation;
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -56,10 +54,6 @@ public class User extends BaseEntity {
         this.email = email;
     }
 
-    public void updateValidation(String validation) {
-        this.validation = validation;
-    }
-
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
@@ -74,7 +68,6 @@ public class User extends BaseEntity {
         this.address = address;
         this.profileImgUrl = profileImgUrl;
         this.profileImgName = profileImgName;
-        this.validation = "ACTIVE";
         this.role = Role.USER;
     }
 }

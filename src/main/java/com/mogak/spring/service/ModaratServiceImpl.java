@@ -35,7 +35,7 @@ public class ModaratServiceImpl implements ModaratService {
     @Transactional
     @Override
     public Modarat create(Long userId, ModaratRequestDto.CreateModaratDto request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findActiveById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return modaratRepository.save(ModaratConverter.toModarat(user, request));
     }
 
@@ -45,7 +45,7 @@ public class ModaratServiceImpl implements ModaratService {
         Modarat modarat = getOwnedModarat(modaratId, userId);
         List<Mogak> mogaks = mogakRepository.findAllByModaratId(modaratId);
         mogaks.forEach(mogak -> mogakService.deleteMogakCascadeAfterParentAuthorization(mogak.getId()));
-        modaratRepository.delete(modarat);
+        modarat.delete();
     }
 
     @Transactional
@@ -67,14 +67,14 @@ public class ModaratServiceImpl implements ModaratService {
 
     @Override
     public List<ModaratResponseDto.ModaratDto> getModaratList(Long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        userRepository.findActiveById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return modaratRepository.findModaratsByUserId(userId).stream()
                 .map(ModaratConverter::toModaratDto)
                 .collect(Collectors.toList());
     }
 
     private Modarat getOwnedModarat(Long modaratId, Long userId) {
-        Modarat modarat = modaratRepository.findById(modaratId)
+        Modarat modarat = modaratRepository.findActiveById(modaratId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
         if (!Objects.equals(modarat.getUser().getId(), userId)) {
             throw new AuthException(ErrorCode.INVALID_PERMISSION);

@@ -35,7 +35,6 @@ public class CommentResponseDto {
         private Long postId;
         private Long userId;
         private String contents;
-        //private String validation;
         private LocalDateTime createdAt;
     }
 
@@ -54,7 +53,7 @@ public class CommentResponseDto {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class DeleteCommentDto {
-        private String validation;
+        private boolean deleted;
     }
 
     @Getter

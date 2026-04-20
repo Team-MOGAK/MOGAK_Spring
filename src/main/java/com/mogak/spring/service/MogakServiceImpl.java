@@ -47,7 +47,7 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public MogakResponseDto.GetMogakDto create(Long userId, MogakRequestDto.CreateDto request) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Modarat modarat = getOwnedModarat(request.getModaratId(), userId);
         if (!validateMogakNum(modarat)) {
@@ -151,7 +151,7 @@ public class MogakServiceImpl implements MogakService {
      * */
     @Override
     public MogakResponseDto.GetMogakListDto getMogakDtoList(Long userId, Long modaratId) {
-        userRepository.findById(userId)
+        userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Modarat modarat = getOwnedModarat(modaratId, userId);
         return MogakConverter.toGetMogakListDto(mogakRepository.findAllByModaratId(modarat.getId()));
@@ -212,11 +212,10 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public void deleteMogakCascadeAfterParentAuthorization(Long mogakId) {
-        Mogak mogak = mogakRepository.findById(mogakId)
+        Mogak mogak = mogakRepository.findActiveById(mogakId)
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         List<Jogak> jogaks = jogakRepository.findAllByMogak(mogak);
         jogaks.forEach(jogak -> jogakService.deleteJogakCascadeAfterParentAuthorization(jogak.getId()));
-        dailyJogakRepository.flush();
         jogakRepository.flush();
 
 //        List<Post> posts = postRepository.findAllByMogak(mogak);
@@ -231,16 +230,16 @@ public class MogakServiceImpl implements MogakService {
 //            });
 //            postRepository.deleteAllByMogak(mogak);
 //        }
-        mogakRepository.deleteById(mogakId);
+        mogak.delete();
     }
 
     @Override
     public List<JogakResponseDto.GetJogakDto> getJogaks(Long userId, Long mogakId, LocalDate day) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Mogak mogak = getOwnedMogak(mogakId, userId);
-        List<DailyJogak> dailyJogak = dailyJogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1));
-        return mogak.getJogaks().stream()
+        List<DailyJogak> dailyJogak = dailyJogakRepository.findDailyJogaks(user, day);
+        return jogakRepository.findAllByMogak(mogak).stream()
                 .filter(jogak -> jogak.getEndAt() == null || jogak.getEndAt().isAfter(day.minusDays(1)))
                 .map(jogak -> JogakConverter.toGetJogakResponseDto(jogak, findCorrespondingDailyJogak(jogak, dailyJogak)))
                 .collect(Collectors.toList());
@@ -252,7 +251,7 @@ public class MogakServiceImpl implements MogakService {
     }
 
     private Modarat getOwnedModarat(Long modaratId, Long userId) {
-        Modarat modarat = modaratRepository.findById(modaratId)
+        Modarat modarat = modaratRepository.findActiveById(modaratId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
         if (!modarat.getUser().getId().equals(userId)) {
             throw new AuthException(ErrorCode.INVALID_PERMISSION);
@@ -261,7 +260,7 @@ public class MogakServiceImpl implements MogakService {
     }
 
     private Mogak getOwnedMogak(Long mogakId, Long userId) {
-        Mogak mogak = mogakRepository.findById(mogakId)
+        Mogak mogak = mogakRepository.findActiveById(mogakId)
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         if (!mogak.getUser().getId().equals(userId)) {
             throw new AuthException(ErrorCode.INVALID_PERMISSION);

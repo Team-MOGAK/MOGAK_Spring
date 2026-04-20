@@ -1,7 +1,7 @@
 package com.mogak.spring.domain.modarat;
 
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.global.BaseEntity;
+import com.mogak.spring.global.SoftDeletableEntity;
 import lombok.*;
 
 import jakarta.persistence.*;
@@ -13,7 +13,7 @@ import java.util.Optional;
 @Entity
 @AllArgsConstructor(access= AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Modarat extends BaseEntity {
+public class Modarat extends SoftDeletableEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "modarat_id")
     private Long id;
@@ -26,9 +26,6 @@ public class Modarat extends BaseEntity {
     private String title;
     @Column(nullable = false)
     private String color;
-    @Column(nullable = false)
-    private String validation;
-
     public void update(String title, String color) {
         Optional.ofNullable(title).ifPresent(t -> this.title = t);
         Optional.ofNullable(color).ifPresent(c -> this.color = c);

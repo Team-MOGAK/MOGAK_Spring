@@ -29,8 +29,8 @@ public class FollowServiceImpl implements FollowService {
     @Transactional
     @Override
     public void follow(Long userId, String nickname) {
-        User fromUser = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User fromUser = userRepository.findActiveById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User toUser = userRepository.findActiveByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 
         if (followRepository.findByFromAndTo(fromUser, toUser).isPresent()) {
             throw new UserException(ErrorCode.ALREADY_CREATE_FOLLOW);
@@ -41,8 +41,8 @@ public class FollowServiceImpl implements FollowService {
     @Transactional
     @Override
     public void unfollow(Long userId, String nickname) {
-        User fromUser = userRepository.findById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        User toUser = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User fromUser = userRepository.findActiveById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User toUser = userRepository.findActiveByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
 
         Follow follow = followRepository.findByFromAndTo(fromUser, toUser).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_FOLLOW));
         followRepository.delete(follow);
@@ -50,7 +50,7 @@ public class FollowServiceImpl implements FollowService {
 
     @Override
     public FollowRequestDto.CountDto getFollowCount(String nickname) {
-        User user = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findActiveByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return FollowRequestDto.CountDto.builder()
                 .motoCnt(getMotoCount(user))
                 .mentorCnt(getMentorCount(user))
@@ -59,7 +59,7 @@ public class FollowServiceImpl implements FollowService {
 
     @Override
     public List<UserDto> getMotoList(String nickname) {
-        User user = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findActiveByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<User> users = followRepository.findMotosByUser(user);
         return users.stream()
                 .map(UserConverter::toUserDto)
@@ -68,7 +68,7 @@ public class FollowServiceImpl implements FollowService {
 
     @Override
     public List<UserDto> getMentorList(String nickname) {
-        User user = userRepository.findOneByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+        User user = userRepository.findActiveByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<User> users = followRepository.findMentorsByUser(user);
         return users.stream()
                 .map(UserConverter::toUserDto)

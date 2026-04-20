@@ -4,6 +4,7 @@ import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import com.mogak.spring.web.dto.commentdto.CommentResponseDto;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,6 +20,9 @@ public class PostResponseDto {
     public static class PostDto {
         private Long postId;
         private Long mogakId;
+        private Long jogakId;
+        private Long dailyJogakId;
+        private LocalDate targetDate;
         private Long userId; //추후 로그인 구현후 수정 필요할듯
         private String contents;
         private List<String> imgUrls;
@@ -35,6 +39,9 @@ public class PostResponseDto {
     public static class GetPostDto {
         private Long postId;
         private Long mogakId;
+        private Long jogakId;
+        private Long dailyJogakId;
+        private LocalDate targetDate;
         private String contents;
         private String thumbnailUrl;
         private int likeCnt;
@@ -55,9 +62,11 @@ public class PostResponseDto {
     public static class CreatePostDto {
         private Long id;
         private Long mogakId;
+        private Long jogakId;
+        private Long dailyJogakId;
+        private LocalDate targetDate;
         private Long userId;
         private String contents;
-        private String validation;
         private List<String> imgUrls;
         private LocalDateTime createdAt;
     }
@@ -77,7 +86,7 @@ public class PostResponseDto {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class DeletePostDto {
-        private String validation;
+        private boolean deleted;
     }
 
     @Getter

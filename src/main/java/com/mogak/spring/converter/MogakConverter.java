@@ -1,6 +1,5 @@
 package com.mogak.spring.converter;
 
-import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
@@ -21,7 +20,6 @@ public class MogakConverter {
                 .smallCategory(smallCategory)
                 .title(request.getTitle())
                 .color(request.getColor())
-                .validation(Validation.ACTIVE.toString())
                 .build();
     }
 

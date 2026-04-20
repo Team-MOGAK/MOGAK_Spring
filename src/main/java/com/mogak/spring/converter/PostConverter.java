@@ -1,7 +1,6 @@
 package com.mogak.spring.converter;
 
-import com.mogak.spring.domain.common.Validation;
-import com.mogak.spring.domain.mogak.Mogak;
+import com.mogak.spring.domain.jogak.DailyJogak;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
@@ -18,12 +17,15 @@ public class PostConverter {
 
     //이미지까지 업로드 잘 되어있는지 확인
     public static PostResponseDto.CreatePostDto toCreatePostDto(Post post){
+        DailyJogak dailyJogak = post.getDailyJogak();
         return PostResponseDto.CreatePostDto.builder()
                 .id(post.getId())
-                .mogakId(post.getMogak().getId())
+                .mogakId(dailyJogak.getJogak().getMogak().getId())
+                .jogakId(dailyJogak.getJogak().getId())
+                .dailyJogakId(dailyJogak.getId())
+                .targetDate(dailyJogak.getTargetDate())
                 .userId(post.getUser().getId())
                 .contents(post.getContents())
-                .validation(Validation.ACTIVE.toString())
                 .createdAt(post.getCreatedAt())
                 .imgUrls(post.getPostImgs().stream()
                         .map(m -> m.getImgUrl())
@@ -32,24 +34,29 @@ public class PostConverter {
                 .build();
     }
 
-    public static Post toPost(PostRequestDto.CreatePostDto request, User user, Mogak mogak){
+    public static Post toPost(PostRequestDto.CreatePostDto request, User user, DailyJogak dailyJogak){
         return Post.builder()
-                .mogak(mogak)
+                .dailyJogak(dailyJogak)
                 .user(user)
                 .contents(request.getContents())
                 .viewCnt(0)  //조회수 초기화
-                .validation(Validation.ACTIVE.toString())
                 .build();
     }
     //상세 조회
     public static PostResponseDto.PostDto toPostDto(Post post, List<String> imgUrls){
+        DailyJogak dailyJogak = post.getDailyJogak();
         return PostResponseDto.PostDto.builder()
                 .postId(post.getId())
-                .mogakId(post.getMogak().getId())
+                .mogakId(dailyJogak.getJogak().getMogak().getId())
+                .jogakId(dailyJogak.getJogak().getId())
+                .dailyJogakId(dailyJogak.getId())
+                .targetDate(dailyJogak.getTargetDate())
                 .userId(post.getUser().getId())
                 .contents(post.getContents())
                 .imgUrls(imgUrls)
                 .commentId(post.getPostComments().stream()
+                        .filter(comment -> !comment.isDeleted())
+                        .filter(comment -> !comment.getUser().isDeleted())
                         .map(m -> m.getId())
                         .collect(Collectors.toList())) //일단 comment id로 조회하는 것으로 함
                 .likeCnt(post.getLikeCnt())
@@ -67,14 +74,18 @@ public class PostConverter {
 
     public static PostResponseDto.DeletePostDto toDeletePostDto(){
         return PostResponseDto.DeletePostDto.builder()
-                .validation(Validation.INACTIVE.toString())
+                .deleted(true)
                 .build();
     }
     //전체조회
     public static PostResponseDto.GetPostDto toGetPostDto(Post post){
+        DailyJogak dailyJogak = post.getDailyJogak();
         return PostResponseDto.GetPostDto.builder()
                 .postId(post.getId())
-                .mogakId(post.getMogak().getId())
+                .mogakId(dailyJogak.getJogak().getMogak().getId())
+                .jogakId(dailyJogak.getJogak().getId())
+                .dailyJogakId(dailyJogak.getId())
+                .targetDate(dailyJogak.getTargetDate())
                 .contents(post.getContents())
                 .thumbnailUrl(post.getPostThumbnailUrl())
                 .build();

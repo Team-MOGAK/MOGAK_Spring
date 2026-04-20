@@ -3,7 +3,7 @@ package com.mogak.spring.domain.jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.global.BaseEntity;
+import com.mogak.spring.global.SoftDeletableEntity;
 import lombok.*;
 
 import jakarta.persistence.*;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @Entity
 @AllArgsConstructor(access= AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Jogak extends BaseEntity {
+public class Jogak extends SoftDeletableEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "jogak_id")
     private Long id;
@@ -44,7 +44,7 @@ public class Jogak extends BaseEntity {
     private Boolean isRoutine;
     @Column(name = "achievement")
     private Integer achievements;
-    @Column(name = "start_at")
+    @Column(name = "start_at", nullable = false)
     private LocalDate startAt;
     @Column(name = "end_at")
     private LocalDate endAt;

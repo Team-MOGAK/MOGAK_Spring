@@ -60,6 +60,10 @@ public enum ErrorCode {
     NOT_SUCCESS_DAILY_JOGAK(HttpStatus.CONFLICT, "J011", "성공하지 않은 데일리 조각입니다"),
     EXCEED_MAX_JOGAK(HttpStatus.CONFLICT, "J012", "생성 가능한 조각의 최대 갯수는 8개 입니다"),
     NOT_EXIST_ROUTINES(HttpStatus.CONFLICT, "J013", "루틴이 설정된 경우 요일이 필요합니다"),
+    NOT_EXIST_DAILY_JOGAK(HttpStatus.NOT_FOUND, "J014", "존재하지 않는 데일리 조각입니다"),
+    ALREADY_SUCCESS_DAILY_JOGAK(HttpStatus.CONFLICT, "J015", "이미 성공한 데일리 조각입니다"),
+    ALREADY_FAIL_DAILY_JOGAK(HttpStatus.CONFLICT, "J016", "이미 실패한 데일리 조각입니다"),
+    INVALID_TARGET_DATE(HttpStatus.BAD_REQUEST, "J017", "유효하지 않은 실천 날짜입니다"),
 
     /**
      * 게시물 에러
@@ -67,7 +71,9 @@ public enum ErrorCode {
     EXCEED_MAX_NUM_POST(HttpStatus.BAD_REQUEST, "P001", "최대 글자수 350자를 초과하였습니다"),
     NOT_HAVE_IMAGE(HttpStatus.BAD_REQUEST, "P002", "이미지가 존재하지 않습니다"),
     NOT_EXIST_POST(HttpStatus.NOT_FOUND, "P003", "존재하지 않는 게시물입니다"),
-    ALREADY_CREATE_LIKE(HttpStatus.INTERNAL_SERVER_ERROR, "P004", "이미 좋아요를 누른 게시물입니다"),
+    ALREADY_CREATE_LIKE(HttpStatus.CONFLICT, "P004", "이미 좋아요를 누른 게시물입니다"),
+    ALREADY_EXISTS_POST(HttpStatus.CONFLICT, "P005", "이미 존재하는 회고록입니다"),
+    NOT_EXIST_LIKE(HttpStatus.NOT_FOUND, "P006", "존재하지 않는 좋아요입니다"),
 
     /**
      * 댓글 에러
