@@ -11,6 +11,7 @@ import org.springframework.data.domain.Slice;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class PostConverter {
@@ -100,7 +101,7 @@ public class PostConverter {
                 .userJob(post.getUser().getJob().getName())
                 .contents(post.getContents())
                 .imgUrls(post.getPostImgs().stream()
-                        .filter(img -> img.getImgUrl() != post.getPostThumbnailUrl())
+                        .filter(img -> !Objects.equals(img.getImgUrl(), post.getPostThumbnailUrl()))
                         .map(PostImg::getImgUrl)
                         .collect(Collectors.toList()))
                 .commentCnt(post.getCommentCnt())

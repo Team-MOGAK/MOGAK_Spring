@@ -123,7 +123,7 @@ public class PostServiceImpl implements PostService {
         return posts.stream()
                 .map(p -> {
                     List<String> imgUrls = p.getPostImgs().stream()
-                            .filter(img -> img.getImgUrl() != p.getPostThumbnailUrl())
+                            .filter(img -> !Objects.equals(img.getImgUrl(), p.getPostThumbnailUrl()))
                             .map(PostImg::getImgUrl)
                             .collect(Collectors.toList());
                     NetworkPostDto dto = NetworkPostDto.builder()
