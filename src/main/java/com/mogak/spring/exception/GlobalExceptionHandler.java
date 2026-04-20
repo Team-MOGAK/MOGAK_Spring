@@ -18,7 +18,7 @@ import java.util.Objects;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
-    public ResponseEntity<ErrorResponse> BaseException(BaseException e) {
+    public ResponseEntity<ErrorResponse> handleBaseException(BaseException e) {
         if (e.getHttpStatus().is5xxServerError()) {
             log.error("BaseException occurred: code={}, message={}", e.getCode(), e.getMessage(), e);
         } else {
