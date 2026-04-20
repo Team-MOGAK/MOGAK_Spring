@@ -5,16 +5,14 @@ import com.mogak.spring.auth.AppleUserResponse;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
+import com.mogak.spring.domain.post.Post;
+import com.mogak.spring.domain.post.PostComment;
+import com.mogak.spring.domain.post.PostLike;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
-import com.mogak.spring.repository.DailyJogakRepository;
-import com.mogak.spring.repository.JogakPeriodRepository;
-import com.mogak.spring.repository.JogakRepository;
-import com.mogak.spring.repository.ModaratRepository;
-import com.mogak.spring.repository.MogakRepository;
-import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.repository.*;
 import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
@@ -45,8 +43,14 @@ class AuthServiceTest {
     @Mock private JogakRepository jogakRepository;
     @Mock private DailyJogakRepository dailyJogakRepository;
     @Mock private JogakPeriodRepository jogakPeriodRepository;
+    @Mock private PostRepository postRepository;
+    @Mock private PostCommentRepository postCommentRepository;
+    @Mock private PostImgRepository postImgRepository;
+    @Mock private PostLikeRepository postLikeRepository;
+    @Mock private FollowRepository followRepository;
     @Mock private AppleOAuthUserProvider appleOAuthUserProvider;
     @Mock private JwtTokenProvider jwtTokenProvider;
+    @Mock private StorageCleanupService storageCleanupService;
 
     @InjectMocks
     private AuthService authService;
@@ -60,7 +64,6 @@ class AuthServiceTest {
                 .build();
 
         when(appleOAuthUserProvider.getAppleUser("apple-id-token")).thenReturn(new AppleUserResponse("user@test.com"));
-        when(userRepository.existsByEmail("user@test.com")).thenReturn(true);
         when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
         when(jwtTokenProvider.createAccessToken(1L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken("user@test.com")).thenReturn("refresh-token");
@@ -78,7 +81,7 @@ class AuthServiceTest {
         ReflectionTestUtils.setField(user, "refreshToken", "stored-refresh-token");
 
         when(jwtTokenProvider.getEmailByRefresh("presented-refresh-token")).thenReturn("user@test.com");
-        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(userRepository.findActiveByEmail("user@test.com")).thenReturn(Optional.of(user));
 
         Throwable throwable = catchThrowable(() -> authService.reissue("presented-refresh-token"));
 
@@ -92,7 +95,7 @@ class AuthServiceTest {
         ReflectionTestUtils.setField(user, "refreshToken", "stored-refresh-token");
 
         when(jwtTokenProvider.getEmailByRefresh("stored-refresh-token")).thenReturn("user@test.com");
-        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+        when(userRepository.findActiveByEmail("user@test.com")).thenReturn(Optional.of(user));
         when(jwtTokenProvider.refresh("stored-refresh-token", 1L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn(
                 JwtTokens.builder()
                         .accessToken("new-access-token")
@@ -111,7 +114,7 @@ class AuthServiceTest {
     void logoutClearsStoredRefreshToken() {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
         ReflectionTestUtils.setField(user, "refreshToken", "stored-refresh-token");
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
         authService.logout(1L);
 
@@ -125,14 +128,73 @@ class AuthServiceTest {
         Modarat modarat = TestFixtureFactory.modarat(11L, user, "모다라트", "#ffffff");
         Mogak mogak = TestFixtureFactory.mogak(21L, user, modarat, TestFixtureFactory.category(1, "대분류"), "모각", "#aaaaaa");
         Jogak jogak = TestFixtureFactory.jogak(31L, mogak, "조각", false, null, null, 0);
-        ReflectionTestUtils.setField(user, "validation", "ACTIVE");
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
+        when(postImgRepository.findAllByPostOwnerId(1L)).thenReturn(List.of());
+        when(postLikeRepository.findActiveAllByUserIdOnOtherUserPosts(1L)).thenReturn(List.of());
+        when(postCommentRepository.findActiveAllByPostOwnerId(1L)).thenReturn(List.of());
+        when(postCommentRepository.findActiveAllByUserId(1L)).thenReturn(List.of());
+        when(postRepository.findActiveAllByUserId(1L)).thenReturn(List.of());
         when(jogakRepository.findAllByUserId(1L)).thenReturn(Optional.of(List.of(jogak)));
+        when(dailyJogakRepository.findActiveAllByJogak(jogak)).thenReturn(List.of());
+        when(mogakRepository.findAllByUser(user)).thenReturn(List.of(mogak));
+        when(modaratRepository.findModaratsByUserId(1L)).thenReturn(List.of(modarat));
 
         AuthResponse.WithdrawDto result = authService.deleteUser(1L);
 
         assertThat(result.isDeleted()).isTrue();
-        assertThat(ReflectionTestUtils.getField(user, "validation")).isEqualTo("INACTIVE");
+        assertThat(user.isDeleted()).isTrue();
+        assertThat(jogak.isDeleted()).isTrue();
+        assertThat(mogak.isDeleted()).isTrue();
+        assertThat(modarat.isDeleted()).isTrue();
+        org.mockito.Mockito.verify(jogakPeriodRepository).deleteAllByJogakId(31L);
+    }
+
+    @Test
+    @DisplayName("회원탈퇴는 다른 사용자의 게시글에 남긴 댓글과 좋아요 카운터를 함께 감소시킨다")
+    void deleteUserUpdatesCountersOnOtherUsersPosts() {
+        User withdrawingUser = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
+        User postOwner = TestFixtureFactory.user(2L, "owner@test.com", "owner", null, null);
+        Mogak ownerMogak = TestFixtureFactory.mogak(21L, postOwner,
+                TestFixtureFactory.modarat(11L, postOwner, "모다라트", "#ffffff"),
+                TestFixtureFactory.category(1, "대분류"), "모각", "#aaaaaa");
+        Jogak ownerJogak = TestFixtureFactory.jogak(31L, ownerMogak, "조각", false, java.time.LocalDate.now(), null, 0);
+        Post post = Post.builder()
+                .id(41L)
+                .dailyJogak(TestFixtureFactory.dailyJogak(51L, ownerJogak, false))
+                .user(postOwner)
+                .contents("content")
+                .postThumbnailUrl("https://example.com/thumb.png")
+                .viewCnt(0)
+                .likeCnt(1)
+                .commentCnt(1)
+                .build();
+        PostComment comment = PostComment.builder()
+                .id(61L)
+                .post(post)
+                .user(withdrawingUser)
+                .contents("comment")
+                .build();
+        PostLike like = PostLike.builder()
+                .id(71L)
+                .post(post)
+                .user(withdrawingUser)
+                .build();
+
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(withdrawingUser));
+        when(postImgRepository.findAllByPostOwnerId(1L)).thenReturn(List.of());
+        when(postLikeRepository.findActiveAllByUserIdOnOtherUserPosts(1L)).thenReturn(List.of(like));
+        when(postCommentRepository.findActiveAllByPostOwnerId(1L)).thenReturn(List.of());
+        when(postCommentRepository.findActiveAllByUserId(1L)).thenReturn(List.of(comment));
+        when(postRepository.findActiveAllByUserId(1L)).thenReturn(List.of());
+        when(jogakRepository.findAllByUserId(1L)).thenReturn(Optional.empty());
+        when(mogakRepository.findAllByUser(withdrawingUser)).thenReturn(List.of());
+        when(modaratRepository.findModaratsByUserId(1L)).thenReturn(List.of());
+
+        authService.deleteUser(1L);
+
+        assertThat(comment.isDeleted()).isTrue();
+        assertThat(post.getCommentCnt()).isZero();
+        assertThat(post.getLikeCnt()).isZero();
     }
 }

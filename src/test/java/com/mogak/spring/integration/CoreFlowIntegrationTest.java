@@ -161,9 +161,9 @@ class CoreFlowIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        assertThat(mogakRepository.findById(mogak.getId())).isEmpty();
-        assertThat(jogakRepository.findById(createdJogak.getJogakId())).isEmpty();
-        assertThat(dailyJogakRepository.findById(started.getDailyJogakId())).isEmpty();
+        assertThat(mogakRepository.findById(mogak.getId()).orElseThrow().isDeleted()).isTrue();
+        assertThat(jogakRepository.findById(createdJogak.getJogakId()).orElseThrow().isDeleted()).isTrue();
+        assertThat(dailyJogakRepository.findById(started.getDailyJogakId()).orElseThrow().isDeleted()).isTrue();
         assertThat(jogakPeriodRepository.findAllByJogak_Id(createdJogak.getJogakId())).isEmpty();
     }
 

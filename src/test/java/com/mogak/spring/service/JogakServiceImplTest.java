@@ -4,9 +4,13 @@ import com.mogak.spring.domain.jogak.DailyJogak;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakPeriod;
 import com.mogak.spring.domain.jogak.Period;
+import com.mogak.spring.domain.jogak.DailyJogakStatus;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
+import com.mogak.spring.domain.post.Post;
+import com.mogak.spring.domain.post.PostComment;
+import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
@@ -41,6 +45,10 @@ class JogakServiceImplTest {
     @Mock private JogakPeriodRepository jogakPeriodRepository;
     @Mock private PeriodRepository periodRepository;
     @Mock private DailyJogakRepository dailyJogakRepository;
+    @Mock private PostRepository postRepository;
+    @Mock private PostCommentRepository postCommentRepository;
+    @Mock private PostImgRepository postImgRepository;
+    @Mock private StorageCleanupService storageCleanupService;
 
     @InjectMocks
     private JogakServiceImpl jogakService;
@@ -60,7 +68,7 @@ class JogakServiceImplTest {
         ReflectionTestUtils.setField(request, "isRoutine", false);
         ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
 
-        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+        when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.save(any(Jogak.class))).thenReturn(saved);
 
         JogakResponseDto.CreateJogakDto result = jogakService.createJogak(1L, request);
@@ -89,7 +97,7 @@ class JogakServiceImplTest {
         ReflectionTestUtils.setField(request, "today", today);
         ReflectionTestUtils.setField(request, "days", List.of("MONDAY", "TUESDAY"));
 
-        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+        when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.save(any(Jogak.class))).thenReturn(saved);
         when(periodRepository.findOneByDays("MONDAY")).thenReturn(Optional.of(monday));
         when(periodRepository.findOneByDays("TUESDAY")).thenReturn(Optional.of(tuesday));
@@ -117,7 +125,7 @@ class JogakServiceImplTest {
         ReflectionTestUtils.setField(request, "isRoutine", true);
         ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
 
-        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+        when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.save(any(Jogak.class))).thenReturn(saved);
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.createJogak(1L, request));
@@ -140,7 +148,7 @@ class JogakServiceImplTest {
         ReflectionTestUtils.setField(request, "isRoutine", false);
         ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
 
-        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+        when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.createJogak(other.getId(), request));
 
@@ -157,7 +165,7 @@ class JogakServiceImplTest {
         ReflectionTestUtils.setField(request, "isRoutine", false);
         ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
 
-        when(mogakRepository.findById(999L)).thenReturn(Optional.empty());
+        when(mogakRepository.findActiveById(999L)).thenReturn(Optional.empty());
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.createJogak(1L, request));
 
@@ -181,7 +189,7 @@ class JogakServiceImplTest {
         ReflectionTestUtils.setField(request, "isRoutine", false);
         ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
 
-        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+        when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.createJogak(1L, request));
 
@@ -198,7 +206,7 @@ class JogakServiceImplTest {
         Mogak mogak = TestFixtureFactory.mogak(2L, user, modarat, category, "모각", "#1234");
         Jogak routine = TestFixtureFactory.jogak(10L, mogak, "루틴 조각", true, LocalDate.now(), null, 0);
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
         when(jogakRepository.findDailyRoutineJogaks(user, futureDay.getDayOfWeek().getValue())).thenReturn(List.of(routine));
 
         JogakResponseDto.GetDailyJogakListDto result = jogakService.getDayJogaks(1L, futureDay);
@@ -218,8 +226,8 @@ class JogakServiceImplTest {
                 "#1234"), "조각", false, LocalDate.now(), null, 0);
         DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, jogak, false);
 
-        when(jogakRepository.findById(10L)).thenReturn(Optional.of(jogak));
-        when(dailyJogakRepository.findByCreatedAtBetweenAndId(LocalDate.now().atStartOfDay(), LocalDate.now().atStartOfDay().plusDays(1), jogak))
+        when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
+        when(dailyJogakRepository.findActiveByJogakAndTargetDate(jogak, LocalDate.now()))
                 .thenReturn(Optional.empty());
         when(dailyJogakRepository.save(any(DailyJogak.class))).thenReturn(dailyJogak);
 
@@ -238,8 +246,8 @@ class JogakServiceImplTest {
                 TestFixtureFactory.category(1, "자격증"),
                 "모각",
                 "#1234"), "조각", false, LocalDate.now(), null, 0);
-        when(jogakRepository.findById(10L)).thenReturn(Optional.of(jogak));
-        when(dailyJogakRepository.findByCreatedAtBetweenAndId(LocalDate.now().atStartOfDay(), LocalDate.now().atStartOfDay().plusDays(1), jogak))
+        when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
+        when(dailyJogakRepository.findActiveByJogakAndTargetDate(jogak, LocalDate.now()))
                 .thenReturn(Optional.of(TestFixtureFactory.dailyJogak(100L, jogak, false)));
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.startJogak(1L, 10L));
@@ -259,7 +267,7 @@ class JogakServiceImplTest {
                 "모각",
                 "#1234"), "조각", false, LocalDate.now(), null, 0);
 
-        when(jogakRepository.findById(10L)).thenReturn(Optional.of(jogak));
+        when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.startJogak(other.getId(), 10L));
 
@@ -278,7 +286,7 @@ class JogakServiceImplTest {
                 "#1234"), "조각", false, LocalDate.now(), null, 0);
         DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, jogak, false);
 
-        when(dailyJogakRepository.findByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
+        when(dailyJogakRepository.findActiveByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
 
         JogakResponseDto.JogakDailyJogakDto result = jogakService.successJogak(1L, 100L);
 
@@ -287,7 +295,7 @@ class JogakServiceImplTest {
     }
 
     @Test
-    @DisplayName("성공하지 않은 데일리 조각은 실패 처리할 수 없다")
+    @DisplayName("성공하지 않은 데일리 조각도 실패 처리될 수 있다")
     void failJogakThrowsWhenDailyJogakNotSuccessful() {
         Jogak jogak = TestFixtureFactory.jogak(10L, TestFixtureFactory.mogak(2L,
                 TestFixtureFactory.user(1L, "user@test.com", "tester", null, null),
@@ -297,11 +305,12 @@ class JogakServiceImplTest {
                 "#1234"), "조각", false, LocalDate.now(), null, 1);
         DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, jogak, false);
 
-        when(dailyJogakRepository.findByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
+        when(dailyJogakRepository.findActiveByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
 
-        Throwable throwable = Assertions.catchThrowable(() -> jogakService.failJogak(1L, 100L));
+        JogakResponseDto.JogakDailyJogakDto result = jogakService.failJogak(1L, 100L);
 
-        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_SUCCESS_DAILY_JOGAK);
+        assertThat(result.getIsAchievement()).isFalse();
+        assertThat(result.getAchievements()).isEqualTo(1);
     }
 
     @Test
@@ -317,7 +326,7 @@ class JogakServiceImplTest {
                 "#1234"), "조각", false, LocalDate.now(), null, 0);
         DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, jogak, false);
 
-        when(dailyJogakRepository.findByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
+        when(dailyJogakRepository.findActiveByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.successJogak(other.getId(), 100L));
 
@@ -337,7 +346,7 @@ class JogakServiceImplTest {
                 "#1234"), "조각", false, LocalDate.now(), null, 1);
         DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, jogak, false);
 
-        when(dailyJogakRepository.findByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
+        when(dailyJogakRepository.findActiveByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.failJogak(other.getId(), 100L));
 
@@ -356,7 +365,7 @@ class JogakServiceImplTest {
                 "모각",
                 "#1234"), "조각", true, LocalDate.now(), null, 0);
 
-        when(jogakRepository.findById(10L)).thenReturn(Optional.of(jogak));
+        when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.getJogakDetail(other.getId(), 10L));
 
@@ -366,7 +375,7 @@ class JogakServiceImplTest {
     @Test
     @DisplayName("존재하지 않는 조각 상세 조회는 기존 not-exist 응답을 반환한다")
     void getJogakDetailThrowsWhenJogakMissing() {
-        when(jogakRepository.findById(10L)).thenReturn(Optional.empty());
+        when(jogakRepository.findActiveById(10L)).thenReturn(Optional.empty());
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.getJogakDetail(1L, 10L));
 
@@ -388,7 +397,7 @@ class JogakServiceImplTest {
         ReflectionTestUtils.setField(request, "title", "수정");
         ReflectionTestUtils.setField(request, "isRoutine", false);
 
-        when(jogakRepository.findById(10L)).thenReturn(Optional.of(jogak));
+        when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.updateJogak(other.getId(), 10L, request));
 
@@ -402,7 +411,7 @@ class JogakServiceImplTest {
         ReflectionTestUtils.setField(request, "title", "수정");
         ReflectionTestUtils.setField(request, "isRoutine", false);
 
-        when(jogakRepository.findById(10L)).thenReturn(Optional.empty());
+        when(jogakRepository.findActiveById(10L)).thenReturn(Optional.empty());
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.updateJogak(1L, 10L, request));
 
@@ -421,7 +430,7 @@ class JogakServiceImplTest {
                 "모각",
                 "#1234"), "조각", false, LocalDate.now(), null, 0);
 
-        when(jogakRepository.findById(10L)).thenReturn(Optional.of(jogak));
+        when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.deleteJogak(other.getId(), 10L));
 
@@ -430,9 +439,61 @@ class JogakServiceImplTest {
     }
 
     @Test
+    @DisplayName("조각 삭제는 데일리 조각 아래 회고와 댓글도 soft delete 하고 이미지는 hard delete 한다")
+    void deleteJogakCascadeSoftDeletesDailyJogakPostAndComments() {
+        User owner = TestFixtureFactory.user(1L, "owner@test.com", "owner", null, null);
+        Mogak mogak = TestFixtureFactory.mogak(2L,
+                owner,
+                TestFixtureFactory.modarat(1L, owner, "모다라트", "#0000"),
+                TestFixtureFactory.category(1, "자격증"),
+                "모각",
+                "#1234");
+        Jogak jogak = TestFixtureFactory.jogak(10L, mogak, "조각", false, LocalDate.now(), null, 0);
+        DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, jogak, LocalDate.now(), DailyJogakStatus.SUCCESS);
+        Post post = Post.builder()
+                .id(200L)
+                .dailyJogak(dailyJogak)
+                .user(owner)
+                .contents("회고")
+                .postThumbnailUrl("thumbnail")
+                .viewCnt(0)
+                .commentCnt(1)
+                .build();
+        PostComment comment = PostComment.builder()
+                .id(300L)
+                .post(post)
+                .user(owner)
+                .contents("댓글")
+                .build();
+        PostImg postImg = PostImg.builder()
+                .id(400L)
+                .post(post)
+                .imgName("img.png")
+                .imgUrl("https://example.com/img.png")
+                .build();
+
+        when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
+        when(dailyJogakRepository.findActiveAllByJogak(jogak)).thenReturn(List.of(dailyJogak));
+        when(postRepository.findActiveAllByDailyJogakId(100L)).thenReturn(List.of(post));
+        when(postCommentRepository.findActiveAllByPost(post)).thenReturn(List.of(comment));
+        when(postImgRepository.findAllByPost(post)).thenReturn(List.of(postImg));
+
+        jogakService.deleteJogak(owner.getId(), 10L);
+
+        assertThat(comment.isDeleted()).isTrue();
+        assertThat(post.isDeleted()).isTrue();
+        assertThat(dailyJogak.isDeleted()).isTrue();
+        assertThat(jogak.isDeleted()).isTrue();
+        assertThat(post.getCommentCnt()).isZero();
+        verify(storageCleanupService).deletePostImagesAfterCommit(List.of(postImg), "img");
+        verify(postImgRepository).deleteAllByPost(post);
+        verify(jogakPeriodRepository).deleteAllByJogakId(10L);
+    }
+
+    @Test
     @DisplayName("존재하지 않는 조각 삭제는 기존 not-exist 응답을 반환한다")
     void deleteJogakThrowsWhenJogakMissing() {
-        when(jogakRepository.findById(10L)).thenReturn(Optional.empty());
+        when(jogakRepository.findActiveById(10L)).thenReturn(Optional.empty());
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.deleteJogak(1L, 10L));
 
@@ -453,11 +514,10 @@ class JogakServiceImplTest {
         Period futureDayPeriod = TestFixtureFactory.period(today.plusDays(1).getDayOfWeek().getValue(), today.plusDays(1).getDayOfWeek().name());
         JogakPeriod jogakPeriod = TestFixtureFactory.jogakPeriod(routine, futureDayPeriod);
         TestFixtureFactory.attachJogakPeriods(routine, List.of(jogakPeriod));
-        DailyJogak pastDailyJogak = TestFixtureFactory.dailyJogak(100L, routine, true);
-        TestFixtureFactory.setCreatedAt(pastDailyJogak, today.minusDays(1).atStartOfDay());
+        DailyJogak pastDailyJogak = TestFixtureFactory.dailyJogak(100L, routine, today.minusDays(1), DailyJogakStatus.SUCCESS);
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(dailyJogakRepository.findDailyJogaks(user, start.atStartOfDay(), end.atStartOfDay())).thenReturn(List.of(pastDailyJogak));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
+        when(dailyJogakRepository.findDailyJogaksBetween(user, start, end)).thenReturn(List.of(pastDailyJogak));
         when(jogakRepository.findAllRoutineJogaksByUser(1L)).thenReturn(List.of(routine));
 
         List<JogakResponseDto.GetRoutineJogakDto> result = jogakService.getRoutineJogaks(1L, start, end);

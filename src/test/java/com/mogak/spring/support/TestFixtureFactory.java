@@ -1,7 +1,7 @@
 package com.mogak.spring.support;
 
-import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.jogak.DailyJogak;
+import com.mogak.spring.domain.jogak.DailyJogakStatus;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakPeriod;
 import com.mogak.spring.domain.jogak.Period;
@@ -43,7 +43,6 @@ public final class TestFixtureFactory {
                 .nickname(nickname)
                 .job(job)
                 .address(address)
-                .validation(Validation.ACTIVE.name())
                 .role(Role.USER)
                 .build();
     }
@@ -54,7 +53,6 @@ public final class TestFixtureFactory {
                 .user(user)
                 .title(title)
                 .color(color)
-                .validation(Validation.ACTIVE.name())
                 .build();
     }
 
@@ -76,7 +74,6 @@ public final class TestFixtureFactory {
                 .smallCategory("소분류")
                 .title(title)
                 .color(color)
-                .validation(Validation.ACTIVE.name())
                 .jogaks(new ArrayList<>())
                 .build();
     }
@@ -118,6 +115,18 @@ public final class TestFixtureFactory {
     }
 
     public static DailyJogak dailyJogak(Long id, Jogak jogak, boolean isAchievement) {
+        return dailyJogak(id, jogak, LocalDate.now(), isAchievement ? DailyJogakStatus.SUCCESS : DailyJogakStatus.PENDING);
+    }
+
+    public static DailyJogak dailyJogak(Long id, Jogak jogak, LocalDate targetDate, boolean isAchievement) {
+        return dailyJogak(id, jogak, targetDate, isAchievement ? DailyJogakStatus.SUCCESS : DailyJogakStatus.PENDING);
+    }
+
+    public static DailyJogak dailyJogak(Long id, Jogak jogak, DailyJogakStatus status) {
+        return dailyJogak(id, jogak, LocalDate.now(), status);
+    }
+
+    public static DailyJogak dailyJogak(Long id, Jogak jogak, LocalDate targetDate, DailyJogakStatus status) {
         return DailyJogak.builder()
                 .id(id)
                 .mogak(jogak.getMogak())
@@ -125,7 +134,8 @@ public final class TestFixtureFactory {
                 .category(jogak.getCategory())
                 .title(jogak.getTitle())
                 .isRoutine(jogak.getIsRoutine())
-                .isAchievement(isAchievement)
+                .targetDate(targetDate)
+                .status(status)
                 .build();
     }
 

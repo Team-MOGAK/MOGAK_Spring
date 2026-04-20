@@ -56,7 +56,7 @@ class UserServiceImplTest {
     @Test
     @DisplayName("사용 가능한 닉네임을 검증하면 true를 반환한다")
     void verifyNicknameReturnsTrue() {
-        when(userRepository.findOneByNickname("newbie")).thenReturn(Optional.empty());
+        when(userRepository.findActiveByNickname("newbie")).thenReturn(Optional.empty());
 
         assertThat(userService.verifyNickname("newbie")).isTrue();
     }
@@ -64,7 +64,7 @@ class UserServiceImplTest {
     @Test
     @DisplayName("이미 사용 중인 닉네임을 검증하면 예외를 반환한다")
     void verifyNicknameThrowsWhenDuplicate() {
-        when(userRepository.findOneByNickname("taken")).thenReturn(Optional.of(TestFixtureFactory.user(1L, "taken@test.com", "taken", null, null)));
+        when(userRepository.findActiveByNickname("taken")).thenReturn(Optional.of(TestFixtureFactory.user(1L, "taken@test.com", "taken", null, null)));
 
         Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> userService.verifyNickname("taken"));
 
@@ -95,10 +95,10 @@ class UserServiceImplTest {
                 .imgUrl("https://cdn/profile.png")
                 .build();
 
-        when(userRepository.findOneByNickname("tester")).thenReturn(Optional.empty());
+        when(userRepository.findActiveByNickname("tester")).thenReturn(Optional.empty());
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(job));
         when(addressRepository.findAddressByName("서울특별시")).thenReturn(Optional.of(address));
-        when(userRepository.findById(10L)).thenReturn(Optional.of(user));
+        when(userRepository.findActiveById(10L)).thenReturn(Optional.of(user));
         when(jwtTokenProvider.createAccessToken(10L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken("user@test.com")).thenReturn("refresh-token");
 
@@ -126,10 +126,10 @@ class UserServiceImplTest {
                 .build();
         UserRequestDto.UploadImageDto uploadImageDto = UserRequestDto.UploadImageDto.builder().build();
 
-        when(userRepository.findOneByNickname("tester")).thenReturn(Optional.empty());
+        when(userRepository.findActiveByNickname("tester")).thenReturn(Optional.empty());
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(job));
         when(addressRepository.findAddressByName("서울특별시")).thenReturn(Optional.of(address));
-        when(userRepository.findById(10L)).thenReturn(Optional.of(user));
+        when(userRepository.findActiveById(10L)).thenReturn(Optional.of(user));
 
         Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> userService.create(10L, request, uploadImageDto));
 
@@ -145,7 +145,7 @@ class UserServiceImplTest {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", currentJob, address);
 
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(updatedJob));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
         userService.updateJob(1L, new UserRequestDto.UpdateJobDto() {{
             org.springframework.test.util.ReflectionTestUtils.setField(this, "job", "개발/데이터");
@@ -161,7 +161,7 @@ class UserServiceImplTest {
         Address address = TestFixtureFactory.address("서울특별시");
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", job, address);
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
         UserRequestDto.UpdateImageDto dto = UserRequestDto.UpdateImageDto.builder()
                 .imgName("updated.png")
@@ -182,7 +182,7 @@ class UserServiceImplTest {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", job, address);
         user.updateProfileImg("https://cdn/profile.png", "profile.png");
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
         UserResponseDto.GetUserDto result = userService.getUserProfile(1L);
 
