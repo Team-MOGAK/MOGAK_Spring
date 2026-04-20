@@ -1,15 +1,15 @@
 package com.mogak.spring.scheduler;
 
 import com.mogak.spring.service.JogakService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class Scheduler {
 
-    @Autowired
-    private JogakService jogakService;
+    private final JogakService jogakService;
 
     @Scheduled(zone = "Asia/Seoul", cron = "1 0 0 * * *")
     public void createRoutineJogakByScheduler() {
