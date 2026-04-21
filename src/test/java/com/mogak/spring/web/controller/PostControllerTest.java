@@ -33,6 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -284,6 +285,26 @@ class PostControllerTest {
                 .andExpect(status().isOk());
 
         verify(postService).getAllPosts(7L, 0, 1L, 10);
+    }
+
+    @Test
+    @DisplayName("조각 날짜별 게시글 단건 조회는 단수 post 경로와 targetDate를 사용한다")
+    void getPostByJogakAndDateUsesSingularPostPathAndTargetDate() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        LocalDate targetDate = LocalDate.of(2026, 4, 21);
+        Post post = createPost(1L, 7L, 1L, "content", "https://example.com/post.png");
+        when(postService.getByJogakAndTargetDate(7L, 20L, targetDate)).thenReturn(post);
+        when(postService.findNotThumbnailImg(post)).thenReturn(List.of("https://example.com/post-2.png"));
+        when(postService.findActiveCommentIds(post)).thenReturn(List.of(10L));
+
+        mockMvc.perform(get("/api/jogaks/{jogakId}/post", 20L)
+                        .param("targetDate", targetDate.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.postId").value(1))
+                .andExpect(jsonPath("$.result.commentId[0]").value(10));
+
+        verify(postService).getByJogakAndTargetDate(7L, 20L, targetDate);
+        verify(postService).findActiveCommentIds(post);
     }
 
     @Test
