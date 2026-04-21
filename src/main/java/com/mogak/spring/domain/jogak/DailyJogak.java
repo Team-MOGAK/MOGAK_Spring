@@ -2,7 +2,7 @@ package com.mogak.spring.domain.jogak;
 
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
-import com.mogak.spring.global.BaseEntity;
+import com.mogak.spring.global.SoftDeletableEntity;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import lombok.*;
 
@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Entity
 @AllArgsConstructor(access= AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class DailyJogak extends BaseEntity {
+public class DailyJogak extends SoftDeletableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "daily_jogak_id")
@@ -31,13 +31,28 @@ public class DailyJogak extends BaseEntity {
     private MogakCategory category;
     @Column(nullable = false)
     private String title;
+    @Column(name = "target_date", nullable = false)
+    private LocalDate targetDate;
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Boolean isAchievement;
+    private DailyJogakStatus status;
     @Column(nullable = false)
     private Boolean isRoutine;
 
-    public void updateAchievement(boolean state) {
-        this.isAchievement = state;
+    public boolean isSuccess() {
+        return status == DailyJogakStatus.SUCCESS;
+    }
+
+    public boolean isFail() {
+        return status == DailyJogakStatus.FAIL;
+    }
+
+    public Boolean getIsAchievement() {
+        return isSuccess();
+    }
+
+    public void updateStatus(DailyJogakStatus status) {
+        this.status = status;
     }
 
     public void updateJogak(Jogak jogak) {
@@ -49,8 +64,8 @@ public class DailyJogak extends BaseEntity {
     public static JogakResponseDto.GetRoutineJogakDto getRoutineJogakDto(DailyJogak dailyJogak) {
         return JogakResponseDto.GetRoutineJogakDto.builder()
                 .dailyJogakId(dailyJogak.getId())
-                .date(dailyJogak.getCreatedAt().toLocalDate())
-                .isAchievement(dailyJogak.getIsAchievement())
+                .date(dailyJogak.getTargetDate())
+                .isAchievement(dailyJogak.isSuccess())
                 .title(dailyJogak.getTitle())
                 .build();
     }

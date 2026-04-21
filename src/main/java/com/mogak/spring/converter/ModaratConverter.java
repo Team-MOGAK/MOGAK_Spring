@@ -1,6 +1,5 @@
 package com.mogak.spring.converter;
 
-import com.mogak.spring.domain.common.Validation;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
@@ -13,7 +12,6 @@ public class ModaratConverter {
                 .user(user)
                 .title(request.getTitle())
                 .color(request.getColor())
-                .validation(Validation.ACTIVE.toString())
                 .build();
     }
 

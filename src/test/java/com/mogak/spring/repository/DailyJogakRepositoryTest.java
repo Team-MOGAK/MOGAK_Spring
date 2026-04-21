@@ -1,6 +1,7 @@
 package com.mogak.spring.repository;
 
 import com.mogak.spring.domain.jogak.DailyJogak;
+import com.mogak.spring.domain.jogak.DailyJogakStatus;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
@@ -38,23 +39,21 @@ class DailyJogakRepositoryTest {
         MogakCategory category = entityManager.persist(TestFixtureFactory.category(null, "자격증"));
         Mogak mogak = entityManager.persist(TestFixtureFactory.mogak(null, user, modarat, category, "정보처리기사", "#aaaa"));
         Jogak jogak = entityManager.persist(TestFixtureFactory.jogak(null, mogak, "문제풀이", false, LocalDate.now(), null, 0));
-        DailyJogak target = entityManager.persist(TestFixtureFactory.dailyJogak(null, jogak, false));
-        TestFixtureFactory.setCreatedAt(target, LocalDate.of(2026, 3, 26).atStartOfDay());
+        LocalDate targetDate = LocalDate.of(2026, 3, 26);
+        DailyJogak target = entityManager.persist(TestFixtureFactory.dailyJogak(null, jogak, targetDate, DailyJogakStatus.SUCCESS));
 
         User otherUser = persistUser("other@test.com");
         Modarat otherModarat = entityManager.persist(TestFixtureFactory.modarat(null, otherUser, "서브", "#2222"));
         Mogak otherMogak = entityManager.persist(TestFixtureFactory.mogak(null, otherUser, otherModarat, category, "토익", "#bbbb"));
         Jogak otherJogak = entityManager.persist(TestFixtureFactory.jogak(null, otherMogak, "영단어", false, LocalDate.now(), null, 0));
-        DailyJogak otherDailyJogak = entityManager.persist(TestFixtureFactory.dailyJogak(null, otherJogak, false));
-        TestFixtureFactory.setCreatedAt(otherDailyJogak, LocalDate.of(2026, 3, 26).atStartOfDay());
+        DailyJogak otherDailyJogak = entityManager.persist(TestFixtureFactory.dailyJogak(null, otherJogak, targetDate, DailyJogakStatus.PENDING));
 
         entityManager.flush();
         entityManager.clear();
 
         List<DailyJogak> result = dailyJogakRepository.findDailyJogaks(
                 user,
-                LocalDate.of(2026, 3, 26).atStartOfDay(),
-                LocalDate.of(2026, 3, 27).atStartOfDay()
+                targetDate
         );
 
         assertThat(result).hasSize(1);
@@ -62,41 +61,36 @@ class DailyJogakRepositoryTest {
     }
 
     @Test
-    @DisplayName("날짜 범위와 조각으로 조회하면 해당 데일리 조각을 반환한다")
-    void findByCreatedAtBetweenAndId() {
+    @DisplayName("조각과 날짜로 조회하면 해당 데일리 조각을 반환한다")
+    void findActiveByJogakAndTargetDate() {
         User user = persistUser("user2@test.com");
         Modarat modarat = entityManager.persist(TestFixtureFactory.modarat(null, user, "메인", "#1111"));
         MogakCategory category = entityManager.persist(TestFixtureFactory.category(null, "자격증"));
         Mogak mogak = entityManager.persist(TestFixtureFactory.mogak(null, user, modarat, category, "정보처리기사", "#aaaa"));
         Jogak jogak = entityManager.persist(TestFixtureFactory.jogak(null, mogak, "문제풀이", false, LocalDate.now(), null, 0));
-        DailyJogak dailyJogak = entityManager.persist(TestFixtureFactory.dailyJogak(null, jogak, false));
-        TestFixtureFactory.setCreatedAt(dailyJogak, LocalDate.of(2026, 3, 26).atTime(10, 0));
+        LocalDate targetDate = LocalDate.of(2026, 3, 26);
+        DailyJogak dailyJogak = entityManager.persist(TestFixtureFactory.dailyJogak(null, jogak, targetDate, DailyJogakStatus.SUCCESS));
         entityManager.flush();
         entityManager.clear();
 
-        DailyJogak result = dailyJogakRepository.findByCreatedAtBetweenAndId(
-                LocalDate.of(2026, 3, 26).atStartOfDay(),
-                LocalDate.of(2026, 3, 27).atStartOfDay(),
-                jogak
-        ).orElseThrow();
+        DailyJogak result = dailyJogakRepository.findActiveByJogakAndTargetDate(jogak, targetDate).orElseThrow();
 
         assertThat(result.getTitle()).isEqualTo("문제풀이");
     }
 
     @Test
     @DisplayName("그래프 조회 메서드는 조각 owner 검증과 응답 변환에 필요한 정보를 함께 반환한다")
-    void findByIdWithJogakGraph() {
+    void findActiveByIdWithJogakGraph() {
         User user = persistUser("graph@test.com");
         Modarat modarat = entityManager.persist(TestFixtureFactory.modarat(null, user, "메인", "#1111"));
         MogakCategory category = entityManager.persist(TestFixtureFactory.category(null, "자격증"));
         Mogak mogak = entityManager.persist(TestFixtureFactory.mogak(null, user, modarat, category, "정보처리기사", "#aaaa"));
         Jogak jogak = entityManager.persist(TestFixtureFactory.jogak(null, mogak, "문제풀이", false, LocalDate.now(), null, 0));
-        DailyJogak dailyJogak = entityManager.persist(TestFixtureFactory.dailyJogak(null, jogak, false));
-        TestFixtureFactory.setCreatedAt(dailyJogak, LocalDate.of(2026, 3, 26).atTime(10, 0));
+        DailyJogak dailyJogak = entityManager.persist(TestFixtureFactory.dailyJogak(null, jogak, LocalDate.now(), DailyJogakStatus.SUCCESS));
         entityManager.flush();
         entityManager.clear();
 
-        DailyJogak result = dailyJogakRepository.findByIdWithJogakGraph(dailyJogak.getId()).orElseThrow();
+        DailyJogak result = dailyJogakRepository.findActiveByIdWithJogakGraph(dailyJogak.getId()).orElseThrow();
 
         assertThat(result.getJogak().getUser().getId()).isEqualTo(user.getId());
         assertThat(result.getJogak().getMogak().getTitle()).isEqualTo("정보처리기사");

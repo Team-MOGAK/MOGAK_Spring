@@ -61,8 +61,8 @@ class MogakServiceImplTest {
                 .color("#112233")
                 .build();
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(modaratRepository.findById(3L)).thenReturn(Optional.of(modarat));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
+        when(modaratRepository.findActiveById(3L)).thenReturn(Optional.of(modarat));
         when(mogakRepository.findAllByModaratId(3L)).thenReturn(List.of());
         when(categoryRepository.findMogakCategoryByName("자격증")).thenReturn(Optional.of(category));
         when(mogakRepository.save(org.mockito.ArgumentMatchers.any(Mogak.class))).thenReturn(saved);
@@ -86,8 +86,8 @@ class MogakServiceImplTest {
                 .bigCategory("자격증")
                 .build();
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(modaratRepository.findById(3L)).thenReturn(Optional.of(modarat));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
+        when(modaratRepository.findActiveById(3L)).thenReturn(Optional.of(modarat));
 
         Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.create(1L, request));
 
@@ -107,8 +107,8 @@ class MogakServiceImplTest {
                 .bigCategory("자격증")
                 .build();
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(modaratRepository.findById(3L)).thenReturn(Optional.of(modarat));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
+        when(modaratRepository.findActiveById(3L)).thenReturn(Optional.of(modarat));
         when(mogakRepository.findAllByModaratId(3L)).thenReturn(
                 java.util.stream.IntStream.range(0, 8)
                         .mapToObj(i -> TestFixtureFactory.mogak((long) i, user, modarat, TestFixtureFactory.category(1, "자격증"), "모각" + i, "#1234"))
@@ -130,7 +130,7 @@ class MogakServiceImplTest {
         Mogak mogak = TestFixtureFactory.mogak(2L, user, modarat, oldCategory, "원래 제목", "#1234");
         Jogak jogak = TestFixtureFactory.jogak(3L, mogak, "조각", false, LocalDate.now(), null, 0);
 
-        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+        when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
         when(categoryRepository.findMogakCategoryByName("직무공부")).thenReturn(Optional.of(newCategory));
         when(jogakRepository.findAllByMogak(mogak)).thenReturn(List.of(jogak));
 
@@ -161,7 +161,7 @@ class MogakServiceImplTest {
         Jogak second = TestFixtureFactory.jogak(11L, mogak, "둘째 조각", true, LocalDate.now(), null, 0);
         TestFixtureFactory.attachJogaks(mogak, List.of(first, second));
 
-        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+        when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.findAllByMogak(mogak)).thenReturn(List.of(first, second));
 
         mogakService.deleteMogak(1L, 2L);
@@ -169,9 +169,8 @@ class MogakServiceImplTest {
         verify(jogakService).deleteJogakCascadeAfterParentAuthorization(10L);
         verify(jogakService).deleteJogakCascadeAfterParentAuthorization(11L);
         verify(jogakRepository).findAllByMogak(mogak);
-        verify(dailyJogakRepository).flush();
         verify(jogakRepository).flush();
-        verify(mogakRepository).deleteById(2L);
+        assertThat(mogak.isDeleted()).isTrue();
     }
 
     @Test
@@ -190,7 +189,7 @@ class MogakServiceImplTest {
                 .color("#9999")
                 .build();
 
-        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+        when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
 
         Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.updateMogak(1L, request));
 
@@ -206,7 +205,7 @@ class MogakServiceImplTest {
         MogakCategory category = TestFixtureFactory.category(1, "자격증");
         Mogak mogak = TestFixtureFactory.mogak(2L, otherUser, modarat, category, "원래 제목", "#1234");
 
-        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
+        when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
 
         Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.deleteMogak(1L, 2L));
 
@@ -222,8 +221,8 @@ class MogakServiceImplTest {
         User otherUser = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
         Modarat modarat = TestFixtureFactory.modarat(3L, otherUser, "메인 모다라트", "#0000");
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(modaratRepository.findById(3L)).thenReturn(Optional.of(modarat));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
+        when(modaratRepository.findActiveById(3L)).thenReturn(Optional.of(modarat));
 
         Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.getMogakDtoList(1L, 3L));
 
@@ -246,9 +245,10 @@ class MogakServiceImplTest {
         DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, active, false);
 
         TestFixtureFactory.attachJogaks(mogak, List.of(active, expired));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(mogakRepository.findById(2L)).thenReturn(Optional.of(mogak));
-        when(dailyJogakRepository.findDailyJogaks(user, day.atStartOfDay(), day.atStartOfDay().plusDays(1))).thenReturn(List.of(dailyJogak));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
+        when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
+        when(jogakRepository.findAllByMogak(mogak)).thenReturn(List.of(active));
+        when(dailyJogakRepository.findDailyJogaks(user, day)).thenReturn(List.of(dailyJogak));
 
         List<JogakResponseDto.GetJogakDto> result = mogakService.getJogaks(1L, 2L, day);
 

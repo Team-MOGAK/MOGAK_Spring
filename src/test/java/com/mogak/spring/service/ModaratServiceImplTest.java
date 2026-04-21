@@ -94,7 +94,7 @@ class ModaratServiceImplTest {
 
         verify(mogakService).deleteMogakCascadeAfterParentAuthorization(first.getId());
         verify(mogakService).deleteMogakCascadeAfterParentAuthorization(second.getId());
-        org.assertj.core.api.Assertions.assertThat(modaratRepository.findById(modarat.getId())).isEmpty();
+        org.assertj.core.api.Assertions.assertThat(modaratRepository.findById(modarat.getId()).orElseThrow().isDeleted()).isTrue();
     }
 
     private User saveUser(String email, String nickname) {

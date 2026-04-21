@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Slice;
@@ -48,7 +49,7 @@ public class NetworkController {
             })
     @PostMapping("/api/posts/like")
     public ResponseEntity<BaseResponse<String>> updateLike(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                            @RequestBody PostLikeRequestDto.LikeDto request) {
+                                                           @Valid @RequestBody PostLikeRequestDto.LikeDto request) {
         String message = postLikeService.updateLike(authenticatedUser.getUserId(), request);
         return ResponseEntity.ok(new BaseResponse<>(message));
     }

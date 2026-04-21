@@ -3,12 +3,13 @@ package com.mogak.spring.web.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
-import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.exception.AuthException;
 import com.mogak.spring.exception.GlobalExceptionHandler;
+import com.mogak.spring.exception.PostException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.PostService;
+import com.mogak.spring.service.StorageCleanupService;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
@@ -32,6 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -66,6 +68,8 @@ class PostControllerTest {
     private PostService postService;
     @MockitoBean
     private StorageService storageService;
+    @MockitoBean
+    private StorageCleanupService storageCleanupService;
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
     @MockitoBean
@@ -106,7 +110,7 @@ class PostControllerTest {
         when(storageService.uploadImg(any(), any())).thenReturn(uploadedImages);
         when(postService.create(eq(7L), any(), eq(uploadedImages), eq(1L))).thenReturn(post);
 
-                mockMvc.perform(multipart("/api/mogaks/{mogakId}/posts", 1L)
+                mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
                         .file(requestPart)
                         .file(image)
                         .with(mockRequest -> {
@@ -145,7 +149,7 @@ class PostControllerTest {
                 .when(postService)
                 .validateCreateAccess(eq(7L), any(), anyList(), eq(1L));
 
-        mockMvc.perform(multipart("/api/mogaks/{mogakId}/posts", 1L)
+        mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
                         .file(requestPart)
                         .file(image)
                         .with(mockRequest -> {
@@ -158,6 +162,114 @@ class PostControllerTest {
 
         verify(storageService, never()).uploadImg(any(), any());
         verify(postService, never()).create(any(), any(), anyList(), any());
+    }
+
+    @Test
+    @DisplayName("게시글 생성 중 DB 생성이 실패하면 업로드된 이미지를 보상 삭제한다")
+    void createPostCleansUpUploadedImagesWhenCreateFails() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        PostRequestDto.CreatePostDto request = createRequest("content");
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+        MockMultipartFile image = new MockMultipartFile(
+                "multipartFile",
+                "post.png",
+                MediaType.IMAGE_PNG_VALUE,
+                "png".getBytes()
+        );
+        List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
+                PostImgRequestDto.CreatePostImgDto.builder()
+                        .imgName("post.png")
+                        .imgUrl("https://example.com/post.png")
+                        .thumbnail(true)
+                        .build()
+        );
+
+        doNothing().when(postService).validateCreateAccess(eq(7L), any(), anyList(), eq(1L));
+        when(storageService.uploadImg(any(), any())).thenReturn(uploadedImages);
+        when(postService.create(eq(7L), any(), eq(uploadedImages), eq(1L)))
+                .thenThrow(new PostException(ErrorCode.ALREADY_EXISTS_POST));
+
+        mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
+                        .file(requestPart)
+                        .file(image)
+                        .with(mockRequest -> {
+                            mockRequest.setMethod("POST");
+                            return mockRequest;
+                        }))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("P005"));
+
+        verify(storageCleanupService).deleteUploadedImagesBestEffort(uploadedImages, "img");
+    }
+
+    @Test
+    @DisplayName("게시글 생성은 targetDate가 없으면 서비스 호출 전에 입력값 오류를 반환한다")
+    void createPostRejectsMissingTargetDateBeforeServiceCall() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        PostRequestDto.CreatePostDto request = new PostRequestDto.CreatePostDto();
+        ReflectionTestUtils.setField(request, "contents", "content");
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+        MockMultipartFile image = new MockMultipartFile(
+                "multipartFile",
+                "post.png",
+                MediaType.IMAGE_PNG_VALUE,
+                "png".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
+                        .file(requestPart)
+                        .file(image)
+                        .with(mockRequest -> {
+                            mockRequest.setMethod("POST");
+                            return mockRequest;
+                        }))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("Z005"));
+
+        verify(postService, never()).validateCreateAccess(any(), any(), anyList(), any());
+        verify(storageService, never()).uploadImg(any(), any());
+    }
+
+    @Test
+    @DisplayName("게시글 생성은 contents가 없으면 서비스 호출 전에 입력값 오류를 반환한다")
+    void createPostRejectsMissingContentsBeforeServiceCall() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        PostRequestDto.CreatePostDto request = createRequest(null);
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+        MockMultipartFile image = new MockMultipartFile(
+                "multipartFile",
+                "post.png",
+                MediaType.IMAGE_PNG_VALUE,
+                "png".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
+                        .file(requestPart)
+                        .file(image)
+                        .with(mockRequest -> {
+                            mockRequest.setMethod("POST");
+                            return mockRequest;
+                        }))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("Z005"));
+
+        verify(postService, never()).validateCreateAccess(any(), any(), anyList(), any());
+        verify(storageService, never()).uploadImg(any(), any());
     }
 
     @Test
@@ -176,18 +288,41 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("조각 날짜별 게시글 단건 조회는 단수 post 경로와 targetDate를 사용한다")
+    void getPostByJogakAndDateUsesSingularPostPathAndTargetDate() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        LocalDate targetDate = LocalDate.of(2026, 4, 21);
+        Post post = createPost(1L, 7L, 1L, "content", "https://example.com/post.png");
+        when(postService.getByJogakAndTargetDate(7L, 20L, targetDate)).thenReturn(post);
+        when(postService.findNotThumbnailImg(post)).thenReturn(List.of("https://example.com/post-2.png"));
+        when(postService.findActiveCommentIds(post)).thenReturn(List.of(10L));
+
+        mockMvc.perform(get("/api/jogaks/{jogakId}/post", 20L)
+                        .param("targetDate", targetDate.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.postId").value(1))
+                .andExpect(jsonPath("$.result.commentId[0]").value(10));
+
+        verify(postService).getByJogakAndTargetDate(7L, 20L, targetDate);
+        verify(postService).findActiveCommentIds(post);
+    }
+
+    @Test
     @DisplayName("게시글 상세 조회는 인증 사용자의 id를 서비스에 전달한다")
     void getPostDetailUsesAuthenticatedUserId() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
         Post post = createPost(1L, 7L, 1L, "content", "https://example.com/post.png");
         when(postService.findById(7L, 1L)).thenReturn(post);
         when(postService.findNotThumbnailImg(post)).thenReturn(List.of("https://example.com/post-2.png"));
+        when(postService.findActiveCommentIds(post)).thenReturn(List.of(10L));
 
-        mockMvc.perform(get("/api/mogaks/posts/{postId}", 1L))
+        mockMvc.perform(get("/api/posts/{postId}", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.postId").value(1));
+                .andExpect(jsonPath("$.result.postId").value(1))
+                .andExpect(jsonPath("$.result.commentId[0]").value(10));
 
         verify(postService).findById(7L, 1L);
+        verify(postService).findActiveCommentIds(post);
     }
 
     @Test
@@ -198,7 +333,7 @@ class PostControllerTest {
         Post post = createPost(1L, 7L, 1L, "updated", "https://example.com/post.png");
         when(postService.update(eq(7L), eq(1L), any())).thenReturn(post);
 
-        mockMvc.perform(put("/api/mogaks/posts/{postId}", 1L)
+        mockMvc.perform(put("/api/posts/{postId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isOk())
@@ -208,30 +343,31 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("게시글 수정은 contents가 없으면 서비스 호출 전에 입력값 오류를 반환한다")
+    void updatePostRejectsMissingContentsBeforeServiceCall() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        PostRequestDto.UpdatePostDto request = updateRequest(null);
+
+        mockMvc.perform(put("/api/posts/{postId}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("Z005"));
+
+        verify(postService, never()).update(any(), any(), any());
+    }
+
+    @Test
     @DisplayName("게시글 삭제는 owner 검증 후 storage 삭제와 db 삭제를 순서대로 호출한다")
     void deletePostValidatesBeforeStorageDeleteAndDelete() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        Post post = createPost(1L, 7L, 1L, "content", "https://example.com/post.png");
-        PostImg postImg = PostImg.builder()
-                .id(11L)
-                .post(post)
-                .imgName("post.png")
-                .imgUrl("https://example.com/post.png")
-                .build();
-
-        when(postService.findById(7L, 1L)).thenReturn(post);
-        when(postService.findAllImgByPost(post)).thenReturn(List.of(postImg));
-        doNothing().when(storageService).deleteImg(any(), any());
         doNothing().when(postService).delete(7L, 1L);
 
-        mockMvc.perform(delete("/api/mogaks/posts/{postId}", 1L))
+        mockMvc.perform(delete("/api/posts/{postId}", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.validation").value("INACTIVE"));
+                .andExpect(jsonPath("$.result.deleted").value(true));
 
         InOrder inOrder = inOrder(postService, storageService);
-        inOrder.verify(postService).findById(7L, 1L);
-        inOrder.verify(postService).findAllImgByPost(post);
-        inOrder.verify(storageService).deleteImg(any(), any());
         inOrder.verify(postService).delete(7L, 1L);
     }
 
@@ -241,19 +377,21 @@ class PostControllerTest {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
         doThrow(new AuthException(ErrorCode.INVALID_PERMISSION))
                 .when(postService)
-                .findById(7L, 1L);
+                .delete(7L, 1L);
 
-        mockMvc.perform(delete("/api/mogaks/posts/{postId}", 1L))
+        mockMvc.perform(delete("/api/posts/{postId}", 1L))
                 .andExpect(status().isForbidden())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.code").value("T004"));
 
-        verify(storageService, never()).deleteImg(any(), any());
-        verify(postService, never()).delete(any(), any());
+        verify(postService).delete(7L, 1L);
+        verify(storageService, never()).deleteImg(anyList(), any());
+        verify(storageCleanupService, never()).deleteUploadedImagesBestEffort(anyList(), any());
     }
 
     private PostRequestDto.CreatePostDto createRequest(String contents) {
         PostRequestDto.CreatePostDto request = new PostRequestDto.CreatePostDto();
+        ReflectionTestUtils.setField(request, "targetDate", java.time.LocalDate.now());
         ReflectionTestUtils.setField(request, "contents", contents);
         return request;
     }
@@ -274,13 +412,14 @@ class PostControllerTest {
                 "mogak",
                 "#112233"
         );
+        var jogak = TestFixtureFactory.jogak(20L, mogak, "jogak", false, java.time.LocalDate.now(), null, 0);
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, false);
         Post post = Post.builder()
                 .id(postId)
-                .mogak(mogak)
+                .dailyJogak(dailyJogak)
                 .user(writer)
                 .contents(contents)
                 .postThumbnailUrl(thumbnailUrl)
-                .validation("ACTIVE")
                 .viewCnt(0)
                 .build();
         return post;

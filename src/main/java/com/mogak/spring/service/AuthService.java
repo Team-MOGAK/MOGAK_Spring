@@ -3,6 +3,12 @@ package com.mogak.spring.service;
 import com.mogak.spring.auth.AppleOAuthUserProvider;
 import com.mogak.spring.auth.AppleUserResponse;
 import com.mogak.spring.domain.jogak.Jogak;
+import com.mogak.spring.domain.mogak.Mogak;
+import com.mogak.spring.domain.modarat.Modarat;
+import com.mogak.spring.domain.post.Post;
+import com.mogak.spring.domain.post.PostComment;
+import com.mogak.spring.domain.post.PostImg;
+import com.mogak.spring.domain.post.PostLike;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.UserException;
@@ -19,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -32,17 +39,27 @@ public class AuthService {
     private final JogakRepository jogakRepository;
     private final DailyJogakRepository dailyJogakRepository;
     private final JogakPeriodRepository jogakPeriodRepository;
+    private final PostRepository postRepository;
+    private final PostCommentRepository postCommentRepository;
+    private final PostImgRepository postImgRepository;
+    private final PostLikeRepository postLikeRepository;
+    private final FollowRepository followRepository;
     private final AppleOAuthUserProvider appleOAuthUserProvider;
     private final JwtTokenProvider jwtTokenProvider;
+    private final StorageCleanupService storageCleanupService;
+    private static final String DIR_NAME = "img";
 
     //로그인
     @Transactional
     public AppleLoginResponse appleLogin(AppleLoginRequest request) {
         AppleUserResponse appleUser = appleOAuthUserProvider.getAppleUser(request.getId_token());
-        boolean isRegistered = userRepository.existsByEmail(appleUser.getEmail());
+        Optional<User> existingUser = userRepository.findByEmail(appleUser.getEmail());
+        if (existingUser.isPresent() && existingUser.get().isDeleted()) {
+            throw new UserException(ErrorCode.NOT_EXIST_USER);
+        }
+        boolean isRegistered = existingUser.isPresent();
         if (isRegistered) { //회원가입이 되어 있는 경우-이메일 체크
-            User findUser = userRepository.findByEmail(appleUser.getEmail())
-                    .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
+            User findUser = existingUser.orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
             JwtTokens jwtTokens = issueTokens(findUser); //토큰 발급
             if (!isRegisterNickname(findUser)) { //해당 이메일로 가입한 유저의 닉네임 없으면 회원가입하도록
                 return AppleLoginResponse.builder()
@@ -96,7 +113,8 @@ public class AuthService {
     @Transactional
     public JwtTokens reissue(String refreshToken) {
         String email = jwtTokenProvider.getEmailByRefresh(refreshToken);
-        User findUser = userRepository.findByEmail(email).orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
+        User findUser = userRepository.findActiveByEmail(email)
+                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
         validateStoredRefreshToken(findUser, refreshToken);
 
         JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), email, resolveTokenRole(findUser));
@@ -107,7 +125,7 @@ public class AuthService {
 
     @Transactional
     public void logout(Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
         user.clearRefreshToken();
     }
@@ -117,12 +135,8 @@ public class AuthService {
      */
     @Transactional
     public AuthResponse.WithdrawDto deleteUser(Long userId) {
-        User deleteUser = userRepository.findById(userId)
+        User deleteUser = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        deleteUser.updateValidation("INACTIVE");
-        /**
-         * TODO cascade로 변경
-         */
         deleteUserInfo(deleteUser);
         return AuthResponse.WithdrawDto.builder()
                 .isDeleted(true)
@@ -130,17 +144,49 @@ public class AuthService {
     }
 
     public void deleteUserInfo(User deleteUser) {
-        Optional<List<Jogak>> optJogaks = jogakRepository.findAllByUserId(deleteUser.getId());
+        Long userId = deleteUser.getId();
+        List<PostImg> ownedPostImages = postImgRepository.findAllByPostOwnerId(userId);
+        if (!ownedPostImages.isEmpty()) {
+            storageCleanupService.deletePostImagesAfterCommit(ownedPostImages, DIR_NAME);
+            postImgRepository.deleteAllByPostOwnerId(userId);
+        }
+        postLikeRepository.findActiveAllByUserIdOnOtherUserPosts(userId).stream()
+                .map(PostLike::getPost)
+                .forEach(Post::subtractPostLike);
+        postLikeRepository.deleteAllRelatedToUser(userId);
+        followRepository.deleteAllRelatedToUser(userId);
+
+        postCommentRepository.findActiveAllByPostOwnerId(userId).forEach(this::deleteComment);
+        postCommentRepository.findActiveAllByUserId(userId).forEach(comment -> {
+            if (comment.isDeleted()) {
+                return;
+            }
+            Post post = comment.getPost();
+            deleteComment(comment);
+            if (!Objects.equals(post.getUser().getId(), userId) && !post.isDeleted()) {
+                post.subtractCommentCnt();
+            }
+        });
+        postRepository.findActiveAllByUserId(userId).forEach(Post::delete);
+
+        Optional<List<Jogak>> optJogaks = jogakRepository.findAllByUserId(userId);
         if (optJogaks.isPresent()) {
             for (Jogak jogak : optJogaks.get()) {
-                dailyJogakRepository.deleteAllByJogak(jogak);
+                dailyJogakRepository.findActiveAllByJogak(jogak).forEach(dailyJogak -> dailyJogak.delete());
                 jogakPeriodRepository.deleteAllByJogakId(jogak.getId());
+                jogak.delete();
             }
         }
-        jogakRepository.deleteByUserId(deleteUser.getId());
-        mogakRepository.deleteByUserId(deleteUser.getId());
-        modaratRepository.deleteByUserId(deleteUser.getId());
-        userRepository.deleteById(deleteUser.getId());
+        mogakRepository.findAllByUser(deleteUser).forEach(Mogak::delete);
+        modaratRepository.findModaratsByUserId(userId).forEach(Modarat::delete);
+        deleteUser.clearRefreshToken();
+        deleteUser.delete();
+    }
+
+    private void deleteComment(PostComment comment) {
+        if (!comment.isDeleted()) {
+            comment.delete();
+        }
     }
 
     private void validateStoredRefreshToken(User user, String refreshToken) {

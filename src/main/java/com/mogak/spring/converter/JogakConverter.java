@@ -1,6 +1,7 @@
 package com.mogak.spring.converter;
 
 import com.mogak.spring.domain.jogak.DailyJogak;
+import com.mogak.spring.domain.jogak.DailyJogakStatus;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
@@ -41,19 +42,25 @@ public class JogakConverter {
                 .title(jogak.getTitle())
                 .category(jogak.getCategory())
                 .isRoutine(jogak.getIsRoutine())
-                .isAchievement(false)
+                .targetDate(LocalDate.now())
+                .status(DailyJogakStatus.PENDING)
                 .build();
     }
 
-    public static DailyJogak toInitialDailyJogak(Jogak jogak) {
+    public static DailyJogak toInitialDailyJogak(Jogak jogak, LocalDate targetDate) {
         return DailyJogak.builder()
                 .mogak(jogak.getMogak())
                 .category(jogak.getCategory())
                 .title(jogak.getTitle())
-                .isAchievement(false)
+                .targetDate(targetDate)
+                .status(DailyJogakStatus.PENDING)
                 .jogak(jogak)
                 .isRoutine(jogak.getIsRoutine())
                 .build();
+    }
+
+    public static DailyJogak toInitialDailyJogak(Jogak jogak) {
+        return toInitialDailyJogak(jogak, LocalDate.now());
     }
 
     public static JogakResponseDto.CreateJogakDto toCreateJogakResponseDto(Jogak jogak) {
@@ -162,7 +169,7 @@ public class JogakConverter {
                 .category(dailyJogak.getCategory().getName())
                 .title(dailyJogak.getTitle())
                 .isRoutine(dailyJogak.getIsRoutine())
-                .isAchievement(dailyJogak.getIsAchievement())
+                .isAchievement(dailyJogak.isSuccess())
                 .build();
     }
 
@@ -216,7 +223,7 @@ public class JogakConverter {
                 .mogakTitle(jogak.getMogak().getTitle())
                 .category(jogak.getCategory().getName())
                 .isRoutine(jogak.getIsRoutine())
-                .isAchievement(dailyJogak.getIsAchievement())
+                .isAchievement(dailyJogak.isSuccess())
                 .achievements(jogak.getAchievements())
                 .build();
     }

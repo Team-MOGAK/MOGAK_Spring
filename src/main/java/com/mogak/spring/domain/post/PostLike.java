@@ -8,7 +8,13 @@ import jakarta.persistence.*;
 
 @Builder
 @Getter
-@Table(name = "post_like")
+@Table(
+        name = "post_like",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uq_post_like_post_user",
+                columnNames = {"post_id", "user_id"}
+        )
+)
 @Entity
 @AllArgsConstructor(access= AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

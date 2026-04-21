@@ -1,8 +1,7 @@
 package com.mogak.spring.domain.post;
 
-import com.mogak.spring.global.BaseEntity;
-import com.mogak.spring.domain.jogak.Jogak;
-import com.mogak.spring.domain.mogak.Mogak;
+import com.mogak.spring.domain.jogak.DailyJogak;
+import com.mogak.spring.global.SoftDeletableEntity;
 import com.mogak.spring.domain.user.User;
 import lombok.*;
 
@@ -16,21 +15,18 @@ import java.util.List;
 @Entity
 @AllArgsConstructor(access= AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Post extends BaseEntity {
+public class Post extends SoftDeletableEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="mogak_id")
-    private Mogak mogak;
+    @JoinColumn(name = "daily_jogak_id", nullable = false)
+    private DailyJogak dailyJogak;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     private User user;
-    @Column(nullable = false)
+    @Column(nullable = false, length = 350)
     private String contents;
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "jogak_id")
-    private Jogak jogak;
     @Builder.Default
     @OneToMany(mappedBy = "post")
     private List<PostComment> postComments = new ArrayList<>();
@@ -39,8 +35,6 @@ public class Post extends BaseEntity {
     private List<PostImg> postImgs = new ArrayList<>();
     @Column(nullable = false)
     private String postThumbnailUrl;
-    @Column(nullable = false)
-    private String validation;
     @Column(nullable = false)
     private int viewCnt;
     @Builder.Default
@@ -58,7 +52,9 @@ public class Post extends BaseEntity {
     public void addPostLike(){ this.likeCnt= this.likeCnt+1; }
 
     public void subtractPostLike(){
-        this.likeCnt=this.likeCnt-1;
+        if (this.likeCnt > 0) {
+            this.likeCnt=this.likeCnt-1;
+        }
     }
 
     public void putComment(PostComment postComment){
@@ -74,7 +70,11 @@ public class Post extends BaseEntity {
     }
 
     public void addCommentCnt(){ this.commentCnt+=1;}
-    public void subtractCommentCnt(){ this.commentCnt-=1;}
+    public void subtractCommentCnt(){
+        if (this.commentCnt > 0) {
+            this.commentCnt-=1;
+        }
+    }
 
 
 }

@@ -27,6 +27,7 @@ spring:
   sql:
     init:
       mode: always
+      schema-locations: file:./sql/schema/*.sql
       data-locations: file:./sql/seed/*.sql
 logging.level:
   org.hibernate.SQL: debug

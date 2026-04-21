@@ -23,6 +23,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import javax.imageio.ImageIO;
@@ -55,58 +56,64 @@ public class AwsS3Service implements StorageService {
         if (multipartFile.isEmpty()) {
             throw new BaseException(ErrorCode.NOT_HAVE_IMAGE);
         }
-        multipartFile.forEach(img -> {
-            String format = extractImageFormat(img);
-            String imgName = createImgName(format, dirName);
-            String imgUrl = uploadImgToS3(imgName, img, format);
-            postImgRequestDtoList.add(PostImgRequestDto.CreatePostImgDto.builder()
-                    .imgName(imgName)
-                    .imgUrl(imgUrl)
-                    .thumbnail(false)
-                    .build());
-            if (multipartFile.get(0) == img) {
-                String thumbnailImgName = createThumbnailImgName(format, dirName);
-                MultipartFile thumbnailImg = resizeImage(thumbnailImgName, format, img, 200, 200);
-                try (InputStream inputThumbnailStream = thumbnailImg.getInputStream()) {
-                    s3Client.putObject(
-                            PutObjectRequest.builder()
-                                    .bucket(bucket)
-                                    .key(thumbnailImgName)
-                                    .contentLength(thumbnailImg.getSize())
-                                    .contentType(contentTypeForFormat(format))
-                                    .acl(ObjectCannedACL.PUBLIC_READ)
-                                    .build(),
-                            RequestBody.fromInputStream(inputThumbnailStream, thumbnailImg.getSize())
-                    );
-                } catch (IOException e) {
-                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 썸네일 업로드 실패했습니다");
-                }
+        List<String> uploadedObjectNames = new ArrayList<>();
+        try {
+            multipartFile.forEach(img -> {
+                String format = extractImageFormat(img);
+                String imgName = createImgName(format, dirName);
+                uploadedObjectNames.add(imgName);
+                uploadImgToS3(imgName, img, format);
                 postImgRequestDtoList.add(PostImgRequestDto.CreatePostImgDto.builder()
-                        .imgName(thumbnailImgName)
-                        .imgUrl(createObjectUrl(thumbnailImgName))
-                        .thumbnail(true)
+                        .imgName(imgName)
+                        .imgUrl(createObjectUrl(imgName))
+                        .thumbnail(false)
                         .build());
-            }
-        });
+                if (multipartFile.get(0) == img) {
+                    String thumbnailImgName = createThumbnailImgName(format, dirName);
+                    MultipartFile thumbnailImg = resizeImage(thumbnailImgName, format, img, 200, 200);
+                    uploadedObjectNames.add(thumbnailImgName);
+                    uploadThumbnailToS3(thumbnailImgName, thumbnailImg, format);
+                    postImgRequestDtoList.add(PostImgRequestDto.CreatePostImgDto.builder()
+                            .imgName(thumbnailImgName)
+                            .imgUrl(createObjectUrl(thumbnailImgName))
+                            .thumbnail(true)
+                            .build());
+                }
+            });
+        } catch (RuntimeException e) {
+            deleteUploadedObjectsBestEffort(uploadedObjectNames);
+            throw e;
+        }
         return postImgRequestDtoList;
     }
 
-    private String uploadImgToS3(String imgName, MultipartFile multipartFile, String format) {
+    private void uploadThumbnailToS3(String thumbnailImgName, MultipartFile thumbnailImg, String format) {
+        try (InputStream inputThumbnailStream = thumbnailImg.getInputStream()) {
+            putObject(thumbnailImgName, thumbnailImg.getSize(), contentTypeForFormat(format), inputThumbnailStream);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 썸네일 업로드 실패했습니다");
+        }
+    }
+
+    private void uploadImgToS3(String imgName, MultipartFile multipartFile, String format) {
         try (InputStream inputStream = multipartFile.getInputStream()) {
-            s3Client.putObject(
-                    PutObjectRequest.builder()
-                            .bucket(bucket)
-                            .key(imgName)
-                            .contentLength(multipartFile.getSize())
-                            .contentType(resolveContentType(multipartFile, format))
-                            .acl(ObjectCannedACL.PUBLIC_READ)
-                            .build(),
-                    RequestBody.fromInputStream(inputStream, multipartFile.getSize())
-            );
-            return createObjectUrl(imgName);
+            putObject(imgName, multipartFile.getSize(), resolveContentType(multipartFile, format), inputStream);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
         }
+    }
+
+    private PutObjectResponse putObject(String key, long size, String contentType, InputStream inputStream) {
+        return s3Client.putObject(
+                PutObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(key)
+                        .contentLength(size)
+                        .contentType(contentType)
+                        .acl(ObjectCannedACL.PUBLIC_READ)
+                        .build(),
+                RequestBody.fromInputStream(inputStream, size)
+        );
     }
 
     private MultipartFile resizeImage(String thumbnailImgName, String imgFormat, MultipartFile multipartFile, int width, int height) {
@@ -164,17 +171,31 @@ public class AwsS3Service implements StorageService {
             throw new BaseException(ErrorCode.NOT_HAVE_IMAGE);
         }
         for (PostImg postImg : postImgList) {
-            s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(postImg.getImgName()).build());
+            deleteObject(postImg.getImgName());
         }
     }
 
     @Override
     public void deleteProfileImg(String profileImgName) {
         if (profileImgName != null) {
-            s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(profileImgName).build());
+            deleteObject(profileImgName);
         } else {
             throw new BaseException(ErrorCode.NOT_HAVE_IMAGE);
         }
+    }
+
+    private void deleteUploadedObjectsBestEffort(List<String> uploadedObjectNames) {
+        for (String objectName : uploadedObjectNames) {
+            try {
+                deleteObject(objectName);
+            } catch (RuntimeException cleanupException) {
+                log.warn("Failed to cleanup uploaded S3 object. objectName={}", objectName, cleanupException);
+            }
+        }
+    }
+
+    private void deleteObject(String objectName) {
+        s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(objectName).build());
     }
 
     @Override

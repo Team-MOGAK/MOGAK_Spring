@@ -70,6 +70,57 @@ class JogakRepositoryTest {
         assertThat(result.getTitle()).isEqualTo("문제풀이");
     }
 
+    @Test
+    @DisplayName("모각의 활성 미종료 조각 수만 계산한다")
+    void countActiveOpenByMogak() {
+        LocalDate today = LocalDate.of(2026, 3, 26);
+        User user = persistUser("count@test.com");
+        Modarat modarat = entityManager.persist(TestFixtureFactory.modarat(null, user, "메인", "#1111"));
+        MogakCategory category = entityManager.persist(TestFixtureFactory.category(null, "자격증"));
+        Mogak mogak = entityManager.persist(TestFixtureFactory.mogak(null, user, modarat, category, "정보처리기사", "#aaaa"));
+        Mogak otherMogak = entityManager.persist(TestFixtureFactory.mogak(null, user, modarat, category, "토익", "#bbbb"));
+        entityManager.persist(TestFixtureFactory.jogak(null, mogak, "종료일 없음", false, today.minusDays(1), null, 0));
+        entityManager.persist(TestFixtureFactory.jogak(null, mogak, "미래 종료", false, today.minusDays(1), today.plusDays(1), 0));
+        entityManager.persist(TestFixtureFactory.jogak(null, mogak, "오늘 종료", false, today.minusDays(1), today, 0));
+        entityManager.persist(TestFixtureFactory.jogak(null, mogak, "과거 종료", false, today.minusDays(3), today.minusDays(1), 0));
+        Jogak deleted = TestFixtureFactory.jogak(null, mogak, "삭제됨", false, today.minusDays(1), null, 0);
+        deleted.delete();
+        entityManager.persist(deleted);
+        entityManager.persist(TestFixtureFactory.jogak(null, otherMogak, "다른 모각", false, today.minusDays(1), null, 0));
+        entityManager.flush();
+        entityManager.clear();
+
+        long result = jogakRepository.countActiveOpenByMogak(mogak, today);
+
+        assertThat(result).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("사용자의 활성 일회성 조각만 조회한다")
+    void findActiveOneTimeJogaksByUser() {
+        User user = persistUser("one-time@test.com");
+        User otherUser = persistUser("one-time-other@test.com");
+        Modarat modarat = entityManager.persist(TestFixtureFactory.modarat(null, user, "메인", "#1111"));
+        Modarat otherModarat = entityManager.persist(TestFixtureFactory.modarat(null, otherUser, "서브", "#2222"));
+        MogakCategory category = entityManager.persist(TestFixtureFactory.category(null, "자격증"));
+        Mogak mogak = entityManager.persist(TestFixtureFactory.mogak(null, user, modarat, category, "정보처리기사", "#aaaa"));
+        Mogak otherMogak = entityManager.persist(TestFixtureFactory.mogak(null, otherUser, otherModarat, category, "토익", "#bbbb"));
+        entityManager.persist(TestFixtureFactory.jogak(null, mogak, "조회 대상", false, LocalDate.now(), null, 0));
+        entityManager.persist(TestFixtureFactory.jogak(null, mogak, "루틴 제외", true, LocalDate.now(), null, 0));
+        Jogak deleted = TestFixtureFactory.jogak(null, mogak, "삭제 제외", false, LocalDate.now(), null, 0);
+        deleted.delete();
+        entityManager.persist(deleted);
+        entityManager.persist(TestFixtureFactory.jogak(null, otherMogak, "타사용자 제외", false, LocalDate.now(), null, 0));
+        entityManager.flush();
+        entityManager.clear();
+
+        List<Jogak> result = jogakRepository.findActiveOneTimeJogaksByUser(user);
+
+        assertThat(result).extracting(Jogak::getTitle).containsExactly("조회 대상");
+        assertThat(result.get(0).getMogak().getTitle()).isEqualTo("정보처리기사");
+        assertThat(result.get(0).getCategory().getName()).isEqualTo("자격증");
+    }
+
     private User persistUser(String email) {
         Job job = entityManager.persist(TestFixtureFactory.job("개발/데이터"));
         Address address = entityManager.persist(TestFixtureFactory.address("서울특별시"));

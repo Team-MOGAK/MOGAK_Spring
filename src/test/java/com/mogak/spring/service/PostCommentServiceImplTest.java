@@ -48,8 +48,8 @@ class PostCommentServiceImplTest {
         Post post = post(10L, writer, 3, 0);
         CommentRequestDto.CreateCommentDto request = createRequest("새 댓글");
 
-        when(postRepository.findById(10L)).thenReturn(Optional.of(post));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(writer));
+        when(postRepository.findActiveById(10L)).thenReturn(Optional.of(post));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
         when(postCommentRepository.save(any(PostComment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         PostComment result = postCommentService.create(1L, request, 10L);
@@ -68,9 +68,9 @@ class PostCommentServiceImplTest {
         Post post = post(10L, writer, 3, 1);
         PostComment comment = comment(100L, post, writer, "기존 댓글");
 
-        when(postRepository.findById(10L)).thenReturn(Optional.of(post));
-        when(postCommentRepository.findByPostAndId(post, 100L)).thenReturn(comment);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(writer));
+        when(postRepository.findActiveById(10L)).thenReturn(Optional.of(post));
+        when(postCommentRepository.findActiveByPostAndId(post, 100L)).thenReturn(comment);
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
 
         PostComment result = postCommentService.update(1L, updateRequest("수정 댓글"), 10L, 100L);
 
@@ -86,9 +86,9 @@ class PostCommentServiceImplTest {
         Post post = post(10L, writer, 3, 1);
         PostComment comment = comment(100L, post, writer, "기존 댓글");
 
-        when(postRepository.findById(10L)).thenReturn(Optional.of(post));
-        when(postCommentRepository.findByPostAndId(post, 100L)).thenReturn(comment);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(other));
+        when(postRepository.findActiveById(10L)).thenReturn(Optional.of(post));
+        when(postCommentRepository.findActiveByPostAndId(post, 100L)).thenReturn(comment);
+        when(userRepository.findActiveById(2L)).thenReturn(Optional.of(other));
 
         Throwable throwable = catchThrowable(() -> postCommentService.update(2L, updateRequest("수정 댓글"), 10L, 100L));
 
@@ -104,9 +104,9 @@ class PostCommentServiceImplTest {
         Post post = post(10L, writer, 3, 1);
         PostComment comment = comment(100L, post, writer, "기존 댓글");
 
-        when(postRepository.findById(10L)).thenReturn(Optional.of(post));
-        when(postCommentRepository.findByPostAndId(post, 100L)).thenReturn(comment);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(other));
+        when(postRepository.findActiveById(10L)).thenReturn(Optional.of(post));
+        when(postCommentRepository.findActiveByPostAndId(post, 100L)).thenReturn(comment);
+        when(userRepository.findActiveById(2L)).thenReturn(Optional.of(other));
 
         Throwable throwable = catchThrowable(() -> postCommentService.delete(2L, 10L, 100L));
 
@@ -122,15 +122,15 @@ class PostCommentServiceImplTest {
         User writer = user(1L, "writer@test.com");
         Post post = post(10L, writer, 3, 1);
 
-        when(postRepository.findById(10L)).thenReturn(Optional.of(post));
-        when(postCommentRepository.findByPostAndId(post, 100L)).thenReturn(null);
+        when(postRepository.findActiveById(10L)).thenReturn(Optional.of(post));
+        when(postCommentRepository.findActiveByPostAndId(post, 100L)).thenReturn(null);
 
         Throwable throwable = catchThrowable(() -> postCommentService.delete(1L, 10L, 100L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_EXIST_COMMENT);
         assertThat(post.getCommentCnt()).isEqualTo(1);
         assertThat(post.getLikeCnt()).isEqualTo(3);
-        verify(userRepository, never()).findById(anyLong());
+        verify(userRepository, never()).findActiveById(anyLong());
         verify(postCommentRepository, never()).delete(any(PostComment.class));
     }
 
@@ -141,15 +141,16 @@ class PostCommentServiceImplTest {
         Post post = post(10L, writer, 3, 2);
         PostComment comment = comment(100L, post, writer, "기존 댓글");
 
-        when(postRepository.findById(10L)).thenReturn(Optional.of(post));
-        when(postCommentRepository.findByPostAndId(post, 100L)).thenReturn(comment);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(writer));
+        when(postRepository.findActiveById(10L)).thenReturn(Optional.of(post));
+        when(postCommentRepository.findActiveByPostAndId(post, 100L)).thenReturn(comment);
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
 
         postCommentService.delete(1L, 10L, 100L);
 
         assertThat(post.getCommentCnt()).isEqualTo(1);
         assertThat(post.getLikeCnt()).isEqualTo(3);
-        verify(postCommentRepository).delete(comment);
+        assertThat(comment.isDeleted()).isTrue();
+        verify(postCommentRepository, never()).delete(comment);
     }
 
     private static User user(Long id, String email) {
@@ -157,12 +158,15 @@ class PostCommentServiceImplTest {
     }
 
     private static Post post(Long id, User user, int likeCnt, int commentCnt) {
+        var mogak = TestFixtureFactory.mogak(10L, user, TestFixtureFactory.modarat(1L, user, "modarat", "#000000"), TestFixtureFactory.category(1, "자격증"), "mogak", "#112233");
+        var jogak = TestFixtureFactory.jogak(20L, mogak, "jogak", false, java.time.LocalDate.now(), null, 0);
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, false);
         return Post.builder()
                 .id(id)
+                .dailyJogak(dailyJogak)
                 .user(user)
                 .contents("게시글")
                 .postThumbnailUrl("thumbnail")
-                .validation("ACTIVE")
                 .viewCnt(0)
                 .likeCnt(likeCnt)
                 .commentCnt(commentCnt)
@@ -175,7 +179,6 @@ class PostCommentServiceImplTest {
                 .post(post)
                 .user(user)
                 .contents(contents)
-                .validation("ACTIVE")
                 .build();
     }
 

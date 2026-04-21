@@ -1,6 +1,6 @@
 package com.mogak.spring.domain.post;
 
-import com.mogak.spring.global.BaseEntity;
+import com.mogak.spring.global.SoftDeletableEntity;
 import com.mogak.spring.domain.user.User;
 import lombok.*;
 
@@ -12,7 +12,7 @@ import jakarta.persistence.*;
 @Entity
 @AllArgsConstructor(access= AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PostComment extends BaseEntity {
+public class PostComment extends SoftDeletableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
@@ -25,9 +25,6 @@ public class PostComment extends BaseEntity {
     private User user;
     @Column(nullable = false)
     private String contents;
-    @Column(nullable = false)
-    private String validation;
-
     public void updateComment(String contents){
         this.contents=contents;
     }

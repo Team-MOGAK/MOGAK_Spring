@@ -3,7 +3,7 @@ package com.mogak.spring.domain.mogak;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.global.BaseEntity;
+import com.mogak.spring.global.SoftDeletableEntity;
 import lombok.*;
 
 import jakarta.persistence.*;
@@ -17,7 +17,7 @@ import java.util.Optional;
 @Entity
 @AllArgsConstructor(access= AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Mogak extends BaseEntity {
+public class Mogak extends SoftDeletableEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "mogak_id")
     private Long id;
@@ -38,9 +38,6 @@ public class Mogak extends BaseEntity {
     @Column(nullable = false)
     private String title;
     private String color;
-    @Column(nullable = false)
-    private String validation;
-
     public void updateBigCategory(MogakCategory category) {
         this.bigCategory = category;
     }
