@@ -1,7 +1,8 @@
 package com.mogak.spring.service;
 
+import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
+
 public interface PostLikeService {
 
-    String createLike(Long userId, Long postId);
-    String deleteLike(Long userId, Long postId);
+    String updateLike(Long userId, PostLikeRequestDto.LikeDto request);
 }

@@ -8,6 +8,7 @@ import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
+import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkPostDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Slice;
@@ -35,8 +37,9 @@ public class NetworkController {
     private final PostLikeService postLikeService;
     private final PostService postService;
 
-    @Operation(summary = "좋아요 생성",
-            description = "게시물에 좋아요를 생성합니다",
+    //좋아요 생성&삭제
+    @Operation(summary = "좋아요 생성/삭제",
+            description = "게시물에 좋아요를 생성/삭제합니다",
             security = {@SecurityRequirement(name = "Bearer Authentication")},
             responses = {
                     @ApiResponse(responseCode = "200", description = "좋아요 생성/삭제"),
@@ -44,19 +47,11 @@ public class NetworkController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "이미 좋아요를 누른 케이스 Or 서버 오류"),
             })
-    @PostMapping("/api/posts/{postId}/like")
-    public ResponseEntity<BaseResponse<String>> createLike(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                           @PathVariable Long postId) {
-        return ResponseEntity.ok(new BaseResponse<>(postLikeService.createLike(authenticatedUser.getUserId(), postId)));
-    }
-
-    @Operation(summary = "좋아요 삭제",
-            description = "게시물에 좋아요를 삭제합니다",
-            security = {@SecurityRequirement(name = "Bearer Authentication")})
-    @DeleteMapping("/api/posts/{postId}/like")
-    public ResponseEntity<BaseResponse<String>> deleteLike(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                           @PathVariable Long postId) {
-        return ResponseEntity.ok(new BaseResponse<>(postLikeService.deleteLike(authenticatedUser.getUserId(), postId)));
+    @PostMapping("/api/posts/like")
+    public ResponseEntity<BaseResponse<String>> updateLike(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                           @Valid @RequestBody PostLikeRequestDto.LikeDto request) {
+        String message = postLikeService.updateLike(authenticatedUser.getUserId(), request);
+        return ResponseEntity.ok(new BaseResponse<>(message));
     }
 
     @Operation(summary = "페이스 메이커 게시물 조회",

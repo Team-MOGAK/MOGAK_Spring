@@ -71,9 +71,8 @@ public enum ErrorCode {
     EXCEED_MAX_NUM_POST(HttpStatus.BAD_REQUEST, "P001", "최대 글자수 350자를 초과하였습니다"),
     NOT_HAVE_IMAGE(HttpStatus.BAD_REQUEST, "P002", "이미지가 존재하지 않습니다"),
     NOT_EXIST_POST(HttpStatus.NOT_FOUND, "P003", "존재하지 않는 게시물입니다"),
-    ALREADY_CREATE_LIKE(HttpStatus.CONFLICT, "P004", "이미 좋아요를 누른 게시물입니다"),
+    ALREADY_CREATE_LIKE(HttpStatus.INTERNAL_SERVER_ERROR, "P004", "이미 좋아요를 누른 게시물입니다"),
     ALREADY_EXISTS_POST(HttpStatus.CONFLICT, "P005", "이미 존재하는 회고록입니다"),
-    NOT_EXIST_LIKE(HttpStatus.NOT_FOUND, "P006", "존재하지 않는 좋아요입니다"),
 
     /**
      * 댓글 에러

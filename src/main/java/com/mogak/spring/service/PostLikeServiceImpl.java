@@ -10,6 +10,7 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.PostLikeRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,12 +26,17 @@ public class PostLikeServiceImpl implements PostLikeService{
 
     @Transactional
     @Override
-    public String createLike(Long userId, Long postId){
-        Post post = getPost(postId);
-        User user = userRepository.findActiveById(userId)
-                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
+    public String updateLike(Long userId, PostLikeRequestDto.LikeDto request){
+        Post post = getActivePostForUpdate(request);
+        User user = getActiveUser(userId);
+        return toggleLike(post, user);
+    }
+
+    private String toggleLike(Post post, User user) {
         if (postLikeRepository.findByPostAndUser(post,user).isPresent()) {
-            throw new PostException(ErrorCode.ALREADY_CREATE_LIKE);
+            post.subtractPostLike();
+            postLikeRepository.deleteByPostAndUser(post, user);
+            return "좋아요가 삭제되었습니다";
         }
         PostLike postLike = PostLIkeConverter.toPostLike(post, user);
         postLikeRepository.save(postLike);
@@ -38,21 +44,20 @@ public class PostLikeServiceImpl implements PostLikeService{
         return "좋아요가 생성되었습니다";
     }
 
-    @Transactional
-    @Override
-    public String deleteLike(Long userId, Long postId) {
-        Post post = getPost(postId);
-        User user = userRepository.findActiveById(userId)
-                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        PostLike postLike = postLikeRepository.findByPostAndUser(post, user)
-                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_LIKE));
-        post.subtractPostLike();
-        postLikeRepository.delete(postLike);
-        return "좋아요가 삭제되었습니다";
+    private Post getActivePostForUpdate(PostLikeRequestDto.LikeDto request) {
+        return postRepository.findActiveByIdForUpdate(requirePostId(request))
+                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
     }
 
-    private Post getPost(Long postId) {
-        return postRepository.findActiveById(postId)
-                .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
+    private Long requirePostId(PostLikeRequestDto.LikeDto request) {
+        if (request == null || request.getPostId() == null) {
+            throw new PostException(ErrorCode.INVALID_PARAMETER_ERROR);
+        }
+        return request.getPostId();
+    }
+
+    private User getActiveUser(Long userId) {
+        return userRepository.findActiveById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
     }
 }

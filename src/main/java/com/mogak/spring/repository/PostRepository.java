@@ -2,9 +2,11 @@ package com.mogak.spring.repository;
 
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.user.User;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -28,6 +30,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "where p.id = :postId and p.deletedAt is null and dj.deletedAt is null " +
             "and j.deletedAt is null and m.deletedAt is null and u.deletedAt is null")
     Optional<Post> findActiveById(@Param("postId") Long postId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Post p " +
+            "join p.dailyJogak dj join dj.jogak j join j.mogak m join p.user u " +
+            "where p.id = :postId and p.deletedAt is null and dj.deletedAt is null " +
+            "and j.deletedAt is null and m.deletedAt is null and u.deletedAt is null")
+    Optional<Post> findActiveByIdForUpdate(@Param("postId") Long postId);
 
     @Query("select p from Post p " +
             "join p.dailyJogak dj join dj.jogak j join j.mogak m join p.user u " +

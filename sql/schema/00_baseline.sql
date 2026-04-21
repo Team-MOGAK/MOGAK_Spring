@@ -227,3 +227,4 @@ CREATE INDEX IF NOT EXISTS idx_daily_jogak_jogak_id ON daily_jogak (jogak_id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_daily_jogak_jogak_target_date ON daily_jogak (jogak_id, target_date) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_post_daily_jogak_id ON post (daily_jogak_id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_post_active_daily_jogak ON post (daily_jogak_id) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_post_like_post_user ON post_like (post_id, user_id);
