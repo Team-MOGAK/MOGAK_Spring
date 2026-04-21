@@ -55,10 +55,7 @@ public class JogakServiceImpl implements JogakService {
     @Transactional
     public void createRoutineJogakToday() {
         LocalDate today = LocalDate.now();
-        for (User user: userRepository.findAll()) {
-            if (user.isDeleted()) {
-                continue;
-            }
+        for (User user: userRepository.findAllActive()) {
             List<Jogak> jogaks  = jogakRepository.findDailyRoutineJogaks(user, Weeks.getTodayNum());
             for (Jogak jogak : jogaks) {
                 if (dailyJogakRepository.findActiveByJogakAndTargetDate(jogak, today).isEmpty()) {
@@ -144,14 +141,7 @@ public class JogakServiceImpl implements JogakService {
 
     // 모각의 조각 개수 검증
     private boolean validateJogakNum(Mogak mogak) {
-        int nowJogakNum = 0;
-        // 현재 유효한 기간 및 종료 날짜가 없는 조각 개수 체크
-        for (Jogak jogak: mogak.getJogaks()) {
-            if (!jogak.isDeleted() && (jogak.getEndAt() == null || jogak.getEndAt().isAfter(LocalDate.now()))) {
-                nowJogakNum++;
-            }
-        }
-        return nowJogakNum < 8;
+        return jogakRepository.countActiveOpenByMogak(mogak, LocalDate.now()) < 8;
     }
 
     @Transactional
@@ -239,10 +229,7 @@ public class JogakServiceImpl implements JogakService {
     public JogakResponseDto.GetOneTimeJogakListDto getDailyJogaks(Long userId, LocalDate day) {
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        List<Jogak> jogakList = mogakRepository.findAllByUser(user).stream()
-                .flatMap(mogak -> mogak.getJogaks().stream()
-                        .filter(jogak -> !jogak.isDeleted() && !jogak.getIsRoutine()))
-                .collect(Collectors.toList());
+        List<Jogak> jogakList = jogakRepository.findActiveOneTimeJogaksByUser(user);
         List<DailyJogak> dailyJogak = dailyJogakRepository.findDailyJogaks(user, day);
         return JogakConverter.toGetOneTimeJogakListResponseDto(jogakList, dailyJogak);
     }

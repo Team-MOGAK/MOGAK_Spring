@@ -240,6 +240,38 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("게시글 생성은 contents가 없으면 서비스 호출 전에 입력값 오류를 반환한다")
+    void createPostRejectsMissingContentsBeforeServiceCall() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        PostRequestDto.CreatePostDto request = createRequest(null);
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+        MockMultipartFile image = new MockMultipartFile(
+                "multipartFile",
+                "post.png",
+                MediaType.IMAGE_PNG_VALUE,
+                "png".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
+                        .file(requestPart)
+                        .file(image)
+                        .with(mockRequest -> {
+                            mockRequest.setMethod("POST");
+                            return mockRequest;
+                        }))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("Z005"));
+
+        verify(postService, never()).validateCreateAccess(any(), any(), anyList(), any());
+        verify(storageService, never()).uploadImg(any(), any());
+    }
+
+    @Test
     @DisplayName("모각별 게시글 조회는 인증 사용자의 id를 서비스에 전달한다")
     void getPostListUsesAuthenticatedUserId() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
@@ -261,12 +293,15 @@ class PostControllerTest {
         Post post = createPost(1L, 7L, 1L, "content", "https://example.com/post.png");
         when(postService.findById(7L, 1L)).thenReturn(post);
         when(postService.findNotThumbnailImg(post)).thenReturn(List.of("https://example.com/post-2.png"));
+        when(postService.findActiveCommentIds(post)).thenReturn(List.of(10L));
 
         mockMvc.perform(get("/api/posts/{postId}", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.postId").value(1));
+                .andExpect(jsonPath("$.result.postId").value(1))
+                .andExpect(jsonPath("$.result.commentId[0]").value(10));
 
         verify(postService).findById(7L, 1L);
+        verify(postService).findActiveCommentIds(post);
     }
 
     @Test
@@ -284,6 +319,21 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.id").value(1));
 
         verify(postService).update(eq(7L), eq(1L), any());
+    }
+
+    @Test
+    @DisplayName("게시글 수정은 contents가 없으면 서비스 호출 전에 입력값 오류를 반환한다")
+    void updatePostRejectsMissingContentsBeforeServiceCall() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        PostRequestDto.UpdatePostDto request = updateRequest(null);
+
+        mockMvc.perform(put("/api/posts/{postId}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("Z005"));
+
+        verify(postService, never()).update(any(), any(), any());
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.mogak.spring.global.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -72,6 +73,15 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.code").value(ErrorCode.INTERNAL_SERVER_ERROR.getCode()));
     }
 
+    @Test
+    @DisplayName("DataIntegrityViolationException은 전역 핸들러에서 도메인별 에러로 변환하지 않는다")
+    void shouldReturnInternalServerErrorForDataIntegrityViolationException() throws Exception {
+        mockMvc.perform(get("/global-exceptions/data-integrity"))
+                .andExpect(status().is(INTERNAL_SERVER_ERROR.value()))
+                .andExpect(jsonPath("$.status").value(ErrorCode.INTERNAL_SERVER_ERROR.getStatus().name()))
+                .andExpect(jsonPath("$.code").value(ErrorCode.INTERNAL_SERVER_ERROR.getCode()));
+    }
+
     @RestController
     static class ExceptionTestController {
 
@@ -88,6 +98,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/global-exceptions/runtime")
         public void throwRuntimeException() {
             throw new IllegalStateException("unexpected");
+        }
+
+        @GetMapping("/global-exceptions/data-integrity")
+        public void throwDataIntegrityViolationException() {
+            throw new DataIntegrityViolationException("unmapped_data_constraint");
         }
 
         @PostMapping("/global-exceptions/request")

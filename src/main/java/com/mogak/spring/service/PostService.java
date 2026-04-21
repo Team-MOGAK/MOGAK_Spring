@@ -24,6 +24,7 @@ public interface PostService {
     List<NetworkPostDto> getPacemakerPosts(Long userId, int cursor, int size);
     Slice<Post> getNetworkPosts(Long userId, int page, int size, String sort, String address);
     List<String> findImgUrlByPost(Long postId);
+    List<Long> findActiveCommentIds(Post post);
     List<String> findNotThumbnailImg(Post post);
     List<PostImg> findAllImgByPost(Post post);
 }

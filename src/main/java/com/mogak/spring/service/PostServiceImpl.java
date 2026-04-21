@@ -9,6 +9,7 @@ import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakPeriod;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
+import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.AuthException;
@@ -21,6 +22,7 @@ import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkPostDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -31,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -47,6 +50,7 @@ public class PostServiceImpl implements PostService {
     private final PostCommentRepository postCommentRepository;
     private final StorageCleanupService storageCleanupService;
     private static final String DIR_NAME = "img";
+    private static final String ACTIVE_POST_DAILY_JOGAK_UNIQUE_INDEX = "uq_post_active_daily_jogak";
 
     /**
      * TODO 회고록 - user id로 조회되도록 수정
@@ -87,7 +91,24 @@ public class PostServiceImpl implements PostService {
             }
             postImgRepository.save(postImg);
         }
-        return postRepository.save(post);
+        return savePost(post);
+    }
+
+    private Post savePost(Post post) {
+        try {
+            return postRepository.saveAndFlush(post);
+        } catch (DataIntegrityViolationException e) {
+            if (isActiveDailyJogakPostDuplicate(e)) {
+                throw new PostException(ErrorCode.ALREADY_EXISTS_POST);
+            }
+            throw e;
+        }
+    }
+
+    private boolean isActiveDailyJogakPostDuplicate(DataIntegrityViolationException e) {
+        String message = e.getMostSpecificCause() == null ? e.getMessage() : e.getMostSpecificCause().getMessage();
+        return message != null
+                && message.toLowerCase(Locale.ROOT).contains(ACTIVE_POST_DAILY_JOGAK_UNIQUE_INDEX);
     }
 
     //회고록 조회 - 무한 스크롤
@@ -195,6 +216,14 @@ public class PostServiceImpl implements PostService {
             imgUrlList.add(postImg.getImgUrl());
         }
         return imgUrlList;
+    }
+
+    //회고록 상세조회를 위한 활성 댓글 id 반환
+    @Override
+    public List<Long> findActiveCommentIds(Post post) {
+        return postCommentRepository.findActiveAllByPost(post).stream()
+                .map(PostComment::getId)
+                .collect(Collectors.toList());
     }
 
     //이미지 상세조회를 위한, 썸네일 제외 url 반환

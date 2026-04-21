@@ -11,6 +11,7 @@ public class PostRequestDto {
     public static class CreatePostDto{
         @NotNull
         private LocalDate targetDate;
+        @NotNull
         private String contents;
     }
 
@@ -18,6 +19,7 @@ public class PostRequestDto {
 
     @Getter
     public static class UpdatePostDto{
+        @NotNull
         public String contents;
     }
 

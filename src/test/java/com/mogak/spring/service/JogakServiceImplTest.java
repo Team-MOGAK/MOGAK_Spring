@@ -190,6 +190,7 @@ class JogakServiceImplTest {
         ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
 
         when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
+        when(jogakRepository.countActiveOpenByMogak(mogak, LocalDate.now())).thenReturn(8L);
 
         Throwable throwable = Assertions.catchThrowable(() -> jogakService.createJogak(1L, request));
 
@@ -213,6 +214,28 @@ class JogakServiceImplTest {
 
         assertThat(result.getSize()).isEqualTo(1);
         assertThat(result.getDailyJogaks().get(0).getTitle()).isEqualTo("루틴 조각");
+    }
+
+    @Test
+    @DisplayName("일회성 조각 조회는 활성 일회성 조각을 repository 쿼리로 조회한다")
+    void getDailyJogaksUsesActiveOneTimeJogakQuery() {
+        LocalDate day = LocalDate.of(2026, 3, 26);
+        User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
+        Modarat modarat = TestFixtureFactory.modarat(1L, user, "모다라트", "#0000");
+        MogakCategory category = TestFixtureFactory.category(1, "자격증");
+        Mogak mogak = TestFixtureFactory.mogak(2L, user, modarat, category, "모각", "#1234");
+        Jogak jogak = TestFixtureFactory.jogak(10L, mogak, "일회성 조각", false, day, null, 0);
+
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
+        when(jogakRepository.findActiveOneTimeJogaksByUser(user)).thenReturn(List.of(jogak));
+        when(dailyJogakRepository.findDailyJogaks(user, day)).thenReturn(List.of());
+
+        JogakResponseDto.GetOneTimeJogakListDto result = jogakService.getDailyJogaks(1L, day);
+
+        assertThat(result.getSize()).isEqualTo(1);
+        assertThat(result.getJogaks().get(0).getTitle()).isEqualTo("일회성 조각");
+        verify(jogakRepository).findActiveOneTimeJogaksByUser(user);
+        verify(mogakRepository, never()).findAllByUser(any(User.class));
     }
 
     @Test

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -142,7 +143,7 @@ class PostServiceImplTest {
                 .thenReturn(Optional.of(dailyJogak));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
         when(postImgRepository.save(any(PostImg.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(postRepository.save(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(postRepository.saveAndFlush(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Post result = postService.create(1L, request, uploadedImages, 20L);
 
@@ -151,7 +152,63 @@ class PostServiceImplTest {
         assertThat(result.getPostImgs()).hasSize(1);
         assertThat(result.getPostThumbnailUrl()).isEqualTo("https://example.com/thumb.png");
         verify(postImgRepository, times(2)).save(any(PostImg.class));
-        verify(postRepository).save(any(Post.class));
+        verify(postRepository).saveAndFlush(any(Post.class));
+    }
+
+    @Test
+    @DisplayName("게시글 생성은 DB unique 충돌을 이미 존재하는 회고록 예외로 변환한다")
+    void createTranslatesActiveDailyJogakUniqueViolationToAlreadyExistsPost() {
+        User writer = user(1L, "writer@test.com");
+        PostRequestDto.CreatePostDto request = createRequest("content");
+        Mogak mogak = mogak(10L, writer);
+        var jogak = TestFixtureFactory.jogak(20L, mogak, "jogak", false, java.time.LocalDate.now(), null, 0);
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.getTargetDate(), DailyJogakStatus.SUCCESS);
+        List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
+                PostImgRequestDto.CreatePostImgDto.builder()
+                        .imgName("thumb.png")
+                        .imgUrl("https://example.com/thumb.png")
+                        .thumbnail(true)
+                        .build()
+        );
+
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.getTargetDate()))
+                .thenReturn(Optional.of(dailyJogak));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
+        when(postImgRepository.save(any(PostImg.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(postRepository.saveAndFlush(any(Post.class)))
+                .thenThrow(new DataIntegrityViolationException("uq_post_active_daily_jogak"));
+
+        Throwable throwable = catchThrowable(() -> postService.create(1L, request, uploadedImages, 20L));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.ALREADY_EXISTS_POST);
+    }
+
+    @Test
+    @DisplayName("게시글 생성은 예상하지 않은 DB 무결성 오류를 그대로 전파한다")
+    void createPropagatesUnexpectedDataIntegrityViolation() {
+        User writer = user(1L, "writer@test.com");
+        PostRequestDto.CreatePostDto request = createRequest("content");
+        Mogak mogak = mogak(10L, writer);
+        var jogak = TestFixtureFactory.jogak(20L, mogak, "jogak", false, java.time.LocalDate.now(), null, 0);
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.getTargetDate(), DailyJogakStatus.SUCCESS);
+        List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
+                PostImgRequestDto.CreatePostImgDto.builder()
+                        .imgName("thumb.png")
+                        .imgUrl("https://example.com/thumb.png")
+                        .thumbnail(true)
+                        .build()
+        );
+
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.getTargetDate()))
+                .thenReturn(Optional.of(dailyJogak));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
+        when(postImgRepository.save(any(PostImg.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(postRepository.saveAndFlush(any(Post.class)))
+                .thenThrow(new DataIntegrityViolationException("post_thumbnail_url must not be null"));
+
+        Throwable throwable = catchThrowable(() -> postService.create(1L, request, uploadedImages, 20L));
+
+        assertThat(throwable).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
@@ -179,6 +236,26 @@ class PostServiceImplTest {
         Throwable throwable = catchThrowable(() -> postService.findById(2L, 10L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
+    }
+
+    @Test
+    @DisplayName("게시글 상세 댓글 ID는 활성 댓글 조회 쿼리 결과로 구성한다")
+    void findActiveCommentIdsUsesActiveCommentQuery() {
+        User owner = user(1L, "owner@test.com");
+        Post post = post(10L, owner);
+        PostComment activeComment = PostComment.builder()
+                .id(20L)
+                .post(post)
+                .user(owner)
+                .contents("comment")
+                .build();
+
+        when(postCommentRepository.findActiveAllByPost(post)).thenReturn(List.of(activeComment));
+
+        List<Long> result = postService.findActiveCommentIds(post);
+
+        assertThat(result).containsExactly(20L);
+        verify(postCommentRepository).findActiveAllByPost(post);
     }
 
     @Test

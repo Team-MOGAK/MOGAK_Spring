@@ -43,7 +43,7 @@ public class PostConverter {
                 .build();
     }
     //상세 조회
-    public static PostResponseDto.PostDto toPostDto(Post post, List<String> imgUrls){
+    public static PostResponseDto.PostDto toPostDto(Post post, List<String> imgUrls, List<Long> commentIds){
         DailyJogak dailyJogak = post.getDailyJogak();
         return PostResponseDto.PostDto.builder()
                 .postId(post.getId())
@@ -54,11 +54,7 @@ public class PostConverter {
                 .userId(post.getUser().getId())
                 .contents(post.getContents())
                 .imgUrls(imgUrls)
-                .commentId(post.getPostComments().stream()
-                        .filter(comment -> !comment.isDeleted())
-                        .filter(comment -> !comment.getUser().isDeleted())
-                        .map(m -> m.getId())
-                        .collect(Collectors.toList())) //일단 comment id로 조회하는 것으로 함
+                .commentId(commentIds) //일단 comment id로 조회하는 것으로 함
                 .likeCnt(post.getLikeCnt())
                 .commentCnt(post.getCommentCnt())
                 .build();

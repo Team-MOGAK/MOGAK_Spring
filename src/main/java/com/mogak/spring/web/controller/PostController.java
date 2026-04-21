@@ -100,7 +100,8 @@ public class PostController {
                                                                        @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         Post post = postService.getByJogakAndTargetDate(authenticatedUser.getUserId(), jogakId, targetDate);
         List<String> imgUrls = postService.findNotThumbnailImg(post);
-        return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostDto(post, imgUrls)));
+        List<Long> commentIds = postService.findActiveCommentIds(post);
+        return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostDto(post, imgUrls, commentIds)));
     }
 
     //read-상세 조회
@@ -117,7 +118,8 @@ public class PostController {
                                                                @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         Post post = postService.findById(authenticatedUser.getUserId(), postId);
         List<String> imgUrls = postService.findNotThumbnailImg(post); //썸네일은 제외하고 보여주기
-        return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostDto(post, imgUrls)));
+        List<Long> commentIds = postService.findActiveCommentIds(post);
+        return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostDto(post, imgUrls, commentIds)));
     }
 
     //update - 권한 설정 필요
@@ -134,7 +136,7 @@ public class PostController {
     @PutMapping("/api/posts/{postId}")
     public ResponseEntity<BaseResponse<UpdatePostDto>> updatePost(@PathVariable Long postId,
                                                                   @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                                  @RequestBody PostRequestDto.UpdatePostDto request) {
+                                                                  @Valid @RequestBody PostRequestDto.UpdatePostDto request) {
         Post post = postService.update(authenticatedUser.getUserId(), postId, request);
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toUpdatePostDto(post)));
     }

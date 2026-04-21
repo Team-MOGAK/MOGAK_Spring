@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +29,17 @@ public interface JogakRepository extends JpaRepository<Jogak, Long> {
 
     @Query("select j from Jogak j where j.mogak = :mogak and j.deletedAt is null and j.mogak.deletedAt is null")
     List<Jogak> findAllByMogak(@Param("mogak") Mogak mogak);
+
+    @Query("select count(j) from Jogak j " +
+            "where j.mogak = :mogak and j.deletedAt is null and j.mogak.deletedAt is null " +
+            "and (j.endAt is null or j.endAt > :today)")
+    long countActiveOpenByMogak(@Param("mogak") Mogak mogak, @Param("today") LocalDate today);
+
+    @Query("select j from Jogak j " +
+            "join fetch j.mogak m join fetch j.category c join j.user u " +
+            "where u = :user and j.isRoutine = false " +
+            "and j.deletedAt is null and m.deletedAt is null and u.deletedAt is null")
+    List<Jogak> findActiveOneTimeJogaksByUser(@Param("user") User user);
 
     @Query("SELECT DISTINCT j FROM Jogak j JOIN FETCH j.jogakPeriods jp JOIN FETCH jp.period p " +
             "WHERE j.user.id = :userId AND j.isRoutine = true AND j.deletedAt is null AND j.user.deletedAt is null")

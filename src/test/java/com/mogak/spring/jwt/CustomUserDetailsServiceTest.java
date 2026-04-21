@@ -3,6 +3,7 @@ package com.mogak.spring.jwt;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.support.TestFixtureFactory;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,6 +25,7 @@ class CustomUserDetailsServiceTest {
     private CustomUserDetailsService customUserDetailsService;
 
     @Test
+    @DisplayName("사용자 인증 정보 조회는 활성 사용자 이메일 조회를 사용한다")
     void loadUserByUsernameUsesActiveUserLookup() {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
         when(userRepository.findActiveByEmail("user@test.com")).thenReturn(Optional.of(user));
