@@ -46,6 +46,7 @@ class JogakServiceImplTest {
     @Mock private PeriodRepository periodRepository;
     @Mock private DailyJogakRepository dailyJogakRepository;
     @Mock private PostRepository postRepository;
+    @Mock private PostLikeRepository postLikeRepository;
     @Mock private PostCommentRepository postCommentRepository;
     @Mock private PostImgRepository postImgRepository;
     @Mock private StorageCleanupService storageCleanupService;
@@ -442,6 +443,32 @@ class JogakServiceImplTest {
     }
 
     @Test
+    @DisplayName("조각 수정은 이미 생성된 데일리 조각의 제목과 루틴 여부 스냅샷을 바꾸지 않는다")
+    void updateJogakKeepsExistingDailyJogakSnapshot() {
+        User owner = TestFixtureFactory.user(1L, "owner@test.com", "owner", null, null);
+        Mogak mogak = TestFixtureFactory.mogak(2L,
+                owner,
+                TestFixtureFactory.modarat(1L, owner, "모다라트", "#0000"),
+                TestFixtureFactory.category(1, "자격증"),
+                "모각",
+                "#1234");
+        Jogak jogak = TestFixtureFactory.jogak(10L, mogak, "기존 조각", true, LocalDate.now(), null, 0);
+        DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, jogak, LocalDate.now(), DailyJogakStatus.PENDING);
+        JogakRequestDto.UpdateJogakDto request = new JogakRequestDto.UpdateJogakDto();
+        ReflectionTestUtils.setField(request, "title", "수정 조각");
+        ReflectionTestUtils.setField(request, "isRoutine", false);
+        lenient().when(dailyJogakRepository.findActiveAllByJogak(jogak)).thenReturn(List.of(dailyJogak));
+        when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
+
+        JogakResponseDto.CreateJogakDto result = jogakService.updateJogak(owner.getId(), 10L, request);
+
+        assertThat(result.getTitle()).isEqualTo("수정 조각");
+        assertThat(result.getIsRoutine()).isFalse();
+        assertThat(dailyJogak.getTitle()).isEqualTo("기존 조각");
+        assertThat(dailyJogak.getIsRoutine()).isTrue();
+    }
+
+    @Test
     @DisplayName("타인 조각 삭제 요청을 하면 권한 오류를 반환한다")
     void deleteJogakThrowsWhenOwnerMismatch() {
         User owner = TestFixtureFactory.user(1L, "owner@test.com", "owner", null, null);
@@ -511,6 +538,7 @@ class JogakServiceImplTest {
         assertThat(jogak.isDeleted()).isTrue();
         assertThat(post.getCommentCnt()).isZero();
         verify(storageCleanupService).deletePostImagesAfterCommit(List.of(postImg), "img");
+        verify(postLikeRepository).deleteAllByPost(post);
         verify(postImgRepository).deleteAllByPost(post);
         verify(jogakPeriodRepository).deleteAllByJogakId(10L);
     }
