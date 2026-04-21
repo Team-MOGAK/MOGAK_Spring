@@ -457,7 +457,6 @@ class JogakServiceImplTest {
         JogakRequestDto.UpdateJogakDto request = new JogakRequestDto.UpdateJogakDto();
         ReflectionTestUtils.setField(request, "title", "수정 조각");
         ReflectionTestUtils.setField(request, "isRoutine", false);
-        lenient().when(dailyJogakRepository.findActiveAllByJogak(jogak)).thenReturn(List.of(dailyJogak));
         when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
 
         JogakResponseDto.CreateJogakDto result = jogakService.updateJogak(owner.getId(), 10L, request);
