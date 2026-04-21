@@ -94,7 +94,7 @@ public class PostController {
         return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostPagingDto(posts)));
     }
 
-    @GetMapping("/api/jogaks/{jogakId}/post")
+    @GetMapping("/api/jogaks/{jogakId}/posts")
     public ResponseEntity<BaseResponse<PostDto>> getPostByJogakAndDate(@PathVariable Long jogakId,
                                                                        @RequestParam("targetDate") java.time.LocalDate targetDate,
                                                                        @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {

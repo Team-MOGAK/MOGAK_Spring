@@ -288,8 +288,8 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("조각 날짜별 게시글 단건 조회는 단수 post 경로와 targetDate를 사용한다")
-    void getPostByJogakAndDateUsesSingularPostPathAndTargetDate() throws Exception {
+    @DisplayName("조각 날짜별 게시글 단건 조회는 복수 posts 경로와 targetDate를 사용한다")
+    void getPostByJogakAndDateUsesPluralPostsPathAndTargetDate() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
         LocalDate targetDate = LocalDate.of(2026, 4, 21);
         Post post = createPost(1L, 7L, 1L, "content", "https://example.com/post.png");
@@ -297,7 +297,7 @@ class PostControllerTest {
         when(postService.findNotThumbnailImg(post)).thenReturn(List.of("https://example.com/post-2.png"));
         when(postService.findActiveCommentIds(post)).thenReturn(List.of(10L));
 
-        mockMvc.perform(get("/api/jogaks/{jogakId}/post", 20L)
+        mockMvc.perform(get("/api/jogaks/{jogakId}/posts", 20L)
                         .param("targetDate", targetDate.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.postId").value(1))
@@ -305,6 +305,18 @@ class PostControllerTest {
 
         verify(postService).getByJogakAndTargetDate(7L, 20L, targetDate);
         verify(postService).findActiveCommentIds(post);
+    }
+
+    @Test
+    @DisplayName("조각 날짜별 게시글 단건 조회는 단수 post 경로를 노출하지 않는다")
+    void getPostByJogakAndDateDoesNotExposeSingularPostPath() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+
+        mockMvc.perform(get("/api/jogaks/{jogakId}/post", 20L)
+                        .param("targetDate", "2026-04-21"))
+                .andExpect(status().isNotFound());
+
+        verify(postService, never()).getByJogakAndTargetDate(any(), any(), any());
     }
 
     @Test
