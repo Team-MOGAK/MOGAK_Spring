@@ -48,6 +48,8 @@ class PostServiceImplTest {
     @Mock
     private PostImgRepository postImgRepository;
     @Mock
+    private PostLikeRepository postLikeRepository;
+    @Mock
     private PostCommentRepository postCommentRepository;
     @Mock
     private StorageCleanupService storageCleanupService;
@@ -313,8 +315,43 @@ class PostServiceImplTest {
         postService.delete(1L, 10L);
 
         assertThat(post.isDeleted()).isTrue();
+        verify(postLikeRepository).deleteAllByPost(post);
         verify(storageCleanupService, never()).deletePostImagesAfterCommit(anyList(), any());
         verify(postImgRepository, never()).deleteAllByPost(post);
+    }
+
+    @Test
+    @DisplayName("게시글 삭제는 좋아요와 이미지를 hard delete 하고 댓글과 게시글은 soft delete 한다")
+    void deleteHardDeletesLikesAndImagesThenSoftDeletesCommentsAndPost() {
+        User owner = user(1L, "owner@test.com");
+        User commenter = user(2L, "commenter@test.com");
+        Post post = post(10L, owner);
+        ReflectionTestUtils.setField(post, "commentCnt", 1);
+        PostImg postImg = PostImg.builder()
+                .id(30L)
+                .post(post)
+                .imgName("img.png")
+                .imgUrl("https://example.com/img.png")
+                .build();
+        PostComment comment = PostComment.builder()
+                .id(20L)
+                .post(post)
+                .user(commenter)
+                .contents("comment")
+                .build();
+
+        when(postRepository.findActiveById(10L)).thenReturn(Optional.of(post));
+        when(postImgRepository.findAllByPost(post)).thenReturn(List.of(postImg));
+        when(postCommentRepository.findActiveAllByPostForCleanup(post)).thenReturn(List.of(comment));
+
+        postService.delete(1L, 10L);
+
+        assertThat(comment.isDeleted()).isTrue();
+        assertThat(post.isDeleted()).isTrue();
+        assertThat(post.getCommentCnt()).isZero();
+        verify(postLikeRepository).deleteAllByPost(post);
+        verify(storageCleanupService).deletePostImagesAfterCommit(List.of(postImg), "img");
+        verify(postImgRepository).deleteAllByPost(post);
     }
 
     @Test
@@ -341,6 +378,7 @@ class PostServiceImplTest {
         assertThat(comment.isDeleted()).isTrue();
         assertThat(post.getCommentCnt()).isZero();
         assertThat(post.isDeleted()).isTrue();
+        verify(postLikeRepository).deleteAllByPost(post);
         verify(postCommentRepository).findActiveAllByPostForCleanup(post);
         verify(postCommentRepository, never()).findActiveAllByPost(post);
     }

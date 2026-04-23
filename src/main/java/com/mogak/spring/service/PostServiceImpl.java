@@ -47,6 +47,7 @@ public class PostServiceImpl implements PostService {
     private final DailyJogakRepository dailyJogakRepository;
     private final UserRepository userRepository;
     private final PostImgRepository postImgRepository;
+    private final PostLikeRepository postLikeRepository;
     private final PostCommentRepository postCommentRepository;
     private final StorageCleanupService storageCleanupService;
     private static final String DIR_NAME = "img";
@@ -149,6 +150,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public void delete(Long userId, Long postId) {
         Post post = getOwnedPost(userId, postId);
+        postLikeRepository.deleteAllByPost(post);
         List<PostImg> postImgList = postImgRepository.findAllByPost(post);
         if (!postImgList.isEmpty()) {
             storageCleanupService.deletePostImagesAfterCommit(postImgList, DIR_NAME);

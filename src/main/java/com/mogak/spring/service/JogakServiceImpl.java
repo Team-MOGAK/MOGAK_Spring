@@ -44,6 +44,7 @@ public class JogakServiceImpl implements JogakService {
     private final PeriodRepository periodRepository;
     private final DailyJogakRepository dailyJogakRepository;
     private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
     private final PostCommentRepository postCommentRepository;
     private final PostImgRepository postImgRepository;
     private final StorageCleanupService storageCleanupService;
@@ -153,14 +154,6 @@ public class JogakServiceImpl implements JogakService {
 
         validatePeriod(Optional.ofNullable(updateJogakDto.getIsRoutine()), Optional.ofNullable(updateJogakDto.getDays()));
         jogak.update(updateJogakDto.getTitle(), updateJogakDto.getIsRoutine(), updateJogakDto.getEndDate());
-
-        List<DailyJogak> dailyJogaks = dailyJogakRepository.findActiveAllByJogak(jogak);
-
-        if (!dailyJogaks.isEmpty()) {
-            for (DailyJogak dailyJogak : dailyJogaks) {
-                dailyJogak.updateJogak(jogak);
-            }
-        }
 
         if (updateJogakDto.getDays() != null) {
             updateJogakPeriod(jogak, updateJogakDto.getDays());
@@ -436,6 +429,7 @@ public class JogakServiceImpl implements JogakService {
     private void deletePostCascade(DailyJogak dailyJogak) {
         postRepository.findActiveAllByDailyJogakId(dailyJogak.getId())
                 .forEach(post -> {
+                    postLikeRepository.deleteAllByPost(post);
                     postCommentRepository.findActiveAllByPostForCleanup(post).forEach(comment -> {
                         comment.delete();
                         post.subtractCommentCnt();

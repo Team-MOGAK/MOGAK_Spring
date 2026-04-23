@@ -6,7 +6,7 @@ import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.domain.post.Post;
-import com.mogak.spring.domain.post.PostLike;
+import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.user.Address;
 import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
@@ -21,69 +21,41 @@ import org.springframework.test.context.ActiveProfiles;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ActiveProfiles("test")
 @DataJpaTest
-class PostLikeRepositoryTest {
+class PostCommentRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
     @Autowired
-    private PostLikeRepository postLikeRepository;
+    private PostCommentRepository postCommentRepository;
 
     @Test
-    @DisplayName("같은 사용자는 같은 게시글에 좋아요를 중복 생성할 수 없다")
-    void postLikeHasUniquePostUserConstraint() {
+    @DisplayName("한 사용자는 같은 게시글에 댓글을 여러 개 작성할 수 있다")
+    void sameUserCanWriteMultipleCommentsOnPost() {
         User user = persistUser();
         Post post = persistPost(user);
-        entityManager.persist(PostLike.builder()
+        entityManager.persist(PostComment.builder()
                 .post(post)
                 .user(user)
+                .contents("첫 번째 댓글")
                 .build());
-        entityManager.flush();
-
-        assertThatThrownBy(() -> {
-            entityManager.persist(PostLike.builder()
-                    .post(post)
-                    .user(user)
-                    .build());
-            entityManager.flush();
-        })
-                .isInstanceOf(org.hibernate.exception.ConstraintViolationException.class);
-    }
-
-    @Test
-    @DisplayName("게시글 기준 좋아요 삭제는 해당 게시글의 좋아요를 hard delete 한다")
-    void deleteAllByPostHardDeletesLikesForPost() {
-        User owner = persistUser("owner@test.com", "owner");
-        User liker = persistUser("liker@test.com", "liker");
-        Post post = persistPost(owner);
-        entityManager.persist(PostLike.builder()
+        entityManager.persist(PostComment.builder()
                 .post(post)
-                .user(owner)
+                .user(user)
+                .contents("두 번째 댓글")
                 .build());
-        entityManager.persist(PostLike.builder()
-                .post(post)
-                .user(liker)
-                .build());
-        entityManager.flush();
-
-        postLikeRepository.deleteAllByPost(post);
         entityManager.flush();
         entityManager.clear();
 
-        assertThat(postLikeRepository.count()).isZero();
+        assertThat(postCommentRepository.count()).isEqualTo(2);
     }
 
     private User persistUser() {
-        return persistUser("like@test.com", "like");
-    }
-
-    private User persistUser(String email, String nickname) {
         Job job = entityManager.persist(TestFixtureFactory.job("개발/데이터"));
         Address address = entityManager.persist(TestFixtureFactory.address("서울특별시"));
-        return entityManager.persist(TestFixtureFactory.user(null, email, nickname, job, address));
+        return entityManager.persist(TestFixtureFactory.user(null, "comment@test.com", "commenter", job, address));
     }
 
     private Post persistPost(User user) {

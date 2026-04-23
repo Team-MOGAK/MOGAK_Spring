@@ -32,6 +32,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -196,5 +197,7 @@ class AuthServiceTest {
         assertThat(comment.isDeleted()).isTrue();
         assertThat(post.getCommentCnt()).isZero();
         assertThat(post.getLikeCnt()).isZero();
+        verify(postLikeRepository).deleteAllRelatedToUser(1L);
+        verify(followRepository).deleteAllRelatedToUser(1L);
     }
 }

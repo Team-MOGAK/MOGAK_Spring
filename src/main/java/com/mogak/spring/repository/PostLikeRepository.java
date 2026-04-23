@@ -16,6 +16,10 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     Optional<PostLike> findByPostAndUser(Post post, User user);
     void deleteByPostAndUser(Post post, User user);
 
+    @Modifying
+    @Query("delete from PostLike pl where pl.post = :post")
+    void deleteAllByPost(@Param("post") Post post);
+
     @Query("select pl from PostLike pl join pl.post p join p.user pu " +
             "where pl.user.id = :userId and pu.id <> :userId and p.deletedAt is null and pu.deletedAt is null")
     List<PostLike> findActiveAllByUserIdOnOtherUserPosts(@Param("userId") Long userId);
