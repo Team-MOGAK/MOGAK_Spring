@@ -1,7 +1,7 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.auth.AppleOAuthUserProvider;
-import com.mogak.spring.auth.AppleUserResponse;
+import com.mogak.spring.auth.SocialOAuthUserProvider;
+import com.mogak.spring.auth.SocialUserProfile;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.modarat.Modarat;
@@ -9,6 +9,8 @@ import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.post.PostLike;
+import com.mogak.spring.domain.user.SocialAccount;
+import com.mogak.spring.domain.user.SocialProvider;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.UserException;
@@ -20,7 +22,10 @@ import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
 import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
 import com.mogak.spring.web.dto.authdto.AuthResponse;
+import com.mogak.spring.web.dto.authdto.SocialLoginRequest;
+import com.mogak.spring.web.dto.authdto.SocialLoginResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +49,8 @@ public class AuthService {
     private final PostImgRepository postImgRepository;
     private final PostLikeRepository postLikeRepository;
     private final FollowRepository followRepository;
-    private final AppleOAuthUserProvider appleOAuthUserProvider;
+    private final SocialAccountRepository socialAccountRepository;
+    private final List<SocialOAuthUserProvider> socialOAuthUserProviders;
     private final JwtTokenProvider jwtTokenProvider;
     private final StorageCleanupService storageCleanupService;
     private static final String DIR_NAME = "img";
@@ -52,37 +58,113 @@ public class AuthService {
     //로그인
     @Transactional
     public AppleLoginResponse appleLogin(AppleLoginRequest request) {
-        AppleUserResponse appleUser = appleOAuthUserProvider.getAppleUser(request.getId_token());
-        Optional<User> existingUser = userRepository.findByEmail(appleUser.getEmail());
-        if (existingUser.isPresent() && existingUser.get().isDeleted()) {
-            throw new UserException(ErrorCode.NOT_EXIST_USER);
-        }
-        boolean isRegistered = existingUser.isPresent();
-        if (isRegistered) { //회원가입이 되어 있는 경우-이메일 체크
-            User findUser = existingUser.orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
-            JwtTokens jwtTokens = issueTokens(findUser); //토큰 발급
-            if (!isRegisterNickname(findUser)) { //해당 이메일로 가입한 유저의 닉네임 없으면 회원가입하도록
-                return AppleLoginResponse.builder()
-                        .isRegistered(false)
-                        .userId(findUser.getId())
-                        .tokens(jwtTokens)
-                        .build();
-            }
-            return AppleLoginResponse.builder()
-                    .isRegistered(true)
-                    .userId(findUser.getId())
-                    .tokens(jwtTokens)
-                    .build();
-        }
-        //회원가입이 되어 있지 않은 경우
-        User oauthUser = new User(appleUser.getEmail());
-        User savedUser = userRepository.save(oauthUser);
-        JwtTokens jwtTokens = issueTokens(savedUser);
+        SocialLoginResponse response = login(SocialProvider.APPLE, request.getId_token());
         return AppleLoginResponse.builder()
-                .isRegistered(false)
-                .userId(savedUser.getId())
+                .isRegistered(response.getIsRegistered())
+                .userId(response.getUserId())
+                .tokens(response.getTokens())
+                .build();
+    }
+
+    @Transactional
+    public SocialLoginResponse socialLogin(SocialProvider provider, SocialLoginRequest request) {
+        return login(provider, request.getToken());
+    }
+
+    private SocialLoginResponse login(SocialProvider provider, String token) {
+        SocialUserProfile profile = resolveSocialUser(provider, token);
+        User user = resolveUser(profile);
+        JwtTokens jwtTokens = issueTokens(user);
+        return SocialLoginResponse.builder()
+                .isRegistered(isRegisterNickname(user))
+                .userId(user.getId())
                 .tokens(jwtTokens)
                 .build();
+    }
+
+    private SocialUserProfile resolveSocialUser(SocialProvider provider, String token) {
+        if (token == null || token.isBlank()) {
+            throw new BaseException(ErrorCode.INVALID_SOCIAL_TOKEN);
+        }
+        SocialUserProfile profile = socialOAuthUserProviders.stream()
+                .filter(candidate -> candidate.supports(provider))
+                .findFirst()
+                .orElseThrow(() -> new BaseException(ErrorCode.UNSUPPORTED_SOCIAL_PROVIDER))
+                .getUser(token);
+        if (profile.provider() != provider) {
+            throw new BaseException(ErrorCode.INVALID_SOCIAL_TOKEN);
+        }
+        return profile;
+    }
+
+    private User resolveUser(SocialUserProfile profile) {
+        validateProviderUserId(profile);
+        Optional<SocialAccount> existingAccount =
+                socialAccountRepository.findByProviderAndProviderUserId(profile.provider(), profile.providerUserId());
+        if (existingAccount.isPresent()) {
+            User user = existingAccount.get().getUser();
+            if (user.isDeleted()) {
+                throw new UserException(ErrorCode.NOT_EXIST_USER);
+            }
+            return user;
+        }
+
+        validateEmailForNewAccount(profile);
+        if (hasEmail(profile)) {
+            Optional<User> existingUser = userRepository.findByEmail(profile.email());
+            if (existingUser.isPresent() && existingUser.get().isDeleted()) {
+                throw new UserException(ErrorCode.NOT_EXIST_USER);
+            }
+            if (existingUser.isPresent()) {
+                throw new BaseException(ErrorCode.SOCIAL_ACCOUNT_LINK_REQUIRED);
+            }
+        }
+        User user = createSocialUser(profile);
+        if (socialAccountRepository.existsByUserAndProvider(user, profile.provider())) {
+            throw new BaseException(ErrorCode.SOCIAL_ACCOUNT_CONFLICT);
+        }
+        connectSocialAccount(user, profile);
+        return user;
+    }
+
+    private User createSocialUser(SocialUserProfile profile) {
+        try {
+            return userRepository.saveAndFlush(new User(profile.email()));
+        } catch (DataIntegrityViolationException e) {
+            throw new BaseException(ErrorCode.SOCIAL_ACCOUNT_LINK_REQUIRED);
+        }
+    }
+
+    private void connectSocialAccount(User user, SocialUserProfile profile) {
+        try {
+            socialAccountRepository.saveAndFlush(
+                    SocialAccount.connect(user, profile.provider(), profile.providerUserId(), profile.email())
+            );
+        } catch (DataIntegrityViolationException e) {
+            throw new BaseException(ErrorCode.SOCIAL_ACCOUNT_CONFLICT);
+        }
+    }
+
+    private void validateProviderUserId(SocialUserProfile profile) {
+        if (profile.providerUserId() == null || profile.providerUserId().isBlank()) {
+            throw new BaseException(ErrorCode.INVALID_SOCIAL_TOKEN);
+        }
+    }
+
+    private void validateEmailForNewAccount(SocialUserProfile profile) {
+        if (!hasEmail(profile)) {
+            if (profile.provider() == SocialProvider.KAKAO) {
+                return;
+            }
+            throw new BaseException(ErrorCode.SOCIAL_EMAIL_REQUIRED);
+        }
+        if (!Boolean.TRUE.equals(profile.emailVerified())) {
+            throw new BaseException(ErrorCode.SOCIAL_EMAIL_NOT_VERIFIED);
+        }
+    }
+
+    private boolean hasEmail(SocialUserProfile profile) {
+        return profile.email() != null && !profile.email().isBlank();
     }
 
     /**
@@ -101,7 +183,7 @@ public class AuthService {
      */
     private JwtTokens issueTokens(User user) {
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getEmail(), resolveTokenRole(user));
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
         user.updateRefreshToken(refreshToken);
         return JwtTokens.builder()
                 .accessToken(accessToken)
@@ -112,12 +194,12 @@ public class AuthService {
 
     @Transactional
     public JwtTokens reissue(String refreshToken) {
-        String email = jwtTokenProvider.getEmailByRefresh(refreshToken);
-        User findUser = userRepository.findActiveByEmail(email)
+        Long userId = jwtTokenProvider.getUserIdByRefresh(refreshToken);
+        User findUser = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
         validateStoredRefreshToken(findUser, refreshToken);
 
-        JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), email, resolveTokenRole(findUser));
+        JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), findUser.getEmail(), resolveTokenRole(findUser));
         findUser.updateRefreshToken(jwtTokens.getRefreshToken());
         return jwtTokens;
     }

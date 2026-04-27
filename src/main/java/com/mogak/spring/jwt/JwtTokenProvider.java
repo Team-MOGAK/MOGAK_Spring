@@ -35,22 +35,24 @@ public class JwtTokenProvider {
 
     public String createAccessToken(Long userId, String email, String role) {
         java.time.Instant now = java.time.Instant.now();
-        return jwtTokenCodec.encode(org.springframework.security.oauth2.jwt.JwtClaimsSet.builder()
+        org.springframework.security.oauth2.jwt.JwtClaimsSet.Builder claimsBuilder = org.springframework.security.oauth2.jwt.JwtClaimsSet.builder()
                 .claim("id", userId)
-                .claim("email", email)
                 .claim("role", role)
                 .claim("token_type", ACCESS_TOKEN_TYPE)
-                .subject(email)
+                .subject(String.valueOf(userId))
                 .issuedAt(now)
-                .expiresAt(now.plusMillis(accessTokenValidTime))
-                .build());
+                .expiresAt(now.plusMillis(accessTokenValidTime));
+        if (email != null && !email.isBlank()) {
+            claimsBuilder.claim("email", email);
+        }
+        return jwtTokenCodec.encode(claimsBuilder.build());
     }
 
-    public String createRefreshToken(String email) {
+    public String createRefreshToken(Long userId) {
         java.time.Instant now = java.time.Instant.now();
         return jwtTokenCodec.encode(org.springframework.security.oauth2.jwt.JwtClaimsSet.builder()
                 .claim("token_type", REFRESH_TOKEN_TYPE)
-                .subject(email)
+                .subject(String.valueOf(userId))
                 .issuedAt(now)
                 .expiresAt(now.plusMillis(refreshTokenValidTime))
                 .build());
@@ -93,7 +95,7 @@ public class JwtTokenProvider {
 
         String localRefreshToken = refreshToken;
         if (isRefreshable(refreshToken)) { //만료되었으면 재발급
-            localRefreshToken = createRefreshToken(email);
+            localRefreshToken = createRefreshToken(userId);
         }
         return JwtTokens.builder()
                 .accessToken(accessToken)
@@ -101,11 +103,13 @@ public class JwtTokenProvider {
                 .build();
     }
 
-    /**
-     * refresh 토큰 이메일 추출
-     */
-    public String getEmailByRefresh(String refreshToken) {
-        return parseRefreshToken(refreshToken).getSubject();
+    public Long getUserIdByRefresh(String refreshToken) {
+        String subject = parseRefreshToken(refreshToken).getSubject();
+        try {
+            return Long.parseLong(subject);
+        } catch (NumberFormatException exception) {
+            throw new AuthException(ErrorCode.WRONG_TOKEN);
+        }
     }
 
     private Jwt parseRefreshToken(String refreshToken) {

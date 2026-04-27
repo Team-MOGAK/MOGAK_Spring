@@ -48,7 +48,13 @@ jwt:
 oauth:
   apple:
     iss: https://appleid.apple.com
-    client-id: test-client-id
+    client-ids: test-client-id,test-web-client-id
+  google:
+    iss: https://accounts.google.com
+    client-ids: test-google-client-id,test-google-web-client-id
+    jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
+  kakao:
+    user-info-uri: https://kapi.kakao.com
 server:
   domain: http://localhost
 

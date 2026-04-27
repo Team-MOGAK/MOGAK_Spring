@@ -54,11 +54,11 @@ public final class JwtAuthenticationProvider implements AuthenticationProvider {
         String role = normalize(jwt.getClaimAsString(ROLE_CLAIM));
         Long userId = extractUserId(jwt.getClaim(ID_CLAIM));
 
-        if (email == null || subject == null || role == null || userId == null) {
+        if (subject == null || role == null || userId == null) {
             throw new JwtAuthenticationException(ErrorCode.WRONG_TOKEN, "Required access token claims are missing");
         }
-        if (!email.equals(subject)) {
-            throw new JwtAuthenticationException(ErrorCode.WRONG_TOKEN, "Token subject does not match email claim");
+        if (!String.valueOf(userId).equals(subject)) {
+            throw new JwtAuthenticationException(ErrorCode.WRONG_TOKEN, "Token subject does not match id claim");
         }
 
         AuthenticatedUser principal = new AuthenticatedUser(userId, email, role);

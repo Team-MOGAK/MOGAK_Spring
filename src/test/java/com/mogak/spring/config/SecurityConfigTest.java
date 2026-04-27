@@ -1,6 +1,7 @@
 package com.mogak.spring.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mogak.spring.domain.user.SocialProvider;
 import com.mogak.spring.exception.GlobalExceptionHandler;
 import com.mogak.spring.jwt.JwtAuthenticationProvider;
 import com.mogak.spring.jwt.JwtTokenCodec;
@@ -14,6 +15,8 @@ import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.web.controller.AuthController;
 import com.mogak.spring.web.controller.UserController;
+import com.mogak.spring.web.dto.authdto.SocialLoginRequest;
+import com.mogak.spring.web.dto.authdto.SocialLoginResponse;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +37,9 @@ import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -121,6 +127,32 @@ class SecurityConfigTest {
     }
 
     @Test
+    @DisplayName("공급자별 소셜 로그인 API는 토큰 없이 호출할 수 있다")
+    void socialLoginIsPublic() throws Exception {
+        when(authService.socialLogin(any(), any(SocialLoginRequest.class)))
+                .thenReturn(SocialLoginResponse.builder()
+                        .isRegistered(false)
+                        .userId(10L)
+                        .tokens(JwtTokens.builder()
+                                .accessToken("access-token")
+                                .refreshToken("refresh-token")
+                                .build())
+                        .build());
+
+        mockMvc.perform(post("/api/auth/google/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"google-id-token\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.userId").value(10L))
+                .andExpect(jsonPath("$.result.tokens.accessToken").value("access-token"));
+
+        verify(authService).socialLogin(
+                eq(SocialProvider.GOOGLE),
+                argThat(request -> "google-id-token".equals(request.getToken()))
+        );
+    }
+
+    @Test
     @DisplayName("ROLE_USER access token은 회원 등록 API에 접근할 수 없다")
     void joinRejectsUserRole() throws Exception {
         mockMvc.perform(joinRequest(SecurityAuthority.USER.getAuthority())
@@ -178,7 +210,7 @@ class SecurityConfigTest {
                 .claim("email", "user@test.com")
                 .claim("role", role)
                 .claim("token_type", JwtTokenProvider.ACCESS_TOKEN_TYPE)
-                .subject("user@test.com")
+                .subject("10")
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(60))
                 .build());
@@ -191,7 +223,7 @@ class SecurityConfigTest {
                 .claim("email", "user@test.com")
                 .claim("role", SecurityAuthority.USER.getAuthority())
                 .claim("token_type", JwtTokenProvider.ACCESS_TOKEN_TYPE)
-                .subject("user@test.com")
+                .subject("10")
                 .issuedAt(now.minusSeconds(120))
                 .expiresAt(now.minusSeconds(60))
                 .build());

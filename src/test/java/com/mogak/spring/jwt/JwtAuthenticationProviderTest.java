@@ -38,6 +38,26 @@ class JwtAuthenticationProviderTest {
     }
 
     @Test
+    @DisplayName("email claim이 없어도 userId subject access token은 인증한다")
+    void authenticatesAccessTokenWithoutEmail() {
+        Instant now = Instant.now();
+        String token = jwtTokenCodec.encode(JwtClaimsSet.builder()
+                .claim("id", 10L)
+                .claim("role", SecurityAuthority.PENDING.getAuthority())
+                .claim("token_type", JwtTokenProvider.ACCESS_TOKEN_TYPE)
+                .subject("10")
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(60))
+                .build());
+
+        Authentication authentication = jwtAuthenticationProvider.authenticate(new JwtAuthenticationToken(token));
+
+        AuthenticatedUser principal = (AuthenticatedUser) authentication.getPrincipal();
+        assertThat(principal.getUserId()).isEqualTo(10L);
+        assertThat(principal.getEmail()).isNull();
+    }
+
+    @Test
     @DisplayName("token_type이 access가 아니면 인증을 거부한다")
     void rejectsNonAccessTokenType() {
         String token = encodeToken(JwtTokenProvider.REFRESH_TOKEN_TYPE, SecurityAuthority.USER.getAuthority());
@@ -56,7 +76,7 @@ class JwtAuthenticationProviderTest {
                 .claim("id", 10L)
                 .claim("email", "pending@test.com")
                 .claim("token_type", JwtTokenProvider.ACCESS_TOKEN_TYPE)
-                .subject("pending@test.com")
+                .subject("10")
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(60))
                 .build());
@@ -76,7 +96,7 @@ class JwtAuthenticationProviderTest {
                 .claim("email", "pending@test.com")
                 .claim("role", SecurityAuthority.PENDING.getAuthority())
                 .claim("token_type", JwtTokenProvider.ACCESS_TOKEN_TYPE)
-                .subject("pending@test.com")
+                .subject("10")
                 .issuedAt(now.minusSeconds(120))
                 .expiresAt(now.minusSeconds(60))
                 .build());
@@ -103,7 +123,7 @@ class JwtAuthenticationProviderTest {
                 .claim("email", "pending@test.com")
                 .claim("role", role)
                 .claim("token_type", tokenType)
-                .subject("pending@test.com")
+                .subject("10")
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(60))
                 .build());

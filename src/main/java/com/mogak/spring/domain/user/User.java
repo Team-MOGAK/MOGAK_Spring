@@ -30,6 +30,7 @@ public class User extends SoftDeletableEntity {
     private Address address;
     private String profileImgUrl;
     private String profileImgName;
+    @Column(unique = true)
     private String email;
     @Column(length = 512)
     private String refreshToken;

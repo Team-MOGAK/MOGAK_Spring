@@ -65,7 +65,13 @@ feign:
 oauth:
   apple:
     iss: https://appleid.apple.com
-    client-id: ${APPLE_CLIENT_ID:test-client-id}
+    client-ids: ${APPLE_CLIENT_IDS:${APPLE_CLIENT_ID:test-client-id}}
+  google:
+    iss: https://accounts.google.com
+    client-ids: ${GOOGLE_CLIENT_IDS:${GOOGLE_CLIENT_ID:test-google-client-id}}
+    jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
+  kakao:
+    user-info-uri: https://kapi.kakao.com
 #    nonce: ${APPLE_NONCE}
 
 feature:
