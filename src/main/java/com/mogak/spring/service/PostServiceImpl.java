@@ -20,6 +20,8 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
+import com.mogak.spring.web.dto.postdto.PostResponseDto.GetAllNetworkDto;
+import com.mogak.spring.web.dto.postdto.PostResponseDto.GetPostDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkPostDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -32,8 +34,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -114,11 +118,12 @@ public class PostServiceImpl implements PostService {
 
     //회고록 조회 - 무한 스크롤
     @Override
-    public Slice<Post> getAllPosts(Long userId, int page, Long mogakId, int size) {
+    public Slice<GetPostDto> getAllPosts(Long userId, int page, Long mogakId, int size) {
         getOwnedMogak(userId, mogakId);
         Pageable pageable = PageRequest.of(page, size);
 
-        return postRepository.findAllPosts(mogakId, pageable);
+        return postRepository.findAllPosts(mogakId, pageable)
+                .map(PostConverter::toGetPostDto);
     }
 
     //회고록 상세 조회 + 댓글, 이미지 같이 보이게
@@ -169,31 +174,30 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Pageable pageable = PageRequest.of(cursor, size);
         List<Post> posts = postRepository.findPacemakerPostsByUser(user, pageable);
-        //postImg 중 썸네일 이미지는 제외
+        List<Long> postIds = extractPostIds(posts);
+        Map<Long, List<PostImg>> imagesByPostId = groupImagesByPostId(postIds);
+        Map<Long, List<PostComment>> commentsByPostId = groupCommentsByPostId(postIds);
+
         return posts.stream()
                 .map(p -> {
-                    List<String> imgUrls = postImgRepository.findAllByPost(p).stream()
-                            .filter(img -> !Objects.equals(img.getImgUrl(), p.getPostThumbnailUrl()))
-                            .map(PostImg::getImgUrl)
-                            .collect(Collectors.toList());
-                    NetworkPostDto dto = NetworkPostDto.builder()
+                    List<String> imgUrls = findNotThumbnailImgUrls(p, imagesByPostId);
+                    return NetworkPostDto.builder()
                             .user(UserConverter.toUserDto(p.getUser()))
                             .contents(p.getContents())
                             .imgUrls(imgUrls)
-                            .comments(postCommentRepository.findActiveAllByPost(p).stream()
+                            .comments(commentsByPostId.getOrDefault(p.getId(), Collections.emptyList()).stream()
                                     .map(CommentConverter::toNetworkCommentDto)
                                     .collect(Collectors.toList()))
                             .likeCnt(p.getLikeCnt())
                             .viewCnt(p.getViewCnt())
                             .build();
-                    return dto;
                 })
                 .collect(Collectors.toList());
     }
 
     //전체 네트워킹 조회 - 이미지 썸네일 제외 반환
     @Override
-    public Slice<Post> getNetworkPosts(Long userId, int page, int size, String sort, String address /*List<String> categoryList,*/){
+    public Slice<GetAllNetworkDto> getNetworkPosts(Long userId, int page, int size, String sort, String address /*List<String> categoryList,*/){
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if(address == null){
@@ -201,7 +205,45 @@ public class PostServiceImpl implements PostService {
         }
         Pageable pageable = PageRequest.of(page, size);
         Slice<Post> posts = postRepository.findNetworkPosts(address, sort, pageable);
-        return posts;
+        Map<Long, List<PostImg>> imagesByPostId = groupImagesByPostId(extractPostIds(posts.getContent()));
+        return posts.map(post -> GetAllNetworkDto.builder()
+                .postId(post.getId())
+                .userName(post.getUser().getNickname())
+                .userJob(post.getUser().getJob().getName())
+                .contents(post.getContents())
+                .imgUrls(findNotThumbnailImgUrls(post, imagesByPostId))
+                .commentCnt(post.getCommentCnt())
+                .likeCnt(post.getLikeCnt())
+                .build());
+    }
+
+    private List<Long> extractPostIds(List<Post> posts) {
+        return posts.stream()
+                .map(Post::getId)
+                .collect(Collectors.toList());
+    }
+
+    private Map<Long, List<PostImg>> groupImagesByPostId(List<Long> postIds) {
+        if (postIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return postImgRepository.findAllByPostIdIn(postIds).stream()
+                .collect(Collectors.groupingBy(postImg -> postImg.getPost().getId()));
+    }
+
+    private Map<Long, List<PostComment>> groupCommentsByPostId(List<Long> postIds) {
+        if (postIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return postCommentRepository.findActiveAllByPostIdInWithUser(postIds).stream()
+                .collect(Collectors.groupingBy(comment -> comment.getPost().getId()));
+    }
+
+    private List<String> findNotThumbnailImgUrls(Post post, Map<Long, List<PostImg>> imagesByPostId) {
+        return imagesByPostId.getOrDefault(post.getId(), Collections.emptyList()).stream()
+                .filter(img -> !Objects.equals(img.getImgUrl(), post.getPostThumbnailUrl()))
+                .map(PostImg::getImgUrl)
+                .collect(Collectors.toList());
     }
 
     /*

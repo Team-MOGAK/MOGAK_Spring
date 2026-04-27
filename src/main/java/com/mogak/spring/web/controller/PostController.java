@@ -89,9 +89,8 @@ public class PostController {
                                                                        @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                        @RequestParam(value = "page", defaultValue = "0") int page,
                                                                        @RequestParam(value = "size") int size) {
-        Slice<Post> posts = postService.getAllPosts(authenticatedUser.getUserId(), page, mogakId, size);
-        //다음페이지 존재 여부 전달 필요
-        return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostPagingDto(posts)));
+        Slice<GetPostDto> posts = postService.getAllPosts(authenticatedUser.getUserId(), page, mogakId, size);
+        return ResponseEntity.ok(new BaseResponse<>(posts));
     }
 
     @GetMapping("/api/jogaks/{jogakId}/posts")

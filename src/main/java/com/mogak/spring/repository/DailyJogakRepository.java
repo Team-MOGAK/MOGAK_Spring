@@ -28,7 +28,7 @@ public interface DailyJogakRepository extends JpaRepository<DailyJogak, Long> {
     }
 
     @Query("SELECT j from DailyJogak j " +
-            "JOIN FETCH j.mogak jm JOIN FETCH jm.user u " +
+            "JOIN FETCH j.mogak jm JOIN FETCH jm.user u JOIN FETCH j.jogak jogak " +
             "WHERE jm.user = :user and j.targetDate = :targetDate " +
             "AND j.deletedAt is null AND jm.deletedAt is null AND u.deletedAt is null")
     List<DailyJogak> findDailyJogaks(@Param(value = "user") User user,

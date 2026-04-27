@@ -30,6 +30,14 @@ public interface JogakRepository extends JpaRepository<Jogak, Long> {
     @Query("select j from Jogak j where j.mogak = :mogak and j.deletedAt is null and j.mogak.deletedAt is null")
     List<Jogak> findAllByMogak(@Param("mogak") Mogak mogak);
 
+    @Query("select distinct j from Jogak j " +
+            "join fetch j.mogak m " +
+            "join fetch j.category c " +
+            "left join fetch j.jogakPeriods jp " +
+            "left join fetch jp.period " +
+            "where j.mogak = :mogak and j.deletedAt is null and m.deletedAt is null")
+    List<Jogak> findAllByMogakWithFetchGraph(@Param("mogak") Mogak mogak);
+
     @Query("select count(j) from Jogak j " +
             "where j.mogak = :mogak and j.deletedAt is null and j.mogak.deletedAt is null " +
             "and (j.endAt is null or j.endAt > :today)")

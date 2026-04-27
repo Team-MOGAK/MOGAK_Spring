@@ -15,6 +15,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
+import jakarta.persistence.PersistenceUnitUtil;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -42,8 +43,12 @@ class MogakRepositoryTest {
 
         List<Mogak> result = mogakRepository.findAllByModaratId(firstModarat.getId());
 
+        PersistenceUnitUtil util = entityManager.getEntityManager()
+                .getEntityManagerFactory()
+                .getPersistenceUnitUtil();
         assertThat(result).extracting(Mogak::getTitle).containsExactly("정보처리기사");
         assertThat(result).doesNotContain(second);
+        assertThat(util.isLoaded(result.get(0), "bigCategory")).isTrue();
         assertThat(first.getId()).isNotNull();
     }
 
