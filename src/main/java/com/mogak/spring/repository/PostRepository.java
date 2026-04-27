@@ -19,7 +19,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     //slice 사용해 별도의 카운트 쿼리를 호출하지 않고 원래 갯수보다 1개 더 불러와 다음에 조회할 회고록 있는지 확인할 수 있음
     //fetch join시 where 절에 join의 대상에 대한 조건 써도 될까?
     @Query("select p from Post p " +
-            "join p.dailyJogak dj join dj.jogak j join j.mogak m join p.user u " +
+            "join fetch p.dailyJogak dj join fetch dj.jogak j join fetch j.mogak m join p.user u " +
             "where m.id = :mogakId and p.deletedAt is null and dj.deletedAt is null " +
             "and j.deletedAt is null and m.deletedAt is null and u.deletedAt is null " +
             "order by p.id desc")
@@ -59,7 +59,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findActiveAllByUserId(@Param("userId") Long userId);
 
     @Query( "SELECT p " +
-            "FROM Post p JOIN Follow f ON p.user = f.toUser JOIN p.user u " +
+            "FROM Post p JOIN Follow f ON p.user = f.toUser JOIN FETCH p.user u JOIN FETCH u.job " +
             "JOIN p.dailyJogak dj JOIN dj.jogak j JOIN j.mogak m " +
             "WHERE f.fromUser = :user and p.deletedAt is null and u.deletedAt is null " +
             "and f.fromUser.deletedAt is null and dj.deletedAt is null " +
@@ -74,7 +74,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             + "CASE WHEN :sort = 'likeCnt' THEN p.likeCnt END DESC")
 
      */
-    @Query("SELECT p FROM Post p JOIN FETCH p.user u " +
+    @Query("SELECT p FROM Post p JOIN FETCH p.user u JOIN FETCH u.job " +
             "JOIN p.dailyJogak dj JOIN dj.jogak j JOIN j.mogak m " +
             "WHERE u.address.name = :address AND p.deletedAt is null AND u.deletedAt is null " +
             "AND dj.deletedAt is null AND j.deletedAt is null AND m.deletedAt is null ORDER BY "

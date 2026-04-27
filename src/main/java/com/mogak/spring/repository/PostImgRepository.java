@@ -7,11 +7,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface PostImgRepository extends JpaRepository<PostImg, Long> {
 
     List<PostImg> findAllByPost(Post post);
+    List<PostImg> findAllByPostIdIn(Collection<Long> postIds);
     void deleteAllByPost(Post post);
 
     @Query("select pi from PostImg pi where pi.post.user.id = :userId")

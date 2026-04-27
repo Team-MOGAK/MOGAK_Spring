@@ -17,6 +17,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
+import jakarta.persistence.PersistenceUnitUtil;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -58,6 +59,10 @@ class DailyJogakRepositoryTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle()).isEqualTo("문제풀이");
+        PersistenceUnitUtil util = entityManager.getEntityManager()
+                .getEntityManagerFactory()
+                .getPersistenceUnitUtil();
+        assertThat(util.isLoaded(result.get(0), "jogak")).isTrue();
     }
 
     @Test

@@ -239,7 +239,7 @@ public class MogakServiceImpl implements MogakService {
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Mogak mogak = getOwnedMogak(mogakId, userId);
         List<DailyJogak> dailyJogak = dailyJogakRepository.findDailyJogaks(user, day);
-        return jogakRepository.findAllByMogak(mogak).stream()
+        return jogakRepository.findAllByMogakWithFetchGraph(mogak).stream()
                 .filter(jogak -> jogak.getEndAt() == null || jogak.getEndAt().isAfter(day.minusDays(1)))
                 .map(jogak -> JogakConverter.toGetJogakResponseDto(jogak, findCorrespondingDailyJogak(jogak, dailyJogak)))
                 .collect(Collectors.toList());

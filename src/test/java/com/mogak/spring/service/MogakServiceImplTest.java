@@ -247,7 +247,7 @@ class MogakServiceImplTest {
         TestFixtureFactory.attachJogaks(mogak, List.of(active, expired));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
         when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
-        when(jogakRepository.findAllByMogak(mogak)).thenReturn(List.of(active));
+        when(jogakRepository.findAllByMogakWithFetchGraph(mogak)).thenReturn(List.of(active));
         when(dailyJogakRepository.findDailyJogaks(user, day)).thenReturn(List.of(dailyJogak));
 
         List<JogakResponseDto.GetJogakDto> result = mogakService.getJogaks(1L, 2L, day);
@@ -255,5 +255,6 @@ class MogakServiceImplTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getJogakId()).isEqualTo(10L);
         assertThat(result.get(0).getIsAlreadyAdded()).isTrue();
+        verify(jogakRepository).findAllByMogakWithFetchGraph(mogak);
     }
 }
