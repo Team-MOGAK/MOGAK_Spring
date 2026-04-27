@@ -100,7 +100,7 @@ class UserServiceImplTest {
         when(addressRepository.findAddressByName("서울특별시")).thenReturn(Optional.of(address));
         when(userRepository.findActiveById(10L)).thenReturn(Optional.of(user));
         when(jwtTokenProvider.createAccessToken(10L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
-        when(jwtTokenProvider.createRefreshToken("user@test.com")).thenReturn("refresh-token");
+        when(jwtTokenProvider.createRefreshToken(10L)).thenReturn("refresh-token");
 
         UserResponseDto.CreateDto result = userService.create(10L, request, uploadImageDto);
 
