@@ -13,6 +13,7 @@
 8. `.codex/skills/README.md`
 
 ## 문서 분류
+- `docs/api/`: 공개 API 계약 문서
 - `docs/operations/policies/`: 공개 운영 정책 정본
 - `.codex/rules/`: Codex 실행 시 바로 참고할 구현 규칙
 - `.codex/workflows/`: 작업 유형별 단계형 흐름
@@ -22,6 +23,7 @@
 
 ## 빠른 링크
 - [루트 가이드](../AGENTS.md)
+- [소셜 로그인 API](api/social-login.md)
 - [Claude Compatibility](../CLAUDE.md)
 - [프로젝트 규약](operations/policies/PROJECT_CONVENTIONS.md)
 - [스택 마이그레이션 가이드](operations/policies/STACK_MIGRATION_GUIDE.md)
