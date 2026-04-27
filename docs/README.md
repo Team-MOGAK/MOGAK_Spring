@@ -26,6 +26,7 @@
 - [프로젝트 규약](operations/policies/PROJECT_CONVENTIONS.md)
 - [스택 마이그레이션 가이드](operations/policies/STACK_MIGRATION_GUIDE.md)
 - [ERD 및 삭제 라이프사이클](operations/policies/ERD_DECISIONS_AND_LIFECYCLE.md)
+- [조회 전략 및 N+1 가드레일](operations/policies/QUERY_STRATEGY_AND_N_PLUS_ONE.md)
 - [외부 리뷰 워크플로우](operations/policies/EXTERNAL_REVIEW_WORKFLOW.md)
 - [도메인 문서 레지스트리](operations/policies/DOMAIN_DOCUMENT_REGISTRY.md)
 - [가이던스 스키마](operations/policies/guidance-schema.md)

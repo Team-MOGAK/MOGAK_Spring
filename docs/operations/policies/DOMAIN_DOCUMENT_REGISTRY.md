@@ -20,7 +20,7 @@
 | follow-networking | `PROJECT_CONVENTIONS.md`, `.codex/rules/spring-core.md`, `.codex/rules/testing.md` | yes |
 | scheduler | `PROJECT_CONVENTIONS.md`, `.codex/rules/testing.md`, `.codex/workflows/full-delivery.md` | yes |
 | storage | `PROJECT_CONVENTIONS.md`, `.codex/rules/persistence.md`, `.codex/workflows/full-delivery.md` | yes |
-| persistence | `PROJECT_CONVENTIONS.md`, `.codex/rules/persistence.md`, `EXTERNAL_REVIEW_WORKFLOW.md` | no |
+| persistence | `PROJECT_CONVENTIONS.md`, `QUERY_STRATEGY_AND_N_PLUS_ONE.md`, `.codex/rules/persistence.md`, `EXTERNAL_REVIEW_WORKFLOW.md` | no |
 | data-lifecycle | `PROJECT_CONVENTIONS.md`, `ERD_DECISIONS_AND_LIFECYCLE.md`, `EXTERNAL_REVIEW_WORKFLOW.md` | yes |
 | platform-common | `PROJECT_CONVENTIONS.md`, `STACK_MIGRATION_GUIDE.md`, `.codex/rules/spring-core.md`, `.codex/workflows/refactor-guarded.md` | no |
 
