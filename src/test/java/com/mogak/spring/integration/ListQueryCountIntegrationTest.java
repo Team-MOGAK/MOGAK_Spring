@@ -32,12 +32,13 @@ import com.mogak.spring.service.MogakService;
 import com.mogak.spring.service.PostCommentService;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.service.StorageService;
+import com.mogak.spring.service.result.mogak.GetJogakResult;
+import com.mogak.spring.service.result.mogak.GetMogakListResult;
+import com.mogak.spring.service.result.mogak.GetMogakResult;
+import com.mogak.spring.service.result.post.NetworkFeedPostResult;
+import com.mogak.spring.service.result.post.PacemakerPostResult;
+import com.mogak.spring.service.result.post.PostSummaryResult;
 import com.mogak.spring.support.TestFixtureFactory;
-import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
-import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.GetAllNetworkDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.GetPostDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkPostDto;
 import jakarta.persistence.EntityManager;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
@@ -112,18 +113,18 @@ class ListQueryCountIntegrationTest {
         savePost(writer, mogak, "three", "thumb-three");
         flushAndClear();
 
-        QueryResult<Slice<GetAllNetworkDto>> singlePostResult = countQueries(
+        QueryResult<Slice<NetworkFeedPostResult>> singlePostResult = countQueries(
                 () -> postService.getNetworkPosts(viewer.getId(), 0, 1, "createdAt", address.getName())
         );
-        QueryResult<Slice<GetAllNetworkDto>> threePostResult = countQueries(
+        QueryResult<Slice<NetworkFeedPostResult>> threePostResult = countQueries(
                 () -> postService.getNetworkPosts(viewer.getId(), 0, 3, "createdAt", address.getName())
         );
 
         assertThat(singlePostResult.value().getContent())
-                .extracting(GetAllNetworkDto::contents)
+                .extracting(NetworkFeedPostResult::contents)
                 .containsExactly("three");
         assertThat(threePostResult.value().getContent())
-                .extracting(GetAllNetworkDto::contents)
+                .extracting(NetworkFeedPostResult::contents)
                 .containsExactly("three", "two", "one");
         assertThat(threePostResult.value().getContent())
                 .allSatisfy(post -> {
@@ -149,16 +150,16 @@ class ListQueryCountIntegrationTest {
         savePost(writer, mogak, "three", "thumb-three");
         flushAndClear();
 
-        QueryResult<List<NetworkPostDto>> singlePostResult = countQueries(
+        QueryResult<List<PacemakerPostResult>> singlePostResult = countQueries(
                 () -> postService.getPacemakerPosts(viewer.getId(), 0, 1)
         );
-        QueryResult<List<NetworkPostDto>> threePostResult = countQueries(
+        QueryResult<List<PacemakerPostResult>> threePostResult = countQueries(
                 () -> postService.getPacemakerPosts(viewer.getId(), 0, 3)
         );
 
         assertThat(singlePostResult.value()).hasSize(1);
         assertThat(threePostResult.value())
-                .extracting(NetworkPostDto::contents)
+                .extracting(PacemakerPostResult::contents)
                 .containsExactly("three", "two", "one");
         assertThat(threePostResult.value())
                 .allSatisfy(post -> {
@@ -180,18 +181,18 @@ class ListQueryCountIntegrationTest {
         savePost(writer, mogak, "three", "thumb-three");
         flushAndClear();
 
-        QueryResult<Slice<GetPostDto>> singlePostResult = countQueries(
+        QueryResult<Slice<PostSummaryResult>> singlePostResult = countQueries(
                 () -> postService.getAllPosts(writer.getId(), 0, mogak.getId(), 1)
         );
-        QueryResult<Slice<GetPostDto>> threePostResult = countQueries(
+        QueryResult<Slice<PostSummaryResult>> threePostResult = countQueries(
                 () -> postService.getAllPosts(writer.getId(), 0, mogak.getId(), 3)
         );
 
         assertThat(singlePostResult.value().getContent())
-                .extracting(GetPostDto::contents)
+                .extracting(PostSummaryResult::contents)
                 .containsExactly("three");
         assertThat(threePostResult.value().getContent())
-                .extracting(GetPostDto::contents)
+                .extracting(PostSummaryResult::contents)
                 .containsExactly("three", "two", "one");
         assertThat(threePostResult.value().getContent())
                 .allSatisfy(post -> {
@@ -213,18 +214,18 @@ class ListQueryCountIntegrationTest {
         mogakRepository.save(TestFixtureFactory.mogak(null, writer, largeModarat, category, "large-three", "#333333"));
         flushAndClear();
 
-        QueryResult<MogakResponseDto.GetMogakListDto> singleMogakResult = countQueries(
+        QueryResult<GetMogakListResult> singleMogakResult = countQueries(
                 () -> mogakService.getMogakDtoList(writer.getId(), smallModarat.getId())
         );
-        QueryResult<MogakResponseDto.GetMogakListDto> threeMogakResult = countQueries(
+        QueryResult<GetMogakListResult> threeMogakResult = countQueries(
                 () -> mogakService.getMogakDtoList(writer.getId(), largeModarat.getId())
         );
 
         assertThat(singleMogakResult.value().mogaks())
-                .extracting(MogakResponseDto.GetMogakDto::title)
+                .extracting(GetMogakResult::title)
                 .containsExactly("small-one");
         assertThat(threeMogakResult.value().mogaks())
-                .extracting(MogakResponseDto.GetMogakDto::title)
+                .extracting(GetMogakResult::title)
                 .containsExactlyInAnyOrder("large-one", "large-two", "large-three");
         assertThat(threeMogakResult.value().mogaks())
                 .allSatisfy(mogak -> assertThat(mogak.bigCategory().getName()).isEqualTo(category.getName()));
@@ -243,18 +244,18 @@ class ListQueryCountIntegrationTest {
         saveJogakWithPeriod(user, largeMogak, "large-three", "WEDNESDAY");
         flushAndClear();
 
-        QueryResult<List<JogakResponseDto.GetJogakDto>> singleJogakResult = countQueries(
+        QueryResult<List<GetJogakResult>> singleJogakResult = countQueries(
                 () -> mogakService.getJogaks(user.getId(), smallMogak.getId(), today)
         );
-        QueryResult<List<JogakResponseDto.GetJogakDto>> threeJogakResult = countQueries(
+        QueryResult<List<GetJogakResult>> threeJogakResult = countQueries(
                 () -> mogakService.getJogaks(user.getId(), largeMogak.getId(), today)
         );
 
         assertThat(singleJogakResult.value())
-                .extracting(JogakResponseDto.GetJogakDto::title)
+                .extracting(GetJogakResult::title)
                 .containsExactly("small-one");
         assertThat(threeJogakResult.value())
-                .extracting(JogakResponseDto.GetJogakDto::title)
+                .extracting(GetJogakResult::title)
                 .containsExactlyInAnyOrder("large-one", "large-two", "large-three");
         assertThat(threeJogakResult.value())
                 .allSatisfy(jogak -> {

@@ -1,9 +1,9 @@
 package com.mogak.spring.service;
 
-import java.util.List;
+import com.mogak.spring.service.result.follow.FollowCountResult;
+import com.mogak.spring.service.result.follow.FollowUserResult;
 
-import static com.mogak.spring.web.dto.userdto.FollowRequestDto.CountDto;
-import static com.mogak.spring.web.dto.userdto.UserResponseDto.UserDto;
+import java.util.List;
 
 public interface FollowService {
 
@@ -11,9 +11,9 @@ public interface FollowService {
 
     void unfollow(Long userId, String nickname);
 
-    CountDto getFollowCount(String nickname);
+    FollowCountResult getFollowCount(String nickname);
 
-    List<UserDto> getMotoList(String nickname);
+    List<FollowUserResult> getMotoList(String nickname);
 
-    List<UserDto> getMentorList(String nickname);
+    List<FollowUserResult> getMentorList(String nickname);
 }

@@ -7,9 +7,9 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
+import com.mogak.spring.service.result.post.NetworkFeedPostResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.GetAllNetworkDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -133,7 +133,7 @@ class NetworkControllerTest {
     @DisplayName("네트워크 게시글 조회는 기존 Slice DTO JSON 계약을 유지한다")
     void getAllPostsReturnsSliceDtoContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "user@test.com", "ROLE_USER");
-        GetAllNetworkDto post = GetAllNetworkDto.of(
+        NetworkFeedPostResult post = NetworkFeedPostResult.of(
                 20L,
                 "writer",
                 "개발/데이터",
@@ -142,7 +142,7 @@ class NetworkControllerTest {
                 2,
                 5
         );
-        Slice<GetAllNetworkDto> posts = new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true);
+        Slice<NetworkFeedPostResult> posts = new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true);
         when(postService.getNetworkPosts(7L, 0, 10, "createdAt", "서울특별시")).thenReturn(posts);
 
         mockMvc.perform(get("/api/posts")

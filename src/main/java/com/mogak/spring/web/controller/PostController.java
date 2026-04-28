@@ -8,6 +8,7 @@ import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.service.StorageCleanupService;
 import com.mogak.spring.service.StorageService;
+import com.mogak.spring.service.result.post.PostSummaryResult;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -93,7 +94,8 @@ public class PostController {
                                                                        @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                        @RequestParam(value = "page", defaultValue = "0") int page,
                                                                        @RequestParam(value = "size") int size) {
-        Slice<GetPostDto> posts = postService.getAllPosts(authenticatedUser.getUserId(), page, mogakId, size);
+        Slice<GetPostDto> posts = postService.getAllPosts(authenticatedUser.getUserId(), page, mogakId, size)
+                .map(this::toGetPostDto);
         return ResponseEntity.ok(new BaseResponse<>(posts));
     }
 
@@ -158,6 +160,19 @@ public class PostController {
                                                                   @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         postService.delete(authenticatedUser.getUserId(), postId);
         return ResponseEntity.ok(new BaseResponse<>(DeletePostDto.deletedResponse()));
+    }
+
+    private GetPostDto toGetPostDto(PostSummaryResult result) {
+        return GetPostDto.of(
+                result.postId(),
+                result.mogakId(),
+                result.jogakId(),
+                result.dailyJogakId(),
+                result.targetDate(),
+                result.contents(),
+                result.thumbnailUrl(),
+                result.likeCnt()
+        );
     }
 
 }
