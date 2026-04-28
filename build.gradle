@@ -83,7 +83,7 @@ tasks.withType(JavaCompile).configureEach {
 tasks.register('localDbUp', Exec) {
 	group = 'application'
 	description = 'Starts the local PostgreSQL database and waits until it is healthy.'
-	commandLine 'docker', 'compose', 'up', '-d', '--wait', 'postgres'
+	commandLine 'docker', 'compose', 'up', '-d', '--wait', '--no-build', 'postgres'
 }
 
 tasks.register('localDbDown', Exec) {

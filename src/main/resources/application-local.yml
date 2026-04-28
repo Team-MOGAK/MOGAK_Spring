@@ -30,11 +30,14 @@ spring:
       schema-locations: file:./sql/schema/*.sql
       data-locations: file:./sql/seed/*.sql
 logging.level:
-  org.hibernate.SQL: debug
-  org.hibernate.type: trace
+  org.hibernate.SQL: info
+  org.hibernate.type: info
 
 springdoc:
+  api-docs:
+    enabled: true
   swagger-ui:
+    enabled: true
     path: /swagger-ui.html
     groups-order: DESC
     operationsSorter: method

@@ -8,7 +8,7 @@
             </encoder>
         </appender>
         <logger name="com.mogak.spring" level="DEBUG" />
-        <root level="DEBUG">
+        <root level="INFO">
             <appender-ref ref="CONSOLE" />
         </root>
     </springProfile>
