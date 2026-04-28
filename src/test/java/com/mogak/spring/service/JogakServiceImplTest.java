@@ -14,10 +14,14 @@ import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
+import com.mogak.spring.service.result.jogak.CreateJogakResult;
+import com.mogak.spring.service.result.jogak.DailyJogakListResult;
+import com.mogak.spring.service.result.jogak.JogakDailyJogakResult;
+import com.mogak.spring.service.result.jogak.OneTimeJogakListResult;
+import com.mogak.spring.service.result.jogak.RoutineJogakResult;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
-import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -69,7 +73,7 @@ class JogakServiceImplTest {
         when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.save(any(Jogak.class))).thenReturn(saved);
 
-        JogakResponseDto.CreateJogakDto result = jogakService.createJogak(1L, request);
+        CreateJogakResult result = jogakService.createJogak(1L, request);
 
         assertThat(result.jogakId()).isEqualTo(10L);
         assertThat(result.isRoutine()).isFalse();
@@ -97,7 +101,7 @@ class JogakServiceImplTest {
         when(periodRepository.findOneByDays("MONDAY")).thenReturn(Optional.of(monday));
         when(periodRepository.findOneByDays("TUESDAY")).thenReturn(Optional.of(tuesday));
 
-        JogakResponseDto.CreateJogakDto result = jogakService.createJogak(1L, request);
+        CreateJogakResult result = jogakService.createJogak(1L, request);
 
         assertThat(result.isRoutine()).isTrue();
         assertThat(result.days()).containsExactly("MONDAY", "TUESDAY");
@@ -197,7 +201,7 @@ class JogakServiceImplTest {
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
         when(jogakRepository.findDailyRoutineJogaks(user, futureDay.getDayOfWeek().getValue())).thenReturn(List.of(routine));
 
-        JogakResponseDto.GetDailyJogakListDto result = jogakService.getDayJogaks(1L, futureDay);
+        DailyJogakListResult result = jogakService.getDayJogaks(1L, futureDay);
 
         assertThat(result.size()).isEqualTo(1);
         assertThat(result.dailyJogaks().get(0).title()).isEqualTo("루틴 조각");
@@ -217,7 +221,7 @@ class JogakServiceImplTest {
         when(jogakRepository.findActiveOneTimeJogaksByUser(user)).thenReturn(List.of(jogak));
         when(dailyJogakRepository.findDailyJogaks(user, day)).thenReturn(List.of());
 
-        JogakResponseDto.GetOneTimeJogakListDto result = jogakService.getDailyJogaks(1L, day);
+        OneTimeJogakListResult result = jogakService.getDailyJogaks(1L, day);
 
         assertThat(result.size()).isEqualTo(1);
         assertThat(result.jogaks().get(0).title()).isEqualTo("일회성 조각");
@@ -241,7 +245,7 @@ class JogakServiceImplTest {
                 .thenReturn(Optional.empty());
         when(dailyJogakRepository.save(any(DailyJogak.class))).thenReturn(dailyJogak);
 
-        JogakResponseDto.JogakDailyJogakDto result = jogakService.startJogak(1L, 10L);
+        JogakDailyJogakResult result = jogakService.startJogak(1L, 10L);
 
         assertThat(result.dailyJogakId()).isEqualTo(100L);
         assertThat(result.achievements()).isZero();
@@ -298,7 +302,7 @@ class JogakServiceImplTest {
 
         when(dailyJogakRepository.findActiveByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
 
-        JogakResponseDto.JogakDailyJogakDto result = jogakService.successJogak(1L, 100L);
+        JogakDailyJogakResult result = jogakService.successJogak(1L, 100L);
 
         assertThat(result.isAchievement()).isTrue();
         assertThat(result.achievements()).isEqualTo(1);
@@ -317,7 +321,7 @@ class JogakServiceImplTest {
 
         when(dailyJogakRepository.findActiveByIdWithJogakGraph(100L)).thenReturn(Optional.of(dailyJogak));
 
-        JogakResponseDto.JogakDailyJogakDto result = jogakService.failJogak(1L, 100L);
+        JogakDailyJogakResult result = jogakService.failJogak(1L, 100L);
 
         assertThat(result.isAchievement()).isFalse();
         assertThat(result.achievements()).isEqualTo(1);
@@ -439,7 +443,7 @@ class JogakServiceImplTest {
         JogakRequestDto.UpdateJogakDto request = new JogakRequestDto.UpdateJogakDto("수정 조각", false, null, null);
         when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
 
-        JogakResponseDto.CreateJogakDto result = jogakService.updateJogak(owner.getId(), 10L, request);
+        CreateJogakResult result = jogakService.updateJogak(owner.getId(), 10L, request);
 
         assertThat(result.title()).isEqualTo("수정 조각");
         assertThat(result.isRoutine()).isFalse();
@@ -552,9 +556,9 @@ class JogakServiceImplTest {
         when(dailyJogakRepository.findDailyJogaksBetween(user, start, end)).thenReturn(List.of(pastDailyJogak));
         when(jogakRepository.findAllRoutineJogaksByUser(1L)).thenReturn(List.of(routine));
 
-        List<JogakResponseDto.GetRoutineJogakDto> result = jogakService.getRoutineJogaks(1L, start, end);
+        List<RoutineJogakResult> result = jogakService.getRoutineJogaks(1L, start, end);
 
         assertThat(result).isNotEmpty();
-        assertThat(result).extracting(JogakResponseDto.GetRoutineJogakDto::title).contains("루틴 조각");
+        assertThat(result).extracting(RoutineJogakResult::title).contains("루틴 조각");
     }
 }

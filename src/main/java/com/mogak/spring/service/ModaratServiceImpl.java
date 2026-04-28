@@ -12,8 +12,9 @@ import com.mogak.spring.repository.MogakRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.repository.query.GetMogakInModaratDto;
 import com.mogak.spring.repository.query.SingleDetailModaratDto;
+import com.mogak.spring.service.result.modarat.ModaratDetailResult;
+import com.mogak.spring.service.result.modarat.ModaratResult;
 import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
-import com.mogak.spring.web.dto.modaratdto.ModaratResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,18 +57,27 @@ public class ModaratServiceImpl implements ModaratService {
     }
 
     @Override
-    public SingleDetailModaratDto getDetailModarat(Long userId, Long modaratId) {
+    public ModaratDetailResult getDetailModarat(Long userId, Long modaratId) {
         Modarat modarat = getOwnedModarat(modaratId, userId);
         List<GetMogakInModaratDto> mogakDtoList = modaratRepository.findMogakDtoListByModaratId(modarat.getId()).orElse(List.of());
         SingleDetailModaratDto modaratDto = modaratRepository.findOneDetailModarat(modaratId);
-        return modaratDto.withMogakDtoList(mogakDtoList);
+        SingleDetailModaratDto detail = modaratDto.withMogakDtoList(mogakDtoList);
+        List<ModaratDetailResult.MogakInModaratResult> mogaks = detail.mogakDtoList().stream()
+                .map(mogak -> new ModaratDetailResult.MogakInModaratResult(
+                        mogak.title(),
+                        mogak.bigCategory(),
+                        mogak.smallCategory(),
+                        mogak.color()
+                ))
+                .toList();
+        return new ModaratDetailResult(detail.id(), detail.title(), detail.color(), mogaks);
     }
 
     @Override
-    public List<ModaratResponseDto.ModaratDto> getModaratList(Long userId) {
+    public List<ModaratResult> getModaratList(Long userId) {
         userRepository.findActiveById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return modaratRepository.findModaratsByUserId(userId).stream()
-                .map(ModaratResponseDto.ModaratDto::from)
+                .map(modarat -> new ModaratResult(modarat.getId(), modarat.getTitle(), modarat.getColor()))
                 .collect(Collectors.toList());
     }
 

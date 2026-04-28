@@ -6,9 +6,15 @@ import com.mogak.spring.exception.JogakException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.JogakService;
+import com.mogak.spring.service.result.jogak.CreateJogakResult;
+import com.mogak.spring.service.result.jogak.DailyJogakListResult;
+import com.mogak.spring.service.result.jogak.DailyJogakResult;
+import com.mogak.spring.service.result.jogak.JogakDailyJogakResult;
+import com.mogak.spring.service.result.jogak.OneTimeJogakListResult;
+import com.mogak.spring.service.result.jogak.OneTimeJogakResult;
+import com.mogak.spring.service.result.jogak.RoutineJogakResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
-import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -68,7 +74,7 @@ class JogakControllerTest {
     @DisplayName("조각 생성 요청이 성공하면 생성 응답 계약을 반환한다")
     void createJogakContract() throws Exception {
         when(jogakService.createJogak(eq(1L), any(JogakRequestDto.CreateJogakDto.class))).thenReturn(
-                new JogakResponseDto.CreateJogakDto(
+                new CreateJogakResult(
                         1L,
                         "정보처리기사",
                         "자격증",
@@ -112,9 +118,9 @@ class JogakControllerTest {
     @DisplayName("일회성 조각 조회 요청이 성공하면 조회 응답 계약을 반환한다")
     void getDailyJogaksContract() throws Exception {
         when(jogakService.getDailyJogaks(anyLong(), eq(LocalDate.of(2026, 3, 26)))).thenReturn(
-                new JogakResponseDto.GetOneTimeJogakListDto(
+                new OneTimeJogakListResult(
                         1,
-                        List.of(new JogakResponseDto.GetOneTimeJogakDto(
+                        List.of(new OneTimeJogakResult(
                                 1L,
                                 "정보처리기사",
                                 "자격증",
@@ -144,7 +150,7 @@ class JogakControllerTest {
     @DisplayName("루틴 조각 조회 요청이 성공하면 조회 응답 계약을 반환한다")
     void getRoutineJogaksContract() throws Exception {
         when(jogakService.getRoutineJogaks(anyLong(), eq(LocalDate.of(2026, 3, 26)), eq(LocalDate.of(2026, 3, 30)))).thenReturn(List.of(
-                new JogakResponseDto.GetRoutineJogakDto(-1L, LocalDate.of(2026, 3, 27), false, "루틴 조각")
+                new RoutineJogakResult(-1L, LocalDate.of(2026, 3, 27), false, "루틴 조각")
         ));
 
         mockMvc.perform(get("/api/modarats/mogaks/jogaks/routines")
@@ -164,9 +170,9 @@ class JogakControllerTest {
     @DisplayName("일별 데일리 조각 조회 요청이 성공하면 query parameter 날짜로 조회 응답 계약을 반환한다")
     void getDayJogaksContract() throws Exception {
         when(jogakService.getDayJogaks(anyLong(), eq(LocalDate.of(2026, 3, 26)))).thenReturn(
-                new JogakResponseDto.GetDailyJogakListDto(
+                new DailyJogakListResult(
                         1,
-                        List.of(new JogakResponseDto.GetDailyJogakDto(
+                        List.of(new DailyJogakResult(
                                 1L,
                                 10L,
                                 "정보처리기사",
@@ -194,7 +200,7 @@ class JogakControllerTest {
     @DisplayName("조각 시작 요청이 성공하면 성공 응답 계약을 반환한다")
     void startJogakContract() throws Exception {
         when(jogakService.startJogak(1L, 1L)).thenReturn(
-                new JogakResponseDto.JogakDailyJogakDto(
+                new JogakDailyJogakResult(
                         1L,
                         10L,
                         "문제풀이",
@@ -236,7 +242,7 @@ class JogakControllerTest {
     @DisplayName("조각 성공 요청이 성공하면 성공 응답 계약을 반환한다")
     void successJogakContract() throws Exception {
         when(jogakService.successJogak(1L, 10L)).thenReturn(
-                new JogakResponseDto.JogakDailyJogakDto(
+                new JogakDailyJogakResult(
                         1L,
                         10L,
                         "문제풀이",

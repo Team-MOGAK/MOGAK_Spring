@@ -7,10 +7,11 @@ import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.MogakService;
+import com.mogak.spring.service.result.mogak.GetJogakResult;
+import com.mogak.spring.service.result.mogak.GetMogakListResult;
+import com.mogak.spring.service.result.mogak.GetMogakResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
-import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
-import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -73,7 +74,7 @@ class MogakControllerTest {
     @DisplayName("모각 생성 요청이 성공하면 생성 응답 계약을 반환한다")
     void createMogakContract() throws Exception {
         when(mogakService.create(anyLong(), any(MogakRequestDto.CreateDto.class))).thenReturn(
-                new MogakResponseDto.GetMogakDto(
+                new GetMogakResult(
                         1L,
                         "정보처리기사",
                         MogakCategory.builder().id(1).name("자격증").build(),
@@ -122,8 +123,8 @@ class MogakControllerTest {
     @DisplayName("모각 목록 조회 요청이 성공하면 목록 응답 계약을 반환한다")
     void getMogakListContract() throws Exception {
         when(mogakService.getMogakDtoList(anyLong(), eq(10L))).thenReturn(
-                new MogakResponseDto.GetMogakListDto(
-                        List.of(new MogakResponseDto.GetMogakDto(
+                new GetMogakListResult(
+                        List.of(new GetMogakResult(
                                 1L,
                                 "정보처리기사",
                                 MogakCategory.builder().id(1).name("자격증").build(),
@@ -151,7 +152,7 @@ class MogakControllerTest {
     @DisplayName("조각 목록 조회 요청이 성공하면 목록 응답 계약을 반환한다")
     void getJogaksContract() throws Exception {
         when(mogakService.getJogaks(anyLong(), eq(1L), eq(LocalDate.of(2026, 3, 26)))).thenReturn(List.of(
-                new JogakResponseDto.GetJogakDto(
+                new GetJogakResult(
                         100L,
                         "정보처리기사",
                         "자격증",
@@ -198,7 +199,7 @@ class MogakControllerTest {
     @DisplayName("모각 수정 요청이 성공하면 userId를 서비스로 전달한다")
     void updateMogakForwardsUserId() throws Exception {
         when(mogakService.updateMogak(eq(1L), any(MogakRequestDto.UpdateDto.class))).thenReturn(
-                new MogakResponseDto.GetMogakDto(
+                new GetMogakResult(
                         1L,
                         "수정된 모각",
                         MogakCategory.builder().id(1).name("자격증").build(),

@@ -10,11 +10,11 @@ import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
+import com.mogak.spring.service.result.mogak.GetJogakResult;
+import com.mogak.spring.service.result.mogak.GetMogakResult;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
-import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
-import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,7 +61,7 @@ class MogakServiceImplTest {
         when(categoryRepository.findMogakCategoryByName("자격증")).thenReturn(Optional.of(category));
         when(mogakRepository.save(org.mockito.ArgumentMatchers.any(Mogak.class))).thenReturn(saved);
 
-        MogakResponseDto.GetMogakDto result = mogakService.create(1L, request);
+        GetMogakResult result = mogakService.create(1L, request);
 
         assertThat(result.id()).isEqualTo(5L);
         assertThat(result.title()).isEqualTo("정보처리기사");
@@ -122,7 +122,7 @@ class MogakServiceImplTest {
 
         MogakRequestDto.UpdateDto request = new MogakRequestDto.UpdateDto(2L, "새 제목", "직무공부", "백엔드", "#9999");
 
-        MogakResponseDto.GetMogakDto result = mogakService.updateMogak(1L, request);
+        GetMogakResult result = mogakService.updateMogak(1L, request);
 
         assertThat(result.title()).isEqualTo("새 제목");
         assertThat(mogak.getBigCategory()).isEqualTo(newCategory);
@@ -224,7 +224,7 @@ class MogakServiceImplTest {
         when(jogakRepository.findAllByMogakWithFetchGraph(mogak)).thenReturn(List.of(active));
         when(dailyJogakRepository.findDailyJogaks(user, day)).thenReturn(List.of(dailyJogak));
 
-        List<JogakResponseDto.GetJogakDto> result = mogakService.getJogaks(1L, 2L, day);
+        List<GetJogakResult> result = mogakService.getJogaks(1L, 2L, day);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).jogakId()).isEqualTo(10L);

@@ -3,9 +3,11 @@ package com.mogak.spring.web.controller;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
-import com.mogak.spring.repository.query.SingleDetailModaratDto;
 import com.mogak.spring.service.ModaratService;
+import com.mogak.spring.service.result.modarat.ModaratDetailResult;
+import com.mogak.spring.service.result.modarat.ModaratResult;
 import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
+import com.mogak.spring.web.dto.modaratdto.ModaratResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -79,9 +81,12 @@ public class ModaratController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @GetMapping("/{modaratId}")
-    public ResponseEntity<BaseResponse<SingleDetailModaratDto>> getSingleDetailModarat(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                                                       @PathVariable Long modaratId) {
-        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(modaratService.getDetailModarat(authenticatedUser.getUserId(), modaratId)));
+    public ResponseEntity<BaseResponse<ModaratResponseDto.DetailModaratDto>> getSingleDetailModarat(
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+            @PathVariable Long modaratId
+    ) {
+        ModaratDetailResult result = modaratService.getDetailModarat(authenticatedUser.getUserId(), modaratId);
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(toDetailModaratDto(result)));
     }
 
     @Operation(summary = "모다라트 리스트 조회", description = "사용자의 모다라트 리스트를 조회합니다",
@@ -93,7 +98,31 @@ public class ModaratController {
             })
     @GetMapping("")
     public ResponseEntity<BaseResponse<List<ModaratDto>>> getModaratList(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(modaratService.getModaratList(authenticatedUser.getUserId())));
+        List<ModaratResult> results = modaratService.getModaratList(authenticatedUser.getUserId());
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(results.stream().map(this::toModaratDto).toList()));
     }
 
+    private ModaratDto toModaratDto(ModaratResult result) {
+        return new ModaratDto(result.id(), result.title(), result.color());
+    }
+
+    private ModaratResponseDto.DetailModaratDto toDetailModaratDto(ModaratDetailResult result) {
+        return new ModaratResponseDto.DetailModaratDto(
+                result.id(),
+                result.title(),
+                result.color(),
+                result.mogaks().stream()
+                        .map(this::toMogakInModaratDto)
+                        .toList()
+        );
+    }
+
+    private ModaratResponseDto.MogakInModaratDto toMogakInModaratDto(ModaratDetailResult.MogakInModaratResult result) {
+        return new ModaratResponseDto.MogakInModaratDto(
+                result.title(),
+                result.bigCategory(),
+                result.smallCategory(),
+                result.color()
+        );
+    }
 }

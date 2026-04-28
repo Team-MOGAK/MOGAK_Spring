@@ -5,8 +5,8 @@ import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.GlobalExceptionHandler;
 import com.mogak.spring.jwt.JwtTokenProvider;
-import com.mogak.spring.repository.query.SingleDetailModaratDto;
 import com.mogak.spring.service.ModaratService;
+import com.mogak.spring.service.result.modarat.ModaratDetailResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
@@ -23,6 +23,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -90,7 +92,8 @@ class ModaratControllerTest {
     @Test
     @DisplayName("모다라트 상세 조회 요청이 성공하면 userId를 서비스로 전달한다")
     void getDetailModaratForwardsUserId() throws Exception {
-        when(modaratService.getDetailModarat(eq(1L), eq(10L))).thenReturn(new SingleDetailModaratDto(10L, "메인 모다라트", "#112233"));
+        when(modaratService.getDetailModarat(eq(1L), eq(10L)))
+                .thenReturn(new ModaratDetailResult(10L, "메인 모다라트", "#112233", List.of()));
 
         mockMvc.perform(get("/api/modarats/10"))
                 .andExpect(status().isOk())
