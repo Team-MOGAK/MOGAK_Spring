@@ -25,7 +25,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -63,19 +62,17 @@ class JogakServiceImplTest {
         Mogak mogak = TestFixtureFactory.mogak(2L, user, modarat, category, "모각", "#1234");
         TestFixtureFactory.attachJogaks(mogak, List.of());
         Jogak saved = TestFixtureFactory.jogak(10L, mogak, "일회성 조각", false, LocalDate.of(2026, 3, 26), null, 0);
-        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto();
-        ReflectionTestUtils.setField(request, "mogakId", 2L);
-        ReflectionTestUtils.setField(request, "title", "일회성 조각");
-        ReflectionTestUtils.setField(request, "isRoutine", false);
-        ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
+        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto(
+                2L, "일회성 조각", false, null, LocalDate.of(2026, 3, 26), null
+        );
 
         when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.save(any(Jogak.class))).thenReturn(saved);
 
         JogakResponseDto.CreateJogakDto result = jogakService.createJogak(1L, request);
 
-        assertThat(result.getJogakId()).isEqualTo(10L);
-        assertThat(result.getIsRoutine()).isFalse();
+        assertThat(result.jogakId()).isEqualTo(10L);
+        assertThat(result.isRoutine()).isFalse();
         verify(dailyJogakRepository, times(0)).save(any(DailyJogak.class));
     }
 
@@ -91,12 +88,9 @@ class JogakServiceImplTest {
         Jogak saved = TestFixtureFactory.jogak(10L, mogak, "루틴 조각", true, today, null, 0);
         Period monday = TestFixtureFactory.period(1, "MONDAY");
         Period tuesday = TestFixtureFactory.period(2, "TUESDAY");
-        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto();
-        ReflectionTestUtils.setField(request, "mogakId", 2L);
-        ReflectionTestUtils.setField(request, "title", "루틴 조각");
-        ReflectionTestUtils.setField(request, "isRoutine", true);
-        ReflectionTestUtils.setField(request, "today", today);
-        ReflectionTestUtils.setField(request, "days", List.of("MONDAY", "TUESDAY"));
+        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto(
+                2L, "루틴 조각", true, List.of("MONDAY", "TUESDAY"), today, null
+        );
 
         when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.save(any(Jogak.class))).thenReturn(saved);
@@ -105,8 +99,8 @@ class JogakServiceImplTest {
 
         JogakResponseDto.CreateJogakDto result = jogakService.createJogak(1L, request);
 
-        assertThat(result.getIsRoutine()).isTrue();
-        assertThat(result.getDays()).containsExactly("MONDAY", "TUESDAY");
+        assertThat(result.isRoutine()).isTrue();
+        assertThat(result.days()).containsExactly("MONDAY", "TUESDAY");
         verify(dailyJogakRepository).save(any(DailyJogak.class));
         verify(jogakPeriodRepository, times(2)).save(any(JogakPeriod.class));
     }
@@ -120,11 +114,9 @@ class JogakServiceImplTest {
         Mogak mogak = TestFixtureFactory.mogak(2L, user, modarat, category, "모각", "#1234");
         TestFixtureFactory.attachJogaks(mogak, List.of());
         Jogak saved = TestFixtureFactory.jogak(10L, mogak, "루틴 조각", true, LocalDate.of(2026, 3, 26), null, 0);
-        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto();
-        ReflectionTestUtils.setField(request, "mogakId", 2L);
-        ReflectionTestUtils.setField(request, "title", "루틴 조각");
-        ReflectionTestUtils.setField(request, "isRoutine", true);
-        ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
+        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto(
+                2L, "루틴 조각", true, null, LocalDate.of(2026, 3, 26), null
+        );
 
         when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.save(any(Jogak.class))).thenReturn(saved);
@@ -143,11 +135,9 @@ class JogakServiceImplTest {
         MogakCategory category = TestFixtureFactory.category(1, "자격증");
         Mogak mogak = TestFixtureFactory.mogak(2L, owner, modarat, category, "모각", "#1234");
         TestFixtureFactory.attachJogaks(mogak, List.of());
-        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto();
-        ReflectionTestUtils.setField(request, "mogakId", 2L);
-        ReflectionTestUtils.setField(request, "title", "조각");
-        ReflectionTestUtils.setField(request, "isRoutine", false);
-        ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
+        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto(
+                2L, "조각", false, null, LocalDate.of(2026, 3, 26), null
+        );
 
         when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
 
@@ -160,11 +150,9 @@ class JogakServiceImplTest {
     @Test
     @DisplayName("존재하지 않는 모각에 조각 생성 요청을 하면 기존 not-exist 응답을 반환한다")
     void createJogakThrowsWhenMogakMissing() {
-        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto();
-        ReflectionTestUtils.setField(request, "mogakId", 999L);
-        ReflectionTestUtils.setField(request, "title", "조각");
-        ReflectionTestUtils.setField(request, "isRoutine", false);
-        ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
+        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto(
+                999L, "조각", false, null, LocalDate.of(2026, 3, 26), null
+        );
 
         when(mogakRepository.findActiveById(999L)).thenReturn(Optional.empty());
 
@@ -184,11 +172,9 @@ class JogakServiceImplTest {
                 .mapToObj(i -> TestFixtureFactory.jogak((long) i, mogak, "조각" + i, false, LocalDate.now(), null, 0))
                 .collect(Collectors.toList());
         TestFixtureFactory.attachJogaks(mogak, existing);
-        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto();
-        ReflectionTestUtils.setField(request, "mogakId", 2L);
-        ReflectionTestUtils.setField(request, "title", "새 조각");
-        ReflectionTestUtils.setField(request, "isRoutine", false);
-        ReflectionTestUtils.setField(request, "today", LocalDate.of(2026, 3, 26));
+        JogakRequestDto.CreateJogakDto request = new JogakRequestDto.CreateJogakDto(
+                2L, "새 조각", false, null, LocalDate.of(2026, 3, 26), null
+        );
 
         when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
         when(jogakRepository.countActiveOpenByMogak(mogak, LocalDate.now())).thenReturn(8L);
@@ -213,8 +199,8 @@ class JogakServiceImplTest {
 
         JogakResponseDto.GetDailyJogakListDto result = jogakService.getDayJogaks(1L, futureDay);
 
-        assertThat(result.getSize()).isEqualTo(1);
-        assertThat(result.getDailyJogaks().get(0).getTitle()).isEqualTo("루틴 조각");
+        assertThat(result.size()).isEqualTo(1);
+        assertThat(result.dailyJogaks().get(0).title()).isEqualTo("루틴 조각");
     }
 
     @Test
@@ -233,8 +219,8 @@ class JogakServiceImplTest {
 
         JogakResponseDto.GetOneTimeJogakListDto result = jogakService.getDailyJogaks(1L, day);
 
-        assertThat(result.getSize()).isEqualTo(1);
-        assertThat(result.getJogaks().get(0).getTitle()).isEqualTo("일회성 조각");
+        assertThat(result.size()).isEqualTo(1);
+        assertThat(result.jogaks().get(0).title()).isEqualTo("일회성 조각");
         verify(jogakRepository).findActiveOneTimeJogaksByUser(user);
         verify(mogakRepository, never()).findAllByUser(any(User.class));
     }
@@ -257,8 +243,8 @@ class JogakServiceImplTest {
 
         JogakResponseDto.JogakDailyJogakDto result = jogakService.startJogak(1L, 10L);
 
-        assertThat(result.getDailyJogakId()).isEqualTo(100L);
-        assertThat(result.getAchievements()).isZero();
+        assertThat(result.dailyJogakId()).isEqualTo(100L);
+        assertThat(result.achievements()).isZero();
     }
 
     @Test
@@ -314,8 +300,8 @@ class JogakServiceImplTest {
 
         JogakResponseDto.JogakDailyJogakDto result = jogakService.successJogak(1L, 100L);
 
-        assertThat(result.getIsAchievement()).isTrue();
-        assertThat(result.getAchievements()).isEqualTo(1);
+        assertThat(result.isAchievement()).isTrue();
+        assertThat(result.achievements()).isEqualTo(1);
     }
 
     @Test
@@ -333,8 +319,8 @@ class JogakServiceImplTest {
 
         JogakResponseDto.JogakDailyJogakDto result = jogakService.failJogak(1L, 100L);
 
-        assertThat(result.getIsAchievement()).isFalse();
-        assertThat(result.getAchievements()).isEqualTo(1);
+        assertThat(result.isAchievement()).isFalse();
+        assertThat(result.achievements()).isEqualTo(1);
     }
 
     @Test
@@ -417,9 +403,7 @@ class JogakServiceImplTest {
                 TestFixtureFactory.category(1, "자격증"),
                 "모각",
                 "#1234"), "조각", false, LocalDate.now(), null, 0);
-        JogakRequestDto.UpdateJogakDto request = new JogakRequestDto.UpdateJogakDto();
-        ReflectionTestUtils.setField(request, "title", "수정");
-        ReflectionTestUtils.setField(request, "isRoutine", false);
+        JogakRequestDto.UpdateJogakDto request = new JogakRequestDto.UpdateJogakDto("수정", false, null, null);
 
         when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
 
@@ -431,9 +415,7 @@ class JogakServiceImplTest {
     @Test
     @DisplayName("존재하지 않는 조각 수정은 기존 not-exist 응답을 반환한다")
     void updateJogakThrowsWhenJogakMissing() {
-        JogakRequestDto.UpdateJogakDto request = new JogakRequestDto.UpdateJogakDto();
-        ReflectionTestUtils.setField(request, "title", "수정");
-        ReflectionTestUtils.setField(request, "isRoutine", false);
+        JogakRequestDto.UpdateJogakDto request = new JogakRequestDto.UpdateJogakDto("수정", false, null, null);
 
         when(jogakRepository.findActiveById(10L)).thenReturn(Optional.empty());
 
@@ -454,15 +436,13 @@ class JogakServiceImplTest {
                 "#1234");
         Jogak jogak = TestFixtureFactory.jogak(10L, mogak, "기존 조각", true, LocalDate.now(), null, 0);
         DailyJogak dailyJogak = TestFixtureFactory.dailyJogak(100L, jogak, LocalDate.now(), DailyJogakStatus.PENDING);
-        JogakRequestDto.UpdateJogakDto request = new JogakRequestDto.UpdateJogakDto();
-        ReflectionTestUtils.setField(request, "title", "수정 조각");
-        ReflectionTestUtils.setField(request, "isRoutine", false);
+        JogakRequestDto.UpdateJogakDto request = new JogakRequestDto.UpdateJogakDto("수정 조각", false, null, null);
         when(jogakRepository.findActiveById(10L)).thenReturn(Optional.of(jogak));
 
         JogakResponseDto.CreateJogakDto result = jogakService.updateJogak(owner.getId(), 10L, request);
 
-        assertThat(result.getTitle()).isEqualTo("수정 조각");
-        assertThat(result.getIsRoutine()).isFalse();
+        assertThat(result.title()).isEqualTo("수정 조각");
+        assertThat(result.isRoutine()).isFalse();
         assertThat(dailyJogak.getTitle()).isEqualTo("기존 조각");
         assertThat(dailyJogak.getIsRoutine()).isTrue();
     }
@@ -575,6 +555,6 @@ class JogakServiceImplTest {
         List<JogakResponseDto.GetRoutineJogakDto> result = jogakService.getRoutineJogaks(1L, start, end);
 
         assertThat(result).isNotEmpty();
-        assertThat(result).extracting(JogakResponseDto.GetRoutineJogakDto::getTitle).contains("루틴 조각");
+        assertThat(result).extracting(JogakResponseDto.GetRoutineJogakDto::title).contains("루틴 조각");
     }
 }

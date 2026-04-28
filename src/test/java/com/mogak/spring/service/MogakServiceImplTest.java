@@ -53,13 +53,7 @@ class MogakServiceImplTest {
         Modarat modarat = TestFixtureFactory.modarat(3L, user, "메인 모다라트", "#0000");
         MogakCategory category = TestFixtureFactory.category(1, "자격증");
         Mogak saved = TestFixtureFactory.mogak(5L, user, modarat, category, "정보처리기사", "#112233");
-        MogakRequestDto.CreateDto request = MogakRequestDto.CreateDto.builder()
-                .modaratId(3L)
-                .title("정보처리기사")
-                .bigCategory("자격증")
-                .smallCategory("필기")
-                .color("#112233")
-                .build();
+        MogakRequestDto.CreateDto request = new MogakRequestDto.CreateDto(3L, "정보처리기사", "자격증", "필기", "#112233");
 
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
         when(modaratRepository.findActiveById(3L)).thenReturn(Optional.of(modarat));
@@ -69,9 +63,9 @@ class MogakServiceImplTest {
 
         MogakResponseDto.GetMogakDto result = mogakService.create(1L, request);
 
-        assertThat(result.getId()).isEqualTo(5L);
-        assertThat(result.getTitle()).isEqualTo("정보처리기사");
-        assertThat(result.getBigCategory().getName()).isEqualTo("자격증");
+        assertThat(result.id()).isEqualTo(5L);
+        assertThat(result.title()).isEqualTo("정보처리기사");
+        assertThat(result.bigCategory().getName()).isEqualTo("자격증");
     }
 
     @Test
@@ -80,11 +74,7 @@ class MogakServiceImplTest {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
         User otherUser = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
         Modarat modarat = TestFixtureFactory.modarat(3L, otherUser, "메인 모다라트", "#0000");
-        MogakRequestDto.CreateDto request = MogakRequestDto.CreateDto.builder()
-                .modaratId(3L)
-                .title("정보처리기사")
-                .bigCategory("자격증")
-                .build();
+        MogakRequestDto.CreateDto request = new MogakRequestDto.CreateDto(3L, "정보처리기사", "자격증", null, null);
 
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
         when(modaratRepository.findActiveById(3L)).thenReturn(Optional.of(modarat));
@@ -101,11 +91,7 @@ class MogakServiceImplTest {
     void createThrowsWhenMaxExceeded() {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
         Modarat modarat = TestFixtureFactory.modarat(3L, user, "메인 모다라트", "#0000");
-        MogakRequestDto.CreateDto request = MogakRequestDto.CreateDto.builder()
-                .modaratId(3L)
-                .title("정보처리기사")
-                .bigCategory("자격증")
-                .build();
+        MogakRequestDto.CreateDto request = new MogakRequestDto.CreateDto(3L, "정보처리기사", "자격증", null, null);
 
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
         when(modaratRepository.findActiveById(3L)).thenReturn(Optional.of(modarat));
@@ -134,17 +120,11 @@ class MogakServiceImplTest {
         when(categoryRepository.findMogakCategoryByName("직무공부")).thenReturn(Optional.of(newCategory));
         when(jogakRepository.findAllByMogak(mogak)).thenReturn(List.of(jogak));
 
-        MogakRequestDto.UpdateDto request = MogakRequestDto.UpdateDto.builder()
-                .mogakId(2L)
-                .title("새 제목")
-                .bigCategory("직무공부")
-                .smallCategory("백엔드")
-                .color("#9999")
-                .build();
+        MogakRequestDto.UpdateDto request = new MogakRequestDto.UpdateDto(2L, "새 제목", "직무공부", "백엔드", "#9999");
 
         MogakResponseDto.GetMogakDto result = mogakService.updateMogak(1L, request);
 
-        assertThat(result.getTitle()).isEqualTo("새 제목");
+        assertThat(result.title()).isEqualTo("새 제목");
         assertThat(mogak.getBigCategory()).isEqualTo(newCategory);
         assertThat(jogak.getCategory()).isEqualTo(newCategory);
         assertThat(mogak.getSmallCategory()).isEqualTo("백엔드");
@@ -181,13 +161,7 @@ class MogakServiceImplTest {
         Modarat modarat = TestFixtureFactory.modarat(1L, otherUser, "모다라트", "#0000");
         MogakCategory category = TestFixtureFactory.category(1, "자격증");
         Mogak mogak = TestFixtureFactory.mogak(2L, otherUser, modarat, category, "원래 제목", "#1234");
-        MogakRequestDto.UpdateDto request = MogakRequestDto.UpdateDto.builder()
-                .mogakId(2L)
-                .title("새 제목")
-                .bigCategory("자격증")
-                .smallCategory("백엔드")
-                .color("#9999")
-                .build();
+        MogakRequestDto.UpdateDto request = new MogakRequestDto.UpdateDto(2L, "새 제목", "자격증", "백엔드", "#9999");
 
         when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
 
@@ -253,7 +227,7 @@ class MogakServiceImplTest {
         List<JogakResponseDto.GetJogakDto> result = mogakService.getJogaks(1L, 2L, day);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getJogakId()).isEqualTo(10L);
-        assertThat(result.get(0).getIsAlreadyAdded()).isTrue();
+        assertThat(result.get(0).jogakId()).isEqualTo(10L);
+        assertThat(result.get(0).isAlreadyAdded()).isTrue();
     }
 }
