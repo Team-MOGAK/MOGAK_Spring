@@ -18,7 +18,9 @@ import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.GetAllNetworkDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.GetPostDto;
+import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkListDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkPostDto;
+import com.mogak.spring.web.dto.postdto.PostResponseDto.PostListDto;
 import com.mogak.spring.web.dto.commentdto.CommentResponseDto;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -116,12 +118,13 @@ public class PostServiceImpl implements PostService {
 
     //회고록 조회 - 무한 스크롤
     @Override
-    public Slice<GetPostDto> getAllPosts(Long userId, int page, Long mogakId, int size) {
+    public PostListDto getAllPosts(Long userId, int page, Long mogakId, int size) {
         getOwnedMogak(userId, mogakId);
         Pageable pageable = PageRequest.of(page, size);
 
-        return postRepository.findAllPosts(mogakId, pageable)
+        Slice<GetPostDto> posts = postRepository.findAllPosts(mogakId, pageable)
                 .map(GetPostDto::from);
+        return PostListDto.of(posts.getContent(), page, size, posts.hasNext());
     }
 
     //회고록 상세 조회 + 댓글, 이미지 같이 보이게
@@ -195,7 +198,7 @@ public class PostServiceImpl implements PostService {
 
     //전체 네트워킹 조회 - 이미지 썸네일 제외 반환
     @Override
-    public Slice<GetAllNetworkDto> getNetworkPosts(Long userId, int page, int size, String sort, String address /*List<String> categoryList,*/){
+    public NetworkListDto getNetworkPosts(Long userId, int page, int size, String sort, String address /*List<String> categoryList,*/){
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if(address == null){
@@ -204,7 +207,9 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(page, size);
         Slice<Post> posts = postRepository.findNetworkPosts(address, sort, pageable);
         Map<Long, List<PostImg>> imagesByPostId = groupImagesByPostId(extractPostIds(posts.getContent()));
-        return posts.map(post -> GetAllNetworkDto.from(post, findNotThumbnailImgUrls(post, imagesByPostId)));
+        List<GetAllNetworkDto> postDtos = posts.map(post -> GetAllNetworkDto.from(post, findNotThumbnailImgUrls(post, imagesByPostId)))
+                .getContent();
+        return NetworkListDto.of(postDtos, page, size, posts.hasNext());
     }
 
     private List<Long> extractPostIds(List<Post> posts) {

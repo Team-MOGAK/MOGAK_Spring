@@ -10,6 +10,7 @@ import com.mogak.spring.service.PostService;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.GetAllNetworkDto;
+import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkListDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,9 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -130,8 +128,8 @@ class NetworkControllerTest {
     }
 
     @Test
-    @DisplayName("네트워크 게시글 조회는 기존 Slice DTO JSON 계약을 유지한다")
-    void getAllPostsReturnsSliceDtoContract() throws Exception {
+    @DisplayName("네트워크 게시글 조회는 전용 목록 DTO JSON 계약을 반환한다")
+    void getAllPostsReturnsDedicatedListDtoContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "user@test.com", "ROLE_USER");
         GetAllNetworkDto post = GetAllNetworkDto.of(
                 20L,
@@ -142,7 +140,7 @@ class NetworkControllerTest {
                 2,
                 5
         );
-        Slice<GetAllNetworkDto> posts = new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true);
+        NetworkListDto posts = NetworkListDto.of(List.of(post), 0, 10, true);
         when(postService.getNetworkPosts(7L, 0, 10, "createdAt", "서울특별시")).thenReturn(posts);
 
         mockMvc.perform(get("/api/posts")
@@ -153,18 +151,21 @@ class NetworkControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.code").value("success"))
-                .andExpect(jsonPath("$.result.content[0].postId").value(20))
-                .andExpect(jsonPath("$.result.content[0].userName").value("writer"))
-                .andExpect(jsonPath("$.result.content[0].userJob").value("개발/데이터"))
-                .andExpect(jsonPath("$.result.content[0].contents").value("네트워크 회고"))
-                .andExpect(jsonPath("$.result.content[0].imgUrls[0]").value("https://example.com/body.png"))
-                .andExpect(jsonPath("$.result.content[0].commentCnt").value(2))
-                .andExpect(jsonPath("$.result.content[0].likeCnt").value(5))
+                .andExpect(jsonPath("$.result.items[0].postId").value(20))
+                .andExpect(jsonPath("$.result.items[0].userName").value("writer"))
+                .andExpect(jsonPath("$.result.items[0].userJob").value("개발/데이터"))
+                .andExpect(jsonPath("$.result.items[0].contents").value("네트워크 회고"))
+                .andExpect(jsonPath("$.result.items[0].imgUrls[0]").value("https://example.com/body.png"))
+                .andExpect(jsonPath("$.result.items[0].commentCnt").value(2))
+                .andExpect(jsonPath("$.result.items[0].likeCnt").value(5))
+                .andExpect(jsonPath("$.result.page").value(0))
                 .andExpect(jsonPath("$.result.size").value(10))
-                .andExpect(jsonPath("$.result.number").value(0))
-                .andExpect(jsonPath("$.result.numberOfElements").value(1))
-                .andExpect(jsonPath("$.result.first").value(true))
-                .andExpect(jsonPath("$.result.last").value(false));
+                .andExpect(jsonPath("$.result.hasNext").value(true))
+                .andExpect(jsonPath("$.result.content").doesNotExist())
+                .andExpect(jsonPath("$.result.number").doesNotExist())
+                .andExpect(jsonPath("$.result.numberOfElements").doesNotExist())
+                .andExpect(jsonPath("$.result.first").doesNotExist())
+                .andExpect(jsonPath("$.result.last").doesNotExist());
 
         verify(postService).getNetworkPosts(7L, 0, 10, "createdAt", "서울특별시");
     }

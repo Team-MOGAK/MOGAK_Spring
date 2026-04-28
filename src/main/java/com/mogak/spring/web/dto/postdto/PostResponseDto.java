@@ -101,12 +101,13 @@ public class PostResponseDto {
     }
 
     public record PostListDto(
-            List<PostResponseDto.GetPostDto> postDtoList,
-            @JsonProperty("hasNext") boolean hasNext,
-            Integer size
+            List<PostResponseDto.GetPostDto> items,
+            Integer page,
+            Integer size,
+            @JsonProperty("hasNext") boolean hasNext
     ) {
-        public static PostListDto of(List<PostResponseDto.GetPostDto> postDtoList, boolean hasNext, Integer size) {
-            return new PostListDto(postDtoList, hasNext, size);
+        public static PostListDto of(List<PostResponseDto.GetPostDto> items, Integer page, Integer size, boolean hasNext) {
+            return new PostListDto(items, page, size, hasNext);
         }
     }
 
@@ -235,12 +236,13 @@ public class PostResponseDto {
     }
 
     public record NetworkListDto(
-            List<PostResponseDto.GetAllNetworkDto> postDtoList,
-            @JsonProperty("hasNext") boolean hasNext,
-            Integer size
+            List<PostResponseDto.GetAllNetworkDto> items,
+            Integer page,
+            Integer size,
+            @JsonProperty("hasNext") boolean hasNext
     ) {
-        public static NetworkListDto of(List<PostResponseDto.GetAllNetworkDto> postDtoList, boolean hasNext, Integer size) {
-            return new NetworkListDto(postDtoList, hasNext, size);
+        public static NetworkListDto of(List<PostResponseDto.GetAllNetworkDto> items, Integer page, Integer size, boolean hasNext) {
+            return new NetworkListDto(items, page, size, hasNext);
         }
     }
 }
