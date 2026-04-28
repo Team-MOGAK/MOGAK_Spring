@@ -23,6 +23,7 @@
 
 ## 빠른 링크
 - [루트 가이드](../AGENTS.md)
+- [게시글 생성 API](api/post-create.md)
 - [게시글 목록 API](api/post-list.md)
 - [소셜 로그인 API](api/social-login.md)
 - [Claude Compatibility](../CLAUDE.md)
