@@ -12,8 +12,9 @@ public class AppleClaimsValidatorTest {
 
     private static final String ISS = "https://appleid.apple.com";
     private static final String CLIENT_ID = "aud";
+    private static final String WEB_CLIENT_ID = "web-aud";
 
-    private final AppleClaimsValidator appleClaimsValidator = new AppleClaimsValidator(ISS, CLIENT_ID);
+    private final AppleClaimsValidator appleClaimsValidator = new AppleClaimsValidator(ISS, CLIENT_ID + "," + WEB_CLIENT_ID);
 
     @Test
     @DisplayName("올바른 Claims 이면 true 반환한다")
@@ -23,6 +24,18 @@ public class AppleClaimsValidatorTest {
                 .claim("iss", ISS)
                 .claim("aud", java.util.List.of(CLIENT_ID))
                 .claims(values -> values.putAll(Map.of("nonce", "nonce")))
+                .build();
+
+        assertThat(appleClaimsValidator.isValid(claims)).isTrue();
+    }
+
+    @Test
+    @DisplayName("복수 client id 중 하나가 audience에 포함되면 true를 반환한다")
+    void returnsTrueWhenAudienceContainsOneOfClientIds() {
+        Jwt claims = Jwt.withTokenValue("token")
+                .header("alg", "RS256")
+                .claim("iss", ISS)
+                .claim("aud", java.util.List.of(WEB_CLIENT_ID))
                 .build();
 
         assertThat(appleClaimsValidator.isValid(claims)).isTrue();

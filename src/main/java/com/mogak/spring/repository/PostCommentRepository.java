@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,8 +22,14 @@ public interface PostCommentRepository extends JpaRepository<PostComment, Long> 
     }
 
     //댓글 여러개 조회
-    @Query("select pc from PostComment pc join pc.user u where pc.post = :post and pc.deletedAt is null and u.deletedAt is null")
+    @Query("select pc from PostComment pc join fetch pc.user u where pc.post = :post and pc.deletedAt is null and u.deletedAt is null")
     List<PostComment> findActiveAllByPost(@Param("post") Post post);
+
+    @Query("select pc from PostComment pc " +
+            "join fetch pc.post p " +
+            "join fetch pc.user u " +
+            "where p.id in :postIds and pc.deletedAt is null and p.deletedAt is null and u.deletedAt is null")
+    List<PostComment> findActiveAllByPostIdInWithUser(@Param("postIds") Collection<Long> postIds);
 
     @Query("select pc from PostComment pc where pc.post = :post and pc.deletedAt is null")
     List<PostComment> findActiveAllByPostForCleanup(@Param("post") Post post);

@@ -25,6 +25,12 @@ public enum ErrorCode {
     NOT_VALID_EMAIL(HttpStatus.CONFLICT, "U005","올바른 이메일 형식이 아닙니다"),
     ALREADY_EXIST_USER(HttpStatus.CONFLICT, "U006",  "이미 존재하는 유저입니다"),
     NOT_VALID_APPLE_CLAIMS(HttpStatus.CONFLICT, "U007","올바르지 않은 apple oauth claims 형식입니다"),
+    UNSUPPORTED_SOCIAL_PROVIDER(HttpStatus.BAD_REQUEST, "U008", "지원하지 않는 소셜 로그인 공급자입니다"),
+    INVALID_SOCIAL_TOKEN(HttpStatus.BAD_REQUEST, "U009", "소셜 로그인 토큰이 올바르지 않습니다"),
+    SOCIAL_EMAIL_REQUIRED(HttpStatus.BAD_REQUEST, "U010", "소셜 로그인 이메일 정보가 필요합니다"),
+    SOCIAL_ACCOUNT_CONFLICT(HttpStatus.CONFLICT, "U011", "이미 연결된 소셜 계정이 있습니다"),
+    SOCIAL_ACCOUNT_LINK_REQUIRED(HttpStatus.CONFLICT, "U012", "기존 계정에 소셜 계정 연결이 필요합니다"),
+    SOCIAL_EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "U013", "소셜 로그인 이메일 검증이 필요합니다"),
 
     /**
      * 모다라트 에러

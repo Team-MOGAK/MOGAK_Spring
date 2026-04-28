@@ -18,7 +18,9 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
+import jakarta.persistence.PersistenceUnitUtil;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,6 +52,69 @@ class PostCommentRepositoryTest {
         entityManager.clear();
 
         assertThat(postCommentRepository.count()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("게시글 댓글 목록 조회는 작성자를 함께 로딩한다")
+    void findActiveAllByPostFetchesUser() {
+        User user = persistUser();
+        Post post = persistPost(user);
+        entityManager.persist(PostComment.builder()
+                .post(post)
+                .user(user)
+                .contents("댓글")
+                .build());
+        entityManager.flush();
+        entityManager.clear();
+
+        List<PostComment> result = postCommentRepository.findActiveAllByPost(post);
+
+        PersistenceUnitUtil util = entityManager.getEntityManager()
+                .getEntityManagerFactory()
+                .getPersistenceUnitUtil();
+        assertThat(result).hasSize(1);
+        assertThat(util.isLoaded(result.get(0), "user")).isTrue();
+    }
+
+    @Test
+    @DisplayName("게시글 ID 목록으로 활성 댓글을 조회하면 게시글과 작성자를 함께 로딩한다")
+    void findActiveAllByPostIdInWithUserFetchesPostAndUser() {
+        User user = persistUser();
+        Post firstPost = persistPost(user);
+        Post secondPost = persistPost(user);
+        Post otherPost = persistPost(user);
+        entityManager.persist(PostComment.builder()
+                .post(firstPost)
+                .user(user)
+                .contents("첫 번째 댓글")
+                .build());
+        entityManager.persist(PostComment.builder()
+                .post(secondPost)
+                .user(user)
+                .contents("두 번째 댓글")
+                .build());
+        entityManager.persist(PostComment.builder()
+                .post(otherPost)
+                .user(user)
+                .contents("제외 댓글")
+                .build());
+        entityManager.flush();
+        entityManager.clear();
+
+        List<PostComment> result = postCommentRepository.findActiveAllByPostIdInWithUser(
+                List.of(firstPost.getId(), secondPost.getId())
+        );
+
+        PersistenceUnitUtil util = entityManager.getEntityManager()
+                .getEntityManagerFactory()
+                .getPersistenceUnitUtil();
+        assertThat(result).extracting(PostComment::getContents)
+                .containsExactlyInAnyOrder("첫 번째 댓글", "두 번째 댓글");
+        assertThat(result)
+                .allSatisfy(comment -> {
+                    assertThat(util.isLoaded(comment, "post")).isTrue();
+                    assertThat(util.isLoaded(comment, "user")).isTrue();
+                });
     }
 
     private User persistUser() {

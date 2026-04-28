@@ -15,6 +15,7 @@ import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
+import com.mogak.spring.web.dto.postdto.PostResponseDto.GetPostDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
@@ -274,7 +276,7 @@ class PostControllerTest {
     @DisplayName("모각별 게시글 조회는 인증 사용자의 id를 서비스에 전달한다")
     void getPostListUsesAuthenticatedUserId() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        Slice<Post> posts = new SliceImpl<>(List.of());
+        Slice<GetPostDto> posts = new SliceImpl<>(List.of());
         when(postService.getAllPosts(7L, 0, 1L, 10)).thenReturn(posts);
 
         mockMvc.perform(get("/api/mogaks/{mogakId}/posts", 1L)
@@ -283,6 +285,44 @@ class PostControllerTest {
                 .andExpect(status().isOk());
 
         verify(postService).getAllPosts(7L, 0, 1L, 10);
+    }
+
+    @Test
+    @DisplayName("모각별 게시글 조회는 기존 Slice DTO JSON 계약을 유지한다")
+    void getPostListReturnsSliceDtoContract() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        GetPostDto post = GetPostDto.of(
+                11L,
+                1L,
+                2L,
+                3L,
+                LocalDate.of(2026, 4, 21),
+                "오늘 회고",
+                "https://example.com/thumb.png",
+                4
+        );
+        Slice<GetPostDto> posts = new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true);
+        when(postService.getAllPosts(7L, 0, 1L, 10)).thenReturn(posts);
+
+        mockMvc.perform(get("/api/mogaks/{mogakId}/posts", 1L)
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value("success"))
+                .andExpect(jsonPath("$.result.content[0].postId").value(11))
+                .andExpect(jsonPath("$.result.content[0].mogakId").value(1))
+                .andExpect(jsonPath("$.result.content[0].jogakId").value(2))
+                .andExpect(jsonPath("$.result.content[0].dailyJogakId").value(3))
+                .andExpect(jsonPath("$.result.content[0].targetDate").value("2026-04-21"))
+                .andExpect(jsonPath("$.result.content[0].contents").value("오늘 회고"))
+                .andExpect(jsonPath("$.result.content[0].thumbnailUrl").value("https://example.com/thumb.png"))
+                .andExpect(jsonPath("$.result.content[0].likeCnt").value(4))
+                .andExpect(jsonPath("$.result.size").value(10))
+                .andExpect(jsonPath("$.result.number").value(0))
+                .andExpect(jsonPath("$.result.numberOfElements").value(1))
+                .andExpect(jsonPath("$.result.first").value(true))
+                .andExpect(jsonPath("$.result.last").value(false));
     }
 
     @Test

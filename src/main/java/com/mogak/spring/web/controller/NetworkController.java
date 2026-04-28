@@ -1,8 +1,6 @@
 package com.mogak.spring.web.controller;
 
 
-import com.mogak.spring.converter.PostConverter;
-import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.jwt.AuthenticatedUser;
@@ -97,8 +95,8 @@ public class NetworkController {
             @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size") int size,
             @RequestParam(value = "sort", defaultValue = "createdAt", required = false) String sort, @RequestParam(value = "address", required = false) String address
             /*@RequestParam(value = "category", defaultValue="all", required = false) List<String> categoryList,*/) {
-        Slice<Post> posts = postService.getNetworkPosts(authenticatedUser.getUserId(), page, size, sort, address);
-        return ResponseEntity.ok(new BaseResponse<>(PostConverter.toNetworkPagingDto(posts)));
+        Slice<PostResponseDto.GetAllNetworkDto> posts = postService.getNetworkPosts(authenticatedUser.getUserId(), page, size, sort, address);
+        return ResponseEntity.ok(new BaseResponse<>(posts));
     }
 
 

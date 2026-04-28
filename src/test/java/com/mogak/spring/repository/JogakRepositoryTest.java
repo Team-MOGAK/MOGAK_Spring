@@ -18,6 +18,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
+import jakarta.persistence.PersistenceUnitUtil;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -119,6 +120,44 @@ class JogakRepositoryTest {
         assertThat(result).extracting(Jogak::getTitle).containsExactly("조회 대상");
         assertThat(result.get(0).getMogak().getTitle()).isEqualTo("정보처리기사");
         assertThat(result.get(0).getCategory().getName()).isEqualTo("자격증");
+    }
+
+    @Test
+    @DisplayName("모각별 조각 그래프 조회는 응답 변환에 필요한 연관을 함께 로딩한다")
+    void findAllByMogakWithFetchGraph() {
+        User user = persistUser("fetch-graph@test.com");
+        Modarat modarat = entityManager.persist(TestFixtureFactory.modarat(null, user, "메인", "#1111"));
+        MogakCategory category = entityManager.persist(TestFixtureFactory.category(null, "자격증"));
+        Mogak mogak = entityManager.persist(TestFixtureFactory.mogak(null, user, modarat, category, "정보처리기사", "#aaaa"));
+        Jogak routineJogak = entityManager.persist(TestFixtureFactory.jogak(null, mogak, "루틴 조각", true, LocalDate.now(), null, 0));
+        Jogak oneTimeJogak = entityManager.persist(TestFixtureFactory.jogak(null, mogak, "일회성 조각", false, LocalDate.now(), null, 0));
+        Period monday = entityManager.persist(TestFixtureFactory.period("MONDAY"));
+        Period tuesday = entityManager.persist(TestFixtureFactory.period("TUESDAY"));
+        entityManager.persist(TestFixtureFactory.jogakPeriod(routineJogak, monday));
+        entityManager.persist(TestFixtureFactory.jogakPeriod(routineJogak, tuesday));
+        entityManager.flush();
+        entityManager.clear();
+
+        List<Jogak> result = jogakRepository.findAllByMogakWithFetchGraph(mogak);
+
+        PersistenceUnitUtil util = entityManager.getEntityManager()
+                .getEntityManagerFactory()
+                .getPersistenceUnitUtil();
+        assertThat(result).extracting(Jogak::getTitle)
+                .containsExactlyInAnyOrder("루틴 조각", "일회성 조각");
+        assertThat(result)
+                .allSatisfy(jogak -> {
+                    assertThat(util.isLoaded(jogak, "mogak")).isTrue();
+                    assertThat(util.isLoaded(jogak, "category")).isTrue();
+                    assertThat(util.isLoaded(jogak, "jogakPeriods")).isTrue();
+                });
+        Jogak fetchedRoutine = result.stream()
+                .filter(jogak -> jogak.getTitle().equals("루틴 조각"))
+                .findFirst()
+                .orElseThrow();
+        assertThat(fetchedRoutine.getPeriods()).containsExactlyInAnyOrder("MONDAY", "TUESDAY");
+        assertThat(fetchedRoutine.getJogakPeriods())
+                .allSatisfy(jogakPeriod -> assertThat(util.isLoaded(jogakPeriod, "period")).isTrue());
     }
 
     private User persistUser(String email) {

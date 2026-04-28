@@ -39,6 +39,7 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/webjars/**",
             "/api/auth/login",
+            "/api/auth/*/login",
             "/api/auth/refresh",
             "/api/users/nickname/verify",
             "/api/users/login"
