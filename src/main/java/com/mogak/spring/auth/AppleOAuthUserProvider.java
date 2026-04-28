@@ -47,9 +47,9 @@ public class AppleOAuthUserProvider implements SocialOAuthUserProvider {
         AppleUserResponse appleUser = getAppleUser(token);
         return new SocialUserProfile(
                 SocialProvider.APPLE,
-                appleUser.getProviderUserId(),
-                appleUser.getEmail(),
-                appleUser.getEmailVerified()
+                appleUser.providerUserId(),
+                appleUser.email(),
+                appleUser.emailVerified()
         );
     }
 

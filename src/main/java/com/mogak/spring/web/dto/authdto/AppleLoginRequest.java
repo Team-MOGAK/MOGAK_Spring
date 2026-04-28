@@ -1,11 +1,8 @@
 package com.mogak.spring.web.dto.authdto;
 
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Getter
-@Builder
-public class AppleLoginRequest {
-    private String id_token;
+public record AppleLoginRequest(
+        @JsonProperty("id_token") String idToken
+) {
 }

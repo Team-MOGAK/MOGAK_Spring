@@ -120,16 +120,16 @@ class ListQueryCountIntegrationTest {
         );
 
         assertThat(singlePostResult.value().getContent())
-                .extracting(GetAllNetworkDto::getContents)
+                .extracting(GetAllNetworkDto::contents)
                 .containsExactly("three");
         assertThat(threePostResult.value().getContent())
-                .extracting(GetAllNetworkDto::getContents)
+                .extracting(GetAllNetworkDto::contents)
                 .containsExactly("three", "two", "one");
         assertThat(threePostResult.value().getContent())
                 .allSatisfy(post -> {
-                    assertThat(post.getUserName()).isEqualTo("writer");
-                    assertThat(post.getUserJob()).isEqualTo(job.getName());
-                    assertThat(post.getImgUrls()).hasSize(1);
+                    assertThat(post.userName()).isEqualTo("writer");
+                    assertThat(post.userJob()).isEqualTo(job.getName());
+                    assertThat(post.imgUrls()).hasSize(1);
                 });
         assertThat(threePostResult.queryCount()).isEqualTo(singlePostResult.queryCount());
     }
@@ -158,14 +158,14 @@ class ListQueryCountIntegrationTest {
 
         assertThat(singlePostResult.value()).hasSize(1);
         assertThat(threePostResult.value())
-                .extracting(NetworkPostDto::getContents)
+                .extracting(NetworkPostDto::contents)
                 .containsExactly("three", "two", "one");
         assertThat(threePostResult.value())
                 .allSatisfy(post -> {
-                    assertThat(post.getUser().getNickname()).isEqualTo("writer");
-                    assertThat(post.getUser().getJob()).isEqualTo(job.getName());
-                    assertThat(post.getImgUrls()).hasSize(1);
-                    assertThat(post.getComments()).hasSize(1);
+                    assertThat(post.user().nickname()).isEqualTo("writer");
+                    assertThat(post.user().job()).isEqualTo(job.getName());
+                    assertThat(post.imgUrls()).hasSize(1);
+                    assertThat(post.comments()).hasSize(1);
                 });
         assertThat(threePostResult.queryCount()).isEqualTo(singlePostResult.queryCount());
     }
@@ -188,15 +188,15 @@ class ListQueryCountIntegrationTest {
         );
 
         assertThat(singlePostResult.value().getContent())
-                .extracting(GetPostDto::getContents)
+                .extracting(GetPostDto::contents)
                 .containsExactly("three");
         assertThat(threePostResult.value().getContent())
-                .extracting(GetPostDto::getContents)
+                .extracting(GetPostDto::contents)
                 .containsExactly("three", "two", "one");
         assertThat(threePostResult.value().getContent())
                 .allSatisfy(post -> {
-                    assertThat(post.getMogakId()).isEqualTo(mogak.getId());
-                    assertThat(post.getThumbnailUrl()).startsWith("https://example.com/thumb-");
+                    assertThat(post.mogakId()).isEqualTo(mogak.getId());
+                    assertThat(post.thumbnailUrl()).startsWith("https://example.com/thumb-");
                 });
         assertThat(threePostResult.queryCount()).isEqualTo(singlePostResult.queryCount());
     }
@@ -220,14 +220,14 @@ class ListQueryCountIntegrationTest {
                 () -> mogakService.getMogakDtoList(writer.getId(), largeModarat.getId())
         );
 
-        assertThat(singleMogakResult.value().getMogaks())
-                .extracting(MogakResponseDto.GetMogakDto::getTitle)
+        assertThat(singleMogakResult.value().mogaks())
+                .extracting(MogakResponseDto.GetMogakDto::title)
                 .containsExactly("small-one");
-        assertThat(threeMogakResult.value().getMogaks())
-                .extracting(MogakResponseDto.GetMogakDto::getTitle)
+        assertThat(threeMogakResult.value().mogaks())
+                .extracting(MogakResponseDto.GetMogakDto::title)
                 .containsExactlyInAnyOrder("large-one", "large-two", "large-three");
-        assertThat(threeMogakResult.value().getMogaks())
-                .allSatisfy(mogak -> assertThat(mogak.getBigCategory().getName()).isEqualTo(category.getName()));
+        assertThat(threeMogakResult.value().mogaks())
+                .allSatisfy(mogak -> assertThat(mogak.bigCategory().getName()).isEqualTo(category.getName()));
         assertThat(threeMogakResult.queryCount()).isEqualTo(singleMogakResult.queryCount());
     }
 
@@ -251,16 +251,16 @@ class ListQueryCountIntegrationTest {
         );
 
         assertThat(singleJogakResult.value())
-                .extracting(JogakResponseDto.GetJogakDto::getTitle)
+                .extracting(JogakResponseDto.GetJogakDto::title)
                 .containsExactly("small-one");
         assertThat(threeJogakResult.value())
-                .extracting(JogakResponseDto.GetJogakDto::getTitle)
+                .extracting(JogakResponseDto.GetJogakDto::title)
                 .containsExactlyInAnyOrder("large-one", "large-two", "large-three");
         assertThat(threeJogakResult.value())
                 .allSatisfy(jogak -> {
-                    assertThat(jogak.getMogakTitle()).isEqualTo(largeMogak.getTitle());
-                    assertThat(jogak.getCategory()).isEqualTo(category.getName());
-                    assertThat(jogak.getDays()).hasSize(1);
+                    assertThat(jogak.mogakTitle()).isEqualTo(largeMogak.getTitle());
+                    assertThat(jogak.category()).isEqualTo(category.getName());
+                    assertThat(jogak.days()).hasSize(1);
                 });
         assertThat(threeJogakResult.queryCount()).isEqualTo(singleJogakResult.queryCount());
     }

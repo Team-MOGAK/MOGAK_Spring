@@ -49,10 +49,7 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public FollowRequestDto.CountDto getFollowCount(String nickname) {
         User user = userRepository.findActiveByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        return FollowRequestDto.CountDto.builder()
-                .motoCnt(getMotoCount(user))
-                .mentorCnt(getMentorCount(user))
-                .build();
+        return new FollowRequestDto.CountDto(getMentorCount(user), getMotoCount(user));
     }
 
     @Override

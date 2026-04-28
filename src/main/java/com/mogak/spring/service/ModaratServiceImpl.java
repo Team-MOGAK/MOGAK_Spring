@@ -35,7 +35,7 @@ public class ModaratServiceImpl implements ModaratService {
     @Override
     public Modarat create(Long userId, ModaratRequestDto.CreateModaratDto request) {
         User user = userRepository.findActiveById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        return modaratRepository.save(Modarat.of(user, request.getTitle(), request.getColor()));
+        return modaratRepository.save(Modarat.of(user, request.title(), request.color()));
     }
 
     @Transactional
@@ -51,7 +51,7 @@ public class ModaratServiceImpl implements ModaratService {
     @Override
     public Modarat update(Long userId, Long modaratId, ModaratRequestDto.UpdateModaratDto request) {
         Modarat modarat = getOwnedModarat(modaratId, userId);
-        modarat.update(request.getTitle(), request.getColor());
+        modarat.update(request.title(), request.color());
         return modarat;
     }
 
@@ -60,8 +60,7 @@ public class ModaratServiceImpl implements ModaratService {
         Modarat modarat = getOwnedModarat(modaratId, userId);
         List<GetMogakInModaratDto> mogakDtoList = modaratRepository.findMogakDtoListByModaratId(modarat.getId()).orElse(List.of());
         SingleDetailModaratDto modaratDto = modaratRepository.findOneDetailModarat(modaratId);
-        modaratDto.updateMogakList(mogakDtoList);
-        return modaratDto;
+        return modaratDto.withMogakDtoList(mogakDtoList);
     }
 
     @Override

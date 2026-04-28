@@ -47,19 +47,19 @@ public class MogakServiceImpl implements MogakService {
     public MogakResponseDto.GetMogakDto create(Long userId, MogakRequestDto.CreateDto request) {
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        Modarat modarat = getOwnedModarat(request.getModaratId(), userId);
+        Modarat modarat = getOwnedModarat(request.modaratId(), userId);
         if (!validateMogakNum(modarat)) {
             throw new BaseException(ErrorCode.EXCEED_MAX_MOGAK);
         }
-        MogakCategory category = categoryRepository.findMogakCategoryByName(request.getBigCategory())
+        MogakCategory category = categoryRepository.findMogakCategoryByName(request.bigCategory())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
         Mogak result = mogakRepository.save(Mogak.of(
                 user,
                 modarat,
                 category,
-                request.getSmallCategory(),
-                request.getTitle(),
-                request.getColor()
+                request.smallCategory(),
+                request.title(),
+                request.color()
         ));
         return toGetMogakDto(result);
     }
@@ -119,8 +119,8 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public MogakResponseDto.GetMogakDto updateMogak(Long userId, MogakRequestDto.UpdateDto request) {
-        Mogak mogak = getOwnedMogak(request.getMogakId(), userId);
-        Optional<String> categoryOptional = Optional.ofNullable(request.getBigCategory());
+        Mogak mogak = getOwnedMogak(request.mogakId(), userId);
+        Optional<String> categoryOptional = Optional.ofNullable(request.bigCategory());
         categoryOptional.ifPresent(categoryValue -> {
             MogakCategory category = categoryRepository.findMogakCategoryByName(categoryValue)
                     .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
@@ -129,7 +129,7 @@ public class MogakServiceImpl implements MogakService {
             List<Jogak> jogakList = jogakRepository.findAllByMogak(mogak);
             jogakList.forEach(jogak -> jogak.updateCategory(category));
         });
-        mogak.update(request.getTitle(), request.getSmallCategory(), request.getColor());
+        mogak.update(request.title(), request.smallCategory(), request.color());
         return toGetMogakDto(mogak);
     }
 
@@ -144,10 +144,7 @@ public class MogakServiceImpl implements MogakService {
         List<MogakResponseDto.GetMogakDto> mogaks = mogakRepository.findAllByModaratId(modarat.getId()).stream()
                 .map(this::toGetMogakDto)
                 .collect(Collectors.toList());
-        return MogakResponseDto.GetMogakListDto.builder()
-                .mogaks(mogaks)
-                .size(mogaks.size())
-                .build();
+        return new MogakResponseDto.GetMogakListDto(mogaks, mogaks.size());
     }
 
     /**
@@ -243,6 +240,16 @@ public class MogakServiceImpl implements MogakService {
                 .anyMatch(dailyJogak -> dailyJogak.getJogak().equals(jogak));
     }
 
+    private MogakResponseDto.GetMogakDto toGetMogakDto(Mogak mogak) {
+        return new MogakResponseDto.GetMogakDto(
+                mogak.getId(),
+                mogak.getTitle(),
+                mogak.getBigCategory(),
+                mogak.getSmallCategory(),
+                mogak.getColor()
+        );
+    }
+
     private Modarat getOwnedModarat(Long modaratId, Long userId) {
         Modarat modarat = modaratRepository.findActiveById(modaratId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_MODARAT));
@@ -250,16 +257,6 @@ public class MogakServiceImpl implements MogakService {
             throw new AuthException(ErrorCode.INVALID_PERMISSION);
         }
         return modarat;
-    }
-
-    private MogakResponseDto.GetMogakDto toGetMogakDto(Mogak mogak) {
-        return MogakResponseDto.GetMogakDto.builder()
-                .id(mogak.getId())
-                .title(mogak.getTitle())
-                .bigCategory(mogak.getBigCategory())
-                .smallCategory(mogak.getSmallCategory())
-                .color(mogak.getColor())
-                .build();
     }
 
     private Mogak getOwnedMogak(Long mogakId, Long userId) {

@@ -40,8 +40,8 @@ public class StorageCleanupService {
         }
         List<PostImg> cleanupTargets = uploadedImages.stream()
                 .map(uploadedImage -> PostImg.builder()
-                        .imgName(uploadedImage.getImgName())
-                        .imgUrl(uploadedImage.getImgUrl())
+                        .imgName(uploadedImage.imgName())
+                        .imgUrl(uploadedImage.imgUrl())
                         .build())
                 .toList();
         deletePostImagesBestEffort(cleanupTargets, dirName);

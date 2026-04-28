@@ -103,7 +103,7 @@ class PostLikeServiceImplTest {
     @Test
     @DisplayName("좋아요 요청 게시글 ID가 없으면 입력값 오류를 반환한다")
     void updateLikeThrowsWhenPostIdMissing() {
-        Throwable throwable = catchThrowable(() -> postLikeService.updateLike(1L, new PostLikeRequestDto.LikeDto()));
+        Throwable throwable = catchThrowable(() -> postLikeService.updateLike(1L, new PostLikeRequestDto.LikeDto(null)));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PARAMETER_ERROR);
         verify(postRepository, never()).findActiveByIdForUpdate(org.mockito.ArgumentMatchers.anyLong());
@@ -140,9 +140,7 @@ class PostLikeServiceImplTest {
     }
 
     private PostLikeRequestDto.LikeDto likeRequest(Long postId) {
-        PostLikeRequestDto.LikeDto request = new PostLikeRequestDto.LikeDto();
-        ReflectionTestUtils.setField(request, "postId", postId);
-        return request;
+        return new PostLikeRequestDto.LikeDto(postId);
     }
 
     private User user(Long id) {

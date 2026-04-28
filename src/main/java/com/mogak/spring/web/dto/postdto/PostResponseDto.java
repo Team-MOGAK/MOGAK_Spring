@@ -1,216 +1,246 @@
 package com.mogak.spring.web.dto.postdto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mogak.spring.domain.jogak.DailyJogak;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import com.mogak.spring.web.dto.commentdto.CommentResponseDto;
-import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PostResponseDto {
 
-    //read-상세조회
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class PostDto {
-        private Long postId;
-        private Long mogakId;
-        private Long jogakId;
-        private Long dailyJogakId;
-        private LocalDate targetDate;
-        private Long userId; //추후 로그인 구현후 수정 필요할듯
-        private String contents;
-        private List<String> imgUrls;
-        private List<Long> commentId;
-        private int likeCnt;
-        private int commentCnt;
+    private PostResponseDto() {
+    }
+
+    public record PostDto(
+            Long postId,
+            Long mogakId,
+            Long jogakId,
+            Long dailyJogakId,
+            LocalDate targetDate,
+            Long userId,
+            String contents,
+            List<String> imgUrls,
+            List<Long> commentId,
+            int likeCnt,
+            int commentCnt
+    ) {
+        public static PostDto of(
+                Long postId,
+                Long mogakId,
+                Long jogakId,
+                Long dailyJogakId,
+                LocalDate targetDate,
+                Long userId,
+                String contents,
+                List<String> imgUrls,
+                List<Long> commentId,
+                int likeCnt,
+                int commentCnt
+        ) {
+            return new PostDto(postId, mogakId, jogakId, dailyJogakId, targetDate, userId, contents, imgUrls, commentId, likeCnt, commentCnt);
+        }
 
         public static PostDto from(Post post, List<String> imgUrls, List<Long> commentIds) {
             DailyJogak dailyJogak = post.getDailyJogak();
-            return PostDto.builder()
-                    .postId(post.getId())
-                    .mogakId(dailyJogak.getJogak().getMogak().getId())
-                    .jogakId(dailyJogak.getJogak().getId())
-                    .dailyJogakId(dailyJogak.getId())
-                    .targetDate(dailyJogak.getTargetDate())
-                    .userId(post.getUser().getId())
-                    .contents(post.getContents())
-                    .imgUrls(imgUrls)
-                    .commentId(commentIds)
-                    .likeCnt(post.getLikeCnt())
-                    .commentCnt(post.getCommentCnt())
-                    .build();
+            return of(
+                    post.getId(),
+                    dailyJogak.getJogak().getMogak().getId(),
+                    dailyJogak.getJogak().getId(),
+                    dailyJogak.getId(),
+                    dailyJogak.getTargetDate(),
+                    post.getUser().getId(),
+                    post.getContents(),
+                    imgUrls,
+                    commentIds,
+                    post.getLikeCnt(),
+                    post.getCommentCnt()
+            );
         }
-
     }
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    //리스트를 위한 post dto
-    public static class GetPostDto {
-        private Long postId;
-        private Long mogakId;
-        private Long jogakId;
-        private Long dailyJogakId;
-        private LocalDate targetDate;
-        private String contents;
-        private String thumbnailUrl;
-        private int likeCnt;
+
+    public record GetPostDto(
+            Long postId,
+            Long mogakId,
+            Long jogakId,
+            Long dailyJogakId,
+            LocalDate targetDate,
+            String contents,
+            String thumbnailUrl,
+            int likeCnt
+    ) {
+        public static GetPostDto of(
+                Long postId,
+                Long mogakId,
+                Long jogakId,
+                Long dailyJogakId,
+                LocalDate targetDate,
+                String contents,
+                String thumbnailUrl,
+                int likeCnt
+        ) {
+            return new GetPostDto(postId, mogakId, jogakId, dailyJogakId, targetDate, contents, thumbnailUrl, likeCnt);
+        }
 
         public static GetPostDto from(Post post) {
             DailyJogak dailyJogak = post.getDailyJogak();
-            return GetPostDto.builder()
-                    .postId(post.getId())
-                    .mogakId(dailyJogak.getJogak().getMogak().getId())
-                    .jogakId(dailyJogak.getJogak().getId())
-                    .dailyJogakId(dailyJogak.getId())
-                    .targetDate(dailyJogak.getTargetDate())
-                    .contents(post.getContents())
-                    .thumbnailUrl(post.getPostThumbnailUrl())
-                    .build();
+            return of(
+                    post.getId(),
+                    dailyJogak.getJogak().getMogak().getId(),
+                    dailyJogak.getJogak().getId(),
+                    dailyJogak.getId(),
+                    dailyJogak.getTargetDate(),
+                    post.getContents(),
+                    post.getPostThumbnailUrl(),
+                    post.getLikeCnt()
+            );
         }
     }
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class PostListDto {
-        private List<PostResponseDto.GetPostDto> postDtoList;
-        private boolean hasNext; //다음페이지 존재하는지의 여부 + 추가 구현 필요
-        private Integer size;
+
+    public record PostListDto(
+            List<PostResponseDto.GetPostDto> postDtoList,
+            @JsonProperty("hasNext") boolean hasNext,
+            Integer size
+    ) {
+        public static PostListDto of(List<PostResponseDto.GetPostDto> postDtoList, boolean hasNext, Integer size) {
+            return new PostListDto(postDtoList, hasNext, size);
+        }
     }
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class CreatePostDto {
-        private Long id;
-        private Long mogakId;
-        private Long jogakId;
-        private Long dailyJogakId;
-        private LocalDate targetDate;
-        private Long userId;
-        private String contents;
-        private List<String> imgUrls;
-        private LocalDateTime createdAt;
+
+    public record CreatePostDto(
+            Long id,
+            Long mogakId,
+            Long jogakId,
+            Long dailyJogakId,
+            LocalDate targetDate,
+            Long userId,
+            String contents,
+            List<String> imgUrls,
+            LocalDateTime createdAt
+    ) {
+        public static CreatePostDto of(
+                Long id,
+                Long mogakId,
+                Long jogakId,
+                Long dailyJogakId,
+                LocalDate targetDate,
+                Long userId,
+                String contents,
+                List<String> imgUrls,
+                LocalDateTime createdAt
+        ) {
+            return new CreatePostDto(id, mogakId, jogakId, dailyJogakId, targetDate, userId, contents, imgUrls, createdAt);
+        }
 
         public static CreatePostDto from(Post post, List<String> imgUrls) {
             DailyJogak dailyJogak = post.getDailyJogak();
-            return CreatePostDto.builder()
-                    .id(post.getId())
-                    .mogakId(dailyJogak.getJogak().getMogak().getId())
-                    .jogakId(dailyJogak.getJogak().getId())
-                    .dailyJogakId(dailyJogak.getId())
-                    .targetDate(dailyJogak.getTargetDate())
-                    .userId(post.getUser().getId())
-                    .contents(post.getContents())
-                    .imgUrls(imgUrls)
-                    .createdAt(post.getCreatedAt())
-                    .build();
+            return of(
+                    post.getId(),
+                    dailyJogak.getJogak().getMogak().getId(),
+                    dailyJogak.getJogak().getId(),
+                    dailyJogak.getId(),
+                    dailyJogak.getTargetDate(),
+                    post.getUser().getId(),
+                    post.getContents(),
+                    imgUrls,
+                    post.getCreatedAt()
+            );
         }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class UpdatePostDto {
-        private Long id;
-        private String contents;
-        private LocalDateTime updatedAt;
+    public record UpdatePostDto(
+            Long id,
+            String contents,
+            LocalDateTime updatedAt
+    ) {
+        public static UpdatePostDto of(Long id, String contents, LocalDateTime updatedAt) {
+            return new UpdatePostDto(id, contents, updatedAt);
+        }
 
         public static UpdatePostDto from(Post post, LocalDateTime updatedAt) {
-            return UpdatePostDto.builder()
-                    .id(post.getId())
-                    .contents(post.getContents())
-                    .updatedAt(updatedAt)
-                    .build();
+            return of(post.getId(), post.getContents(), updatedAt);
         }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class DeletePostDto {
-        private boolean deleted;
-
-        public static DeletePostDto deleted() {
-            return DeletePostDto.builder()
-                    .deleted(true)
-                    .build();
+    public record DeletePostDto(@JsonProperty("deleted") boolean deleted) {
+        public static DeletePostDto deletedResponse() {
+            return new DeletePostDto(true);
         }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class NetworkPostDto {
-        private UserResponseDto.UserDto user;
-        private String contents;
-        private List<String> imgUrls;
-        private List<CommentResponseDto.NetworkCommentDto> comments;
-        private int likeCnt;
-        private int viewCnt;
+    public record NetworkPostDto(
+            UserResponseDto.UserDto user,
+            String contents,
+            List<String> imgUrls,
+            List<CommentResponseDto.NetworkCommentDto> comments,
+            int likeCnt,
+            int viewCnt
+    ) {
+        public static NetworkPostDto of(
+                UserResponseDto.UserDto user,
+                String contents,
+                List<String> imgUrls,
+                List<CommentResponseDto.NetworkCommentDto> comments,
+                int likeCnt,
+                int viewCnt
+        ) {
+            return new NetworkPostDto(user, contents, imgUrls, comments, likeCnt, viewCnt);
+        }
 
-        public static NetworkPostDto from(Post post,
-                                          UserResponseDto.UserDto user,
-                                          List<String> imgUrls,
-                                          List<CommentResponseDto.NetworkCommentDto> comments) {
-            return NetworkPostDto.builder()
-                    .user(user)
-                    .contents(post.getContents())
-                    .imgUrls(imgUrls)
-                    .comments(comments)
-                    .likeCnt(post.getLikeCnt())
-                    .viewCnt(post.getViewCnt())
-                    .build();
+        public static NetworkPostDto from(
+                Post post,
+                UserResponseDto.UserDto user,
+                List<String> imgUrls,
+                List<CommentResponseDto.NetworkCommentDto> comments
+        ) {
+            return of(user, post.getContents(), imgUrls, comments, post.getLikeCnt(), post.getViewCnt());
         }
     }
 
-    //전체 네트워크
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class GetAllNetworkDto {
-        private Long postId;
-        private String userName;
-        private String userJob;
-        private String contents;
-        private List<String> imgUrls;
-        private int commentCnt;
-        private int likeCnt;
+    public record GetAllNetworkDto(
+            Long postId,
+            String userName,
+            String userJob,
+            String contents,
+            List<String> imgUrls,
+            int commentCnt,
+            int likeCnt
+    ) {
+        public static GetAllNetworkDto of(
+                Long postId,
+                String userName,
+                String userJob,
+                String contents,
+                List<String> imgUrls,
+                int commentCnt,
+                int likeCnt
+        ) {
+            return new GetAllNetworkDto(postId, userName, userJob, contents, imgUrls, commentCnt, likeCnt);
+        }
 
         public static GetAllNetworkDto from(Post post, List<String> imgUrls) {
-            return GetAllNetworkDto.builder()
-                    .postId(post.getId())
-                    .userName(post.getUser().getNickname())
-                    .userJob(post.getUser().getJob().getName())
-                    .contents(post.getContents())
-                    .imgUrls(imgUrls)
-                    .commentCnt(post.getCommentCnt())
-                    .likeCnt(post.getLikeCnt())
-                    .build();
+            return of(
+                    post.getId(),
+                    post.getUser().getNickname(),
+                    post.getUser().getJob().getName(),
+                    post.getContents(),
+                    imgUrls,
+                    post.getCommentCnt(),
+                    post.getLikeCnt()
+            );
         }
     }
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class NetworkListDto {
-        private List<PostResponseDto.GetAllNetworkDto> postDtoList;
-        private boolean hasNext; //다음페이지 존재하는지의 여부 + 추가 구현 필요
-        private Integer size;
-    }
 
+    public record NetworkListDto(
+            List<PostResponseDto.GetAllNetworkDto> postDtoList,
+            @JsonProperty("hasNext") boolean hasNext,
+            Integer size
+    ) {
+        public static NetworkListDto of(List<PostResponseDto.GetAllNetworkDto> postDtoList, boolean hasNext, Integer size) {
+            return new NetworkListDto(postDtoList, hasNext, size);
+        }
+    }
 }

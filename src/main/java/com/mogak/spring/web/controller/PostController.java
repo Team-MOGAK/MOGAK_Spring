@@ -157,7 +157,7 @@ public class PostController {
     public ResponseEntity<BaseResponse<DeletePostDto>> deletePost(@PathVariable Long postId,
                                                                   @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         postService.delete(authenticatedUser.getUserId(), postId);
-        return ResponseEntity.ok(new BaseResponse<>(DeletePostDto.deleted()));
+        return ResponseEntity.ok(new BaseResponse<>(DeletePostDto.deletedResponse()));
     }
 
 }

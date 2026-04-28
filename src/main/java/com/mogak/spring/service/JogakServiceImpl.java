@@ -90,7 +90,7 @@ public class JogakServiceImpl implements JogakService {
     @Transactional
     @Override
     public JogakResponseDto.CreateJogakDto createJogak(Long userId, JogakRequestDto.CreateJogakDto createJogakDto) {
-        Mogak mogak = mogakRepository.findActiveById(createJogakDto.getMogakId())
+        Mogak mogak = mogakRepository.findActiveById(createJogakDto.mogakId())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
         validateMogakOwner(userId, mogak);
 
@@ -98,16 +98,18 @@ public class JogakServiceImpl implements JogakService {
         if (!validateJogakNum(mogak)) {
             throw new BaseException(ErrorCode.EXCEED_MAX_JOGAK);
         }
-        if (createJogakDto.getToday() == null) {
+        if (createJogakDto.today() == null) {
             throw new JogakException(ErrorCode.NOT_VALID_START_DATE);
         }
-        Jogak jogak = jogakRepository.save(Jogak.create(mogak, createJogakDto.getTitle(), createJogakDto.getIsRoutine(), createJogakDto.getToday(), createJogakDto.getEndDate()));
-        validatePeriod(Optional.ofNullable(createJogakDto.getIsRoutine()), Optional.ofNullable(createJogakDto.getDays()));
+        Jogak jogak = jogakRepository.save(
+                Jogak.create(mogak, createJogakDto.title(), createJogakDto.isRoutine(), createJogakDto.today(), createJogakDto.endDate())
+        );
+        validatePeriod(Optional.ofNullable(createJogakDto.isRoutine()), Optional.ofNullable(createJogakDto.days()));
 
         // 루틴이 존재할 경우
-        if (createJogakDto.getIsRoutine()) {
+        if (Boolean.TRUE.equals(createJogakDto.isRoutine())) {
             List<Period> periods = new ArrayList<>();
-            List<String> requestDays = createJogakDto.getDays();
+            List<String> requestDays = createJogakDto.days();
             if (requestDays == null) {
                 throw new BaseException(ErrorCode.NOT_EXIST_ROUTINES);
             }
@@ -118,8 +120,8 @@ public class JogakServiceImpl implements JogakService {
                         .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_DAY));
                 periods.add(period);
                 // 주기와 오늘이 일치하는 경우
-                if (dateToNum(createJogakDto.getToday()) == period.getId()) {
-                    dailyJogakRepository.save(DailyJogak.create(jogak, createJogakDto.getToday()));
+                if (dateToNum(createJogakDto.today()) == period.getId()) {
+                    dailyJogakRepository.save(DailyJogak.create(jogak, createJogakDto.today()));
                 }
             }
             // 다대다-조각주기 저장
@@ -145,13 +147,13 @@ public class JogakServiceImpl implements JogakService {
                 .orElseThrow(() -> new JogakException(ErrorCode.NOT_EXIST_JOGAK));
         validateJogakOwner(userId, jogak);
 
-        validatePeriod(Optional.ofNullable(updateJogakDto.getIsRoutine()), Optional.ofNullable(updateJogakDto.getDays()));
-        jogak.update(updateJogakDto.getTitle(), updateJogakDto.getIsRoutine(), updateJogakDto.getEndDate());
+        validatePeriod(Optional.ofNullable(updateJogakDto.isRoutine()), Optional.ofNullable(updateJogakDto.days()));
+        jogak.update(updateJogakDto.title(), updateJogakDto.isRoutine(), updateJogakDto.endDate());
 
-        if (updateJogakDto.getDays() != null) {
-            updateJogakPeriod(jogak, updateJogakDto.getDays());
+        if (updateJogakDto.days() != null) {
+            updateJogakPeriod(jogak, updateJogakDto.days());
         }
-        if (updateJogakDto.getIsRoutine() != null && !updateJogakDto.getIsRoutine()) {
+        if (updateJogakDto.isRoutine() != null && !updateJogakDto.isRoutine()) {
             jogakPeriodRepository.deleteAllByJogakId(jogak.getId());
         }
 

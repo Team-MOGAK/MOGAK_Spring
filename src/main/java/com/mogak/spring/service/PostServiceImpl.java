@@ -63,7 +63,7 @@ public class PostServiceImpl implements PostService {
     public void validateCreateAccess(Long userId, PostRequestDto.CreatePostDto request, List<MultipartFile> multipartFile, Long jogakId) {
         validateContents(request);
         validateSourceImages(multipartFile);
-        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request.getTargetDate());
+        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request.targetDate());
         validateTargetDate(dailyJogak.getJogak(), dailyJogak.getTargetDate());
         if (postRepository.existsByDailyJogakIdAndDeletedAtIsNull(dailyJogak.getId())) {
             throw new PostException(ErrorCode.ALREADY_EXISTS_POST);
@@ -76,18 +76,18 @@ public class PostServiceImpl implements PostService {
     public Post create(Long userId, PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, Long jogakId) {
         validateContents(request);
         validateCreatedImages(postImgDtoList);
-        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request.getTargetDate());
-        validateTargetDate(dailyJogak.getJogak(), request.getTargetDate());
+        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request.targetDate());
+        validateTargetDate(dailyJogak.getJogak(), request.targetDate());
         if (postRepository.existsByDailyJogakIdAndDeletedAtIsNull(dailyJogak.getId())) {
             throw new PostException(ErrorCode.ALREADY_EXISTS_POST);
         }
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        Post post = Post.create(dailyJogak, user, request.getContents());
+        Post post = Post.create(dailyJogak, user, request.contents());
         for (PostImgRequestDto.CreatePostImgDto postImgDto : postImgDtoList) {
-            PostImg postImg = PostImg.create(post, postImgDto.getImgName(), postImgDto.getImgUrl());
+            PostImg postImg = PostImg.create(post, postImgDto.imgName(), postImgDto.imgUrl());
             //썸네일이미지인지 체크 필요
-            if (postImgDto.isThumbnail()) {
+            if (postImgDto.thumbnail()) {
                 post.putPostThumbnailUrl(postImg.getImgUrl()); //썸네일 이미지는 thumbnailurl에 추가
             } else {//이미지 업로드 체크
                 post.putPostImg(postImg);
@@ -144,7 +144,7 @@ public class PostServiceImpl implements PostService {
     public Post update(Long userId, Long postId, PostRequestDto.UpdatePostDto request) {
         Post post = getOwnedPost(userId, postId);
         validateContents(request);
-        post.updatePost(request.contents);
+        post.updatePost(request.contents());
         return post;
     }
 
@@ -324,19 +324,19 @@ public class PostServiceImpl implements PostService {
     }
 
     private void validateContents(PostRequestDto.CreatePostDto request) {
-        if (request == null || request.getContents() == null) {
+        if (request == null || request.contents() == null) {
             throw new PostException(ErrorCode.INVALID_PARAMETER_ERROR);
         }
-        if (request.getContents().length() > 350) {
+        if (request.contents().length() > 350) {
             throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
         }
     }
 
     private void validateContents(PostRequestDto.UpdatePostDto request) {
-        if (request == null || request.contents == null) {
+        if (request == null || request.contents() == null) {
             throw new PostException(ErrorCode.INVALID_PARAMETER_ERROR);
         }
-        if (request.contents.length() > 350) {
+        if (request.contents().length() > 350) {
             throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
         }
     }

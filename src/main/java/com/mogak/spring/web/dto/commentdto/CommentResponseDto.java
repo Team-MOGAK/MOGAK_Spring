@@ -1,123 +1,110 @@
 package com.mogak.spring.web.dto.commentdto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mogak.spring.domain.post.PostComment;
-import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class CommentResponseDto {
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class CommentDto {
-        private Long commentId;
-        private Long postId;
-        private Long userId;
-        private String contents;
-        private LocalDateTime createdAt;
+
+    private CommentResponseDto() {
+    }
+
+    public record CommentDto(
+            Long commentId,
+            Long postId,
+            Long userId,
+            String contents,
+            LocalDateTime createdAt
+    ) {
+        public static CommentDto of(Long commentId, Long postId, Long userId, String contents, LocalDateTime createdAt) {
+            return new CommentDto(commentId, postId, userId, contents, createdAt);
+        }
 
         public static CommentDto from(PostComment comment) {
-            return CommentDto.builder()
-                    .commentId(comment.getId())
-                    .postId(comment.getPost().getId())
-                    .userId(comment.getUser().getId())
-                    .contents(comment.getContents())
-                    .createdAt(comment.getCreatedAt())
-                    .build();
+            return of(
+                    comment.getId(),
+                    comment.getPost().getId(),
+                    comment.getUser().getId(),
+                    comment.getContents(),
+                    comment.getCreatedAt()
+            );
         }
     }
-    //list
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class CommentListDto {
-        private List<CommentResponseDto.CommentDto> commentDtoList;
+
+    public record CommentListDto(List<CommentResponseDto.CommentDto> commentDtoList) {
+        public static CommentListDto of(List<CommentResponseDto.CommentDto> commentDtoList) {
+            return new CommentListDto(commentDtoList);
+        }
 
         public static CommentListDto from(List<PostComment> commentList) {
-            return CommentListDto.builder()
-                    .commentDtoList(commentList.stream()
-                            .map(CommentDto::from)
-                            .collect(Collectors.toList()))
-                    .build();
+            return of(commentList.stream()
+                    .map(CommentDto::from)
+                    .collect(Collectors.toList()));
         }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class CreateCommentDto {
-        private Long id;
-        private Long postId;
-        private Long userId;
-        private String contents;
-        private LocalDateTime createdAt;
+    public record CreateCommentDto(
+            Long id,
+            Long postId,
+            Long userId,
+            String contents,
+            LocalDateTime createdAt
+    ) {
+        public static CreateCommentDto of(Long id, Long postId, Long userId, String contents, LocalDateTime createdAt) {
+            return new CreateCommentDto(id, postId, userId, contents, createdAt);
+        }
 
         public static CreateCommentDto from(PostComment comment) {
-            return CreateCommentDto.builder()
-                    .id(comment.getId())
-                    .postId(comment.getPost().getId())
-                    .userId(comment.getUser().getId())
-                    .contents(comment.getContents())
-                    .createdAt(comment.getCreatedAt())
-                    .build();
+            return of(
+                    comment.getId(),
+                    comment.getPost().getId(),
+                    comment.getUser().getId(),
+                    comment.getContents(),
+                    comment.getCreatedAt()
+            );
         }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class UpdateCommentDto {
-        private Long id;
-        private String contents;
-        private LocalDateTime updatedAt;
+    public record UpdateCommentDto(
+            Long id,
+            String contents,
+            LocalDateTime updatedAt
+    ) {
+        public static UpdateCommentDto of(Long id, String contents, LocalDateTime updatedAt) {
+            return new UpdateCommentDto(id, contents, updatedAt);
+        }
 
         public static UpdateCommentDto from(PostComment comment, LocalDateTime updatedAt) {
-            return UpdateCommentDto.builder()
-                    .id(comment.getId())
-                    .contents(comment.getContents())
-                    .updatedAt(updatedAt)
-                    .build();
+            return of(comment.getId(), comment.getContents(), updatedAt);
         }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class DeleteCommentDto {
-        private boolean deleted;
-
-        public static DeleteCommentDto deleted() {
-            return DeleteCommentDto.builder()
-                    .deleted(true)
-                    .build();
+    public record DeleteCommentDto(@JsonProperty("deleted") boolean deleted) {
+        public static DeleteCommentDto deletedResponse() {
+            return new DeleteCommentDto(true);
         }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class NetworkCommentDto {
-        private Long commentId;
-        private String nickname;
-        private String contents;
-        private LocalDateTime createdAt;
+    public record NetworkCommentDto(
+            Long commentId,
+            String nickname,
+            String contents,
+            LocalDateTime createdAt
+    ) {
+        public static NetworkCommentDto of(Long commentId, String nickname, String contents, LocalDateTime createdAt) {
+            return new NetworkCommentDto(commentId, nickname, contents, createdAt);
+        }
 
         public static NetworkCommentDto from(PostComment comment) {
-            return NetworkCommentDto.builder()
-                    .commentId(comment.getId())
-                    .nickname(comment.getUser().getNickname())
-                    .contents(comment.getContents())
-                    .createdAt(comment.getCreatedAt())
-                    .build();
+            return of(
+                    comment.getId(),
+                    comment.getUser().getNickname(),
+                    comment.getContents(),
+                    comment.getCreatedAt()
+            );
         }
     }
-
 }

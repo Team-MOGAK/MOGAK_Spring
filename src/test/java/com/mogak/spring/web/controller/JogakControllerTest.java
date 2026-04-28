@@ -67,15 +67,19 @@ class JogakControllerTest {
     @Test
     @DisplayName("조각 생성 요청이 성공하면 생성 응답 계약을 반환한다")
     void createJogakContract() throws Exception {
-        when(jogakService.createJogak(eq(1L), any(JogakRequestDto.CreateJogakDto.class))).thenReturn(JogakResponseDto.CreateJogakDto.builder()
-                .jogakId(1L)
-                .mogakTitle("정보처리기사")
-                .category("자격증")
-                .title("문제풀이")
-                .isRoutine(false)
-                .achievements(0)
-                .startDate(LocalDate.of(2026, 3, 26))
-                .build());
+        when(jogakService.createJogak(eq(1L), any(JogakRequestDto.CreateJogakDto.class))).thenReturn(
+                new JogakResponseDto.CreateJogakDto(
+                        1L,
+                        "정보처리기사",
+                        "자격증",
+                        "문제풀이",
+                        false,
+                        null,
+                        0,
+                        LocalDate.of(2026, 3, 26),
+                        null
+                )
+        );
 
         mockMvc.perform(post("/api/modarats/mogaks/jogaks")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -107,17 +111,22 @@ class JogakControllerTest {
     @Test
     @DisplayName("일회성 조각 조회 요청이 성공하면 조회 응답 계약을 반환한다")
     void getDailyJogaksContract() throws Exception {
-        when(jogakService.getDailyJogaks(anyLong(), eq(LocalDate.of(2026, 3, 26)))).thenReturn(JogakResponseDto.GetOneTimeJogakListDto.builder()
-                .size(1)
-                .jogaks(List.of(JogakResponseDto.GetOneTimeJogakDto.builder()
-                        .jogakId(1L)
-                        .mogakTitle("정보처리기사")
-                        .category("자격증")
-                        .title("문제풀이")
-                        .isRoutine(false)
-                        .isAlreadyAdded(true)
-                        .build()))
-                .build());
+        when(jogakService.getDailyJogaks(anyLong(), eq(LocalDate.of(2026, 3, 26)))).thenReturn(
+                new JogakResponseDto.GetOneTimeJogakListDto(
+                        1,
+                        List.of(new JogakResponseDto.GetOneTimeJogakDto(
+                                1L,
+                                "정보처리기사",
+                                "자격증",
+                                "문제풀이",
+                                false,
+                                true,
+                                null,
+                                null,
+                                null
+                        ))
+                )
+        );
 
         mockMvc.perform(get("/api/modarats/mogaks/jogaks/daily")
                         .param("date", "2026-03-26"))
@@ -135,12 +144,7 @@ class JogakControllerTest {
     @DisplayName("루틴 조각 조회 요청이 성공하면 조회 응답 계약을 반환한다")
     void getRoutineJogaksContract() throws Exception {
         when(jogakService.getRoutineJogaks(anyLong(), eq(LocalDate.of(2026, 3, 26)), eq(LocalDate.of(2026, 3, 30)))).thenReturn(List.of(
-                JogakResponseDto.GetRoutineJogakDto.builder()
-                        .dailyJogakId(-1L)
-                        .date(LocalDate.of(2026, 3, 27))
-                        .isAchievement(false)
-                        .title("루틴 조각")
-                        .build()
+                new JogakResponseDto.GetRoutineJogakDto(-1L, LocalDate.of(2026, 3, 27), false, "루틴 조각")
         ));
 
         mockMvc.perform(get("/api/modarats/mogaks/jogaks/routines")
@@ -159,18 +163,20 @@ class JogakControllerTest {
     @Test
     @DisplayName("일별 데일리 조각 조회 요청이 성공하면 query parameter 날짜로 조회 응답 계약을 반환한다")
     void getDayJogaksContract() throws Exception {
-        when(jogakService.getDayJogaks(anyLong(), eq(LocalDate.of(2026, 3, 26)))).thenReturn(JogakResponseDto.GetDailyJogakListDto.builder()
-                .size(1)
-                .dailyJogaks(List.of(JogakResponseDto.GetDailyJogakDto.builder()
-                        .jogakId(1L)
-                        .dailyJogakId(10L)
-                        .mogakTitle("정보처리기사")
-                        .category("자격증")
-                        .title("루틴 조각")
-                        .isRoutine(true)
-                        .isAchievement(false)
-                        .build()))
-                .build());
+        when(jogakService.getDayJogaks(anyLong(), eq(LocalDate.of(2026, 3, 26)))).thenReturn(
+                new JogakResponseDto.GetDailyJogakListDto(
+                        1,
+                        List.of(new JogakResponseDto.GetDailyJogakDto(
+                                1L,
+                                10L,
+                                "정보처리기사",
+                                "자격증",
+                                "루틴 조각",
+                                true,
+                                false
+                        ))
+                )
+        );
 
         mockMvc.perform(get("/api/modarats/mogaks/jogaks")
                         .param("date", "2026-03-26"))
@@ -187,16 +193,19 @@ class JogakControllerTest {
     @Test
     @DisplayName("조각 시작 요청이 성공하면 성공 응답 계약을 반환한다")
     void startJogakContract() throws Exception {
-        when(jogakService.startJogak(1L, 1L)).thenReturn(JogakResponseDto.JogakDailyJogakDto.builder()
-                .jogakId(1L)
-                .dailyJogakId(10L)
-                .title("문제풀이")
-                .mogakTitle("정보처리기사")
-                .category("자격증")
-                .isRoutine(false)
-                .isAchievement(false)
-                .achievements(0)
-                .build());
+        when(jogakService.startJogak(1L, 1L)).thenReturn(
+                new JogakResponseDto.JogakDailyJogakDto(
+                        1L,
+                        10L,
+                        "문제풀이",
+                        "정보처리기사",
+                        "자격증",
+                        false,
+                        null,
+                        false,
+                        0
+                )
+        );
 
         mockMvc.perform(post("/api/modarats/mogaks/jogaks/1/start"))
                 .andExpect(status().isOk())
@@ -226,16 +235,19 @@ class JogakControllerTest {
     @Test
     @DisplayName("조각 성공 요청이 성공하면 성공 응답 계약을 반환한다")
     void successJogakContract() throws Exception {
-        when(jogakService.successJogak(1L, 10L)).thenReturn(JogakResponseDto.JogakDailyJogakDto.builder()
-                .jogakId(1L)
-                .dailyJogakId(10L)
-                .title("문제풀이")
-                .mogakTitle("정보처리기사")
-                .category("자격증")
-                .isRoutine(false)
-                .isAchievement(true)
-                .achievements(1)
-                .build());
+        when(jogakService.successJogak(1L, 10L)).thenReturn(
+                new JogakResponseDto.JogakDailyJogakDto(
+                        1L,
+                        10L,
+                        "문제풀이",
+                        "정보처리기사",
+                        "자격증",
+                        false,
+                        null,
+                        true,
+                        1
+                )
+        );
 
         mockMvc.perform(put("/api/modarats/mogaks/jogaks/10/success"))
                 .andExpect(status().isOk())

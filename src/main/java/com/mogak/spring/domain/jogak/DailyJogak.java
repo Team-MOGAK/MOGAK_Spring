@@ -75,4 +75,5 @@ public class DailyJogak extends SoftDeletableEntity {
         this.title = jogak.getTitle();
         this.isRoutine = jogak.getIsRoutine();
     }
+
 }

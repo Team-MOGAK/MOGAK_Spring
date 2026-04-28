@@ -113,6 +113,6 @@ public class CommentController {
                                                                         @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                         @PathVariable(name = "commentId") Long commentId) {
         postCommentService.delete(authenticatedUser.getUserId(), postId, commentId);
-        return ResponseEntity.ok(new BaseResponse<>(DeleteCommentDto.deleted()));
+        return ResponseEntity.ok(new BaseResponse<>(DeleteCommentDto.deletedResponse()));
     }
 }

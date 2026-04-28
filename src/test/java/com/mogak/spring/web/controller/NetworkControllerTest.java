@@ -25,7 +25,6 @@ import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -85,7 +84,7 @@ class NetworkControllerTest {
 
         ArgumentCaptor<PostLikeRequestDto.LikeDto> requestCaptor = ArgumentCaptor.forClass(PostLikeRequestDto.LikeDto.class);
         verify(postLikeService).updateLike(eq(7L), requestCaptor.capture());
-        assertThat(requestCaptor.getValue().getPostId()).isEqualTo(10L);
+        assertThat(requestCaptor.getValue().postId()).isEqualTo(10L);
     }
 
     @Test
@@ -134,15 +133,15 @@ class NetworkControllerTest {
     @DisplayName("네트워크 게시글 조회는 기존 Slice DTO JSON 계약을 유지한다")
     void getAllPostsReturnsSliceDtoContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "user@test.com", "ROLE_USER");
-        GetAllNetworkDto post = GetAllNetworkDto.builder()
-                .postId(20L)
-                .userName("writer")
-                .userJob("개발/데이터")
-                .contents("네트워크 회고")
-                .imgUrls(List.of("https://example.com/body.png"))
-                .commentCnt(2)
-                .likeCnt(5)
-                .build();
+        GetAllNetworkDto post = GetAllNetworkDto.of(
+                20L,
+                "writer",
+                "개발/데이터",
+                "네트워크 회고",
+                List.of("https://example.com/body.png"),
+                2,
+                5
+        );
         Slice<GetAllNetworkDto> posts = new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true);
         when(postService.getNetworkPosts(7L, 0, 10, "createdAt", "서울특별시")).thenReturn(posts);
 
@@ -171,8 +170,6 @@ class NetworkControllerTest {
     }
 
     private PostLikeRequestDto.LikeDto likeRequest(Long postId) {
-        PostLikeRequestDto.LikeDto request = new PostLikeRequestDto.LikeDto();
-        ReflectionTestUtils.setField(request, "postId", postId);
-        return request;
+        return new PostLikeRequestDto.LikeDto(postId);
     }
 }

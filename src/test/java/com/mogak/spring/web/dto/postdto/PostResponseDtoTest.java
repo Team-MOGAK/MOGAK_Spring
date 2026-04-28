@@ -32,6 +32,6 @@ class PostResponseDtoTest {
 
         var result = PostResponseDto.PostDto.from(post, List.of(), List.of(7L));
 
-        assertThat(result.getCommentId()).containsExactly(7L);
+        assertThat(result.commentId()).containsExactly(7L);
     }
 }

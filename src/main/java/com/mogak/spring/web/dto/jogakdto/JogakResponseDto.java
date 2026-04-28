@@ -1,9 +1,9 @@
 package com.mogak.spring.web.dto.jogakdto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mogak.spring.domain.jogak.DailyJogak;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.Period;
-import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,17 +17,17 @@ public class JogakResponseDto {
     }
 
     public static CreateJogakDto createFromJogak(Jogak jogak, List<String> days) {
-        return CreateJogakDto.builder()
-                .jogakId(jogak.getId())
-                .mogakTitle(jogak.getMogak().getTitle())
-                .category(jogak.getCategory().getName())
-                .title(jogak.getTitle())
-                .isRoutine(jogak.getIsRoutine())
-                .days(days)
-                .achievements(jogak.getAchievements())
-                .startDate(jogak.getStartAt())
-                .endDate(jogak.getEndAt())
-                .build();
+        return CreateJogakDto.of(
+                jogak.getId(),
+                jogak.getMogak().getTitle(),
+                jogak.getCategory().getName(),
+                jogak.getTitle(),
+                jogak.getIsRoutine(),
+                days,
+                jogak.getAchievements(),
+                jogak.getStartAt(),
+                jogak.getEndAt()
+        );
     }
 
     public static DetailJogakDto detailFromJogak(Jogak jogak, String color) {
@@ -35,122 +35,112 @@ public class JogakResponseDto {
     }
 
     public static DetailJogakDto detailFromJogak(Jogak jogak, String color, List<String> days) {
-        return DetailJogakDto.builder()
-                .jogakId(jogak.getId())
-                .mogakTitle(jogak.getMogak().getTitle())
-                .category(jogak.getCategory().getName())
-                .title(jogak.getTitle())
-                .isRoutine(jogak.getIsRoutine())
-                .days(days)
-                .color(color)
-                .achievements(jogak.getAchievements())
-                .startDate(jogak.getStartAt())
-                .endDate(jogak.getEndAt())
-                .build();
+        return DetailJogakDto.of(
+                jogak.getId(),
+                jogak.getMogak().getTitle(),
+                jogak.getCategory().getName(),
+                jogak.getTitle(),
+                jogak.getIsRoutine(),
+                days,
+                color,
+                jogak.getAchievements(),
+                jogak.getStartAt(),
+                jogak.getEndAt()
+        );
     }
 
     public static GetJogakDto getJogakFrom(Jogak jogak, Boolean isAlreadyAdded) {
-        return GetJogakDto.builder()
-                .jogakId(jogak.getId())
-                .mogakTitle(jogak.getMogak().getTitle())
-                .category(jogak.getCategory().getName())
-                .title(jogak.getTitle())
-                .isRoutine(jogak.getIsRoutine())
-                .days(jogak.getPeriods())
-                .isAlreadyAdded(isAlreadyAdded)
-                .achievements(jogak.getAchievements())
-                .startDate(jogak.getStartAt())
-                .endDate(jogak.getEndAt())
-                .build();
+        return GetJogakDto.of(
+                jogak.getId(),
+                jogak.getMogak().getTitle(),
+                jogak.getCategory().getName(),
+                jogak.getTitle(),
+                jogak.getIsRoutine(),
+                jogak.getPeriods(),
+                isAlreadyAdded,
+                jogak.getAchievements(),
+                jogak.getStartAt(),
+                jogak.getEndAt()
+        );
     }
 
     public static GetDailyJogakDto fromDailyJogak(DailyJogak dailyJogak) {
-        return GetDailyJogakDto.builder()
-                .jogakId(dailyJogak.getJogak().getId())
-                .dailyJogakId(dailyJogak.getId())
-                .mogakTitle(dailyJogak.getMogak().getTitle())
-                .category(dailyJogak.getCategory().getName())
-                .title(dailyJogak.getTitle())
-                .isRoutine(dailyJogak.getIsRoutine())
-                .isAchievement(dailyJogak.isSuccess())
-                .build();
+        return GetDailyJogakDto.of(
+                dailyJogak.getJogak().getId(),
+                dailyJogak.getId(),
+                dailyJogak.getMogak().getTitle(),
+                dailyJogak.getCategory().getName(),
+                dailyJogak.getTitle(),
+                dailyJogak.getIsRoutine(),
+                dailyJogak.isSuccess()
+        );
     }
 
     public static GetDailyJogakDto futureDailyJogakFromJogak(Jogak jogak) {
-        return GetDailyJogakDto.builder()
-                .dailyJogakId(-1L)
-                .mogakTitle(jogak.getMogak().getTitle())
-                .category(jogak.getCategory().getName())
-                .title(jogak.getTitle())
-                .isRoutine(jogak.getIsRoutine())
-                .isAchievement(false)
-                .build();
+        return GetDailyJogakDto.of(
+                null,
+                -1L,
+                jogak.getMogak().getTitle(),
+                jogak.getCategory().getName(),
+                jogak.getTitle(),
+                jogak.getIsRoutine(),
+                false
+        );
     }
 
     public static GetDailyJogakListDto dailyJogakListFrom(List<DailyJogak> dailyJogaks) {
-        return GetDailyJogakListDto.builder()
-                .dailyJogaks(dailyJogaks.stream()
-                        .map(JogakResponseDto::fromDailyJogak)
-                        .collect(Collectors.toList()))
-                .size(dailyJogaks.size())
-                .build();
+        List<GetDailyJogakDto> dailyJogakDtos = dailyJogaks.stream()
+                .map(JogakResponseDto::fromDailyJogak)
+                .collect(Collectors.toList());
+        return new GetDailyJogakListDto(dailyJogakDtos.size(), dailyJogakDtos);
     }
 
     public static GetDailyJogakListDto dailyJogakListFromDtos(List<GetDailyJogakDto> dailyJogaks) {
-        return GetDailyJogakListDto.builder()
-                .dailyJogaks(dailyJogaks)
-                .size(dailyJogaks.size())
-                .build();
+        return new GetDailyJogakListDto(dailyJogaks.size(), dailyJogaks);
     }
 
     public static GetOneTimeJogakListDto oneTimeJogakListFrom(List<Jogak> jogaks, List<DailyJogak> dailyJogaks) {
-        return GetOneTimeJogakListDto.builder()
-                .jogaks(jogaks.stream()
-                        .map(jogak -> GetOneTimeJogakDto.builder()
-                                .jogakId(jogak.getId())
-                                .mogakTitle(jogak.getMogak().getTitle())
-                                .category(jogak.getCategory().getName())
-                                .title(jogak.getTitle())
-                                .isRoutine(jogak.getIsRoutine())
-                                .isAlreadyAdded(hasMatchingDailyJogak(jogak, dailyJogaks))
-                                .achievements(jogak.getAchievements())
-                                .startDate(jogak.getStartAt())
-                                .endDate(jogak.getEndAt())
-                                .build())
-                        .collect(Collectors.toList()))
-                .size(jogaks.size())
-                .build();
+        List<GetOneTimeJogakDto> jogakDtos = jogaks.stream()
+                .map(jogak -> GetOneTimeJogakDto.of(
+                        jogak.getId(),
+                        jogak.getMogak().getTitle(),
+                        jogak.getCategory().getName(),
+                        jogak.getTitle(),
+                        jogak.getIsRoutine(),
+                        hasMatchingDailyJogak(jogak, dailyJogaks),
+                        jogak.getAchievements(),
+                        jogak.getStartAt(),
+                        jogak.getEndAt()
+                ))
+                .collect(Collectors.toList());
+        return new GetOneTimeJogakListDto(jogakDtos.size(), jogakDtos);
     }
 
     public static GetRoutineJogakDto routineJogakFrom(DailyJogak dailyJogak) {
-        return GetRoutineJogakDto.builder()
-                .dailyJogakId(dailyJogak.getId())
-                .date(dailyJogak.getTargetDate())
-                .isAchievement(dailyJogak.isSuccess())
-                .title(dailyJogak.getTitle())
-                .build();
+        return GetRoutineJogakDto.of(
+                dailyJogak.getId(),
+                dailyJogak.getTargetDate(),
+                dailyJogak.isSuccess(),
+                dailyJogak.getTitle()
+        );
     }
 
     public static GetRoutineJogakDto futureRoutineJogakFrom(LocalDate date, String title) {
-        return GetRoutineJogakDto.builder()
-                .dailyJogakId(-1L)
-                .date(date)
-                .isAchievement(false)
-                .title(title)
-                .build();
+        return GetRoutineJogakDto.of(-1L, date, false, title);
     }
 
     public static JogakDailyJogakDto jogakDailyJogakFrom(Jogak jogak, DailyJogak dailyJogak) {
-        return JogakDailyJogakDto.builder()
-                .jogakId(jogak.getId())
-                .dailyJogakId(dailyJogak.getId())
-                .title(dailyJogak.getTitle())
-                .mogakTitle(jogak.getMogak().getTitle())
-                .category(jogak.getCategory().getName())
-                .isRoutine(jogak.getIsRoutine())
-                .isAchievement(dailyJogak.isSuccess())
-                .achievements(jogak.getAchievements())
-                .build();
+        return JogakDailyJogakDto.of(
+                jogak.getId(),
+                dailyJogak.getId(),
+                dailyJogak.getTitle(),
+                jogak.getMogak().getTitle(),
+                jogak.getCategory().getName(),
+                jogak.getIsRoutine(),
+                null,
+                dailyJogak.isSuccess(),
+                jogak.getAchievements()
+        );
     }
 
     private static boolean hasMatchingDailyJogak(Jogak jogak, List<DailyJogak> dailyJogaks) {
@@ -158,147 +148,182 @@ public class JogakResponseDto {
                 .anyMatch(dailyJogak -> Objects.equals(dailyJogak.getJogak(), jogak));
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class CreateJogakDto {
-        private Long jogakId;
-        private String mogakTitle;
-        private String category;
-        private String title;
-        private Boolean isRoutine;
-        private List<String> days;
-        private Integer achievements;
-        private LocalDate startDate;
-        private LocalDate endDate;
+    public record CreateJogakDto(
+            Long jogakId,
+            String mogakTitle,
+            String category,
+            String title,
+            @JsonProperty("isRoutine") Boolean isRoutine,
+            List<String> days,
+            Integer achievements,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        public static CreateJogakDto of(
+                Long jogakId,
+                String mogakTitle,
+                String category,
+                String title,
+                Boolean isRoutine,
+                List<String> days,
+                Integer achievements,
+                LocalDate startDate,
+                LocalDate endDate
+        ) {
+            return new CreateJogakDto(jogakId, mogakTitle, category, title, isRoutine, days, achievements, startDate, endDate);
+        }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class DetailJogakDto {
-        private Long jogakId;
-        private String mogakTitle;
-        private String category;
-        private String title;
-        private Boolean isRoutine;
-        private List<String> days;
-        private String color;
-        private Integer achievements;
-        private LocalDate startDate;
-        private LocalDate endDate;
+    public record DetailJogakDto(
+            Long jogakId,
+            String mogakTitle,
+            String category,
+            String title,
+            @JsonProperty("isRoutine") Boolean isRoutine,
+            List<String> days,
+            String color,
+            Integer achievements,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        public static DetailJogakDto of(
+                Long jogakId,
+                String mogakTitle,
+                String category,
+                String title,
+                Boolean isRoutine,
+                List<String> days,
+                String color,
+                Integer achievements,
+                LocalDate startDate,
+                LocalDate endDate
+        ) {
+            return new DetailJogakDto(jogakId, mogakTitle, category, title, isRoutine, days, color, achievements, startDate, endDate);
+        }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class GetJogakDto {
-        private Long jogakId;
-        private String mogakTitle;
-        private String category;
-        private String title;
-        private Boolean isRoutine;
-        private List<String> days;
-        private Boolean isAlreadyAdded;
-        private Integer achievements;
-        private LocalDate startDate;
-        private LocalDate endDate;
+    public record GetJogakDto(
+            Long jogakId,
+            String mogakTitle,
+            String category,
+            String title,
+            @JsonProperty("isRoutine") Boolean isRoutine,
+            List<String> days,
+            @JsonProperty("isAlreadyAdded") Boolean isAlreadyAdded,
+            Integer achievements,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        public static GetJogakDto of(
+                Long jogakId,
+                String mogakTitle,
+                String category,
+                String title,
+                Boolean isRoutine,
+                List<String> days,
+                Boolean isAlreadyAdded,
+                Integer achievements,
+                LocalDate startDate,
+                LocalDate endDate
+        ) {
+            return new GetJogakDto(jogakId, mogakTitle, category, title, isRoutine, days, isAlreadyAdded, achievements, startDate, endDate);
+        }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class GetDailyJogakDto {
-        private Long jogakId;
-        private Long dailyJogakId;
-        private String mogakTitle;
-        private String category;
-        private String title;
-        private Boolean isRoutine;
-        private Boolean isAchievement;
+    public record GetDailyJogakDto(
+            Long jogakId,
+            Long dailyJogakId,
+            String mogakTitle,
+            String category,
+            String title,
+            @JsonProperty("isRoutine") Boolean isRoutine,
+            @JsonProperty("isAchievement") Boolean isAchievement
+    ) {
+        public static GetDailyJogakDto of(
+                Long jogakId,
+                Long dailyJogakId,
+                String mogakTitle,
+                String category,
+                String title,
+                Boolean isRoutine,
+                Boolean isAchievement
+        ) {
+            return new GetDailyJogakDto(jogakId, dailyJogakId, mogakTitle, category, title, isRoutine, isAchievement);
+        }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class GetOneTimeJogakDto {
-        private Long jogakId;
-        private String mogakTitle;
-        private String category;
-        private String title;
-        private Boolean isRoutine;
-        private Boolean isAlreadyAdded;
-        private Integer achievements;
-        private LocalDate startDate;
-        private LocalDate endDate;
+    public record GetOneTimeJogakDto(
+            Long jogakId,
+            String mogakTitle,
+            String category,
+            String title,
+            @JsonProperty("isRoutine") Boolean isRoutine,
+            @JsonProperty("isAlreadyAdded") Boolean isAlreadyAdded,
+            Integer achievements,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        public static GetOneTimeJogakDto of(
+                Long jogakId,
+                String mogakTitle,
+                String category,
+                String title,
+                Boolean isRoutine,
+                Boolean isAlreadyAdded,
+                Integer achievements,
+                LocalDate startDate,
+                LocalDate endDate
+        ) {
+            return new GetOneTimeJogakDto(jogakId, mogakTitle, category, title, isRoutine, isAlreadyAdded, achievements, startDate, endDate);
+        }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class GetJogakListDto {
-        private int size;
-        private List<JogakResponseDto.GetJogakDto> jogaks;
+    public record GetJogakListDto(int size, List<JogakResponseDto.GetJogakDto> jogaks) {
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class GetDailyJogakListDto {
-        private int size;
-        private List<JogakResponseDto.GetDailyJogakDto> dailyJogaks;
+    public record GetDailyJogakListDto(int size, List<JogakResponseDto.GetDailyJogakDto> dailyJogaks) {
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class GetOneTimeJogakListDto {
-        private int size;
-        private List<JogakResponseDto.GetOneTimeJogakDto> jogaks;
+    public record GetOneTimeJogakListDto(int size, List<JogakResponseDto.GetOneTimeJogakDto> jogaks) {
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class GetRoutineJogakDto {
-        private Long dailyJogakId;
-        private LocalDate date;
-        private Boolean isAchievement;
-        private String title;
+    public record GetRoutineJogakDto(
+            Long dailyJogakId,
+            LocalDate date,
+            @JsonProperty("isAchievement") Boolean isAchievement,
+            String title
+    ) {
+        public static GetRoutineJogakDto of(Long dailyJogakId, LocalDate date, Boolean isAchievement, String title) {
+            return new GetRoutineJogakDto(dailyJogakId, date, isAchievement, title);
+        }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class JogakSuccessDto {
-        private String title;
-        private String mogakTitle;
-        private String category;
+    public record JogakSuccessDto(String title, String mogakTitle, String category) {
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class JogakDailyJogakDto {
-        private Long jogakId;
-        private Long dailyJogakId;
-        private String title;
-        private String mogakTitle;
-        private String category;
-        private Boolean isRoutine;
-        private List<Period> days;
-        private Boolean isAchievement;
-        private Integer achievements;
+    public record JogakDailyJogakDto(
+            Long jogakId,
+            Long dailyJogakId,
+            String title,
+            String mogakTitle,
+            String category,
+            @JsonProperty("isRoutine") Boolean isRoutine,
+            List<Period> days,
+            @JsonProperty("isAchievement") Boolean isAchievement,
+            Integer achievements
+    ) {
+        public static JogakDailyJogakDto of(
+                Long jogakId,
+                Long dailyJogakId,
+                String title,
+                String mogakTitle,
+                String category,
+                Boolean isRoutine,
+                List<Period> days,
+                Boolean isAchievement,
+                Integer achievements
+        ) {
+            return new JogakDailyJogakDto(jogakId, dailyJogakId, title, mogakTitle, category, isRoutine, days, isAchievement, achievements);
+        }
     }
 }

@@ -43,7 +43,7 @@ public class UserController {
             })
     @PostMapping("/nickname/verify")
     public ResponseEntity<BaseResponse<ErrorCode>> verifyNickname(@Valid @RequestBody CheckNicknameDto request) {
-        userService.verifyNickname(request.getNickname());
+        userService.verifyNickname(request.nickname());
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
 
     }
@@ -65,10 +65,7 @@ public class UserController {
                                                                               @RequestPart(required = false) MultipartFile multipartFile) {
         UploadImageDto uploadImageDto;
         if (multipartFile == null || multipartFile.isEmpty()) {
-            uploadImageDto = UploadImageDto.builder()
-                    .imgUrl(null)
-                    .imgName(null)
-                    .build();
+            uploadImageDto = new UploadImageDto(null, null);
         } else {
             uploadImageDto = storageService.uploadProfileImg(multipartFile, dirName);
         }
@@ -86,7 +83,7 @@ public class UserController {
             })
     @PostMapping("/login")
     public ResponseEntity<BaseResponse<String>> login(@RequestBody UserRequestDto.GetEmailDto getEmailDto) {
-        User user = userService.getUserByEmail(getEmailDto.getEmail());
+        User user = userService.getUserByEmail(getEmailDto.email());
         return ResponseEntity.ok().body(new BaseResponse<>(userService.getToken(user)));
     }
 
@@ -150,10 +147,7 @@ public class UserController {
             if (profileImgName != null) {
                 storageService.deleteProfileImg(profileImgName);
             }
-            updateImageDto = UpdateImageDto.builder()
-                    .imgUrl(null)
-                    .imgName(null)
-                    .build();
+            updateImageDto = new UpdateImageDto(null, null);
         } else {
             updateImageDto = storageService.updateProfileImg(multipartFile, profileImgName, dirName);
         }
