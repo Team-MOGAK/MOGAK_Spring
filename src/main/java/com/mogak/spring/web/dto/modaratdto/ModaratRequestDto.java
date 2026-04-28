@@ -1,28 +1,25 @@
 package com.mogak.spring.web.dto.modaratdto;
 
-import lombok.Getter;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class ModaratRequestDto {
-
-    @Getter
-    public static class CreateModaratDto {
-        @NotBlank
-        @Size(min = 1, max = 100)
-        private String title;
-        @NotBlank
-        @Size(min = 1, max = 100)
-        private String color;
+    public record CreateModaratDto(
+            @NotBlank
+            @Size(min = 1, max = 100)
+            String title,
+            @NotBlank
+            @Size(min = 1, max = 100)
+            String color
+    ) {
     }
 
-    @Getter
-    public static class UpdateModaratDto {
-        @Size(min = 1, max = 100)
-        private String title;
-        @Size(min = 1, max = 100)
-        private String color;
+    public record UpdateModaratDto(
+            @Size(min = 1, max = 100)
+            String title,
+            @Size(min = 1, max = 100)
+            String color
+    ) {
     }
 
 }

@@ -62,20 +62,15 @@ public class DailyJogak extends SoftDeletableEntity {
     }
 
     public static JogakResponseDto.GetRoutineJogakDto getRoutineJogakDto(DailyJogak dailyJogak) {
-        return JogakResponseDto.GetRoutineJogakDto.builder()
-                .dailyJogakId(dailyJogak.getId())
-                .date(dailyJogak.getTargetDate())
-                .isAchievement(dailyJogak.isSuccess())
-                .title(dailyJogak.getTitle())
-                .build();
+        return JogakResponseDto.GetRoutineJogakDto.of(
+                dailyJogak.getId(),
+                dailyJogak.getTargetDate(),
+                dailyJogak.isSuccess(),
+                dailyJogak.getTitle()
+        );
     }
 
     public static JogakResponseDto.GetRoutineJogakDto getFutureRoutineJogakDto(LocalDate date, String title) {
-        return JogakResponseDto.GetRoutineJogakDto.builder()
-                .dailyJogakId(-1L)
-                .date(date)
-                .isAchievement(false)
-                .title(title)
-                .build();
+        return JogakResponseDto.GetRoutineJogakDto.of(-1L, date, false, title);
     }
 }

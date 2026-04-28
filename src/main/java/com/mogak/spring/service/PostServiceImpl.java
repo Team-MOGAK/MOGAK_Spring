@@ -65,7 +65,7 @@ public class PostServiceImpl implements PostService {
     public void validateCreateAccess(Long userId, PostRequestDto.CreatePostDto request, List<MultipartFile> multipartFile, Long jogakId) {
         validateContents(request);
         validateSourceImages(multipartFile);
-        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request.getTargetDate());
+        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request.targetDate());
         validateTargetDate(dailyJogak.getJogak(), dailyJogak.getTargetDate());
         if (postRepository.existsByDailyJogakIdAndDeletedAtIsNull(dailyJogak.getId())) {
             throw new PostException(ErrorCode.ALREADY_EXISTS_POST);
@@ -78,8 +78,8 @@ public class PostServiceImpl implements PostService {
     public Post create(Long userId, PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, Long jogakId) {
         validateContents(request);
         validateCreatedImages(postImgDtoList);
-        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request.getTargetDate());
-        validateTargetDate(dailyJogak.getJogak(), request.getTargetDate());
+        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request.targetDate());
+        validateTargetDate(dailyJogak.getJogak(), request.targetDate());
         if (postRepository.existsByDailyJogakIdAndDeletedAtIsNull(dailyJogak.getId())) {
             throw new PostException(ErrorCode.ALREADY_EXISTS_POST);
         }
@@ -89,7 +89,7 @@ public class PostServiceImpl implements PostService {
         for (PostImgRequestDto.CreatePostImgDto postImgDto : postImgDtoList) {
             PostImg postImg = PostImgConverter.toPostImg(postImgDto, post);
             //썸네일이미지인지 체크 필요
-            if (postImgDto.isThumbnail()) {
+            if (postImgDto.thumbnail()) {
                 post.putPostThumbnailUrl(postImg.getImgUrl()); //썸네일 이미지는 thumbnailurl에 추가
             } else {//이미지 업로드 체크
                 post.putPostImg(postImg);
@@ -146,7 +146,7 @@ public class PostServiceImpl implements PostService {
     public Post update(Long userId, Long postId, PostRequestDto.UpdatePostDto request) {
         Post post = getOwnedPost(userId, postId);
         validateContents(request);
-        post.updatePost(request.contents);
+        post.updatePost(request.contents());
         return post;
     }
 
@@ -181,16 +181,16 @@ public class PostServiceImpl implements PostService {
         return posts.stream()
                 .map(p -> {
                     List<String> imgUrls = findNotThumbnailImgUrls(p, imagesByPostId);
-                    return NetworkPostDto.builder()
-                            .user(UserConverter.toUserDto(p.getUser()))
-                            .contents(p.getContents())
-                            .imgUrls(imgUrls)
-                            .comments(commentsByPostId.getOrDefault(p.getId(), Collections.emptyList()).stream()
+                    return NetworkPostDto.of(
+                            UserConverter.toUserDto(p.getUser()),
+                            p.getContents(),
+                            imgUrls,
+                            commentsByPostId.getOrDefault(p.getId(), Collections.emptyList()).stream()
                                     .map(CommentConverter::toNetworkCommentDto)
-                                    .collect(Collectors.toList()))
-                            .likeCnt(p.getLikeCnt())
-                            .viewCnt(p.getViewCnt())
-                            .build();
+                                    .collect(Collectors.toList()),
+                            p.getLikeCnt(),
+                            p.getViewCnt()
+                    );
                 })
                 .collect(Collectors.toList());
     }
@@ -206,15 +206,15 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(page, size);
         Slice<Post> posts = postRepository.findNetworkPosts(address, sort, pageable);
         Map<Long, List<PostImg>> imagesByPostId = groupImagesByPostId(extractPostIds(posts.getContent()));
-        return posts.map(post -> GetAllNetworkDto.builder()
-                .postId(post.getId())
-                .userName(post.getUser().getNickname())
-                .userJob(post.getUser().getJob().getName())
-                .contents(post.getContents())
-                .imgUrls(findNotThumbnailImgUrls(post, imagesByPostId))
-                .commentCnt(post.getCommentCnt())
-                .likeCnt(post.getLikeCnt())
-                .build());
+        return posts.map(post -> GetAllNetworkDto.of(
+                post.getId(),
+                post.getUser().getNickname(),
+                post.getUser().getJob().getName(),
+                post.getContents(),
+                findNotThumbnailImgUrls(post, imagesByPostId),
+                post.getCommentCnt(),
+                post.getLikeCnt()
+        ));
     }
 
     private List<Long> extractPostIds(List<Post> posts) {
@@ -334,19 +334,19 @@ public class PostServiceImpl implements PostService {
     }
 
     private void validateContents(PostRequestDto.CreatePostDto request) {
-        if (request == null || request.getContents() == null) {
+        if (request == null || request.contents() == null) {
             throw new PostException(ErrorCode.INVALID_PARAMETER_ERROR);
         }
-        if (request.getContents().length() > 350) {
+        if (request.contents().length() > 350) {
             throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
         }
     }
 
     private void validateContents(PostRequestDto.UpdatePostDto request) {
-        if (request == null || request.contents == null) {
+        if (request == null || request.contents() == null) {
             throw new PostException(ErrorCode.INVALID_PARAMETER_ERROR);
         }
-        if (request.contents.length() > 350) {
+        if (request.contents().length() > 350) {
             throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
         }
     }

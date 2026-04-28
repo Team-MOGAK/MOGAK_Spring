@@ -1,16 +1,13 @@
 package com.mogak.spring.web.dto.commentdto;
 
-import lombok.Getter;
-
 public class CommentRequestDto {
 
-    @Getter
-    public static class CreateCommentDto{
-        private String contents;
+    private CommentRequestDto() {
     }
 
-    @Getter
-    public static class UpdateCommentDto{
-        private String contents;
+    public record CreateCommentDto(String contents) {
+    }
+
+    public record UpdateCommentDto(String contents) {
     }
 }

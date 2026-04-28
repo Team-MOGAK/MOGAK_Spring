@@ -70,7 +70,7 @@ class AppleOAuthUserProviderTest {
 
     private void stubAppleClaims(Jwt claims) {
         Map<String, String> headers = Map.of("alg", "RS256", "kid", "kid");
-        ApplePublicKeys keys = new ApplePublicKeys();
+        ApplePublicKeys keys = new ApplePublicKeys(List.of());
         PublicKey publicKey = mock(PublicKey.class);
 
         when(appleJwtParser.parseHeaders("apple-id-token")).thenReturn(headers);

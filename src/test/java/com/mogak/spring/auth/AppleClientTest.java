@@ -23,15 +23,15 @@ public class AppleClientTest {
     void getPublicKeys() {
         ApplePublicKeys applePublicKeys = appleClient.getApplePublicKeys();
 
-        List<ApplePublicKey> keys = applePublicKeys.getKeys();
+        List<ApplePublicKey> keys = applePublicKeys.keys();
         boolean isRequestedKeysNonNull = keys.stream()
                 .allMatch(this::isAllNotNull);
         assertThat(isRequestedKeysNonNull).isTrue();
     }
 
     private boolean isAllNotNull(ApplePublicKey applePublicKey) {
-        return Objects.nonNull(applePublicKey.getKty()) && Objects.nonNull(applePublicKey.getKid()) &&
-                Objects.nonNull(applePublicKey.getUse()) && Objects.nonNull(applePublicKey.getAlg()) &&
-                Objects.nonNull(applePublicKey.getN()) && Objects.nonNull(applePublicKey.getE());
+        return Objects.nonNull(applePublicKey.kty()) && Objects.nonNull(applePublicKey.kid()) &&
+                Objects.nonNull(applePublicKey.use()) && Objects.nonNull(applePublicKey.alg()) &&
+                Objects.nonNull(applePublicKey.n()) && Objects.nonNull(applePublicKey.e());
     }
 }

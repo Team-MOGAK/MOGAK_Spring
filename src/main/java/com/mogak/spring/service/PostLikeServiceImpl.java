@@ -50,10 +50,10 @@ public class PostLikeServiceImpl implements PostLikeService{
     }
 
     private Long requirePostId(PostLikeRequestDto.LikeDto request) {
-        if (request == null || request.getPostId() == null) {
+        if (request == null || request.postId() == null) {
             throw new PostException(ErrorCode.INVALID_PARAMETER_ERROR);
         }
-        return request.getPostId();
+        return request.postId();
     }
 
     private User getActiveUser(Long userId) {

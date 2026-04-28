@@ -1,70 +1,69 @@
 package com.mogak.spring.web.dto.commentdto;
 
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class CommentResponseDto {
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class CommentDto {
-        private Long commentId;
-        private Long postId;
-        private Long userId;
-        private String contents;
-        private LocalDateTime createdAt;
-    }
-    //list
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class CommentListDto {
-        private List<CommentResponseDto.CommentDto> commentDtoList;
+
+    private CommentResponseDto() {
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class CreateCommentDto {
-        private Long id;
-        private Long postId;
-        private Long userId;
-        private String contents;
-        private LocalDateTime createdAt;
+    public record CommentDto(
+            Long commentId,
+            Long postId,
+            Long userId,
+            String contents,
+            LocalDateTime createdAt
+    ) {
+        public static CommentDto of(Long commentId, Long postId, Long userId, String contents, LocalDateTime createdAt) {
+            return new CommentDto(commentId, postId, userId, contents, createdAt);
+        }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class UpdateCommentDto {
-        private Long id;
-        private String contents;
-        private LocalDateTime updatedAt;
+    public record CommentListDto(List<CommentResponseDto.CommentDto> commentDtoList) {
+        public static CommentListDto of(List<CommentResponseDto.CommentDto> commentDtoList) {
+            return new CommentListDto(commentDtoList);
+        }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class DeleteCommentDto {
-        private boolean deleted;
+    public record CreateCommentDto(
+            Long id,
+            Long postId,
+            Long userId,
+            String contents,
+            LocalDateTime createdAt
+    ) {
+        public static CreateCommentDto of(Long id, Long postId, Long userId, String contents, LocalDateTime createdAt) {
+            return new CreateCommentDto(id, postId, userId, contents, createdAt);
+        }
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class NetworkCommentDto {
-        private Long commentId;
-        private String nickname;
-        private String contents;
-        private LocalDateTime createdAt;
+    public record UpdateCommentDto(
+            Long id,
+            String contents,
+            LocalDateTime updatedAt
+    ) {
+        public static UpdateCommentDto of(Long id, String contents, LocalDateTime updatedAt) {
+            return new UpdateCommentDto(id, contents, updatedAt);
+        }
     }
 
+    public record DeleteCommentDto(@JsonProperty("deleted") boolean deleted) {
+        public static DeleteCommentDto deletedResponse() {
+            return new DeleteCommentDto(true);
+        }
+    }
+
+    public record NetworkCommentDto(
+            Long commentId,
+            String nickname,
+            String contents,
+            LocalDateTime createdAt
+    ) {
+        public static NetworkCommentDto of(Long commentId, String nickname, String contents, LocalDateTime createdAt) {
+            return new NetworkCommentDto(commentId, nickname, contents, createdAt);
+        }
+    }
 }

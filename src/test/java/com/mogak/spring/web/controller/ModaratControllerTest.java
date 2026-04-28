@@ -70,9 +70,7 @@ class ModaratControllerTest {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", TestFixtureFactory.job("개발"), TestFixtureFactory.address("서울"));
         Modarat modarat = TestFixtureFactory.modarat(10L, user, "메인 모다라트", "#112233");
         when(modaratService.create(anyLong(), any(ModaratRequestDto.CreateModaratDto.class))).thenReturn(modarat);
-        ModaratRequestDto.CreateModaratDto request = new ModaratRequestDto.CreateModaratDto();
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "title", "메인 모다라트");
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "color", "#112233");
+        ModaratRequestDto.CreateModaratDto request = new ModaratRequestDto.CreateModaratDto("메인 모다라트", "#112233");
 
         mockMvc.perform(post("/api/modarats")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -109,9 +107,7 @@ class ModaratControllerTest {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", TestFixtureFactory.job("개발"), TestFixtureFactory.address("서울"));
         Modarat modarat = TestFixtureFactory.modarat(10L, user, "수정된 모다라트", "#445566");
         when(modaratService.update(eq(1L), eq(10L), any(ModaratRequestDto.UpdateModaratDto.class))).thenReturn(modarat);
-        ModaratRequestDto.UpdateModaratDto request = new ModaratRequestDto.UpdateModaratDto();
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "title", "수정된 모다라트");
-        org.springframework.test.util.ReflectionTestUtils.setField(request, "color", "#445566");
+        ModaratRequestDto.UpdateModaratDto request = new ModaratRequestDto.UpdateModaratDto("수정된 모다라트", "#445566");
 
         mockMvc.perform(put("/api/modarats/10")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -18,8 +18,8 @@ public class MogakConverter {
                 .user(user)
                 .bigCategory(mogakCategory)
                 .smallCategory(smallCategory)
-                .title(request.getTitle())
-                .color(request.getColor())
+                .title(request.title())
+                .color(request.color())
                 .build();
     }
 
@@ -27,24 +27,24 @@ public class MogakConverter {
      * 여러 모각 조회
      * */
     public static MogakResponseDto.GetMogakListDto toGetMogakListDto(List<Mogak> mogaks) {
-        return MogakResponseDto.GetMogakListDto.builder()
-                .mogaks(mogaks.stream()
+        return new MogakResponseDto.GetMogakListDto(
+                mogaks.stream()
                         .map(MogakConverter::toGetMogakDto)
-                        .collect(Collectors.toList()))
-                .size(mogaks.size())
-                .build();
+                        .collect(Collectors.toList()),
+                mogaks.size()
+        );
     }
 
     /**
      * 단일 모각 조회
      * */
     public static MogakResponseDto.GetMogakDto toGetMogakDto(Mogak mogak) {
-        return MogakResponseDto.GetMogakDto.builder()
-                .id(mogak.getId())
-                .title(mogak.getTitle())
-                .bigCategory(mogak.getBigCategory())
-                .smallCategory(mogak.getSmallCategory())
-                .color(mogak.getColor())
-                .build();
+        return new MogakResponseDto.GetMogakDto(
+                mogak.getId(),
+                mogak.getTitle(),
+                mogak.getBigCategory(),
+                mogak.getSmallCategory(),
+                mogak.getColor()
+        );
     }
 }

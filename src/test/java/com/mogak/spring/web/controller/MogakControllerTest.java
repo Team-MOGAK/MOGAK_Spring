@@ -72,23 +72,25 @@ class MogakControllerTest {
     @Test
     @DisplayName("모각 생성 요청이 성공하면 생성 응답 계약을 반환한다")
     void createMogakContract() throws Exception {
-        when(mogakService.create(anyLong(), any(MogakRequestDto.CreateDto.class))).thenReturn(MogakResponseDto.GetMogakDto.builder()
-                .id(1L)
-                .title("정보처리기사")
-                .bigCategory(MogakCategory.builder().id(1).name("자격증").build())
-                .smallCategory("필기")
-                .color("#112233")
-                .build());
+        when(mogakService.create(anyLong(), any(MogakRequestDto.CreateDto.class))).thenReturn(
+                new MogakResponseDto.GetMogakDto(
+                        1L,
+                        "정보처리기사",
+                        MogakCategory.builder().id(1).name("자격증").build(),
+                        "필기",
+                        "#112233"
+                )
+        );
 
         mockMvc.perform(post("/api/modarats/mogaks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(MogakRequestDto.CreateDto.builder()
-                                .modaratId(10L)
-                                .title("정보처리기사")
-                                .bigCategory("자격증")
-                                .smallCategory("필기")
-                                .color("#112233")
-                                .build())))
+                        .content(objectMapper.writeValueAsString(new MogakRequestDto.CreateDto(
+                                10L,
+                                "정보처리기사",
+                                "자격증",
+                                "필기",
+                                "#112233"
+                        ))))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.time").exists())
@@ -119,16 +121,18 @@ class MogakControllerTest {
     @Test
     @DisplayName("모각 목록 조회 요청이 성공하면 목록 응답 계약을 반환한다")
     void getMogakListContract() throws Exception {
-        when(mogakService.getMogakDtoList(anyLong(), eq(10L))).thenReturn(MogakResponseDto.GetMogakListDto.builder()
-                .size(1)
-                .mogaks(List.of(MogakResponseDto.GetMogakDto.builder()
-                        .id(1L)
-                        .title("정보처리기사")
-                        .bigCategory(MogakCategory.builder().id(1).name("자격증").build())
-                        .smallCategory("필기")
-                        .color("#112233")
-                        .build()))
-                .build());
+        when(mogakService.getMogakDtoList(anyLong(), eq(10L))).thenReturn(
+                new MogakResponseDto.GetMogakListDto(
+                        List.of(new MogakResponseDto.GetMogakDto(
+                                1L,
+                                "정보처리기사",
+                                MogakCategory.builder().id(1).name("자격증").build(),
+                                "필기",
+                                "#112233"
+                        )),
+                        1
+                )
+        );
 
         mockMvc.perform(get("/api/modarats/10/mogaks"))
                 .andExpect(status().isOk())
@@ -147,16 +151,18 @@ class MogakControllerTest {
     @DisplayName("조각 목록 조회 요청이 성공하면 목록 응답 계약을 반환한다")
     void getJogaksContract() throws Exception {
         when(mogakService.getJogaks(anyLong(), eq(1L), eq(LocalDate.of(2026, 3, 26)))).thenReturn(List.of(
-                JogakResponseDto.GetJogakDto.builder()
-                        .jogakId(100L)
-                        .mogakTitle("정보처리기사")
-                        .category("자격증")
-                        .title("문제풀이")
-                        .isRoutine(false)
-                        .isAlreadyAdded(true)
-                        .achievements(1)
-                        .startDate(LocalDate.of(2026, 3, 26))
-                        .build()
+                new JogakResponseDto.GetJogakDto(
+                        100L,
+                        "정보처리기사",
+                        "자격증",
+                        "문제풀이",
+                        false,
+                        null,
+                        true,
+                        1,
+                        LocalDate.of(2026, 3, 26),
+                        null
+                )
         ));
 
         mockMvc.perform(get("/api/modarats/mogaks/1/jogaks")
@@ -191,23 +197,25 @@ class MogakControllerTest {
     @Test
     @DisplayName("모각 수정 요청이 성공하면 userId를 서비스로 전달한다")
     void updateMogakForwardsUserId() throws Exception {
-        when(mogakService.updateMogak(eq(1L), any(MogakRequestDto.UpdateDto.class))).thenReturn(MogakResponseDto.GetMogakDto.builder()
-                .id(1L)
-                .title("수정된 모각")
-                .bigCategory(MogakCategory.builder().id(1).name("자격증").build())
-                .smallCategory("필기")
-                .color("#112233")
-                .build());
+        when(mogakService.updateMogak(eq(1L), any(MogakRequestDto.UpdateDto.class))).thenReturn(
+                new MogakResponseDto.GetMogakDto(
+                        1L,
+                        "수정된 모각",
+                        MogakCategory.builder().id(1).name("자격증").build(),
+                        "필기",
+                        "#112233"
+                )
+        );
 
         mockMvc.perform(put("/api/modarats/mogaks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(MogakRequestDto.UpdateDto.builder()
-                                .mogakId(1L)
-                                .title("수정된 모각")
-                                .bigCategory("자격증")
-                                .smallCategory("필기")
-                                .color("#112233")
-                                .build())))
+                        .content(objectMapper.writeValueAsString(new MogakRequestDto.UpdateDto(
+                                1L,
+                                "수정된 모각",
+                                "자격증",
+                                "필기",
+                                "#112233"
+                        ))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.title").value("수정된 모각"));
 

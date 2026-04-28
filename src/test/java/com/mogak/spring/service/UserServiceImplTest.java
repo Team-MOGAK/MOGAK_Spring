@@ -85,15 +85,8 @@ class UserServiceImplTest {
         Job job = TestFixtureFactory.job("개발/데이터");
         Address address = TestFixtureFactory.address("서울특별시");
         User user = TestFixtureFactory.user(10L, "user@test.com", null, null, null);
-        UserRequestDto.CreateUserDto request = UserRequestDto.CreateUserDto.builder()
-                .nickname("tester")
-                .job("개발/데이터")
-                .address("서울특별시")
-                .build();
-        UserRequestDto.UploadImageDto uploadImageDto = UserRequestDto.UploadImageDto.builder()
-                .imgName("profile.png")
-                .imgUrl("https://cdn/profile.png")
-                .build();
+        UserRequestDto.CreateUserDto request = new UserRequestDto.CreateUserDto("tester", "개발/데이터", "서울특별시");
+        UserRequestDto.UploadImageDto uploadImageDto = new UserRequestDto.UploadImageDto("profile.png", "https://cdn/profile.png");
 
         when(userRepository.findActiveByNickname("tester")).thenReturn(Optional.empty());
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(job));
@@ -104,10 +97,10 @@ class UserServiceImplTest {
 
         UserResponseDto.CreateDto result = userService.create(10L, request, uploadImageDto);
 
-        assertThat(result.getUserId()).isEqualTo(10L);
-        assertThat(result.getNickname()).isEqualTo("tester");
-        assertThat(result.getTokens().getAccessToken()).isEqualTo("access-token");
-        assertThat(result.getTokens().getRefreshToken()).isEqualTo("refresh-token");
+        assertThat(result.userId()).isEqualTo(10L);
+        assertThat(result.nickname()).isEqualTo("tester");
+        assertThat(result.tokens().accessToken()).isEqualTo("access-token");
+        assertThat(result.tokens().refreshToken()).isEqualTo("refresh-token");
         assertThat(user.getJob()).isEqualTo(job);
         assertThat(user.getAddress()).isEqualTo(address);
         assertThat(user.getProfileImgUrl()).isEqualTo("https://cdn/profile.png");
@@ -119,12 +112,8 @@ class UserServiceImplTest {
         Job job = TestFixtureFactory.job("개발/데이터");
         Address address = TestFixtureFactory.address("서울특별시");
         User user = TestFixtureFactory.user(10L, "user@test.com", "existing", null, null);
-        UserRequestDto.CreateUserDto request = UserRequestDto.CreateUserDto.builder()
-                .nickname("tester")
-                .job("개발/데이터")
-                .address("서울특별시")
-                .build();
-        UserRequestDto.UploadImageDto uploadImageDto = UserRequestDto.UploadImageDto.builder().build();
+        UserRequestDto.CreateUserDto request = new UserRequestDto.CreateUserDto("tester", "개발/데이터", "서울특별시");
+        UserRequestDto.UploadImageDto uploadImageDto = new UserRequestDto.UploadImageDto(null, null);
 
         when(userRepository.findActiveByNickname("tester")).thenReturn(Optional.empty());
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(job));
@@ -147,9 +136,7 @@ class UserServiceImplTest {
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(updatedJob));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
-        userService.updateJob(1L, new UserRequestDto.UpdateJobDto() {{
-            org.springframework.test.util.ReflectionTestUtils.setField(this, "job", "개발/데이터");
-        }});
+        userService.updateJob(1L, new UserRequestDto.UpdateJobDto("개발/데이터"));
 
         assertThat(user.getJob()).isEqualTo(updatedJob);
     }
@@ -163,10 +150,7 @@ class UserServiceImplTest {
 
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
-        UserRequestDto.UpdateImageDto dto = UserRequestDto.UpdateImageDto.builder()
-                .imgName("updated.png")
-                .imgUrl("https://cdn/updated.png")
-                .build();
+        UserRequestDto.UpdateImageDto dto = new UserRequestDto.UpdateImageDto("updated.png", "https://cdn/updated.png");
 
         userService.updateImg(1L, dto);
 
@@ -186,9 +170,9 @@ class UserServiceImplTest {
 
         UserResponseDto.GetUserDto result = userService.getUserProfile(1L);
 
-        assertThat(result.getNickname()).isEqualTo("tester");
-        assertThat(result.getJob()).isEqualTo("개발/데이터");
-        assertThat(result.getImgUrl()).isEqualTo("https://cdn/profile.png");
+        assertThat(result.nickname()).isEqualTo("tester");
+        assertThat(result.job()).isEqualTo("개발/데이터");
+        assertThat(result.imgUrl()).isEqualTo("https://cdn/profile.png");
     }
 
     @Test

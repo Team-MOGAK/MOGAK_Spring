@@ -1,13 +1,11 @@
 package com.mogak.spring.web.dto.authdto;
 
-import lombok.*;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AuthResponse {
 
-    @Getter
-    @Builder
-    public static class WithdrawDto{
-        boolean isDeleted;
+    public record WithdrawDto(
+            @JsonProperty("isDeleted") boolean isDeleted
+    ) {
     }
 }

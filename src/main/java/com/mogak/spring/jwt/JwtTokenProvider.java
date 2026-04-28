@@ -97,10 +97,7 @@ public class JwtTokenProvider {
         if (isRefreshable(refreshToken)) { //만료되었으면 재발급
             localRefreshToken = createRefreshToken(userId);
         }
-        return JwtTokens.builder()
-                .accessToken(accessToken)
-                .refreshToken(localRefreshToken)
-                .build();
+        return new JwtTokens(accessToken, localRefreshToken);
     }
 
     public Long getUserIdByRefresh(String refreshToken) {

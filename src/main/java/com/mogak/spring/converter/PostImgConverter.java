@@ -14,8 +14,8 @@ public class PostImgConverter {
     public static PostImg toPostImg(PostImgRequestDto.CreatePostImgDto request, Post post){
         return PostImg.builder()
                 .post(post)
-                .imgName(request.getImgName())
-                .imgUrl(request.getImgUrl())
+                .imgName(request.imgName())
+                .imgUrl(request.imgUrl())
                 .build();
     }
 }

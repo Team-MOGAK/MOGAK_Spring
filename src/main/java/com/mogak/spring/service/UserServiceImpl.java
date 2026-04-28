@@ -36,24 +36,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDto.CreateDto create(Long userId, CreateUserDto request, UploadImageDto uploadImageDto) {
         inputVerify(request);
-        Job job = jobRepository.findJobByName(request.getJob())
+        Job job = jobRepository.findJobByName(request.job())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
-        Address address = addressRepository.findAddressByName(request.getAddress())
+        Address address = addressRepository.findAddressByName(request.address())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_ADDRESS));
-        String profileImgUrl = uploadImageDto.getImgUrl();
-        String profileImgName = uploadImageDto.getImgName();
+        String profileImgUrl = uploadImageDto.imgUrl();
+        String profileImgName = uploadImageDto.imgName();
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
         if (user.getNickname() != null) {
             throw new UserException(ErrorCode.ALREADY_EXIST_USER);
         }
-        user.registerUser(request.getNickname(), job, address, profileImgUrl, profileImgName);
+        user.registerUser(request.nickname(), job, address, profileImgUrl, profileImgName);
         JwtTokens tokens = issueUserTokens(user);
-        return UserResponseDto.CreateDto.builder()
-                .userId(user.getId())
-                .nickname(user.getNickname())
-                .tokens(tokens)
-                .build();
+        return new UserResponseDto.CreateDto(user.getId(), user.getNickname(), tokens);
     }
 
     private Optional<User> findUserByNickname(String nickname) {
@@ -61,7 +57,7 @@ public class UserServiceImpl implements UserService {
     }
 
     protected void inputVerify(CreateUserDto request) {
-        if (findUserByNickname(request.getNickname()).isPresent())
+        if (findUserByNickname(request.nickname()).isPresent())
             throw new UserException(ErrorCode.ALREADY_EXIST_USER);
     }
 
@@ -87,16 +83,16 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void updateNickname(Long userId, UpdateNicknameDto nicknameDto) {
-        verifyNickname(nicknameDto.getNickname());
+        verifyNickname(nicknameDto.nickname());
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        user.updateNickname(nicknameDto.getNickname());
+        user.updateNickname(nicknameDto.nickname());
     }
 
     @Transactional
     @Override
     public void updateJob(Long userId, UpdateJobDto jobDto) {
-        Job job = jobRepository.findJobByName(jobDto.getJob())
+        Job job = jobRepository.findJobByName(jobDto.job())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
@@ -123,10 +119,7 @@ public class UserServiceImpl implements UserService {
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getEmail(), resolveTokenRole(user));
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
         user.updateRefreshToken(refreshToken);
-        return JwtTokens.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        return new JwtTokens(accessToken, refreshToken);
     }
 
     private String resolveTokenRole(User user) {
@@ -150,8 +143,8 @@ public class UserServiceImpl implements UserService {
     public void updateImg(Long userId, UserRequestDto.UpdateImageDto userImageDto) {
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        String imgUrl = userImageDto.getImgUrl();
-        String imgName = userImageDto.getImgName();
+        String imgUrl = userImageDto.imgUrl();
+        String imgName = userImageDto.imgName();
         user.updateProfileImg(imgUrl, imgName);
     }
 
@@ -162,10 +155,6 @@ public class UserServiceImpl implements UserService {
         String nickname = user.getNickname();
         String job = user.getJob().getName();
         String profileImgUrl = user.getProfileImgUrl();
-        return UserResponseDto.GetUserDto.builder()
-                .nickname(nickname)
-                .job(job)
-                .imgUrl(profileImgUrl)
-                .build();
+        return new UserResponseDto.GetUserDto(nickname, job, profileImgUrl);
     }
 }

@@ -10,7 +10,7 @@ public class UserConverter {
 
     public static User toUser(UserRequestDto.CreateUserDto response, Job job, Address address, String profileImgUrl, String profileImgName) {
         return User.builder()
-                .nickname(response.getNickname())
+                .nickname(response.nickname())
                 .job(job)
                 .address(address)
 //                .email(response.getEmail())
@@ -20,23 +20,15 @@ public class UserConverter {
     }
 
     public static UserResponseDto.CreateDto toCreateDto(User user) {
-        return UserResponseDto.CreateDto.builder()
-                .userId(user.getId())
-                .nickname(user.getNickname())
-                .build();
+        return new UserResponseDto.CreateDto(user.getId(), user.getNickname(), null);
     }
 
     public static UserResponseDto.LoginDto toLoginDto(String jwtToken) {
-        return UserResponseDto.LoginDto.builder()
-                .token(jwtToken)
-                .build();
+        return new UserResponseDto.LoginDto(jwtToken);
     }
 
     public static UserResponseDto.UserDto toUserDto(User user) {
-        return UserResponseDto.UserDto.builder()
-                .nickname(user.getNickname())
-                .job(user.getJob().getName())
-                .build();
+        return new UserResponseDto.UserDto(user.getNickname(), user.getJob().getName());
     }
 
 }

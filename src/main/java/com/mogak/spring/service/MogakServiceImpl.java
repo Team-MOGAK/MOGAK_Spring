@@ -49,13 +49,13 @@ public class MogakServiceImpl implements MogakService {
     public MogakResponseDto.GetMogakDto create(Long userId, MogakRequestDto.CreateDto request) {
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        Modarat modarat = getOwnedModarat(request.getModaratId(), userId);
+        Modarat modarat = getOwnedModarat(request.modaratId(), userId);
         if (!validateMogakNum(modarat)) {
             throw new BaseException(ErrorCode.EXCEED_MAX_MOGAK);
         }
-        MogakCategory category = categoryRepository.findMogakCategoryByName(request.getBigCategory())
+        MogakCategory category = categoryRepository.findMogakCategoryByName(request.bigCategory())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
-        Mogak result = mogakRepository.save(MogakConverter.toMogak(request, modarat, category, request.getSmallCategory(), user));
+        Mogak result = mogakRepository.save(MogakConverter.toMogak(request, modarat, category, request.smallCategory(), user));
         return MogakConverter.toGetMogakDto(result);
     }
 
@@ -132,8 +132,8 @@ public class MogakServiceImpl implements MogakService {
     @Transactional
     @Override
     public MogakResponseDto.GetMogakDto updateMogak(Long userId, MogakRequestDto.UpdateDto request) {
-        Mogak mogak = getOwnedMogak(request.getMogakId(), userId);
-        Optional<String> categoryOptional = Optional.ofNullable(request.getBigCategory());
+        Mogak mogak = getOwnedMogak(request.mogakId(), userId);
+        Optional<String> categoryOptional = Optional.ofNullable(request.bigCategory());
         categoryOptional.ifPresent(categoryValue -> {
             MogakCategory category = categoryRepository.findMogakCategoryByName(categoryValue)
                     .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
@@ -142,7 +142,7 @@ public class MogakServiceImpl implements MogakService {
             List<Jogak> jogakList = jogakRepository.findAllByMogak(mogak);
             jogakList.forEach(jogak -> jogak.updateCategory(category));
         });
-        mogak.update(request.getTitle(), request.getSmallCategory(), request.getColor());
+        mogak.update(request.title(), request.smallCategory(), request.color());
         return MogakConverter.toGetMogakDto(mogak);
     }
 

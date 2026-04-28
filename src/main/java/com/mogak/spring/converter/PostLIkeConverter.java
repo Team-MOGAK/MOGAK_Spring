@@ -8,10 +8,7 @@ import com.mogak.spring.web.dto.postdto.PostLikeResponseDto;
 public class PostLIkeConverter {
 
     public static PostLikeResponseDto.CreatePostLikeDto toCreatePostLikeDto(PostLike postLike){
-        return PostLikeResponseDto.CreatePostLikeDto.builder()
-                .postId(postLike.getPost().getId())
-                .userId(postLike.getUser().getId())
-                .build();
+        return new PostLikeResponseDto.CreatePostLikeDto(postLike.getUser().getId(), postLike.getPost().getId());
     }
 
     public static PostLike toPostLike(Post post, User user){

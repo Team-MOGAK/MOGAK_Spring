@@ -10,17 +10,13 @@ public class ModaratConverter {
     public static Modarat toModarat(User user, ModaratRequestDto.CreateModaratDto request) {
         return Modarat.builder()
                 .user(user)
-                .title(request.getTitle())
-                .color(request.getColor())
+                .title(request.title())
+                .color(request.color())
                 .build();
     }
 
     public static ModaratDto toModaratDto(Modarat modarat) {
-        return ModaratDto.builder()
-                .id(modarat.getId())
-                .title(modarat.getTitle())
-                .color(modarat.getColor())
-                .build();
+        return new ModaratDto(modarat.getId(), modarat.getTitle(), modarat.getColor());
     }
 
 }

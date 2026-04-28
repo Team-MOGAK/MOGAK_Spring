@@ -58,28 +58,20 @@ public class AuthService {
     //로그인
     @Transactional
     public AppleLoginResponse appleLogin(AppleLoginRequest request) {
-        SocialLoginResponse response = login(SocialProvider.APPLE, request.getId_token());
-        return AppleLoginResponse.builder()
-                .isRegistered(response.getIsRegistered())
-                .userId(response.getUserId())
-                .tokens(response.getTokens())
-                .build();
+        SocialLoginResponse response = login(SocialProvider.APPLE, request.idToken());
+        return new AppleLoginResponse(response.isRegistered(), response.userId(), response.tokens());
     }
 
     @Transactional
     public SocialLoginResponse socialLogin(SocialProvider provider, SocialLoginRequest request) {
-        return login(provider, request.getToken());
+        return login(provider, request.token());
     }
 
     private SocialLoginResponse login(SocialProvider provider, String token) {
         SocialUserProfile profile = resolveSocialUser(provider, token);
         User user = resolveUser(profile);
         JwtTokens jwtTokens = issueTokens(user);
-        return SocialLoginResponse.builder()
-                .isRegistered(isRegisterNickname(user))
-                .userId(user.getId())
-                .tokens(jwtTokens)
-                .build();
+        return new SocialLoginResponse(isRegisterNickname(user), user.getId(), jwtTokens);
     }
 
     private SocialUserProfile resolveSocialUser(SocialProvider provider, String token) {
@@ -185,10 +177,7 @@ public class AuthService {
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getEmail(), resolveTokenRole(user));
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
         user.updateRefreshToken(refreshToken);
-        return JwtTokens.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        return new JwtTokens(accessToken, refreshToken);
 
     }
 
@@ -200,7 +189,7 @@ public class AuthService {
         validateStoredRefreshToken(findUser, refreshToken);
 
         JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), findUser.getEmail(), resolveTokenRole(findUser));
-        findUser.updateRefreshToken(jwtTokens.getRefreshToken());
+        findUser.updateRefreshToken(jwtTokens.refreshToken());
         return jwtTokens;
     }
 
@@ -220,9 +209,7 @@ public class AuthService {
         User deleteUser = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         deleteUserInfo(deleteUser);
-        return AuthResponse.WithdrawDto.builder()
-                .isDeleted(true)
-                .build();
+        return new AuthResponse.WithdrawDto(true);
     }
 
     public void deleteUserInfo(User deleteUser) {

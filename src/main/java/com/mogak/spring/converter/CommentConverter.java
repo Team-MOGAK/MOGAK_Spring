@@ -13,30 +13,30 @@ import java.util.stream.Collectors;
 public class CommentConverter {
 
     public static CommentResponseDto.CreateCommentDto toCreateCommentDto(PostComment comment){
-        return CommentResponseDto.CreateCommentDto.builder()
-                .id(comment.getId())
-                .postId(comment.getPost().getId())
-                .userId(comment.getUser().getId())
-                .contents(comment.getContents())
-                .createdAt(comment.getCreatedAt())
-                .build();
+        return CommentResponseDto.CreateCommentDto.of(
+                comment.getId(),
+                comment.getPost().getId(),
+                comment.getUser().getId(),
+                comment.getContents(),
+                comment.getCreatedAt()
+        );
     }
 
     public static PostComment toComment(CommentRequestDto.CreateCommentDto request, Post post, User user){
         return PostComment.builder()
                 .post(post)
                 .user(user)
-                .contents(request.getContents())
+                .contents(request.contents())
                 .build();
     }
     public static CommentResponseDto.CommentDto toCommentDto(PostComment comment){
-        return CommentResponseDto.CommentDto.builder()
-                .commentId(comment.getId())
-                .postId(comment.getPost().getId())
-                .userId(comment.getUser().getId())
-                .contents(comment.getContents())
-                .createdAt(comment.getCreatedAt())
-                .build();
+        return CommentResponseDto.CommentDto.of(
+                comment.getId(),
+                comment.getPost().getId(),
+                comment.getUser().getId(),
+                comment.getContents(),
+                comment.getCreatedAt()
+        );
     }
     public static List<CommentResponseDto.CommentDto> toCommentDtoList(List<PostComment> commentList){
         return commentList.stream()
@@ -44,32 +44,24 @@ public class CommentConverter {
                 .collect(Collectors.toList());
     }
     public static CommentResponseDto.CommentListDto toCommentListDto(List<PostComment> commentList){
-        return CommentResponseDto.CommentListDto.builder()
-                .commentDtoList(toCommentDtoList(commentList))
-                .build();
+        return CommentResponseDto.CommentListDto.of(toCommentDtoList(commentList));
 
     }
 
     public static CommentResponseDto.UpdateCommentDto toUpdateCommentDto(PostComment comment){
-        return CommentResponseDto.UpdateCommentDto.builder()
-                .id(comment.getId())
-                .contents(comment.getContents())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        return CommentResponseDto.UpdateCommentDto.of(comment.getId(), comment.getContents(), LocalDateTime.now());
     }
 
     public static CommentResponseDto.DeleteCommentDto toDeleteCommentDto(){
-        return CommentResponseDto.DeleteCommentDto.builder()
-                .deleted(true)
-                .build();
+        return CommentResponseDto.DeleteCommentDto.deletedResponse();
     }
 
     public static CommentResponseDto.NetworkCommentDto toNetworkCommentDto(PostComment comment) {
-        return CommentResponseDto.NetworkCommentDto.builder()
-                .commentId(comment.getId())
-                .nickname(comment.getUser().getNickname())
-                .contents(comment.getContents())
-                .createdAt(comment.getCreatedAt())
-                .build();
+        return CommentResponseDto.NetworkCommentDto.of(
+                comment.getId(),
+                comment.getUser().getNickname(),
+                comment.getContents(),
+                comment.getCreatedAt()
+        );
     }
 }
