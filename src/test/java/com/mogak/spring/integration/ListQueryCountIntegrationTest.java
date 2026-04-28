@@ -37,7 +37,9 @@ import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.GetAllNetworkDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.GetPostDto;
+import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkListDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkPostDto;
+import com.mogak.spring.web.dto.postdto.PostResponseDto.PostListDto;
 import jakarta.persistence.EntityManager;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
@@ -46,7 +48,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Slice;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,20 +113,20 @@ class ListQueryCountIntegrationTest {
         savePost(writer, mogak, "three", "thumb-three");
         flushAndClear();
 
-        QueryResult<Slice<GetAllNetworkDto>> singlePostResult = countQueries(
+        QueryResult<NetworkListDto> singlePostResult = countQueries(
                 () -> postService.getNetworkPosts(viewer.getId(), 0, 1, "createdAt", address.getName())
         );
-        QueryResult<Slice<GetAllNetworkDto>> threePostResult = countQueries(
+        QueryResult<NetworkListDto> threePostResult = countQueries(
                 () -> postService.getNetworkPosts(viewer.getId(), 0, 3, "createdAt", address.getName())
         );
 
-        assertThat(singlePostResult.value().getContent())
+        assertThat(singlePostResult.value().items())
                 .extracting(GetAllNetworkDto::contents)
                 .containsExactly("three");
-        assertThat(threePostResult.value().getContent())
+        assertThat(threePostResult.value().items())
                 .extracting(GetAllNetworkDto::contents)
                 .containsExactly("three", "two", "one");
-        assertThat(threePostResult.value().getContent())
+        assertThat(threePostResult.value().items())
                 .allSatisfy(post -> {
                     assertThat(post.userName()).isEqualTo("writer");
                     assertThat(post.userJob()).isEqualTo(job.getName());
@@ -180,20 +181,20 @@ class ListQueryCountIntegrationTest {
         savePost(writer, mogak, "three", "thumb-three");
         flushAndClear();
 
-        QueryResult<Slice<GetPostDto>> singlePostResult = countQueries(
+        QueryResult<PostListDto> singlePostResult = countQueries(
                 () -> postService.getAllPosts(writer.getId(), 0, mogak.getId(), 1)
         );
-        QueryResult<Slice<GetPostDto>> threePostResult = countQueries(
+        QueryResult<PostListDto> threePostResult = countQueries(
                 () -> postService.getAllPosts(writer.getId(), 0, mogak.getId(), 3)
         );
 
-        assertThat(singlePostResult.value().getContent())
+        assertThat(singlePostResult.value().items())
                 .extracting(GetPostDto::contents)
                 .containsExactly("three");
-        assertThat(threePostResult.value().getContent())
+        assertThat(threePostResult.value().items())
                 .extracting(GetPostDto::contents)
                 .containsExactly("three", "two", "one");
-        assertThat(threePostResult.value().getContent())
+        assertThat(threePostResult.value().items())
                 .allSatisfy(post -> {
                     assertThat(post.mogakId()).isEqualTo(mogak.getId());
                     assertThat(post.thumbnailUrl()).startsWith("https://example.com/thumb-");

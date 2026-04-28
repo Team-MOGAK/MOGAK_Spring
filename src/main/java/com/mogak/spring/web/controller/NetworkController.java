@@ -7,7 +7,7 @@ import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto;
+import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkListDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkPostDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,7 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -90,12 +89,12 @@ public class NetworkController {
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
     @GetMapping("/api/posts")
-    public ResponseEntity<BaseResponse<Slice<PostResponseDto.GetAllNetworkDto>>> getALlPosts(
+    public ResponseEntity<BaseResponse<NetworkListDto>> getALlPosts(
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size") int size,
             @RequestParam(value = "sort", defaultValue = "createdAt", required = false) String sort, @RequestParam(value = "address", required = false) String address
             /*@RequestParam(value = "category", defaultValue="all", required = false) List<String> categoryList,*/) {
-        Slice<PostResponseDto.GetAllNetworkDto> posts = postService.getNetworkPosts(authenticatedUser.getUserId(), page, size, sort, address);
+        NetworkListDto posts = postService.getNetworkPosts(authenticatedUser.getUserId(), page, size, sort, address);
         return ResponseEntity.ok(new BaseResponse<>(posts));
     }
 

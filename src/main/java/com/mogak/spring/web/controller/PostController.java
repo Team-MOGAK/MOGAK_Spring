@@ -19,7 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -89,11 +88,11 @@ public class PostController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/api/mogaks/{mogakId}/posts")
-    public ResponseEntity<BaseResponse<Slice<GetPostDto>>> getPostList(@PathVariable Long mogakId,
-                                                                       @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                                       @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                       @RequestParam(value = "size") int size) {
-        Slice<GetPostDto> posts = postService.getAllPosts(authenticatedUser.getUserId(), page, mogakId, size);
+    public ResponseEntity<BaseResponse<PostListDto>> getPostList(@PathVariable Long mogakId,
+                                                                 @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                 @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                 @RequestParam(value = "size") int size) {
+        PostListDto posts = postService.getAllPosts(authenticatedUser.getUserId(), page, mogakId, size);
         return ResponseEntity.ok(new BaseResponse<>(posts));
     }
 

@@ -16,6 +16,7 @@ import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.GetPostDto;
+import com.mogak.spring.web.dto.postdto.PostResponseDto.PostListDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,9 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -276,7 +274,7 @@ class PostControllerTest {
     @DisplayName("모각별 게시글 조회는 인증 사용자의 id를 서비스에 전달한다")
     void getPostListUsesAuthenticatedUserId() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        Slice<GetPostDto> posts = new SliceImpl<>(List.of());
+        PostListDto posts = PostListDto.of(List.of(), 0, 10, false);
         when(postService.getAllPosts(7L, 0, 1L, 10)).thenReturn(posts);
 
         mockMvc.perform(get("/api/mogaks/{mogakId}/posts", 1L)
@@ -288,8 +286,8 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("모각별 게시글 조회는 기존 Slice DTO JSON 계약을 유지한다")
-    void getPostListReturnsSliceDtoContract() throws Exception {
+    @DisplayName("모각별 게시글 조회는 전용 목록 DTO JSON 계약을 반환한다")
+    void getPostListReturnsDedicatedListDtoContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
         GetPostDto post = GetPostDto.of(
                 11L,
@@ -301,7 +299,7 @@ class PostControllerTest {
                 "https://example.com/thumb.png",
                 4
         );
-        Slice<GetPostDto> posts = new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true);
+        PostListDto posts = PostListDto.of(List.of(post), 0, 10, true);
         when(postService.getAllPosts(7L, 0, 1L, 10)).thenReturn(posts);
 
         mockMvc.perform(get("/api/mogaks/{mogakId}/posts", 1L)
@@ -310,19 +308,22 @@ class PostControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.code").value("success"))
-                .andExpect(jsonPath("$.result.content[0].postId").value(11))
-                .andExpect(jsonPath("$.result.content[0].mogakId").value(1))
-                .andExpect(jsonPath("$.result.content[0].jogakId").value(2))
-                .andExpect(jsonPath("$.result.content[0].dailyJogakId").value(3))
-                .andExpect(jsonPath("$.result.content[0].targetDate").value("2026-04-21"))
-                .andExpect(jsonPath("$.result.content[0].contents").value("오늘 회고"))
-                .andExpect(jsonPath("$.result.content[0].thumbnailUrl").value("https://example.com/thumb.png"))
-                .andExpect(jsonPath("$.result.content[0].likeCnt").value(4))
+                .andExpect(jsonPath("$.result.items[0].postId").value(11))
+                .andExpect(jsonPath("$.result.items[0].mogakId").value(1))
+                .andExpect(jsonPath("$.result.items[0].jogakId").value(2))
+                .andExpect(jsonPath("$.result.items[0].dailyJogakId").value(3))
+                .andExpect(jsonPath("$.result.items[0].targetDate").value("2026-04-21"))
+                .andExpect(jsonPath("$.result.items[0].contents").value("오늘 회고"))
+                .andExpect(jsonPath("$.result.items[0].thumbnailUrl").value("https://example.com/thumb.png"))
+                .andExpect(jsonPath("$.result.items[0].likeCnt").value(4))
+                .andExpect(jsonPath("$.result.page").value(0))
                 .andExpect(jsonPath("$.result.size").value(10))
-                .andExpect(jsonPath("$.result.number").value(0))
-                .andExpect(jsonPath("$.result.numberOfElements").value(1))
-                .andExpect(jsonPath("$.result.first").value(true))
-                .andExpect(jsonPath("$.result.last").value(false));
+                .andExpect(jsonPath("$.result.hasNext").value(true))
+                .andExpect(jsonPath("$.result.content").doesNotExist())
+                .andExpect(jsonPath("$.result.number").doesNotExist())
+                .andExpect(jsonPath("$.result.numberOfElements").doesNotExist())
+                .andExpect(jsonPath("$.result.first").doesNotExist())
+                .andExpect(jsonPath("$.result.last").doesNotExist());
     }
 
     @Test
