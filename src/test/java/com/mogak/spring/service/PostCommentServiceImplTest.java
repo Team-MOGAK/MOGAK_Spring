@@ -9,7 +9,6 @@ import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
-import com.mogak.spring.web.dto.commentdto.CommentRequestDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,13 +44,11 @@ class PostCommentServiceImplTest {
     void createUsesAuthenticationNameAndIncrementsCommentCount() {
         User writer = user(1L, "writer@test.com");
         Post post = post(10L, writer, 3, 0);
-        CommentRequestDto.CreateCommentDto request = createRequest("새 댓글");
-
         when(postRepository.findActiveById(10L)).thenReturn(Optional.of(post));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
         when(postCommentRepository.save(any(PostComment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        PostComment result = postCommentService.create(1L, request, 10L);
+        PostComment result = postCommentService.create(1L, "새 댓글", 10L);
 
         assertThat(result.getPost()).isSameAs(post);
         assertThat(result.getUser()).isSameAs(writer);
@@ -71,7 +68,7 @@ class PostCommentServiceImplTest {
         when(postCommentRepository.findActiveByPostAndId(post, 100L)).thenReturn(comment);
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
 
-        PostComment result = postCommentService.update(1L, updateRequest("수정 댓글"), 10L, 100L);
+        PostComment result = postCommentService.update(1L, "수정 댓글", 10L, 100L);
 
         assertThat(result.getContents()).isEqualTo("수정 댓글");
         assertThat(comment.getContents()).isEqualTo("수정 댓글");
@@ -89,7 +86,7 @@ class PostCommentServiceImplTest {
         when(postCommentRepository.findActiveByPostAndId(post, 100L)).thenReturn(comment);
         when(userRepository.findActiveById(2L)).thenReturn(Optional.of(other));
 
-        Throwable throwable = catchThrowable(() -> postCommentService.update(2L, updateRequest("수정 댓글"), 10L, 100L));
+        Throwable throwable = catchThrowable(() -> postCommentService.update(2L, "수정 댓글", 10L, 100L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
         assertThat(comment.getContents()).isEqualTo("기존 댓글");
@@ -181,11 +178,4 @@ class PostCommentServiceImplTest {
                 .build();
     }
 
-    private static CommentRequestDto.CreateCommentDto createRequest(String contents) {
-        return new CommentRequestDto.CreateCommentDto(contents);
-    }
-
-    private static CommentRequestDto.UpdateCommentDto updateRequest(String contents) {
-        return new CommentRequestDto.UpdateCommentDto(contents);
-    }
 }

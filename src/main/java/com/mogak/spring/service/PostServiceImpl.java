@@ -14,15 +14,12 @@ import com.mogak.spring.exception.PostException;
 import com.mogak.spring.exception.UserException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
-import com.mogak.spring.service.result.post.NetworkCommentResult;
-import com.mogak.spring.service.result.post.NetworkFeedPostResult;
-import com.mogak.spring.service.result.post.NetworkListResult;
-import com.mogak.spring.service.result.post.NetworkUserResult;
-import com.mogak.spring.service.result.post.PacemakerPostResult;
-import com.mogak.spring.service.result.post.PostListResult;
-import com.mogak.spring.service.result.post.PostSummaryResult;
-import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
-import com.mogak.spring.web.dto.postdto.PostRequestDto;
+import com.mogak.spring.service.result.NetworkCommentResult;
+import com.mogak.spring.service.result.NetworkPostResult;
+import com.mogak.spring.service.result.NetworkPostSummaryResult;
+import com.mogak.spring.service.result.PostSummaryResult;
+import com.mogak.spring.service.result.UploadedPostImageResult;
+import com.mogak.spring.service.result.UserSummaryResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
@@ -62,10 +59,10 @@ public class PostServiceImpl implements PostService {
      */
 
     @Override
-    public void validateCreateAccess(Long userId, PostRequestDto.CreatePostDto request, List<MultipartFile> multipartFile, Long jogakId) {
-        validateContents(request);
+    public void validateCreateAccess(Long userId, LocalDate targetDate, String contents, List<MultipartFile> multipartFile, Long jogakId) {
+        validateContents(contents);
         validateSourceImages(multipartFile);
-        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request.targetDate());
+        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, targetDate);
         validateTargetDate(dailyJogak.getJogak(), dailyJogak.getTargetDate());
         if (postRepository.existsByDailyJogakIdAndDeletedAtIsNull(dailyJogak.getId())) {
             throw new PostException(ErrorCode.ALREADY_EXISTS_POST);
@@ -75,21 +72,21 @@ public class PostServiceImpl implements PostService {
     //회고록 & 회고록 이미지 생성 => 리팩토링 필요
     @Transactional
     @Override
-    public Post create(Long userId, PostRequestDto.CreatePostDto request, List<PostImgRequestDto.CreatePostImgDto> postImgDtoList, Long jogakId) {
-        validateContents(request);
-        validateCreatedImages(postImgDtoList);
-        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, request.targetDate());
-        validateTargetDate(dailyJogak.getJogak(), request.targetDate());
+    public Post create(Long userId, LocalDate targetDate, String contents, List<UploadedPostImageResult> uploadedImages, Long jogakId) {
+        validateContents(contents);
+        validateCreatedImages(uploadedImages);
+        DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, targetDate);
+        validateTargetDate(dailyJogak.getJogak(), targetDate);
         if (postRepository.existsByDailyJogakIdAndDeletedAtIsNull(dailyJogak.getId())) {
             throw new PostException(ErrorCode.ALREADY_EXISTS_POST);
         }
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        Post post = Post.create(dailyJogak, user, request.contents());
-        for (PostImgRequestDto.CreatePostImgDto postImgDto : postImgDtoList) {
-            PostImg postImg = PostImg.create(post, postImgDto.imgName(), postImgDto.imgUrl());
+        Post post = Post.create(dailyJogak, user, contents);
+        for (UploadedPostImageResult uploadedImage : uploadedImages) {
+            PostImg postImg = PostImg.create(post, uploadedImage.imgName(), uploadedImage.imgUrl());
             //썸네일이미지인지 체크 필요
-            if (postImgDto.thumbnail()) {
+            if (uploadedImage.isThumbnail()) {
                 post.putPostThumbnailUrl(postImg.getImgUrl()); //썸네일 이미지는 thumbnailurl에 추가
             } else {//이미지 업로드 체크
                 post.putPostImg(postImg);
@@ -118,27 +115,12 @@ public class PostServiceImpl implements PostService {
 
     //회고록 조회 - 무한 스크롤
     @Override
-    public PostListResult getAllPosts(Long userId, int page, Long mogakId, int size) {
+    public Slice<PostSummaryResult> getAllPosts(Long userId, int page, Long mogakId, int size) {
         getOwnedMogak(userId, mogakId);
         Pageable pageable = PageRequest.of(page, size);
 
-        Slice<PostSummaryResult> posts = postRepository.findAllPosts(mogakId, pageable)
-                .map(this::toPostSummaryResult);
-        return PostListResult.of(posts.getContent(), page, size, posts.hasNext());
-    }
-
-    private PostSummaryResult toPostSummaryResult(Post post) {
-        DailyJogak dailyJogak = post.getDailyJogak();
-        return new PostSummaryResult(
-                post.getId(),
-                dailyJogak.getJogak().getMogak().getId(),
-                dailyJogak.getJogak().getId(),
-                dailyJogak.getId(),
-                dailyJogak.getTargetDate(),
-                post.getContents(),
-                post.getPostThumbnailUrl(),
-                post.getLikeCnt()
-        );
+        return postRepository.findAllPosts(mogakId, pageable)
+                .map(PostSummaryResult::from);
     }
 
     //회고록 상세 조회 + 댓글, 이미지 같이 보이게
@@ -158,10 +140,10 @@ public class PostServiceImpl implements PostService {
     //회고록 수정
     @Transactional
     @Override
-    public Post update(Long userId, Long postId, PostRequestDto.UpdatePostDto request) {
+    public Post update(Long userId, Long postId, String contents) {
         Post post = getOwnedPost(userId, postId);
-        validateContents(request);
-        post.updatePost(request.contents());
+        validateContents(contents);
+        post.updatePost(contents);
         return post;
     }
 
@@ -184,7 +166,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PacemakerPostResult> getPacemakerPosts(Long userId, int cursor, int size) {
+    public List<NetworkPostResult> getPacemakerPosts(Long userId, int cursor, int size) {
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Pageable pageable = PageRequest.of(cursor, size);
@@ -198,15 +180,10 @@ public class PostServiceImpl implements PostService {
                     List<String> imgUrls = findNotThumbnailImgUrls(p, imagesByPostId);
                     List<NetworkCommentResult> comments = commentsByPostId
                             .getOrDefault(p.getId(), Collections.emptyList()).stream()
-                            .map(comment -> NetworkCommentResult.of(
-                                    comment.getId(),
-                                    comment.getUser().getNickname(),
-                                    comment.getContents(),
-                                    comment.getCreatedAt()
-                            ))
+                            .map(NetworkCommentResult::from)
                             .collect(Collectors.toList());
-                    return PacemakerPostResult.of(
-                            NetworkUserResult.of(p.getUser().getNickname(), p.getUser().getJob().getName()),
+                    return new NetworkPostResult(
+                            UserSummaryResult.from(p.getUser()),
                             p.getContents(),
                             imgUrls,
                             comments,
@@ -219,7 +196,7 @@ public class PostServiceImpl implements PostService {
 
     //전체 네트워킹 조회 - 이미지 썸네일 제외 반환
     @Override
-    public NetworkListResult getNetworkPosts(Long userId, int page, int size, String sort, String address /*List<String> categoryList,*/){
+    public Slice<NetworkPostSummaryResult> getNetworkPosts(Long userId, int page, int size, String sort, String address /*List<String> categoryList,*/){
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         if(address == null){
@@ -228,16 +205,7 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(page, size);
         Slice<Post> posts = postRepository.findNetworkPosts(address, sort, pageable);
         Map<Long, List<PostImg>> imagesByPostId = groupImagesByPostId(extractPostIds(posts.getContent()));
-        Slice<NetworkFeedPostResult> results = posts.map(post -> NetworkFeedPostResult.of(
-                post.getId(),
-                post.getUser().getNickname(),
-                post.getUser().getJob().getName(),
-                post.getContents(),
-                findNotThumbnailImgUrls(post, imagesByPostId),
-                post.getCommentCnt(),
-                post.getLikeCnt()
-        ));
-        return NetworkListResult.of(results.getContent(), page, size, results.hasNext());
+        return posts.map(post -> NetworkPostSummaryResult.from(post, findNotThumbnailImgUrls(post, imagesByPostId)));
     }
 
     private List<Long> extractPostIds(List<Post> posts) {
@@ -356,20 +324,11 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    private void validateContents(PostRequestDto.CreatePostDto request) {
-        if (request == null || request.contents() == null) {
+    private void validateContents(String contents) {
+        if (contents == null) {
             throw new PostException(ErrorCode.INVALID_PARAMETER_ERROR);
         }
-        if (request.contents().length() > 350) {
-            throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
-        }
-    }
-
-    private void validateContents(PostRequestDto.UpdatePostDto request) {
-        if (request == null || request.contents() == null) {
-            throw new PostException(ErrorCode.INVALID_PARAMETER_ERROR);
-        }
-        if (request.contents().length() > 350) {
+        if (contents.length() > 350) {
             throw new PostException(ErrorCode.EXCEED_MAX_NUM_POST);
         }
     }
@@ -380,8 +339,8 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    private void validateCreatedImages(List<PostImgRequestDto.CreatePostImgDto> postImgDtoList) {
-        if (postImgDtoList == null || postImgDtoList.isEmpty()) {
+    private void validateCreatedImages(List<UploadedPostImageResult> uploadedImages) {
+        if (uploadedImages == null || uploadedImages.isEmpty()) {
             throw new PostException(ErrorCode.NOT_HAVE_IMAGE);
         }
     }

@@ -6,17 +6,13 @@ import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
-import com.mogak.spring.service.result.post.NetworkCommentResult;
-import com.mogak.spring.service.result.post.NetworkFeedPostResult;
-import com.mogak.spring.service.result.post.NetworkListResult;
-import com.mogak.spring.service.result.post.NetworkUserResult;
-import com.mogak.spring.service.result.post.PacemakerPostResult;
-import com.mogak.spring.web.dto.commentdto.CommentResponseDto;
-import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkListDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkPostDto;
-import com.mogak.spring.web.dto.userdto.UserResponseDto;
+import com.mogak.spring.service.result.NetworkCommentResult;
+import com.mogak.spring.service.result.NetworkPostResult;
+import com.mogak.spring.service.result.NetworkPostSummaryResult;
+import com.mogak.spring.service.result.UserSummaryResult;
+import com.mogak.spring.web.dto.commentdto.NetworkCommentResponse;
+import com.mogak.spring.web.dto.userdto.UserSummaryResponse;
+import com.mogak.spring.web.dto.postdto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -27,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -54,8 +51,8 @@ public class NetworkController {
             })
     @PostMapping("/api/posts/like")
     public ResponseEntity<BaseResponse<String>> updateLike(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                           @Valid @RequestBody PostLikeRequestDto.LikeDto request) {
-        String message = postLikeService.updateLike(authenticatedUser.getUserId(), request);
+                                                           @Valid @RequestBody LikePostRequest request) {
+        String message = postLikeService.updateLike(authenticatedUser.getUserId(), request.postId());
         return ResponseEntity.ok(new BaseResponse<>(message));
     }
 
@@ -73,15 +70,15 @@ public class NetworkController {
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
     @GetMapping("/api/posts/pacemakers")
-    public ResponseEntity<BaseResponse<List<NetworkPostDto>>> getPacemakerPosts(
+    public ResponseEntity<BaseResponse<List<NetworkPostResponse>>> getPacemakerPosts(
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @RequestParam int cursor,
             @RequestParam int size
     ) {
-        List<NetworkPostDto> posts = postService.getPacemakerPosts(authenticatedUser.getUserId(), cursor, size).stream()
-                .map(this::toNetworkPostDto)
+        List<NetworkPostResponse> responses = postService.getPacemakerPosts(authenticatedUser.getUserId(), cursor, size).stream()
+                .map(this::toNetworkPostResponse)
                 .toList();
-        return ResponseEntity.ok(new BaseResponse<>(posts));
+        return ResponseEntity.ok(new BaseResponse<>(responses));
     }
 
     //네트워킹 전체조회
@@ -100,51 +97,37 @@ public class NetworkController {
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
     @GetMapping("/api/posts")
-    public ResponseEntity<BaseResponse<NetworkListDto>> getALlPosts(
+    public ResponseEntity<BaseResponse<Slice<NetworkPostSummaryResponse>>> getALlPosts(
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size") int size,
             @RequestParam(value = "sort", defaultValue = "createdAt", required = false) String sort, @RequestParam(value = "address", required = false) String address
             /*@RequestParam(value = "category", defaultValue="all", required = false) List<String> categoryList,*/) {
-        NetworkListResult result = postService.getNetworkPosts(authenticatedUser.getUserId(), page, size, sort, address);
-        NetworkListDto posts = toNetworkListDto(result);
+        Slice<NetworkPostSummaryResponse> posts = postService.getNetworkPosts(authenticatedUser.getUserId(), page, size, sort, address)
+                .map(this::toNetworkPostSummaryResponse);
         return ResponseEntity.ok(new BaseResponse<>(posts));
     }
 
-    private NetworkListDto toNetworkListDto(NetworkListResult result) {
-        List<PostResponseDto.GetAllNetworkDto> posts = result.items().stream()
-                .map(this::toGetAllNetworkDto)
-                .toList();
-        return NetworkListDto.of(posts, result.page(), result.size(), result.hasNext());
-    }
-
-    private NetworkPostDto toNetworkPostDto(PacemakerPostResult result) {
-        return NetworkPostDto.of(
-                toUserDto(result.user()),
+    private NetworkPostResponse toNetworkPostResponse(NetworkPostResult result) {
+        return new NetworkPostResponse(
+                toUserSummaryResponse(result.user()),
                 result.contents(),
                 result.imgUrls(),
-                result.comments().stream()
-                        .map(this::toNetworkCommentDto)
-                        .toList(),
+                result.comments().stream().map(this::toNetworkCommentResponse).toList(),
                 result.likeCnt(),
                 result.viewCnt()
         );
     }
 
-    private UserResponseDto.UserDto toUserDto(NetworkUserResult result) {
-        return new UserResponseDto.UserDto(result.nickname(), result.job());
+    private UserSummaryResponse toUserSummaryResponse(UserSummaryResult result) {
+        return new UserSummaryResponse(result.nickname(), result.job());
     }
 
-    private CommentResponseDto.NetworkCommentDto toNetworkCommentDto(NetworkCommentResult result) {
-        return CommentResponseDto.NetworkCommentDto.of(
-                result.commentId(),
-                result.nickname(),
-                result.contents(),
-                result.createdAt()
-        );
+    private NetworkCommentResponse toNetworkCommentResponse(NetworkCommentResult result) {
+        return new NetworkCommentResponse(result.commentId(), result.nickname(), result.contents(), result.createdAt());
     }
 
-    private PostResponseDto.GetAllNetworkDto toGetAllNetworkDto(NetworkFeedPostResult result) {
-        return PostResponseDto.GetAllNetworkDto.of(
+    private NetworkPostSummaryResponse toNetworkPostSummaryResponse(NetworkPostSummaryResult result) {
+        return new NetworkPostSummaryResponse(
                 result.postId(),
                 result.userName(),
                 result.userJob(),

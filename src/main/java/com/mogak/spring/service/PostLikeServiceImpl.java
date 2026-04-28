@@ -9,7 +9,6 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.PostLikeRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
-import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +24,8 @@ public class PostLikeServiceImpl implements PostLikeService{
 
     @Transactional
     @Override
-    public String updateLike(Long userId, PostLikeRequestDto.LikeDto request){
-        Post post = getActivePostForUpdate(request);
+    public String updateLike(Long userId, Long postId){
+        Post post = getActivePostForUpdate(postId);
         User user = getActiveUser(userId);
         return toggleLike(post, user);
     }
@@ -43,16 +42,16 @@ public class PostLikeServiceImpl implements PostLikeService{
         return "좋아요가 생성되었습니다";
     }
 
-    private Post getActivePostForUpdate(PostLikeRequestDto.LikeDto request) {
-        return postRepository.findActiveByIdForUpdate(requirePostId(request))
+    private Post getActivePostForUpdate(Long postId) {
+        return postRepository.findActiveByIdForUpdate(requirePostId(postId))
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
     }
 
-    private Long requirePostId(PostLikeRequestDto.LikeDto request) {
-        if (request == null || request.postId() == null) {
+    private Long requirePostId(Long postId) {
+        if (postId == null) {
             throw new PostException(ErrorCode.INVALID_PARAMETER_ERROR);
         }
-        return request.postId();
+        return postId;
     }
 
     private User getActiveUser(Long userId) {

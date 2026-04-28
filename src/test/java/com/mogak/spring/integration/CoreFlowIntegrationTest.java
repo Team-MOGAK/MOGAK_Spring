@@ -14,16 +14,15 @@ import com.mogak.spring.service.JogakService;
 import com.mogak.spring.service.MogakService;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
-import com.mogak.spring.service.result.jogak.CreateJogakResult;
-import com.mogak.spring.service.result.jogak.DailyJogakResult;
-import com.mogak.spring.service.result.jogak.DailyJogakListResult;
-import com.mogak.spring.service.result.jogak.JogakDailyJogakResult;
-import com.mogak.spring.service.result.jogak.RoutineJogakResult;
-import com.mogak.spring.service.result.mogak.GetMogakResult;
+import com.mogak.spring.service.command.CreateJogakCommand;
+import com.mogak.spring.service.result.CreateJogakResult;
+import com.mogak.spring.service.result.DailyJogakListResult;
+import com.mogak.spring.service.result.DailyJogakResult;
+import com.mogak.spring.service.result.JogakDailyResult;
+import com.mogak.spring.service.result.MogakResult;
+import com.mogak.spring.service.result.ProfileImageResult;
+import com.mogak.spring.service.result.RoutineJogakResult;
 import com.mogak.spring.support.TestFixtureFactory;
-import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
-import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
-import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,22 +72,28 @@ class CoreFlowIntegrationTest {
 
         userService.create(
                 rawUser.getId(),
-                new UserRequestDto.CreateUserDto("flow-user", job.getName(), address.getName()),
-                new UserRequestDto.UploadImageDto(null, null)
+                "flow-user",
+                job.getName(),
+                address.getName(),
+                new ProfileImageResult(null, null)
         );
 
         User savedUser = userRepository.findById(rawUser.getId()).orElseThrow();
         Modarat modarat = modaratRepository.save(TestFixtureFactory.modarat(null, savedUser, "메인 모다라트", "#1111"));
         Long userId = savedUser.getId();
 
-        GetMogakResult mogak = mogakService.create(
+        MogakResult mogak = mogakService.create(
                 userId,
-                new MogakRequestDto.CreateDto(modarat.getId(), "정보처리기사", category.getName(), "필기", "#1234")
+                modarat.getId(),
+                "정보처리기사",
+                category.getName(),
+                "필기",
+                "#1234"
         );
 
-        CreateJogakResult createdJogak = jogakService.createJogak(userId, createOneTimeJogakRequest(mogak.id(), "문제풀이", LocalDate.now()));
-        JogakDailyJogakResult started = jogakService.startJogak(userId, createdJogak.jogakId());
-        JogakDailyJogakResult succeeded = jogakService.successJogak(userId, started.dailyJogakId());
+        CreateJogakResult createdJogak = jogakService.createJogak(userId, createOneTimeJogakCommand(mogak.id(), "문제풀이", LocalDate.now()));
+        JogakDailyResult started = jogakService.startJogak(userId, createdJogak.jogakId());
+        JogakDailyResult succeeded = jogakService.successJogak(userId, started.dailyJogakId());
 
         Jogak persistedJogak = jogakRepository.findById(createdJogak.jogakId()).orElseThrow();
         DailyJogak persistedDailyJogak = dailyJogakRepository.findById(started.dailyJogakId()).orElseThrow();
@@ -111,10 +116,14 @@ class CoreFlowIntegrationTest {
         Modarat modarat = modaratRepository.save(TestFixtureFactory.modarat(null, user, "메인 모다라트", "#1111"));
         Mogak mogak = mogakRepository.findById(mogakService.create(
                 user.getId(),
-                new MogakRequestDto.CreateDto(modarat.getId(), "루틴 모각", category.getName(), "반복", "#1234")
+                modarat.getId(),
+                "루틴 모각",
+                category.getName(),
+                "반복",
+                "#1234"
         ).id()).orElseThrow();
 
-        CreateJogakResult createdJogak = jogakService.createJogak(user.getId(), createRoutineJogakRequest(
+        CreateJogakResult createdJogak = jogakService.createJogak(user.getId(), createRoutineJogakCommand(
                 mogak.getId(),
                 "루틴 조각",
                 LocalDate.now(),
@@ -140,13 +149,17 @@ class CoreFlowIntegrationTest {
         ensureStandardPeriods();
         User user = userRepository.save(TestFixtureFactory.user(null, "delete@test.com", "delete-user", job, address));
         Modarat modarat = modaratRepository.save(TestFixtureFactory.modarat(null, user, "메인 모다라트", "#1111"));
-        GetMogakResult mogak = mogakService.create(
+        MogakResult mogak = mogakService.create(
                 user.getId(),
-                new MogakRequestDto.CreateDto(modarat.getId(), "삭제 대상", category.getName(), "정리", "#1234")
+                modarat.getId(),
+                "삭제 대상",
+                category.getName(),
+                "정리",
+                "#1234"
         );
 
-        CreateJogakResult createdJogak = jogakService.createJogak(user.getId(), createOneTimeJogakRequest(mogak.id(), "임시 조각", LocalDate.now()));
-        JogakDailyJogakResult started = jogakService.startJogak(user.getId(), createdJogak.jogakId());
+        CreateJogakResult createdJogak = jogakService.createJogak(user.getId(), createOneTimeJogakCommand(mogak.id(), "임시 조각", LocalDate.now()));
+        JogakDailyResult started = jogakService.startJogak(user.getId(), createdJogak.jogakId());
 
         mogakService.deleteMogak(user.getId(), mogak.id());
         entityManager.flush();
@@ -185,11 +198,11 @@ class CoreFlowIntegrationTest {
         entityManager.clear();
     }
 
-    private JogakRequestDto.CreateJogakDto createOneTimeJogakRequest(Long mogakId, String title, LocalDate day) {
-        return new JogakRequestDto.CreateJogakDto(mogakId, title, false, null, day, null);
+    private CreateJogakCommand createOneTimeJogakCommand(Long mogakId, String title, LocalDate day) {
+        return new CreateJogakCommand(mogakId, title, false, null, day, null);
     }
 
-    private JogakRequestDto.CreateJogakDto createRoutineJogakRequest(Long mogakId, String title, LocalDate today, List<String> days) {
-        return new JogakRequestDto.CreateJogakDto(mogakId, title, true, days, today, null);
+    private CreateJogakCommand createRoutineJogakCommand(Long mogakId, String title, LocalDate today, List<String> days) {
+        return new CreateJogakCommand(mogakId, title, true, days, today, null);
     }
 }

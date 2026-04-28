@@ -1,21 +1,20 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.service.result.mogak.GetJogakResult;
-import com.mogak.spring.service.result.mogak.GetMogakListResult;
-import com.mogak.spring.service.result.mogak.GetMogakResult;
-import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
+import com.mogak.spring.service.result.JogakSummaryResult;
+import com.mogak.spring.service.result.MogakListResult;
+import com.mogak.spring.service.result.MogakResult;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public interface MogakService {
-    GetMogakResult create(Long userId, MogakRequestDto.CreateDto createDto);
-    GetMogakResult updateMogak(Long userId, MogakRequestDto.UpdateDto request);
-    GetMogakListResult getMogakDtoList(Long userId, Long modaratId);
+    MogakResult create(Long userId, Long modaratId, String title, String bigCategory, String smallCategory, String color);
+    MogakResult updateMogak(Long userId, Long mogakId, String title, String bigCategory, String smallCategory, String color);
+    MogakListResult getMogakList(Long userId, Long modaratId);
     void deleteMogak(Long userId, Long mogakId);
     void deleteMogakCascadeAfterParentAuthorization(Long mogakId);
 
-    List<GetJogakResult> getJogaks(Long userId, Long mogakId, LocalDate day);
+    List<JogakSummaryResult> getJogaks(Long userId, Long mogakId, LocalDate day);
 //    List<Mogak> getOngoingTodayMogakList(int name);
 //    void judgeMogakByDay(LocalDate day);
 }

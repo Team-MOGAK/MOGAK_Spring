@@ -6,11 +6,10 @@ import com.mogak.spring.domain.user.SocialProvider;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.service.AuthService;
-import com.mogak.spring.service.result.auth.SocialLoginResult;
-import com.mogak.spring.service.result.auth.WithdrawResult;
+import com.mogak.spring.service.result.SocialLoginResult;
 import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
 import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
-import com.mogak.spring.web.dto.authdto.AuthResponse;
+import com.mogak.spring.web.dto.authdto.AuthWithdrawResponse;
 import com.mogak.spring.web.dto.authdto.SocialLoginRequest;
 import com.mogak.spring.web.dto.authdto.SocialLoginResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,9 +41,9 @@ public class AuthController {
             responses = {@ApiResponse(responseCode = "200", description = "로그인 성공"),})
     @PostMapping("/login")
     public ResponseEntity<BaseResponse<AppleLoginResponse>> loginApple(@RequestBody AppleLoginRequest request) {
-        SocialLoginResult result = authService.appleLogin(request);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(new BaseResponse<>(new AppleLoginResponse(result.isRegistered(), result.userId(), result.tokens())));
+        SocialLoginResult result = authService.appleLogin(request.idToken());
+        AppleLoginResponse response = new AppleLoginResponse(result.isRegistered(), result.userId(), result.tokens());
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(response));
     }
 
     @Operation(
@@ -72,9 +71,9 @@ public class AuthController {
             @PathVariable String provider,
             @RequestBody SocialLoginRequest request
     ) {
-        SocialLoginResult result = authService.socialLogin(SocialProvider.from(provider), request);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(new BaseResponse<>(new SocialLoginResponse(result.isRegistered(), result.userId(), result.tokens())));
+        SocialLoginResult result = authService.socialLogin(SocialProvider.from(provider), request.token());
+        SocialLoginResponse response = new SocialLoginResponse(result.isRegistered(), result.userId(), result.tokens());
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(response));
     }
 
     /**
@@ -106,9 +105,8 @@ public class AuthController {
     @Operation(summary = "회원탈퇴", description = "회원탈퇴를 합니다",
             responses = {@ApiResponse(responseCode = "200", description = "회원퇄퇴 성공"),})
     @PostMapping("/withdraw")
-    public ResponseEntity<BaseResponse<AuthResponse.WithdrawDto>> withdrawUser(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        WithdrawResult result = authService.deleteUser(authenticatedUser.getUserId());
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new BaseResponse<>(new AuthResponse.WithdrawDto(result.deleted())));
+    public ResponseEntity<BaseResponse<AuthWithdrawResponse>> withdrawUser(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        authService.deleteUser(authenticatedUser.getUserId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(new AuthWithdrawResponse(true)));
     }
 }

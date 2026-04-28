@@ -5,16 +5,27 @@ import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.JogakService;
-import com.mogak.spring.service.result.jogak.CreateJogakResult;
-import com.mogak.spring.service.result.jogak.DailyJogakListResult;
-import com.mogak.spring.service.result.jogak.DailyJogakResult;
-import com.mogak.spring.service.result.jogak.DetailJogakResult;
-import com.mogak.spring.service.result.jogak.JogakDailyJogakResult;
-import com.mogak.spring.service.result.jogak.OneTimeJogakListResult;
-import com.mogak.spring.service.result.jogak.OneTimeJogakResult;
-import com.mogak.spring.service.result.jogak.RoutineJogakResult;
-import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
-import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
+import com.mogak.spring.service.command.CreateJogakCommand;
+import com.mogak.spring.service.command.UpdateJogakCommand;
+import com.mogak.spring.service.result.CreateJogakResult;
+import com.mogak.spring.service.result.DailyJogakListResult;
+import com.mogak.spring.service.result.DailyJogakResult;
+import com.mogak.spring.service.result.JogakDailyResult;
+import com.mogak.spring.service.result.JogakDetailResult;
+import com.mogak.spring.service.result.OneTimeJogakListResult;
+import com.mogak.spring.service.result.OneTimeJogakResult;
+import com.mogak.spring.service.result.RoutineJogakResult;
+import com.mogak.spring.web.dto.jogakdto.CreateJogakResponse;
+import com.mogak.spring.web.dto.jogakdto.CreateJogakRequest;
+import com.mogak.spring.web.dto.jogakdto.DailyJogakListResponse;
+import com.mogak.spring.web.dto.jogakdto.DailyJogakResponse;
+import com.mogak.spring.web.dto.jogakdto.JogakDailyResponse;
+import com.mogak.spring.web.dto.jogakdto.JogakDetailResponse;
+import com.mogak.spring.web.dto.jogakdto.OneTimeJogakListResponse;
+import com.mogak.spring.web.dto.jogakdto.OneTimeJogakResponse;
+import com.mogak.spring.web.dto.jogakdto.RoutineJogakResponse;
+import com.mogak.spring.web.dto.jogakdto.UpdateJogakRequest;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -52,11 +63,20 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("")
-    public ResponseEntity<BaseResponse<JogakResponseDto.CreateJogakDto>> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                                                 @Valid @RequestBody JogakRequestDto.CreateJogakDto createJogakDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(
-                toCreateJogakDto(jogakService.createJogak(authenticatedUser.getUserId(), createJogakDto))
-        ));
+    public ResponseEntity<BaseResponse<CreateJogakResponse>> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                 @Valid @RequestBody CreateJogakRequest createJogakRequest) {
+        CreateJogakResult result = jogakService.createJogak(
+                authenticatedUser.getUserId(),
+                new CreateJogakCommand(
+                        createJogakRequest.mogakId(),
+                        createJogakRequest.title(),
+                        createJogakRequest.isRoutine(),
+                        createJogakRequest.days(),
+                        createJogakRequest.today(),
+                        createJogakRequest.endDate()
+                )
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(toCreateJogakResponse(result)));
     }
 
     @Operation(summary = "단일 조각 조회", description = "조각 ID를 통해 조각 정보를 조회하는 API",
@@ -67,11 +87,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/{jogakId}/detail")
-    public ResponseEntity<BaseResponse<JogakResponseDto.DetailJogakDto>> getJogakDetail(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    public ResponseEntity<BaseResponse<JogakDetailResponse>> getJogakDetail(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                                          @PathVariable Long jogakId) {
-        return ResponseEntity.ok(new BaseResponse<>(
-                toDetailJogakDto(jogakService.getJogakDetail(authenticatedUser.getUserId(), jogakId))
-        ));
+        return ResponseEntity.ok(new BaseResponse<>(toJogakDetailResponse(jogakService.getJogakDetail(authenticatedUser.getUserId(), jogakId))));
     }
 
 
@@ -83,12 +101,10 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/daily")
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetOneTimeJogakListDto>> getDailyJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    public ResponseEntity<BaseResponse<OneTimeJogakListResponse>> getDailyJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. format: YYYY-MM-DD", example = "2024-02-15")
             @RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(new BaseResponse<>(
-                toGetOneTimeJogakListDto(jogakService.getDailyJogaks(authenticatedUser.getUserId(), date))
-        ));
+        return ResponseEntity.ok(new BaseResponse<>(toOneTimeJogakListResponse(jogakService.getDailyJogaks(authenticatedUser.getUserId(), date))));
     }
 
     @Operation(summary = "일별 데일리 조각 조회", description = "일별 데일리 조각들을 조회하는 API",
@@ -99,12 +115,10 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping
-    public ResponseEntity<BaseResponse<JogakResponseDto.GetDailyJogakListDto>> getDayJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    public ResponseEntity<BaseResponse<DailyJogakListResponse>> getDayJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. format: YYYY-MM-DD", example = "2024-02-14")
             @RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(new BaseResponse<>(
-                toGetDailyJogakListDto(jogakService.getDayJogaks(authenticatedUser.getUserId(), date))
-        ));
+        return ResponseEntity.ok(new BaseResponse<>(toDailyJogakListResponse(jogakService.getDayJogaks(authenticatedUser.getUserId(), date))));
     }
 
     @Operation(summary = "주간/월간 루틴 조각 조회", description = "주간/월간 루틴 조각을 조회합니다",
@@ -115,14 +129,14 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/routines")
-    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetRoutineJogakDto>>> getRoutineJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    public ResponseEntity<BaseResponse<List<RoutineJogakResponse>>> getRoutineJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @Parameter(description = "조회를 원하는 첫 날짜를 입력. format: YYYY-MM-DD", example = "2024-02-14")
             @RequestParam("startDay") @DateTimeFormat(iso = ISO.DATE) LocalDate startDay,
             @Parameter(description = "조회를 원하는 마지막 날짜를 입력. format: YYYY-MM-DD", example = "2024-02-15")
             @RequestParam("endDay") @DateTimeFormat(iso = ISO.DATE) LocalDate endDay) {
-        return ResponseEntity.ok(new BaseResponse<>(
-                toGetRoutineJogakDtos(jogakService.getRoutineJogaks(authenticatedUser.getUserId(), startDay, endDay))
-        ));
+        return ResponseEntity.ok(new BaseResponse<>(jogakService.getRoutineJogaks(authenticatedUser.getUserId(), startDay, endDay).stream()
+                .map(this::toRoutineJogakResponse)
+                .toList()));
     }
 
     @Operation(summary = "일일 조각 시작", description = "일일 조각을 시작합니다",
@@ -136,11 +150,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("{jogakId}/start")
-    public ResponseEntity<BaseResponse<JogakResponseDto.JogakDailyJogakDto>> startJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    public ResponseEntity<BaseResponse<JogakDailyResponse>> startJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                                         @PathVariable Long jogakId) {
-        return ResponseEntity.ok(new BaseResponse<>(
-                toJogakDailyJogakDto(jogakService.startJogak(authenticatedUser.getUserId(), jogakId))
-        ));
+        return ResponseEntity.ok(new BaseResponse<>(toJogakDailyResponse(jogakService.startJogak(authenticatedUser.getUserId(), jogakId))));
     }
 
     @Operation(summary = "조각 성공", description = "오늘의 조각으로 등록된 조각을 성공시킵니다",
@@ -156,11 +168,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("{dailyJogakId}/success")
-    public ResponseEntity<BaseResponse<JogakResponseDto.JogakDailyJogakDto>> successJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    public ResponseEntity<BaseResponse<JogakDailyResponse>> successJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                                            @PathVariable Long dailyJogakId) {
-        return ResponseEntity.ok(new BaseResponse<>(
-                toJogakDailyJogakDto(jogakService.successJogak(authenticatedUser.getUserId(), dailyJogakId))
-        ));
+        return ResponseEntity.ok(new BaseResponse<>(toJogakDailyResponse(jogakService.successJogak(authenticatedUser.getUserId(), dailyJogakId))));
     }
 
     @Operation(summary = "조각 실패", description = "성공한 조각을 취소합니다",
@@ -176,11 +186,9 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("{dailyJogakId}/fail")
-    public ResponseEntity<BaseResponse<JogakResponseDto.JogakDailyJogakDto>> failJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    public ResponseEntity<BaseResponse<JogakDailyResponse>> failJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                                         @PathVariable Long dailyJogakId) {
-        return ResponseEntity.ok(new BaseResponse<>(
-                toJogakDailyJogakDto(jogakService.failJogak(authenticatedUser.getUserId(), dailyJogakId))
-        ));
+        return ResponseEntity.ok(new BaseResponse<>(toJogakDailyResponse(jogakService.failJogak(authenticatedUser.getUserId(), dailyJogakId))));
     }
 
     @Operation(summary = "조각 수정", description = "입력값을 이용해 조각을 수정합니다",
@@ -193,12 +201,20 @@ public class JogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PutMapping("/{jogakId}")
-    public ResponseEntity<BaseResponse<JogakResponseDto.CreateJogakDto>> updateJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    public ResponseEntity<BaseResponse<CreateJogakResponse>> updateJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                @PathVariable Long jogakId,
-                                                               @Valid @RequestBody JogakRequestDto.UpdateJogakDto updateJogakDto) {
-        return ResponseEntity.ok(new BaseResponse<>(
-                toCreateJogakDto(jogakService.updateJogak(authenticatedUser.getUserId(), jogakId, updateJogakDto))
-        ));
+                                                               @Valid @RequestBody UpdateJogakRequest updateJogakRequest) {
+        CreateJogakResult result = jogakService.updateJogak(
+                authenticatedUser.getUserId(),
+                jogakId,
+                new UpdateJogakCommand(
+                        updateJogakRequest.title(),
+                        updateJogakRequest.isRoutine(),
+                        updateJogakRequest.days(),
+                        updateJogakRequest.endDate()
+                )
+        );
+        return ResponseEntity.ok(new BaseResponse<>(toCreateJogakResponse(result)));
     }
 
     @Operation(summary = "조각 삭제", description = "조각을 삭제합니다",
@@ -216,8 +232,8 @@ public class JogakController {
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
-    private JogakResponseDto.CreateJogakDto toCreateJogakDto(CreateJogakResult result) {
-        return JogakResponseDto.CreateJogakDto.of(
+    private CreateJogakResponse toCreateJogakResponse(CreateJogakResult result) {
+        return new CreateJogakResponse(
                 result.jogakId(),
                 result.mogakTitle(),
                 result.category(),
@@ -230,8 +246,8 @@ public class JogakController {
         );
     }
 
-    private JogakResponseDto.DetailJogakDto toDetailJogakDto(DetailJogakResult result) {
-        return JogakResponseDto.DetailJogakDto.of(
+    private JogakDetailResponse toJogakDetailResponse(JogakDetailResult result) {
+        return new JogakDetailResponse(
                 result.jogakId(),
                 result.mogakTitle(),
                 result.category(),
@@ -245,34 +261,15 @@ public class JogakController {
         );
     }
 
-    private JogakResponseDto.GetDailyJogakListDto toGetDailyJogakListDto(DailyJogakListResult result) {
-        List<JogakResponseDto.GetDailyJogakDto> dailyJogaks = result.dailyJogaks().stream()
-                .map(this::toGetDailyJogakDto)
-                .toList();
-        return new JogakResponseDto.GetDailyJogakListDto(result.size(), dailyJogaks);
-    }
-
-    private JogakResponseDto.GetDailyJogakDto toGetDailyJogakDto(DailyJogakResult result) {
-        return JogakResponseDto.GetDailyJogakDto.of(
-                result.jogakId(),
-                result.dailyJogakId(),
-                result.mogakTitle(),
-                result.category(),
-                result.title(),
-                result.isRoutine(),
-                result.isAchievement()
+    private OneTimeJogakListResponse toOneTimeJogakListResponse(OneTimeJogakListResult result) {
+        return new OneTimeJogakListResponse(
+                result.size(),
+                result.jogaks().stream().map(this::toOneTimeJogakResponse).toList()
         );
     }
 
-    private JogakResponseDto.GetOneTimeJogakListDto toGetOneTimeJogakListDto(OneTimeJogakListResult result) {
-        List<JogakResponseDto.GetOneTimeJogakDto> jogaks = result.jogaks().stream()
-                .map(this::toGetOneTimeJogakDto)
-                .toList();
-        return new JogakResponseDto.GetOneTimeJogakListDto(result.size(), jogaks);
-    }
-
-    private JogakResponseDto.GetOneTimeJogakDto toGetOneTimeJogakDto(OneTimeJogakResult result) {
-        return JogakResponseDto.GetOneTimeJogakDto.of(
+    private OneTimeJogakResponse toOneTimeJogakResponse(OneTimeJogakResult result) {
+        return new OneTimeJogakResponse(
                 result.jogakId(),
                 result.mogakTitle(),
                 result.category(),
@@ -285,23 +282,31 @@ public class JogakController {
         );
     }
 
-    private List<JogakResponseDto.GetRoutineJogakDto> toGetRoutineJogakDtos(List<RoutineJogakResult> results) {
-        return results.stream()
-                .map(this::toGetRoutineJogakDto)
-                .toList();
-    }
-
-    private JogakResponseDto.GetRoutineJogakDto toGetRoutineJogakDto(RoutineJogakResult result) {
-        return JogakResponseDto.GetRoutineJogakDto.of(
-                result.dailyJogakId(),
-                result.date(),
-                result.isAchievement(),
-                result.title()
+    private DailyJogakListResponse toDailyJogakListResponse(DailyJogakListResult result) {
+        return new DailyJogakListResponse(
+                result.size(),
+                result.dailyJogaks().stream().map(this::toDailyJogakResponse).toList()
         );
     }
 
-    private JogakResponseDto.JogakDailyJogakDto toJogakDailyJogakDto(JogakDailyJogakResult result) {
-        return JogakResponseDto.JogakDailyJogakDto.of(
+    private DailyJogakResponse toDailyJogakResponse(DailyJogakResult result) {
+        return new DailyJogakResponse(
+                result.jogakId(),
+                result.dailyJogakId(),
+                result.mogakTitle(),
+                result.category(),
+                result.title(),
+                result.isRoutine(),
+                result.isAchievement()
+        );
+    }
+
+    private RoutineJogakResponse toRoutineJogakResponse(RoutineJogakResult result) {
+        return new RoutineJogakResponse(result.dailyJogakId(), result.date(), result.isAchievement(), result.title());
+    }
+
+    private JogakDailyResponse toJogakDailyResponse(JogakDailyResult result) {
+        return new JogakDailyResponse(
                 result.jogakId(),
                 result.dailyJogakId(),
                 result.title(),

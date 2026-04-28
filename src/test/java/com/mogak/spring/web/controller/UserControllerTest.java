@@ -7,10 +7,12 @@ import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.security.SecurityAuthority;
-import com.mogak.spring.service.result.user.UserCreateResult;
-import com.mogak.spring.service.result.user.UserProfileResult;
+import com.mogak.spring.service.result.ProfileImageResult;
+import com.mogak.spring.service.result.UserCreateResult;
+import com.mogak.spring.service.result.UserProfileResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
-import com.mogak.spring.web.dto.userdto.UserRequestDto;
+import com.mogak.spring.web.dto.userdto.UserCreateRequest;
+import com.mogak.spring.web.dto.userdto.UserUpdateNicknameRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -97,7 +99,7 @@ class UserControllerTest {
     void createUserMultipartContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
         UserCreateResult response = new UserCreateResult(1L, "tester", null);
-        when(userService.create(anyLong(), any(UserRequestDto.CreateUserDto.class), any(UserRequestDto.UploadImageDto.class)))
+        when(userService.create(anyLong(), any(String.class), any(String.class), any(String.class), any(ProfileImageResult.class)))
                 .thenReturn(response);
 
         MockMultipartFile requestPart = new MockMultipartFile(
@@ -112,7 +114,7 @@ class UserControllerTest {
                 MediaType.IMAGE_PNG_VALUE,
                 "png".getBytes()
         );
-        when(storageService.uploadProfileImg(any(), any())).thenReturn(new UserRequestDto.UploadImageDto("profile.png", "https://cdn/profile.png"));
+        when(storageService.uploadProfileImg(any(), any())).thenReturn(new ProfileImageResult("profile.png", "https://cdn/profile.png"));
 
         ResultActions result = mockMvc.perform(multipart("/api/users/join")
                         .file(requestPart)
@@ -190,11 +192,11 @@ class UserControllerTest {
     void updateNicknameErrorContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.USER.getAuthority());
         doThrow(new com.mogak.spring.exception.UserException(ErrorCode.ALREADY_EXIST_USER))
-                .when(userService).updateNickname(anyLong(), any(UserRequestDto.UpdateNicknameDto.class));
+                .when(userService).updateNickname(anyLong(), any(String.class));
 
         mockMvc.perform(put("/api/users/profile/nickname")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new UserRequestDto.UpdateNicknameDto("tester"))))
+                        .content(objectMapper.writeValueAsString(new UserUpdateNicknameRequest("tester"))))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.time").exists())

@@ -7,11 +7,12 @@ import com.mogak.spring.exception.MogakException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.MogakService;
-import com.mogak.spring.service.result.mogak.GetJogakResult;
-import com.mogak.spring.service.result.mogak.GetMogakListResult;
-import com.mogak.spring.service.result.mogak.GetMogakResult;
+import com.mogak.spring.service.result.JogakSummaryResult;
+import com.mogak.spring.service.result.MogakListResult;
+import com.mogak.spring.service.result.MogakResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
-import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
+import com.mogak.spring.web.dto.mogakdto.CreateMogakRequest;
+import com.mogak.spring.web.dto.mogakdto.UpdateMogakRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -73,8 +74,8 @@ class MogakControllerTest {
     @Test
     @DisplayName("모각 생성 요청이 성공하면 생성 응답 계약을 반환한다")
     void createMogakContract() throws Exception {
-        when(mogakService.create(anyLong(), any(MogakRequestDto.CreateDto.class))).thenReturn(
-                new GetMogakResult(
+        when(mogakService.create(anyLong(), any(Long.class), any(String.class), any(String.class), any(String.class), any(String.class))).thenReturn(
+                new MogakResult(
                         1L,
                         "정보처리기사",
                         MogakCategory.builder().id(1).name("자격증").build(),
@@ -85,7 +86,7 @@ class MogakControllerTest {
 
         mockMvc.perform(post("/api/modarats/mogaks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new MogakRequestDto.CreateDto(
+                        .content(objectMapper.writeValueAsString(new CreateMogakRequest(
                                 10L,
                                 "정보처리기사",
                                 "자격증",
@@ -102,7 +103,7 @@ class MogakControllerTest {
                 .andExpect(jsonPath("$.result.title").value("정보처리기사"))
                 .andExpect(jsonPath("$.result.smallCategory").value("필기"));
 
-        verify(mogakService).create(eq(1L), any(MogakRequestDto.CreateDto.class));
+        verify(mogakService).create(eq(1L), eq(10L), eq("정보처리기사"), eq("자격증"), eq("필기"), eq("#112233"));
     }
 
     @Test
@@ -122,9 +123,9 @@ class MogakControllerTest {
     @Test
     @DisplayName("모각 목록 조회 요청이 성공하면 목록 응답 계약을 반환한다")
     void getMogakListContract() throws Exception {
-        when(mogakService.getMogakDtoList(anyLong(), eq(10L))).thenReturn(
-                new GetMogakListResult(
-                        List.of(new GetMogakResult(
+        when(mogakService.getMogakList(anyLong(), eq(10L))).thenReturn(
+                new MogakListResult(
+                        List.of(new MogakResult(
                                 1L,
                                 "정보처리기사",
                                 MogakCategory.builder().id(1).name("자격증").build(),
@@ -145,14 +146,14 @@ class MogakControllerTest {
                 .andExpect(jsonPath("$.result.size").value(1))
                 .andExpect(jsonPath("$.result.mogaks[0].title").value("정보처리기사"));
 
-        verify(mogakService).getMogakDtoList(1L, 10L);
+        verify(mogakService).getMogakList(1L, 10L);
     }
 
     @Test
     @DisplayName("조각 목록 조회 요청이 성공하면 목록 응답 계약을 반환한다")
     void getJogaksContract() throws Exception {
         when(mogakService.getJogaks(anyLong(), eq(1L), eq(LocalDate.of(2026, 3, 26)))).thenReturn(List.of(
-                new GetJogakResult(
+                new JogakSummaryResult(
                         100L,
                         "정보처리기사",
                         "자격증",
@@ -198,8 +199,8 @@ class MogakControllerTest {
     @Test
     @DisplayName("모각 수정 요청이 성공하면 userId를 서비스로 전달한다")
     void updateMogakForwardsUserId() throws Exception {
-        when(mogakService.updateMogak(eq(1L), any(MogakRequestDto.UpdateDto.class))).thenReturn(
-                new GetMogakResult(
+        when(mogakService.updateMogak(eq(1L), any(Long.class), any(String.class), any(String.class), any(String.class), any(String.class))).thenReturn(
+                new MogakResult(
                         1L,
                         "수정된 모각",
                         MogakCategory.builder().id(1).name("자격증").build(),
@@ -210,7 +211,7 @@ class MogakControllerTest {
 
         mockMvc.perform(put("/api/modarats/mogaks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new MogakRequestDto.UpdateDto(
+                        .content(objectMapper.writeValueAsString(new UpdateMogakRequest(
                                 1L,
                                 "수정된 모각",
                                 "자격증",
@@ -220,7 +221,7 @@ class MogakControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.title").value("수정된 모각"));
 
-        verify(mogakService).updateMogak(eq(1L), any(MogakRequestDto.UpdateDto.class));
+        verify(mogakService).updateMogak(eq(1L), eq(1L), eq("수정된 모각"), eq("자격증"), eq("필기"), eq("#112233"));
     }
 
     @Test

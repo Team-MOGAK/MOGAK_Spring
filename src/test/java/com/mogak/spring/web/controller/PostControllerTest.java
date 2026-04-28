@@ -11,12 +11,11 @@ import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.service.StorageCleanupService;
 import com.mogak.spring.service.StorageService;
-import com.mogak.spring.service.result.post.PostListResult;
-import com.mogak.spring.service.result.post.PostSummaryResult;
+import com.mogak.spring.service.result.PostSummaryResult;
+import com.mogak.spring.service.result.UploadedPostImageResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
-import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
-import com.mogak.spring.web.dto.postdto.PostRequestDto;
+import com.mogak.spring.web.dto.postdto.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -83,7 +85,7 @@ class PostControllerTest {
     @DisplayName("게시글 생성은 preflight 후 storage 업로드, 생성 순서로 처리된다")
     void createPostValidatesBeforeUploadAndCreate() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        PostRequestDto.CreatePostDto request = createRequest("content");
+        CreatePostRequest request = createRequest("content");
         MockMultipartFile requestPart = new MockMultipartFile(
                 "request",
                 "",
@@ -96,8 +98,8 @@ class PostControllerTest {
                 MediaType.IMAGE_PNG_VALUE,
                 "png".getBytes()
         );
-        List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
-                new PostImgRequestDto.CreatePostImgDto(
+        List<UploadedPostImageResult> uploadedImages = List.of(
+                new UploadedPostImageResult(
                         "post.png",
                         "https://example.com/post.png",
                         true
@@ -105,9 +107,9 @@ class PostControllerTest {
         );
         Post post = createPost(1L, 7L, 1L, "content", uploadedImages.get(0).imgUrl());
 
-        doNothing().when(postService).validateCreateAccess(eq(7L), any(), anyList(), eq(1L));
+        doNothing().when(postService).validateCreateAccess(eq(7L), any(LocalDate.class), any(String.class), anyList(), eq(1L));
         when(storageService.uploadImg(any(), any())).thenReturn(uploadedImages);
-        when(postService.create(eq(7L), any(), eq(uploadedImages), eq(1L))).thenReturn(post);
+        when(postService.create(eq(7L), any(LocalDate.class), any(String.class), eq(uploadedImages), eq(1L))).thenReturn(post);
 
                 mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
                         .file(requestPart)
@@ -121,16 +123,16 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.userId").value(7));
 
         InOrder inOrder = inOrder(postService, storageService);
-        inOrder.verify(postService).validateCreateAccess(eq(7L), any(), anyList(), eq(1L));
+        inOrder.verify(postService).validateCreateAccess(eq(7L), any(LocalDate.class), any(String.class), anyList(), eq(1L));
         inOrder.verify(storageService).uploadImg(any(), any());
-        inOrder.verify(postService).create(eq(7L), any(), eq(uploadedImages), eq(1L));
+        inOrder.verify(postService).create(eq(7L), any(LocalDate.class), any(String.class), eq(uploadedImages), eq(1L));
     }
 
     @Test
     @DisplayName("게시글 생성 preflight가 실패하면 storage 업로드는 호출되지 않는다")
     void createPostPreflightFailureDoesNotUpload() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        PostRequestDto.CreatePostDto request = createRequest("content");
+        CreatePostRequest request = createRequest("content");
         MockMultipartFile requestPart = new MockMultipartFile(
                 "request",
                 "",
@@ -146,7 +148,7 @@ class PostControllerTest {
 
         doThrow(new AuthException(ErrorCode.INVALID_PERMISSION))
                 .when(postService)
-                .validateCreateAccess(eq(7L), any(), anyList(), eq(1L));
+                .validateCreateAccess(eq(7L), any(LocalDate.class), any(String.class), anyList(), eq(1L));
 
         mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
                         .file(requestPart)
@@ -160,14 +162,14 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.code").value("T004"));
 
         verify(storageService, never()).uploadImg(any(), any());
-        verify(postService, never()).create(any(), any(), anyList(), any());
+        verify(postService, never()).create(any(), any(), any(), anyList(), any());
     }
 
     @Test
     @DisplayName("게시글 생성 중 DB 생성이 실패하면 업로드된 이미지를 보상 삭제한다")
     void createPostCleansUpUploadedImagesWhenCreateFails() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        PostRequestDto.CreatePostDto request = createRequest("content");
+        CreatePostRequest request = createRequest("content");
         MockMultipartFile requestPart = new MockMultipartFile(
                 "request",
                 "",
@@ -180,17 +182,17 @@ class PostControllerTest {
                 MediaType.IMAGE_PNG_VALUE,
                 "png".getBytes()
         );
-        List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
-                new PostImgRequestDto.CreatePostImgDto(
+        List<UploadedPostImageResult> uploadedImages = List.of(
+                new UploadedPostImageResult(
                         "post.png",
                         "https://example.com/post.png",
                         true
                 )
         );
 
-        doNothing().when(postService).validateCreateAccess(eq(7L), any(), anyList(), eq(1L));
+        doNothing().when(postService).validateCreateAccess(eq(7L), any(LocalDate.class), any(String.class), anyList(), eq(1L));
         when(storageService.uploadImg(any(), any())).thenReturn(uploadedImages);
-        when(postService.create(eq(7L), any(), eq(uploadedImages), eq(1L)))
+        when(postService.create(eq(7L), any(LocalDate.class), any(String.class), eq(uploadedImages), eq(1L)))
                 .thenThrow(new PostException(ErrorCode.ALREADY_EXISTS_POST));
 
         mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
@@ -210,7 +212,7 @@ class PostControllerTest {
     @DisplayName("게시글 생성은 targetDate가 없으면 서비스 호출 전에 입력값 오류를 반환한다")
     void createPostRejectsMissingTargetDateBeforeServiceCall() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        PostRequestDto.CreatePostDto request = new PostRequestDto.CreatePostDto(null, "content");
+        CreatePostRequest request = new CreatePostRequest(null, "content");
         MockMultipartFile requestPart = new MockMultipartFile(
                 "request",
                 "",
@@ -234,7 +236,7 @@ class PostControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("Z005"));
 
-        verify(postService, never()).validateCreateAccess(any(), any(), anyList(), any());
+        verify(postService, never()).validateCreateAccess(any(), any(), any(), anyList(), any());
         verify(storageService, never()).uploadImg(any(), any());
     }
 
@@ -242,7 +244,7 @@ class PostControllerTest {
     @DisplayName("게시글 생성은 contents가 없으면 서비스 호출 전에 입력값 오류를 반환한다")
     void createPostRejectsMissingContentsBeforeServiceCall() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        PostRequestDto.CreatePostDto request = createRequest(null);
+        CreatePostRequest request = createRequest(null);
         MockMultipartFile requestPart = new MockMultipartFile(
                 "request",
                 "",
@@ -266,7 +268,7 @@ class PostControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("Z005"));
 
-        verify(postService, never()).validateCreateAccess(any(), any(), anyList(), any());
+        verify(postService, never()).validateCreateAccess(any(), any(), any(), anyList(), any());
         verify(storageService, never()).uploadImg(any(), any());
     }
 
@@ -274,7 +276,7 @@ class PostControllerTest {
     @DisplayName("모각별 게시글 조회는 인증 사용자의 id를 서비스에 전달한다")
     void getPostListUsesAuthenticatedUserId() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        PostListResult posts = PostListResult.of(List.of(), 0, 10, false);
+        Slice<PostSummaryResult> posts = new SliceImpl<>(List.of());
         when(postService.getAllPosts(7L, 0, 1L, 10)).thenReturn(posts);
 
         mockMvc.perform(get("/api/mogaks/{mogakId}/posts", 1L)
@@ -286,8 +288,8 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("모각별 게시글 조회는 전용 목록 DTO JSON 계약을 반환한다")
-    void getPostListReturnsDedicatedListDtoContract() throws Exception {
+    @DisplayName("모각별 게시글 조회는 기존 Slice JSON 계약을 유지한다")
+    void getPostListReturnsSliceResponseContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
         PostSummaryResult post = new PostSummaryResult(
                 11L,
@@ -299,7 +301,7 @@ class PostControllerTest {
                 "https://example.com/thumb.png",
                 4
         );
-        PostListResult posts = PostListResult.of(List.of(post), 0, 10, true);
+        Slice<PostSummaryResult> posts = new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true);
         when(postService.getAllPosts(7L, 0, 1L, 10)).thenReturn(posts);
 
         mockMvc.perform(get("/api/mogaks/{mogakId}/posts", 1L)
@@ -308,22 +310,19 @@ class PostControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.code").value("success"))
-                .andExpect(jsonPath("$.result.items[0].postId").value(11))
-                .andExpect(jsonPath("$.result.items[0].mogakId").value(1))
-                .andExpect(jsonPath("$.result.items[0].jogakId").value(2))
-                .andExpect(jsonPath("$.result.items[0].dailyJogakId").value(3))
-                .andExpect(jsonPath("$.result.items[0].targetDate").value("2026-04-21"))
-                .andExpect(jsonPath("$.result.items[0].contents").value("오늘 회고"))
-                .andExpect(jsonPath("$.result.items[0].thumbnailUrl").value("https://example.com/thumb.png"))
-                .andExpect(jsonPath("$.result.items[0].likeCnt").value(4))
-                .andExpect(jsonPath("$.result.page").value(0))
+                .andExpect(jsonPath("$.result.content[0].postId").value(11))
+                .andExpect(jsonPath("$.result.content[0].mogakId").value(1))
+                .andExpect(jsonPath("$.result.content[0].jogakId").value(2))
+                .andExpect(jsonPath("$.result.content[0].dailyJogakId").value(3))
+                .andExpect(jsonPath("$.result.content[0].targetDate").value("2026-04-21"))
+                .andExpect(jsonPath("$.result.content[0].contents").value("오늘 회고"))
+                .andExpect(jsonPath("$.result.content[0].thumbnailUrl").value("https://example.com/thumb.png"))
+                .andExpect(jsonPath("$.result.content[0].likeCnt").value(4))
                 .andExpect(jsonPath("$.result.size").value(10))
-                .andExpect(jsonPath("$.result.hasNext").value(true))
-                .andExpect(jsonPath("$.result.content").doesNotExist())
-                .andExpect(jsonPath("$.result.number").doesNotExist())
-                .andExpect(jsonPath("$.result.numberOfElements").doesNotExist())
-                .andExpect(jsonPath("$.result.first").doesNotExist())
-                .andExpect(jsonPath("$.result.last").doesNotExist());
+                .andExpect(jsonPath("$.result.number").value(0))
+                .andExpect(jsonPath("$.result.numberOfElements").value(1))
+                .andExpect(jsonPath("$.result.first").value(true))
+                .andExpect(jsonPath("$.result.last").value(false));
     }
 
     @Test
@@ -380,7 +379,7 @@ class PostControllerTest {
     @DisplayName("게시글 수정은 인증 사용자의 id를 서비스에 전달한다")
     void updatePostUsesAuthenticatedUserId() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        PostRequestDto.UpdatePostDto request = updateRequest("updated");
+        UpdatePostRequest request = updateRequest("updated");
         Post post = createPost(1L, 7L, 1L, "updated", "https://example.com/post.png");
         when(postService.update(eq(7L), eq(1L), any())).thenReturn(post);
 
@@ -397,7 +396,7 @@ class PostControllerTest {
     @DisplayName("게시글 수정은 contents가 없으면 서비스 호출 전에 입력값 오류를 반환한다")
     void updatePostRejectsMissingContentsBeforeServiceCall() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        PostRequestDto.UpdatePostDto request = updateRequest(null);
+        UpdatePostRequest request = updateRequest(null);
 
         mockMvc.perform(put("/api/posts/{postId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -440,12 +439,12 @@ class PostControllerTest {
         verify(storageCleanupService, never()).deleteUploadedImagesBestEffort(anyList(), any());
     }
 
-    private PostRequestDto.CreatePostDto createRequest(String contents) {
-        return new PostRequestDto.CreatePostDto(java.time.LocalDate.now(), contents);
+    private CreatePostRequest createRequest(String contents) {
+        return new CreatePostRequest(java.time.LocalDate.now(), contents);
     }
 
-    private PostRequestDto.UpdatePostDto updateRequest(String contents) {
-        return new PostRequestDto.UpdatePostDto(contents);
+    private UpdatePostRequest updateRequest(String contents) {
+        return new UpdatePostRequest(contents);
     }
 
     private Post createPost(Long postId, Long userId, Long mogakId, String contents, String thumbnailUrl) {

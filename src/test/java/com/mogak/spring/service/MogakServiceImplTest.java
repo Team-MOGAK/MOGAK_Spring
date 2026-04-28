@@ -10,11 +10,10 @@ import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
-import com.mogak.spring.service.result.mogak.GetJogakResult;
-import com.mogak.spring.service.result.mogak.GetMogakResult;
+import com.mogak.spring.service.result.JogakSummaryResult;
+import com.mogak.spring.service.result.MogakResult;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
-import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,15 +52,13 @@ class MogakServiceImplTest {
         Modarat modarat = TestFixtureFactory.modarat(3L, user, "메인 모다라트", "#0000");
         MogakCategory category = TestFixtureFactory.category(1, "자격증");
         Mogak saved = TestFixtureFactory.mogak(5L, user, modarat, category, "정보처리기사", "#112233");
-        MogakRequestDto.CreateDto request = new MogakRequestDto.CreateDto(3L, "정보처리기사", "자격증", "필기", "#112233");
-
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
         when(modaratRepository.findActiveById(3L)).thenReturn(Optional.of(modarat));
         when(mogakRepository.findAllByModaratId(3L)).thenReturn(List.of());
         when(categoryRepository.findMogakCategoryByName("자격증")).thenReturn(Optional.of(category));
         when(mogakRepository.save(org.mockito.ArgumentMatchers.any(Mogak.class))).thenReturn(saved);
 
-        GetMogakResult result = mogakService.create(1L, request);
+        MogakResult result = mogakService.create(1L, 3L, "정보처리기사", "자격증", "필기", "#112233");
 
         assertThat(result.id()).isEqualTo(5L);
         assertThat(result.title()).isEqualTo("정보처리기사");
@@ -74,12 +71,12 @@ class MogakServiceImplTest {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
         User otherUser = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
         Modarat modarat = TestFixtureFactory.modarat(3L, otherUser, "메인 모다라트", "#0000");
-        MogakRequestDto.CreateDto request = new MogakRequestDto.CreateDto(3L, "정보처리기사", "자격증", null, null);
-
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
         when(modaratRepository.findActiveById(3L)).thenReturn(Optional.of(modarat));
 
-        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.create(1L, request));
+        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(
+                () -> mogakService.create(1L, 3L, "정보처리기사", "자격증", null, null)
+        );
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
         verify(mogakRepository, org.mockito.Mockito.never()).findAllByModaratId(3L);
@@ -91,8 +88,6 @@ class MogakServiceImplTest {
     void createThrowsWhenMaxExceeded() {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
         Modarat modarat = TestFixtureFactory.modarat(3L, user, "메인 모다라트", "#0000");
-        MogakRequestDto.CreateDto request = new MogakRequestDto.CreateDto(3L, "정보처리기사", "자격증", null, null);
-
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
         when(modaratRepository.findActiveById(3L)).thenReturn(Optional.of(modarat));
         when(mogakRepository.findAllByModaratId(3L)).thenReturn(
@@ -101,7 +96,9 @@ class MogakServiceImplTest {
                         .collect(java.util.stream.Collectors.toList())
         );
 
-        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.create(1L, request));
+        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(
+                () -> mogakService.create(1L, 3L, "정보처리기사", "자격증", null, null)
+        );
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.EXCEED_MAX_MOGAK);
     }
@@ -120,9 +117,7 @@ class MogakServiceImplTest {
         when(categoryRepository.findMogakCategoryByName("직무공부")).thenReturn(Optional.of(newCategory));
         when(jogakRepository.findAllByMogak(mogak)).thenReturn(List.of(jogak));
 
-        MogakRequestDto.UpdateDto request = new MogakRequestDto.UpdateDto(2L, "새 제목", "직무공부", "백엔드", "#9999");
-
-        GetMogakResult result = mogakService.updateMogak(1L, request);
+        MogakResult result = mogakService.updateMogak(1L, 2L, "새 제목", "직무공부", "백엔드", "#9999");
 
         assertThat(result.title()).isEqualTo("새 제목");
         assertThat(mogak.getBigCategory()).isEqualTo(newCategory);
@@ -161,11 +156,11 @@ class MogakServiceImplTest {
         Modarat modarat = TestFixtureFactory.modarat(1L, otherUser, "모다라트", "#0000");
         MogakCategory category = TestFixtureFactory.category(1, "자격증");
         Mogak mogak = TestFixtureFactory.mogak(2L, otherUser, modarat, category, "원래 제목", "#1234");
-        MogakRequestDto.UpdateDto request = new MogakRequestDto.UpdateDto(2L, "새 제목", "자격증", "백엔드", "#9999");
-
         when(mogakRepository.findActiveById(2L)).thenReturn(Optional.of(mogak));
 
-        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.updateMogak(1L, request));
+        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(
+                () -> mogakService.updateMogak(1L, 2L, "새 제목", "자격증", "백엔드", "#9999")
+        );
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
         verify(categoryRepository, org.mockito.Mockito.never()).findMogakCategoryByName("자격증");
@@ -190,7 +185,7 @@ class MogakServiceImplTest {
 
     @Test
     @DisplayName("다른 사용자의 모다라트 모각 목록을 조회하면 권한 오류를 반환한다")
-    void getMogakDtoListThrowsWhenModaratNotOwned() {
+    void getMogakListThrowsWhenModaratNotOwned() {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
         User otherUser = TestFixtureFactory.user(2L, "other@test.com", "other", null, null);
         Modarat modarat = TestFixtureFactory.modarat(3L, otherUser, "메인 모다라트", "#0000");
@@ -198,7 +193,7 @@ class MogakServiceImplTest {
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
         when(modaratRepository.findActiveById(3L)).thenReturn(Optional.of(modarat));
 
-        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.getMogakDtoList(1L, 3L));
+        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> mogakService.getMogakList(1L, 3L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
         verify(mogakRepository, org.mockito.Mockito.never()).findAllByModaratId(3L);
@@ -224,7 +219,7 @@ class MogakServiceImplTest {
         when(jogakRepository.findAllByMogakWithFetchGraph(mogak)).thenReturn(List.of(active));
         when(dailyJogakRepository.findDailyJogaks(user, day)).thenReturn(List.of(dailyJogak));
 
-        List<GetJogakResult> result = mogakService.getJogaks(1L, 2L, day);
+        List<JogakSummaryResult> result = mogakService.getJogaks(1L, 2L, day);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).jogakId()).isEqualTo(10L);

@@ -5,12 +5,14 @@ import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.MogakService;
-import com.mogak.spring.service.result.mogak.GetJogakResult;
-import com.mogak.spring.service.result.mogak.GetMogakListResult;
-import com.mogak.spring.service.result.mogak.GetMogakResult;
-import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
-import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
-import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
+import com.mogak.spring.service.result.JogakSummaryResult;
+import com.mogak.spring.service.result.MogakListResult;
+import com.mogak.spring.service.result.MogakResult;
+import com.mogak.spring.web.dto.jogakdto.JogakSummaryResponse;
+import com.mogak.spring.web.dto.mogakdto.CreateMogakRequest;
+import com.mogak.spring.web.dto.mogakdto.MogakListResponse;
+import com.mogak.spring.web.dto.mogakdto.MogakResponse;
+import com.mogak.spring.web.dto.mogakdto.UpdateMogakRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -50,11 +52,17 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/mogaks")
-    public ResponseEntity<BaseResponse<MogakResponseDto.GetMogakDto>> createMogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                                                  @Valid @RequestBody MogakRequestDto.CreateDto request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(
-                toGetMogakDto(mogakService.create(authenticatedUser.getUserId(), request))
-        ));
+    public ResponseEntity<BaseResponse<MogakResponse>> createMogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                  @Valid @RequestBody CreateMogakRequest request) {
+        MogakResult result = mogakService.create(
+                authenticatedUser.getUserId(),
+                request.modaratId(),
+                request.title(),
+                request.bigCategory(),
+                request.smallCategory(),
+                request.color()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(toMogakResponse(result)));
     }
 
 //    @Operation(summary = "모각 달성", description = "해당하는 모각을 달성합니다",
@@ -67,10 +75,6 @@ public class MogakController {
 //                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
 //            })
 //    @PutMapping("/mogaks/{mogakId}/complete")
-//    public ResponseEntity<BaseResponse<MogakResponseDto.UpdateStateDto>> achieveMogak(@PathVariable Long mogakId) {
-//        return ResponseEntity.ok(new BaseResponse<>(mogakService.achieveMogak(mogakId)));
-//    }
-
     @Operation(summary = "모각 수정", description = "입력값을 이용해 모각을 수정합니다",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             responses = {
@@ -79,11 +83,17 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PutMapping("/mogaks")
-    public ResponseEntity<BaseResponse<MogakResponseDto.GetMogakDto>> updateMogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                                                  @Valid @RequestBody MogakRequestDto.UpdateDto request) {
-        return ResponseEntity.ok(new BaseResponse<>(
-                toGetMogakDto(mogakService.updateMogak(authenticatedUser.getUserId(), request))
-        ));
+    public ResponseEntity<BaseResponse<MogakResponse>> updateMogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                  @Valid @RequestBody UpdateMogakRequest request) {
+        MogakResult result = mogakService.updateMogak(
+                authenticatedUser.getUserId(),
+                request.mogakId(),
+                request.title(),
+                request.bigCategory(),
+                request.smallCategory(),
+                request.color()
+        );
+        return ResponseEntity.ok(new BaseResponse<>(toMogakResponse(result)));
     }
 
     @Operation(summary = "모각 조회", description = "입력값을 이용해 모각을 조회합니다",
@@ -94,11 +104,9 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/{modaratId}/mogaks")
-    public ResponseEntity<BaseResponse<MogakResponseDto.GetMogakListDto>> getMogakList(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    public ResponseEntity<BaseResponse<MogakListResponse>> getMogakList(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                                        @PathVariable Long modaratId) {
-            return ResponseEntity.ok(new BaseResponse<>(
-                    toGetMogakListDto(mogakService.getMogakDtoList(authenticatedUser.getUserId(), modaratId))
-            ));
+        return ResponseEntity.ok(new BaseResponse<>(toMogakListResponse(mogakService.getMogakList(authenticatedUser.getUserId(), modaratId))));
     }
 
     @Operation(summary = "모각 삭제", description = "모각을 삭제합니다",
@@ -129,40 +137,29 @@ public class MogakController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/mogaks/{mogakId}/jogaks")
-    public ResponseEntity<BaseResponse<List<JogakResponseDto.GetJogakDto>>> getJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    public ResponseEntity<BaseResponse<List<JogakSummaryResponse>>> getJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @PathVariable Long mogakId,
             @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. 오늘 날짜를 주로 입력하시면 됩니다. format: YYYY-MM-DD", example = "2024-02-15")
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(new BaseResponse<>(
-                toGetJogakDtos(mogakService.getJogaks(authenticatedUser.getUserId(), mogakId, date))
-        ));
-    }
-
-    private MogakResponseDto.GetMogakDto toGetMogakDto(GetMogakResult result) {
-        return new MogakResponseDto.GetMogakDto(
-                result.id(),
-                result.title(),
-                result.bigCategory(),
-                result.smallCategory(),
-                result.color()
-        );
-    }
-
-    private MogakResponseDto.GetMogakListDto toGetMogakListDto(GetMogakListResult result) {
-        List<MogakResponseDto.GetMogakDto> mogaks = result.mogaks().stream()
-                .map(this::toGetMogakDto)
+        List<JogakSummaryResponse> responses = mogakService.getJogaks(authenticatedUser.getUserId(), mogakId, date).stream()
+                .map(this::toJogakSummaryResponse)
                 .toList();
-        return new MogakResponseDto.GetMogakListDto(mogaks, result.size());
+        return ResponseEntity.ok(new BaseResponse<>(responses));
     }
 
-    private List<JogakResponseDto.GetJogakDto> toGetJogakDtos(List<GetJogakResult> results) {
-        return results.stream()
-                .map(this::toGetJogakDto)
+    private MogakListResponse toMogakListResponse(MogakListResult result) {
+        List<MogakResponse> mogaks = result.mogaks().stream()
+                .map(this::toMogakResponse)
                 .toList();
+        return new MogakListResponse(mogaks, result.size());
     }
 
-    private JogakResponseDto.GetJogakDto toGetJogakDto(GetJogakResult result) {
-        return JogakResponseDto.GetJogakDto.of(
+    private MogakResponse toMogakResponse(MogakResult result) {
+        return new MogakResponse(result.id(), result.title(), result.bigCategory(), result.smallCategory(), result.color());
+    }
+
+    private JogakSummaryResponse toJogakSummaryResponse(JogakSummaryResult result) {
+        return new JogakSummaryResponse(
                 result.jogakId(),
                 result.mogakTitle(),
                 result.category(),

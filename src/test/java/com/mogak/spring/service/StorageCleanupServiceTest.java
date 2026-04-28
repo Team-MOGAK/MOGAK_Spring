@@ -1,7 +1,7 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.domain.post.PostImg;
-import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
+import com.mogak.spring.service.result.UploadedPostImageResult;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -57,10 +57,10 @@ class StorageCleanupServiceTest {
     }
 
     @Test
-    @DisplayName("업로드 보상 삭제는 업로드 DTO를 삭제 대상 이미지로 변환한다")
-    void deleteUploadedImagesBestEffortConvertsUploadedDtos() {
-        List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
-                new PostImgRequestDto.CreatePostImgDto(
+    @DisplayName("업로드 보상 삭제는 업로드 결과를 삭제 대상 이미지로 변환한다")
+    void deleteUploadedImagesBestEffortConvertsUploadedResults() {
+        List<UploadedPostImageResult> uploadedImages = List.of(
+                new UploadedPostImageResult(
                         "uploaded.png",
                         "https://example.com/uploaded.png",
                         true

@@ -5,17 +5,13 @@ import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.jogak.DailyJogakStatus;
-import com.mogak.spring.domain.user.Address;
-import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
-import com.mogak.spring.service.result.post.NetworkListResult;
-import com.mogak.spring.service.result.post.PostListResult;
+import com.mogak.spring.service.result.UploadedPostImageResult;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
-import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
-import com.mogak.spring.web.dto.postdto.PostRequestDto;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,18 +19,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -70,14 +64,14 @@ class PostServiceImplTest {
         User owner = user(1L, "owner@test.com");
         User other = user(2L, "other@test.com");
         var jogak = TestFixtureFactory.jogak(20L, mogak(10L, owner), "jogak", false, java.time.LocalDate.now(), null, 0);
-        PostRequestDto.CreatePostDto request = createRequest("content");
+        LocalDate targetDate = LocalDate.now();
         List<MultipartFile> images = List.of(image("post.png"));
-        var dailyJogak = TestFixtureFactory.dailyJogak(10L, jogak, request.targetDate(), DailyJogakStatus.SUCCESS);
+        var dailyJogak = TestFixtureFactory.dailyJogak(10L, jogak, targetDate, DailyJogakStatus.SUCCESS);
 
-        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(10L, request.targetDate()))
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(10L, targetDate))
                 .thenReturn(Optional.of(dailyJogak));
 
-        Throwable throwable = catchThrowable(() -> postService.validateCreateAccess(2L, request, images, 10L));
+        Throwable throwable = catchThrowable(() -> postService.validateCreateAccess(2L, targetDate, "content", images, 10L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
         verify(postRepository, never()).existsByDailyJogakIdAndDeletedAtIsNull(anyLong());
@@ -87,10 +81,9 @@ class PostServiceImplTest {
     @DisplayName("게시글 생성 preflight는 본문 길이가 초과되면 업로드 전에 예외를 반환한다")
     void validateCreateAccessThrowsExceedMaxNumPostWhenContentsTooLong() {
         User owner = user(1L, "owner@test.com");
-        PostRequestDto.CreatePostDto request = createRequest("x".repeat(351));
         List<MultipartFile> images = List.of(image("post.png"));
 
-        Throwable throwable = catchThrowable(() -> postService.validateCreateAccess(1L, request, images, 10L));
+        Throwable throwable = catchThrowable(() -> postService.validateCreateAccess(1L, LocalDate.now(), "x".repeat(351), images, 10L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.EXCEED_MAX_NUM_POST);
         verify(postRepository, never()).existsByDailyJogakIdAndDeletedAtIsNull(anyLong());
@@ -100,10 +93,9 @@ class PostServiceImplTest {
     @DisplayName("게시글 생성 preflight는 본문이 없으면 입력값 오류를 반환한다")
     void validateCreateAccessThrowsInvalidParameterWhenContentsMissing() {
         User owner = user(1L, "owner@test.com");
-        PostRequestDto.CreatePostDto request = createRequest(null);
         List<MultipartFile> images = List.of(image("post.png"));
 
-        Throwable throwable = catchThrowable(() -> postService.validateCreateAccess(1L, request, images, 10L));
+        Throwable throwable = catchThrowable(() -> postService.validateCreateAccess(1L, LocalDate.now(), null, images, 10L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PARAMETER_ERROR);
         verify(postRepository, never()).existsByDailyJogakIdAndDeletedAtIsNull(anyLong());
@@ -113,16 +105,16 @@ class PostServiceImplTest {
     @DisplayName("게시글 생성 preflight는 같은 데일리 조각의 활성 게시글이 있으면 업로드 전에 예외를 반환한다")
     void validateCreateAccessThrowsAlreadyExistsPostBeforeUploadWhenActivePostExists() {
         User owner = user(1L, "owner@test.com");
-        PostRequestDto.CreatePostDto request = createRequest("content");
+        LocalDate targetDate = LocalDate.now();
         List<MultipartFile> images = List.of(image("post.png"));
         var jogak = TestFixtureFactory.jogak(20L, mogak(10L, owner), "jogak", false, java.time.LocalDate.now(), null, 0);
-        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.targetDate(), DailyJogakStatus.SUCCESS);
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, targetDate, DailyJogakStatus.SUCCESS);
 
-        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.targetDate()))
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, targetDate))
                 .thenReturn(Optional.of(dailyJogak));
         when(postRepository.existsByDailyJogakIdAndDeletedAtIsNull(30L)).thenReturn(true);
 
-        Throwable throwable = catchThrowable(() -> postService.validateCreateAccess(1L, request, images, 20L));
+        Throwable throwable = catchThrowable(() -> postService.validateCreateAccess(1L, targetDate, "content", images, 20L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.ALREADY_EXISTS_POST);
     }
@@ -131,22 +123,22 @@ class PostServiceImplTest {
     @DisplayName("게시글 생성에 성공하면 이미지와 게시글을 저장한다")
     void createSavesPostAfterValidationWithImages() {
         User writer = user(1L, "writer@test.com");
-        PostRequestDto.CreatePostDto request = createRequest("content");
+        LocalDate targetDate = LocalDate.now();
         Mogak mogak = mogak(10L, writer);
         var jogak = TestFixtureFactory.jogak(20L, mogak, "jogak", false, java.time.LocalDate.now(), null, 0);
-        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.targetDate(), DailyJogakStatus.SUCCESS);
-        List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
-                new PostImgRequestDto.CreatePostImgDto("thumb.png", "https://example.com/thumb.png", true),
-                new PostImgRequestDto.CreatePostImgDto("body.png", "https://example.com/body.png", false)
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, targetDate, DailyJogakStatus.SUCCESS);
+        List<UploadedPostImageResult> uploadedImages = List.of(
+                new UploadedPostImageResult("thumb.png", "https://example.com/thumb.png", true),
+                new UploadedPostImageResult("body.png", "https://example.com/body.png", false)
         );
 
-        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.targetDate()))
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, targetDate))
                 .thenReturn(Optional.of(dailyJogak));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
         when(postImgRepository.save(any(PostImg.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(postRepository.saveAndFlush(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Post result = postService.create(1L, request, uploadedImages, 20L);
+        Post result = postService.create(1L, targetDate, "content", uploadedImages, 20L);
 
         assertThat(result.getDailyJogak().getJogak().getMogak()).isSameAs(mogak);
         assertThat(result.getUser()).isSameAs(writer);
@@ -160,22 +152,22 @@ class PostServiceImplTest {
     @DisplayName("게시글 생성은 DB unique 충돌을 이미 존재하는 회고록 예외로 변환한다")
     void createTranslatesActiveDailyJogakUniqueViolationToAlreadyExistsPost() {
         User writer = user(1L, "writer@test.com");
-        PostRequestDto.CreatePostDto request = createRequest("content");
+        LocalDate targetDate = LocalDate.now();
         Mogak mogak = mogak(10L, writer);
         var jogak = TestFixtureFactory.jogak(20L, mogak, "jogak", false, java.time.LocalDate.now(), null, 0);
-        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.targetDate(), DailyJogakStatus.SUCCESS);
-        List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
-                new PostImgRequestDto.CreatePostImgDto("thumb.png", "https://example.com/thumb.png", true)
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, targetDate, DailyJogakStatus.SUCCESS);
+        List<UploadedPostImageResult> uploadedImages = List.of(
+                new UploadedPostImageResult("thumb.png", "https://example.com/thumb.png", true)
         );
 
-        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.targetDate()))
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, targetDate))
                 .thenReturn(Optional.of(dailyJogak));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
         when(postImgRepository.save(any(PostImg.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(postRepository.saveAndFlush(any(Post.class)))
                 .thenThrow(new DataIntegrityViolationException("uq_post_active_daily_jogak"));
 
-        Throwable throwable = catchThrowable(() -> postService.create(1L, request, uploadedImages, 20L));
+        Throwable throwable = catchThrowable(() -> postService.create(1L, targetDate, "content", uploadedImages, 20L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.ALREADY_EXISTS_POST);
     }
@@ -184,22 +176,22 @@ class PostServiceImplTest {
     @DisplayName("게시글 생성은 예상하지 않은 DB 무결성 오류를 그대로 전파한다")
     void createPropagatesUnexpectedDataIntegrityViolation() {
         User writer = user(1L, "writer@test.com");
-        PostRequestDto.CreatePostDto request = createRequest("content");
+        LocalDate targetDate = LocalDate.now();
         Mogak mogak = mogak(10L, writer);
         var jogak = TestFixtureFactory.jogak(20L, mogak, "jogak", false, java.time.LocalDate.now(), null, 0);
-        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.targetDate(), DailyJogakStatus.SUCCESS);
-        List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
-                new PostImgRequestDto.CreatePostImgDto("thumb.png", "https://example.com/thumb.png", true)
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, targetDate, DailyJogakStatus.SUCCESS);
+        List<UploadedPostImageResult> uploadedImages = List.of(
+                new UploadedPostImageResult("thumb.png", "https://example.com/thumb.png", true)
         );
 
-        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.targetDate()))
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, targetDate))
                 .thenReturn(Optional.of(dailyJogak));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
         when(postImgRepository.save(any(PostImg.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(postRepository.saveAndFlush(any(Post.class)))
                 .thenThrow(new DataIntegrityViolationException("post_thumbnail_url must not be null"));
 
-        Throwable throwable = catchThrowable(() -> postService.create(1L, request, uploadedImages, 20L));
+        Throwable throwable = catchThrowable(() -> postService.create(1L, targetDate, "content", uploadedImages, 20L));
 
         assertThat(throwable).isInstanceOf(DataIntegrityViolationException.class);
     }
@@ -216,50 +208,6 @@ class PostServiceImplTest {
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
         verify(postRepository, never()).findAllPosts(anyLong(), any(Pageable.class));
-    }
-
-    @Test
-    @DisplayName("모각별 게시글 목록은 repository Slice를 전용 목록 DTO로 변환한다")
-    void getAllPostsReturnsDedicatedListDto() {
-        User owner = user(1L, "owner@test.com");
-        Mogak mogak = mogak(10L, owner);
-        Post post = post(20L, owner);
-
-        when(mogakRepository.findActiveById(10L)).thenReturn(Optional.of(mogak));
-        when(postRepository.findAllPosts(10L, PageRequest.of(0, 10)))
-                .thenReturn(new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true));
-
-        PostListResult result = postService.getAllPosts(1L, 0, 10L, 10);
-
-        assertThat(result.items())
-                .extracting("postId", "contents", "thumbnailUrl")
-                .containsExactly(tuple(20L, "content", "https://example.com/thumb.png"));
-        assertThat(result.page()).isZero();
-        assertThat(result.size()).isEqualTo(10);
-        assertThat(result.hasNext()).isTrue();
-    }
-
-    @Test
-    @DisplayName("네트워크 게시글 목록은 repository Slice를 전용 목록 DTO로 변환한다")
-    void getNetworkPostsReturnsDedicatedListDto() {
-        Address address = TestFixtureFactory.address("서울특별시");
-        Job job = TestFixtureFactory.job("개발/데이터");
-        User viewer = TestFixtureFactory.user(1L, "viewer@test.com", "viewer", job, address);
-        User writer = TestFixtureFactory.user(2L, "writer@test.com", "writer", job, address);
-        Post post = post(20L, writer);
-
-        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(viewer));
-        when(postRepository.findNetworkPosts("서울특별시", "createdAt", PageRequest.of(0, 10)))
-                .thenReturn(new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true));
-
-        NetworkListResult result = postService.getNetworkPosts(1L, 0, 10, "createdAt", "서울특별시");
-
-        assertThat(result.items())
-                .extracting("postId", "userName", "userJob", "contents")
-                .containsExactly(tuple(20L, "writer", "개발/데이터", "content"));
-        assertThat(result.page()).isZero();
-        assertThat(result.size()).isEqualTo(10);
-        assertThat(result.hasNext()).isTrue();
     }
 
     @Test
@@ -300,11 +248,10 @@ class PostServiceImplTest {
     void updateThrowsInvalidPermissionWhenPostBelongsToOtherUser() {
         User owner = user(1L, "owner@test.com");
         Post post = post(10L, owner);
-        PostRequestDto.UpdatePostDto request = updateRequest("updated");
 
         when(postRepository.findActiveById(10L)).thenReturn(Optional.of(post));
 
-        Throwable throwable = catchThrowable(() -> postService.update(2L, 10L, request));
+        Throwable throwable = catchThrowable(() -> postService.update(2L, 10L, "updated"));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
         assertThat(post.getContents()).isEqualTo("content");
@@ -315,11 +262,10 @@ class PostServiceImplTest {
     void updateThrowsInvalidParameterWhenContentsMissing() {
         User owner = user(1L, "owner@test.com");
         Post post = post(10L, owner);
-        PostRequestDto.UpdatePostDto request = updateRequest(null);
 
         when(postRepository.findActiveById(10L)).thenReturn(Optional.of(post));
 
-        Throwable throwable = catchThrowable(() -> postService.update(1L, 10L, request));
+        Throwable throwable = catchThrowable(() -> postService.update(1L, 10L, null));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PARAMETER_ERROR);
         assertThat(post.getContents()).isEqualTo("content");
@@ -438,14 +384,6 @@ class PostServiceImplTest {
                 .postThumbnailUrl("https://example.com/thumb.png")
                 .viewCnt(0)
                 .build();
-    }
-
-    private PostRequestDto.CreatePostDto createRequest(String contents) {
-        return new PostRequestDto.CreatePostDto(java.time.LocalDate.now(), contents);
-    }
-
-    private PostRequestDto.UpdatePostDto updateRequest(String contents) {
-        return new PostRequestDto.UpdatePostDto(contents);
     }
 
     private MultipartFile image(String fileName) {

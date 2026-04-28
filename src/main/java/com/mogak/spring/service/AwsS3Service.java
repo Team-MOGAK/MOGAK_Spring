@@ -3,8 +3,8 @@ package com.mogak.spring.service;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
-import com.mogak.spring.web.dto.userdto.UserRequestDto;
+import com.mogak.spring.service.result.ProfileImageResult;
+import com.mogak.spring.service.result.UploadedPostImageResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import marvin.image.MarvinImage;
@@ -51,8 +51,8 @@ public class AwsS3Service implements StorageService {
     private final S3Client s3Client;
 
     @Override
-    public List<PostImgRequestDto.CreatePostImgDto> uploadImg(List<MultipartFile> multipartFile, String dirName) {
-        List<PostImgRequestDto.CreatePostImgDto> postImgRequestDtoList = new ArrayList<>();
+    public List<UploadedPostImageResult> uploadImg(List<MultipartFile> multipartFile, String dirName) {
+        List<UploadedPostImageResult> uploadedImages = new ArrayList<>();
         if (multipartFile.isEmpty()) {
             throw new BaseException(ErrorCode.NOT_HAVE_IMAGE);
         }
@@ -63,7 +63,7 @@ public class AwsS3Service implements StorageService {
                 String imgName = createImgName(format, dirName);
                 uploadedObjectNames.add(imgName);
                 uploadImgToS3(imgName, img, format);
-                postImgRequestDtoList.add(new PostImgRequestDto.CreatePostImgDto(
+                uploadedImages.add(new UploadedPostImageResult(
                         imgName,
                         createObjectUrl(imgName),
                         false
@@ -73,7 +73,7 @@ public class AwsS3Service implements StorageService {
                     MultipartFile thumbnailImg = resizeImage(thumbnailImgName, format, img, 200, 200);
                     uploadedObjectNames.add(thumbnailImgName);
                     uploadThumbnailToS3(thumbnailImgName, thumbnailImg, format);
-                    postImgRequestDtoList.add(new PostImgRequestDto.CreatePostImgDto(
+                    uploadedImages.add(new UploadedPostImageResult(
                             thumbnailImgName,
                             createObjectUrl(thumbnailImgName),
                             true
@@ -84,7 +84,7 @@ public class AwsS3Service implements StorageService {
             deleteUploadedObjectsBestEffort(uploadedObjectNames);
             throw e;
         }
-        return postImgRequestDtoList;
+        return uploadedImages;
     }
 
     private void uploadThumbnailToS3(String thumbnailImgName, MultipartFile thumbnailImg, String format) {
@@ -140,7 +140,7 @@ public class AwsS3Service implements StorageService {
     }
 
     @Override
-    public UserRequestDto.UploadImageDto uploadProfileImg(MultipartFile request, String dirName) {
+    public ProfileImageResult uploadProfileImg(MultipartFile request, String dirName) {
         validateImagePresent(request);
         String format = extractImageFormat(request);
         String imgName = createImgName(format, dirName);
@@ -159,7 +159,7 @@ public class AwsS3Service implements StorageService {
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
         }
-        return new UserRequestDto.UploadImageDto(imgName, createObjectUrl(imgName));
+        return new ProfileImageResult(imgName, createObjectUrl(imgName));
     }
 
     @Override
@@ -196,7 +196,7 @@ public class AwsS3Service implements StorageService {
     }
 
     @Override
-    public UserRequestDto.UpdateImageDto updateProfileImg(MultipartFile request, String profileImgName, String dirName) {
+    public ProfileImageResult updateProfileImg(MultipartFile request, String profileImgName, String dirName) {
         validateImagePresent(request);
         if (profileImgName != null) {
             deleteProfileImg(profileImgName);
@@ -218,7 +218,7 @@ public class AwsS3Service implements StorageService {
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
         }
-        return new UserRequestDto.UpdateImageDto(imgName, createObjectUrl(imgName));
+        return new ProfileImageResult(imgName, createObjectUrl(imgName));
     }
 
     private void validateImagePresent(MultipartFile multipartFile) {

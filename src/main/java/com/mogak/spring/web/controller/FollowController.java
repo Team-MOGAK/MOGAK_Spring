@@ -5,9 +5,10 @@ import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.FollowService;
-import com.mogak.spring.service.result.follow.FollowCountResult;
-import com.mogak.spring.service.result.follow.FollowUserResult;
-import com.mogak.spring.web.dto.userdto.FollowRequestDto.CountDto;
+import com.mogak.spring.service.result.FollowCountResult;
+import com.mogak.spring.service.result.UserSummaryResult;
+import com.mogak.spring.web.dto.userdto.FollowCountResponse;
+import com.mogak.spring.web.dto.userdto.UserSummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,8 +22,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-import static com.mogak.spring.web.dto.userdto.UserResponseDto.UserDto;
 
 @Tag(name = "팔로우 API", description = "팔로우 API 명세서")
 @RequiredArgsConstructor
@@ -79,9 +78,9 @@ public class FollowController {
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
     @GetMapping("counts/{nickname}")
-    public ResponseEntity<BaseResponse<CountDto>> getFollowCount(@PathVariable String nickname) {
+    public ResponseEntity<BaseResponse<FollowCountResponse>> getFollowCount(@PathVariable String nickname) {
         FollowCountResult result = followService.getFollowCount(nickname);
-        return ResponseEntity.ok(new BaseResponse<>(new CountDto(result.mentorCnt(), result.motoCnt())));
+        return ResponseEntity.ok(new BaseResponse<>(new FollowCountResponse(result.mentorCnt(), result.motoCnt())));
     }
 
     @Operation(summary = "모토 조회", description = "유저를 팔로우 중인 모토들을 조회 합니다",
@@ -95,9 +94,8 @@ public class FollowController {
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
     @GetMapping("{nickname}/motos")
-    public ResponseEntity<BaseResponse<List<UserDto>>> getMotoList(@PathVariable String nickname) {
-        List<FollowUserResult> results = followService.getMotoList(nickname);
-        return ResponseEntity.ok(new BaseResponse<>(results.stream().map(this::toUserDto).toList()));
+    public ResponseEntity<BaseResponse<List<UserSummaryResponse>>> getMotoList(@PathVariable String nickname) {
+        return ResponseEntity.ok(new BaseResponse<>(toUserSummaryResponses(followService.getMotoList(nickname))));
     }
 
     @Operation(summary = "멘토 조회", description = "유저가 팔로우 중인 멘토들을 조회 합니다",
@@ -111,13 +109,14 @@ public class FollowController {
                     @ApiResponse(responseCode = "500", description = "서버 오류"),
             })
     @GetMapping("{nickname}/mentors")
-    public ResponseEntity<BaseResponse<List<UserDto>>> getMentorList(@PathVariable String nickname) {
-        List<FollowUserResult> results = followService.getMentorList(nickname);
-        return ResponseEntity.ok(new BaseResponse<>(results.stream().map(this::toUserDto).toList()));
+    public ResponseEntity<BaseResponse<List<UserSummaryResponse>>> getMentorList(@PathVariable String nickname) {
+        return ResponseEntity.ok(new BaseResponse<>(toUserSummaryResponses(followService.getMentorList(nickname))));
     }
 
-    private UserDto toUserDto(FollowUserResult result) {
-        return new UserDto(result.nickname(), result.job());
+    private List<UserSummaryResponse> toUserSummaryResponses(List<UserSummaryResult> results) {
+        return results.stream()
+                .map(result -> new UserSummaryResponse(result.nickname(), result.job()))
+                .toList();
     }
     
 }

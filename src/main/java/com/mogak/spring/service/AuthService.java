@@ -19,10 +19,7 @@ import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.security.SecurityAuthority;
-import com.mogak.spring.service.result.auth.SocialLoginResult;
-import com.mogak.spring.service.result.auth.WithdrawResult;
-import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
-import com.mogak.spring.web.dto.authdto.SocialLoginRequest;
+import com.mogak.spring.service.result.SocialLoginResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -56,13 +53,13 @@ public class AuthService {
 
     //로그인
     @Transactional
-    public SocialLoginResult appleLogin(AppleLoginRequest request) {
-        return login(SocialProvider.APPLE, request.idToken());
+    public SocialLoginResult appleLogin(String idToken) {
+        return login(SocialProvider.APPLE, idToken);
     }
 
     @Transactional
-    public SocialLoginResult socialLogin(SocialProvider provider, SocialLoginRequest request) {
-        return login(provider, request.token());
+    public SocialLoginResult socialLogin(SocialProvider provider, String token) {
+        return login(provider, token);
     }
 
     private SocialLoginResult login(SocialProvider provider, String token) {
@@ -161,11 +158,7 @@ public class AuthService {
      * 닉네임 등록 여부
      */
     private boolean isRegisterNickname(User user) {
-        if (user.getNickname() != null && !user.getNickname().isEmpty()) {
-            return true;
-        } else {
-            return false;
-        }
+        return user.getNickname() != null && !user.getNickname().isEmpty();
     }
 
     /**
@@ -203,11 +196,10 @@ public class AuthService {
      * 로그인한 사용자 탈퇴
      */
     @Transactional
-    public WithdrawResult deleteUser(Long userId) {
+    public void deleteUser(Long userId) {
         User deleteUser = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         deleteUserInfo(deleteUser);
-        return new WithdrawResult(true);
     }
 
     public void deleteUserInfo(User deleteUser) {

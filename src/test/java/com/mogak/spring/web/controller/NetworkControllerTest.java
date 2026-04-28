@@ -7,18 +7,20 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
-import com.mogak.spring.service.result.post.NetworkFeedPostResult;
-import com.mogak.spring.service.result.post.NetworkListResult;
+import com.mogak.spring.service.result.NetworkPostSummaryResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
-import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
+import com.mogak.spring.web.dto.postdto.*;
+import com.mogak.spring.web.dto.postdto.NetworkPostSummaryResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -27,7 +29,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -69,8 +70,8 @@ class NetworkControllerTest {
     @DisplayName("좋아요 요청은 기존 POST /api/posts/like 바디 계약으로 토글 서비스에 위임한다")
     void updateLikeContractForwardsBodyAndUserId() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "user@test.com", "ROLE_USER");
-        PostLikeRequestDto.LikeDto request = likeRequest(10L);
-        when(postLikeService.updateLike(eq(7L), any(PostLikeRequestDto.LikeDto.class)))
+        LikePostRequest request = likeRequest(10L);
+        when(postLikeService.updateLike(eq(7L), any(Long.class)))
                 .thenReturn("좋아요가 생성되었습니다");
 
         mockMvc.perform(post("/api/posts/like")
@@ -80,17 +81,15 @@ class NetworkControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.result").value("좋아요가 생성되었습니다"));
 
-        ArgumentCaptor<PostLikeRequestDto.LikeDto> requestCaptor = ArgumentCaptor.forClass(PostLikeRequestDto.LikeDto.class);
-        verify(postLikeService).updateLike(eq(7L), requestCaptor.capture());
-        assertThat(requestCaptor.getValue().postId()).isEqualTo(10L);
+        verify(postLikeService).updateLike(eq(7L), eq(10L));
     }
 
     @Test
     @DisplayName("좋아요 토글 서비스 예외는 전역 에러 응답으로 변환된다")
     void updateLikeMapsServiceError() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "user@test.com", "ROLE_USER");
-        PostLikeRequestDto.LikeDto request = likeRequest(10L);
-        when(postLikeService.updateLike(eq(7L), any(PostLikeRequestDto.LikeDto.class)))
+        LikePostRequest request = likeRequest(10L);
+        when(postLikeService.updateLike(eq(7L), any(Long.class)))
                 .thenThrow(new PostException(ErrorCode.NOT_EXIST_POST));
 
         mockMvc.perform(post("/api/posts/like")
@@ -113,7 +112,7 @@ class NetworkControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.code").value("Z005"));
 
-        verify(postLikeService, never()).updateLike(any(), any(PostLikeRequestDto.LikeDto.class));
+        verify(postLikeService, never()).updateLike(any(), any(Long.class));
     }
 
     @Test
@@ -128,10 +127,10 @@ class NetworkControllerTest {
     }
 
     @Test
-    @DisplayName("네트워크 게시글 조회는 전용 목록 DTO JSON 계약을 반환한다")
-    void getAllPostsReturnsDedicatedListDtoContract() throws Exception {
+    @DisplayName("네트워크 게시글 조회는 기존 Slice JSON 계약을 유지한다")
+    void getAllPostsReturnsSliceResponseContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "user@test.com", "ROLE_USER");
-        NetworkFeedPostResult post = NetworkFeedPostResult.of(
+        NetworkPostSummaryResult post = new NetworkPostSummaryResult(
                 20L,
                 "writer",
                 "개발/데이터",
@@ -140,7 +139,7 @@ class NetworkControllerTest {
                 2,
                 5
         );
-        NetworkListResult posts = NetworkListResult.of(List.of(post), 0, 10, true);
+        Slice<NetworkPostSummaryResult> posts = new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true);
         when(postService.getNetworkPosts(7L, 0, 10, "createdAt", "서울특별시")).thenReturn(posts);
 
         mockMvc.perform(get("/api/posts")
@@ -151,26 +150,23 @@ class NetworkControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.code").value("success"))
-                .andExpect(jsonPath("$.result.items[0].postId").value(20))
-                .andExpect(jsonPath("$.result.items[0].userName").value("writer"))
-                .andExpect(jsonPath("$.result.items[0].userJob").value("개발/데이터"))
-                .andExpect(jsonPath("$.result.items[0].contents").value("네트워크 회고"))
-                .andExpect(jsonPath("$.result.items[0].imgUrls[0]").value("https://example.com/body.png"))
-                .andExpect(jsonPath("$.result.items[0].commentCnt").value(2))
-                .andExpect(jsonPath("$.result.items[0].likeCnt").value(5))
-                .andExpect(jsonPath("$.result.page").value(0))
+                .andExpect(jsonPath("$.result.content[0].postId").value(20))
+                .andExpect(jsonPath("$.result.content[0].userName").value("writer"))
+                .andExpect(jsonPath("$.result.content[0].userJob").value("개발/데이터"))
+                .andExpect(jsonPath("$.result.content[0].contents").value("네트워크 회고"))
+                .andExpect(jsonPath("$.result.content[0].imgUrls[0]").value("https://example.com/body.png"))
+                .andExpect(jsonPath("$.result.content[0].commentCnt").value(2))
+                .andExpect(jsonPath("$.result.content[0].likeCnt").value(5))
                 .andExpect(jsonPath("$.result.size").value(10))
-                .andExpect(jsonPath("$.result.hasNext").value(true))
-                .andExpect(jsonPath("$.result.content").doesNotExist())
-                .andExpect(jsonPath("$.result.number").doesNotExist())
-                .andExpect(jsonPath("$.result.numberOfElements").doesNotExist())
-                .andExpect(jsonPath("$.result.first").doesNotExist())
-                .andExpect(jsonPath("$.result.last").doesNotExist());
+                .andExpect(jsonPath("$.result.number").value(0))
+                .andExpect(jsonPath("$.result.numberOfElements").value(1))
+                .andExpect(jsonPath("$.result.first").value(true))
+                .andExpect(jsonPath("$.result.last").value(false));
 
         verify(postService).getNetworkPosts(7L, 0, 10, "createdAt", "서울특별시");
     }
 
-    private PostLikeRequestDto.LikeDto likeRequest(Long postId) {
-        return new PostLikeRequestDto.LikeDto(postId);
+    private LikePostRequest likeRequest(Long postId) {
+        return new LikePostRequest(postId);
     }
 }
