@@ -79,3 +79,37 @@ tasks.named('test') {
 tasks.withType(JavaCompile).configureEach {
 	options.release = 25
 }
+
+tasks.register('localDbUp', Exec) {
+	group = 'application'
+	description = 'Starts the local PostgreSQL database and waits until it is healthy.'
+	commandLine 'docker', 'compose', 'up', '-d', '--wait', 'postgres'
+}
+
+tasks.register('localDbDown', Exec) {
+	group = 'application'
+	description = 'Stops the local PostgreSQL database.'
+	commandLine 'docker', 'compose', 'down'
+}
+
+tasks.register('run', org.springframework.boot.gradle.tasks.run.BootRun) {
+	group = 'application'
+	description = 'Starts local PostgreSQL and runs the API with the local profile.'
+	dependsOn tasks.named('localDbUp')
+
+	mainClass = 'com.mogak.spring.Application'
+	classpath = sourceSets.main.runtimeClasspath
+	systemProperty 'spring.profiles.active', 'local'
+	environment 'profile', 'local'
+	environment 'JWT_SECRET_KEY', System.getenv('JWT_SECRET_KEY') ?: 'bW9nYWstbG9jYWwtZGV2LXNlY3JldC1rZXktMzItYnl0ZXMhISE='
+
+	doFirst {
+		println 'MOGAK local API starting at http://localhost:8080'
+		println 'Swagger UI: http://localhost:8080/swagger-ui.html'
+	}
+}
+
+tasks.register('local') {
+	group = 'application'
+	description = 'Marker task so ./gradlew run local is accepted as the local run command.'
+}
