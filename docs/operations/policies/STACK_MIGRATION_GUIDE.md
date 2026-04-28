@@ -22,23 +22,21 @@
 
 ## Repo-Specific Hotspots
 - JWT:
-  - `build.gradle`의 `io.jsonwebtoken:jjwt:0.9.1`
+  - `build.gradle`의 `org.springframework.security:spring-security-oauth2-jose`
   - `src/main/java/com/mogak/spring/jwt/*`
   - `src/main/java/com/mogak/spring/auth/*`
 - OpenAPI / Swagger:
-  - `build.gradle`의 `org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8`
+  - `build.gradle`의 `org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2`
   - `src/main/java/com/mogak/spring/config/SwaggerConfig.java`
 - Spring Cloud / Feign:
-  - `build.gradle`의 `org.springframework.cloud:spring-cloud-dependencies:2025.0.0`
+  - `build.gradle`의 `org.springframework.cloud:spring-cloud-dependencies:2025.1.0`
   - `src/main/java/com/mogak/spring/auth/AppleClient.java`
   - `src/main/java/com/mogak/spring/config/FeignClientConfig.java`
 - AWS:
-  - `build.gradle`의 `io.awspring.cloud:spring-cloud-aws-starter`
-  - `build.gradle`의 `io.awspring.cloud:spring-cloud-aws-starter-s3`
+  - `build.gradle`의 `software.amazon.awssdk:bom`
+  - `build.gradle`의 `software.amazon.awssdk:s3`
   - `src/main/java/com/mogak/spring/service/AwsS3Service.java`
   - `src/main/resources/application-dev.yml`
-- Legacy/nullability:
-  - `build.gradle`의 `javax.xml.bind:jaxb-api:2.3.1`
 - Build/JDK pins:
   - `build.gradle`의 Java toolchain 25
   - `gradle/wrapper/gradle-wrapper.properties`의 Gradle 9.1.0
@@ -71,7 +69,8 @@
 - Spring Boot를 `4.0.2`로 올렸다.
 - Spring Framework 7, Spring Security 7, Hibernate 7, Jackson 3 기준으로 `clean test`와 `bootRun`을 재검증했다.
 - Spring Security disable DSL은 별도 선행 브랜치에서 정리한 뒤 본 브랜치로 병합했다.
-- storage는 Boot 4 blocker인 AWS 경로를 제거하고 `StorageService` 포트 + `DisabledStorageService` 조합으로 비활성 기본값을 적용했다.
+- storage는 `StorageService` 포트 기준으로 분리하고 `DisabledStorageService`를 비활성 기본 구현으로 적용했다.
+- AWS S3 구현체(`AwsS3Service`)와 AWS SDK v2 S3 의존성은 남아 있지만, 기본 실행 경로에서는 `feature.storage.enabled=false`로 비활성화한다.
 - 이미지 업로드/삭제 요청은 `feature.storage.enabled=false` 상태에서 `503 STORAGE_DISABLED`로 fail-fast 한다.
 - springdoc은 `3.0.2`와 actuator starter 조합으로 유지했고, 표준 `/v3/api-docs` 경로를 기준으로 한다.
 
@@ -89,17 +88,15 @@
   - `/swagger-ui.html`, `/v3/api-docs` 경로를 유지한다.
 
 ### JWT
-- `io.jsonwebtoken:jjwt:0.9.1`
-  - 최신 API, impl, jackson 분리 구조로 이동을 우선 검토한다.
+- `org.springframework.security:spring-security-oauth2-jose`
+  - JWT 생성/검증 경로는 Spring Security OAuth2 JOSE/Nimbus 기반으로 유지한다.
+  - 남은 후속 작업은 토큰 클레임 계약과 인증 provider 경계의 회귀 검증이다.
 
 ### AWS
-- 현재 스코프에서는 제거했다.
-  - storage 기능은 비활성 기본값으로 운영한다.
-  - 이미지 업로드/삭제 요청은 `503 STORAGE_DISABLED`로 실패한다.
-
-### JAXB / Legacy Java EE
-- `javax.xml.bind:jaxb-api:2.3.1`
-  - Jakarta 전환 또는 의존 제거 여부를 먼저 판단한다.
+- AWS SDK v2 S3 의존성과 `AwsS3Service`는 남아 있다.
+- storage 기능은 비활성 기본값으로 운영한다.
+- 이미지 업로드/삭제 요청은 `feature.storage.enabled=false` 상태에서 `503 STORAGE_DISABLED`로 실패한다.
+- storage를 다시 활성화하는 변경은 기능 플래그, 설정 바인딩, 실제 S3 연동 테스트를 함께 검증한다.
 
 ## Runtime Concerns on Java 25
 - 기본 charset은 UTF-8 기준으로 본다.
@@ -112,7 +109,7 @@
 2. Gradle과 Lombok을 정리한 뒤 Java 25를 활성화했다.
 3. Spring Security deprecated DSL을 정리하고 storage를 비활성 fail-fast 정책으로 분리했다.
 4. Boot 4.0.2와 springdoc 3.0.2를 적용하고 회귀 검증을 통과했다.
-5. 남은 후속 작업은 JWT 구조 개편과 기타 deprecated 경고 정리다.
+5. 남은 후속 작업은 JWT 클레임/인증 경계 회귀 검증, storage 활성화 경로 검증, 기타 deprecated 경고 정리다.
 
 ## Verification Gates
 - 각 단계마다 `sh gradlew test`를 기본 게이트로 사용한다.
