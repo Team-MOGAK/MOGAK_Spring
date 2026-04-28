@@ -5,9 +5,13 @@ import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.domain.jogak.DailyJogakStatus;
+import com.mogak.spring.domain.user.Address;
+import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
+import com.mogak.spring.service.result.post.NetworkListResult;
+import com.mogak.spring.service.result.post.PostListResult;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
@@ -19,7 +23,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +34,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -209,6 +216,50 @@ class PostServiceImplTest {
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PERMISSION);
         verify(postRepository, never()).findAllPosts(anyLong(), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("모각별 게시글 목록은 repository Slice를 전용 목록 DTO로 변환한다")
+    void getAllPostsReturnsDedicatedListDto() {
+        User owner = user(1L, "owner@test.com");
+        Mogak mogak = mogak(10L, owner);
+        Post post = post(20L, owner);
+
+        when(mogakRepository.findActiveById(10L)).thenReturn(Optional.of(mogak));
+        when(postRepository.findAllPosts(10L, PageRequest.of(0, 10)))
+                .thenReturn(new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true));
+
+        PostListResult result = postService.getAllPosts(1L, 0, 10L, 10);
+
+        assertThat(result.items())
+                .extracting("postId", "contents", "thumbnailUrl")
+                .containsExactly(tuple(20L, "content", "https://example.com/thumb.png"));
+        assertThat(result.page()).isZero();
+        assertThat(result.size()).isEqualTo(10);
+        assertThat(result.hasNext()).isTrue();
+    }
+
+    @Test
+    @DisplayName("네트워크 게시글 목록은 repository Slice를 전용 목록 DTO로 변환한다")
+    void getNetworkPostsReturnsDedicatedListDto() {
+        Address address = TestFixtureFactory.address("서울특별시");
+        Job job = TestFixtureFactory.job("개발/데이터");
+        User viewer = TestFixtureFactory.user(1L, "viewer@test.com", "viewer", job, address);
+        User writer = TestFixtureFactory.user(2L, "writer@test.com", "writer", job, address);
+        Post post = post(20L, writer);
+
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(viewer));
+        when(postRepository.findNetworkPosts("서울특별시", "createdAt", PageRequest.of(0, 10)))
+                .thenReturn(new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true));
+
+        NetworkListResult result = postService.getNetworkPosts(1L, 0, 10, "createdAt", "서울특별시");
+
+        assertThat(result.items())
+                .extracting("postId", "userName", "userJob", "contents")
+                .containsExactly(tuple(20L, "writer", "개발/데이터", "content"));
+        assertThat(result.page()).isZero();
+        assertThat(result.size()).isEqualTo(10);
+        assertThat(result.hasNext()).isTrue();
     }
 
     @Test

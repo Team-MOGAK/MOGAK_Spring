@@ -8,6 +8,7 @@ import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.service.StorageCleanupService;
 import com.mogak.spring.service.StorageService;
+import com.mogak.spring.service.result.post.PostListResult;
 import com.mogak.spring.service.result.post.PostSummaryResult;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,7 +21,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -90,12 +90,12 @@ public class PostController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/api/mogaks/{mogakId}/posts")
-    public ResponseEntity<BaseResponse<Slice<GetPostDto>>> getPostList(@PathVariable Long mogakId,
-                                                                       @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                                       @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                       @RequestParam(value = "size") int size) {
-        Slice<GetPostDto> posts = postService.getAllPosts(authenticatedUser.getUserId(), page, mogakId, size)
-                .map(this::toGetPostDto);
+    public ResponseEntity<BaseResponse<PostListDto>> getPostList(@PathVariable Long mogakId,
+                                                                 @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                 @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                 @RequestParam(value = "size") int size) {
+        PostListResult result = postService.getAllPosts(authenticatedUser.getUserId(), page, mogakId, size);
+        PostListDto posts = toPostListDto(result);
         return ResponseEntity.ok(new BaseResponse<>(posts));
     }
 
@@ -173,6 +173,13 @@ public class PostController {
                 result.thumbnailUrl(),
                 result.likeCnt()
         );
+    }
+
+    private PostListDto toPostListDto(PostListResult result) {
+        List<GetPostDto> posts = result.items().stream()
+                .map(this::toGetPostDto)
+                .toList();
+        return PostListDto.of(posts, result.page(), result.size(), result.hasNext());
     }
 
 }

@@ -36,7 +36,9 @@ import com.mogak.spring.service.result.mogak.GetJogakResult;
 import com.mogak.spring.service.result.mogak.GetMogakListResult;
 import com.mogak.spring.service.result.mogak.GetMogakResult;
 import com.mogak.spring.service.result.post.NetworkFeedPostResult;
+import com.mogak.spring.service.result.post.NetworkListResult;
 import com.mogak.spring.service.result.post.PacemakerPostResult;
+import com.mogak.spring.service.result.post.PostListResult;
 import com.mogak.spring.service.result.post.PostSummaryResult;
 import com.mogak.spring.support.TestFixtureFactory;
 import jakarta.persistence.EntityManager;
@@ -47,7 +49,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Slice;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
@@ -113,20 +114,20 @@ class ListQueryCountIntegrationTest {
         savePost(writer, mogak, "three", "thumb-three");
         flushAndClear();
 
-        QueryResult<Slice<NetworkFeedPostResult>> singlePostResult = countQueries(
+        QueryResult<NetworkListResult> singlePostResult = countQueries(
                 () -> postService.getNetworkPosts(viewer.getId(), 0, 1, "createdAt", address.getName())
         );
-        QueryResult<Slice<NetworkFeedPostResult>> threePostResult = countQueries(
+        QueryResult<NetworkListResult> threePostResult = countQueries(
                 () -> postService.getNetworkPosts(viewer.getId(), 0, 3, "createdAt", address.getName())
         );
 
-        assertThat(singlePostResult.value().getContent())
+        assertThat(singlePostResult.value().items())
                 .extracting(NetworkFeedPostResult::contents)
                 .containsExactly("three");
-        assertThat(threePostResult.value().getContent())
+        assertThat(threePostResult.value().items())
                 .extracting(NetworkFeedPostResult::contents)
                 .containsExactly("three", "two", "one");
-        assertThat(threePostResult.value().getContent())
+        assertThat(threePostResult.value().items())
                 .allSatisfy(post -> {
                     assertThat(post.userName()).isEqualTo("writer");
                     assertThat(post.userJob()).isEqualTo(job.getName());
@@ -181,20 +182,20 @@ class ListQueryCountIntegrationTest {
         savePost(writer, mogak, "three", "thumb-three");
         flushAndClear();
 
-        QueryResult<Slice<PostSummaryResult>> singlePostResult = countQueries(
+        QueryResult<PostListResult> singlePostResult = countQueries(
                 () -> postService.getAllPosts(writer.getId(), 0, mogak.getId(), 1)
         );
-        QueryResult<Slice<PostSummaryResult>> threePostResult = countQueries(
+        QueryResult<PostListResult> threePostResult = countQueries(
                 () -> postService.getAllPosts(writer.getId(), 0, mogak.getId(), 3)
         );
 
-        assertThat(singlePostResult.value().getContent())
+        assertThat(singlePostResult.value().items())
                 .extracting(PostSummaryResult::contents)
                 .containsExactly("three");
-        assertThat(threePostResult.value().getContent())
+        assertThat(threePostResult.value().items())
                 .extracting(PostSummaryResult::contents)
                 .containsExactly("three", "two", "one");
-        assertThat(threePostResult.value().getContent())
+        assertThat(threePostResult.value().items())
                 .allSatisfy(post -> {
                     assertThat(post.mogakId()).isEqualTo(mogak.getId());
                     assertThat(post.thumbnailUrl()).startsWith("https://example.com/thumb-");
