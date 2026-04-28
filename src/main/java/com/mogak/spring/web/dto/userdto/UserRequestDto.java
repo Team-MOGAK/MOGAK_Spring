@@ -1,70 +1,48 @@
 package com.mogak.spring.web.dto.userdto;
 
-import lombok.*;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class UserRequestDto {
-    @Builder
-    @Getter
-    @AllArgsConstructor(access = AccessLevel.PROTECTED)
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class CheckNicknameDto {
-        @NotBlank(message = "닉네임을 입력해주세요.")
-        @Size(min = 2, max = 10, message = "닉네임은 2자 이상, 10자 이하입니다.")
-        private String nickname;
+    public record CheckNicknameDto(
+            @NotBlank(message = "닉네임을 입력해주세요.")
+            @Size(min = 2, max = 10, message = "닉네임은 2자 이상, 10자 이하입니다.")
+            String nickname
+    ) {
     }
 
-    @Builder
-    @Getter
-    @AllArgsConstructor(access = AccessLevel.PROTECTED)
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class CreateUserDto {
-        @NotBlank(message = "닉네임을 입력해주세요.")
-        @Size(min = 2, max = 10, message = "닉네임은 2자 이상, 10자 이하입니다.")
-        private String nickname;
-        @Size(min = 1, max = 100)
-        private String job;
-        @Size(min = 1, max = 100)
-        private String address;
-    }
-    @Builder
-    @Getter
-    public static class UploadImageDto {
-        private String imgName;
-        private String imgUrl;
+    public record CreateUserDto(
+            @NotBlank(message = "닉네임을 입력해주세요.")
+            @Size(min = 2, max = 10, message = "닉네임은 2자 이상, 10자 이하입니다.")
+            String nickname,
+            @Size(min = 1, max = 100)
+            String job,
+            @Size(min = 1, max = 100)
+            String address
+    ) {
     }
 
-    @Getter
-    public static class UpdateUserDto{
-        public String contents;
+    public record UploadImageDto(String imgName, String imgUrl) {
     }
 
-    @Getter
-    public static class UpdateNicknameDto {
-        @Size(min = 2, max = 10, message = "닉네임은 최대 10자입니다.")
-        private String nickname;
+    public record UpdateUserDto(String contents) {
     }
 
-    @Getter
-    public static class UpdateJobDto {
-        @Size(min = 1, max = 100)
-        private String job;
+    public record UpdateNicknameDto(
+            @Size(min = 2, max = 10, message = "닉네임은 최대 10자입니다.")
+            String nickname
+    ) {
     }
 
-    @Builder
-    @Getter
-    public static class UpdateImageDto {
-        private String imgName;
-        private String imgUrl;
+    public record UpdateJobDto(
+            @Size(min = 1, max = 100)
+            String job
+    ) {
     }
 
-    @Builder
-    @Getter
-    @AllArgsConstructor(access = AccessLevel.PROTECTED)
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class GetEmailDto {
-        private String email;
+    public record UpdateImageDto(String imgName, String imgUrl) {
+    }
+
+    public record GetEmailDto(String email) {
     }
 }

@@ -95,10 +95,7 @@ class UserControllerTest {
     @DisplayName("회원 가입 multipart 요청이 성공하면 생성 응답 계약을 반환한다")
     void createUserMultipartContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
-        UserResponseDto.CreateDto response = UserResponseDto.CreateDto.builder()
-                .userId(1L)
-                .nickname("tester")
-                .build();
+        UserResponseDto.CreateDto response = new UserResponseDto.CreateDto(1L, "tester", null);
         when(userService.create(anyLong(), any(UserRequestDto.CreateUserDto.class), any(UserRequestDto.UploadImageDto.class)))
                 .thenReturn(response);
 
@@ -114,10 +111,7 @@ class UserControllerTest {
                 MediaType.IMAGE_PNG_VALUE,
                 "png".getBytes()
         );
-        when(storageService.uploadProfileImg(any(), any())).thenReturn(UserRequestDto.UploadImageDto.builder()
-                .imgName("profile.png")
-                .imgUrl("https://cdn/profile.png")
-                .build());
+        when(storageService.uploadProfileImg(any(), any())).thenReturn(new UserRequestDto.UploadImageDto("profile.png", "https://cdn/profile.png"));
 
         ResultActions result = mockMvc.perform(multipart("/api/users/join")
                         .file(requestPart)
@@ -176,11 +170,7 @@ class UserControllerTest {
     @DisplayName("프로필 조회 요청이 성공하면 조회 응답 계약을 반환한다")
     void getUserProfileContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.USER.getAuthority());
-        when(userService.getUserProfile(1L)).thenReturn(UserResponseDto.GetUserDto.builder()
-                .nickname("tester")
-                .job("개발/데이터")
-                .imgUrl("https://cdn/profile.png")
-                .build());
+        when(userService.getUserProfile(1L)).thenReturn(new UserResponseDto.GetUserDto("tester", "개발/데이터", "https://cdn/profile.png"));
 
         mockMvc.perform(get("/api/users/profile"))
                 .andExpect(status().isOk())
@@ -203,9 +193,7 @@ class UserControllerTest {
 
         mockMvc.perform(put("/api/users/profile/nickname")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new UserRequestDto.UpdateNicknameDto() {{
-                            org.springframework.test.util.ReflectionTestUtils.setField(this, "nickname", "tester");
-                        }})))
+                        .content(objectMapper.writeValueAsString(new UserRequestDto.UpdateNicknameDto("tester"))))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.time").exists())

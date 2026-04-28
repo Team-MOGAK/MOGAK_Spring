@@ -107,10 +107,7 @@ class SecurityConfigTest {
     @DisplayName("refresh API는 만료 access header가 있어도 refresh token 처리까지 도달한다")
     void refreshAllowsExpiredAccessTokenHeader() throws Exception {
         when(authService.reissue("valid-refresh-token"))
-                .thenReturn(JwtTokens.builder()
-                        .accessToken("new-access-token")
-                        .refreshToken("new-refresh-token")
-                        .build());
+                .thenReturn(new JwtTokens("new-access-token", "new-refresh-token"));
 
         mockMvc.perform(post("/api/auth/refresh")
                         .header(JwtTokenProvider.access_header, "Bearer " + expiredAccessToken())
@@ -138,14 +135,7 @@ class SecurityConfigTest {
     @DisplayName("ROLE_PENDING access token은 회원 등록 API에 접근할 수 있다")
     void joinAllowsPendingRole() throws Exception {
         when(userService.create(anyLong(), any(UserRequestDto.CreateUserDto.class), any(UserRequestDto.UploadImageDto.class)))
-                .thenReturn(UserResponseDto.CreateDto.builder()
-                        .userId(10L)
-                        .nickname("tester")
-                        .tokens(JwtTokens.builder()
-                                .accessToken("access-token")
-                                .refreshToken("refresh-token")
-                                .build())
-                        .build());
+                .thenReturn(new UserResponseDto.CreateDto(10L, "tester", new JwtTokens("access-token", "refresh-token")));
 
         mockMvc.perform(joinRequest(SecurityAuthority.PENDING.getAuthority()))
                 .andExpect(status().isCreated())
@@ -159,11 +149,7 @@ class SecurityConfigTest {
                 "request",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsBytes(UserRequestDto.CreateUserDto.builder()
-                        .nickname("tester")
-                        .job("개발/데이터")
-                        .address("서울특별시")
-                        .build())
+                objectMapper.writeValueAsBytes(new UserRequestDto.CreateUserDto("tester", "개발/데이터", "서울특별시"))
         );
 
         return multipart("/api/users/join")
