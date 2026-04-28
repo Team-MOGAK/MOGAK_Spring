@@ -7,9 +7,10 @@ import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.security.SecurityAuthority;
+import com.mogak.spring.service.result.user.UserCreateResult;
+import com.mogak.spring.service.result.user.UserProfileResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
-import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -95,7 +96,7 @@ class UserControllerTest {
     @DisplayName("회원 가입 multipart 요청이 성공하면 생성 응답 계약을 반환한다")
     void createUserMultipartContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
-        UserResponseDto.CreateDto response = new UserResponseDto.CreateDto(1L, "tester", null);
+        UserCreateResult response = new UserCreateResult(1L, "tester", null);
         when(userService.create(anyLong(), any(UserRequestDto.CreateUserDto.class), any(UserRequestDto.UploadImageDto.class)))
                 .thenReturn(response);
 
@@ -170,7 +171,7 @@ class UserControllerTest {
     @DisplayName("프로필 조회 요청이 성공하면 조회 응답 계약을 반환한다")
     void getUserProfileContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.USER.getAuthority());
-        when(userService.getUserProfile(1L)).thenReturn(new UserResponseDto.GetUserDto("tester", "개발/데이터", "https://cdn/profile.png"));
+        when(userService.getUserProfile(1L)).thenReturn(new UserProfileResult("tester", "개발/데이터", "https://cdn/profile.png"));
 
         mockMvc.perform(get("/api/users/profile"))
                 .andExpect(status().isOk())

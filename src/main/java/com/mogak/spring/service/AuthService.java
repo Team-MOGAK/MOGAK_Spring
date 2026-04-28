@@ -19,11 +19,10 @@ import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.security.SecurityAuthority;
+import com.mogak.spring.service.result.auth.SocialLoginResult;
+import com.mogak.spring.service.result.auth.WithdrawResult;
 import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
-import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
-import com.mogak.spring.web.dto.authdto.AuthResponse;
 import com.mogak.spring.web.dto.authdto.SocialLoginRequest;
-import com.mogak.spring.web.dto.authdto.SocialLoginResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -57,21 +56,20 @@ public class AuthService {
 
     //로그인
     @Transactional
-    public AppleLoginResponse appleLogin(AppleLoginRequest request) {
-        SocialLoginResponse response = login(SocialProvider.APPLE, request.idToken());
-        return new AppleLoginResponse(response.isRegistered(), response.userId(), response.tokens());
+    public SocialLoginResult appleLogin(AppleLoginRequest request) {
+        return login(SocialProvider.APPLE, request.idToken());
     }
 
     @Transactional
-    public SocialLoginResponse socialLogin(SocialProvider provider, SocialLoginRequest request) {
+    public SocialLoginResult socialLogin(SocialProvider provider, SocialLoginRequest request) {
         return login(provider, request.token());
     }
 
-    private SocialLoginResponse login(SocialProvider provider, String token) {
+    private SocialLoginResult login(SocialProvider provider, String token) {
         SocialUserProfile profile = resolveSocialUser(provider, token);
         User user = resolveUser(profile);
         JwtTokens jwtTokens = issueTokens(user);
-        return new SocialLoginResponse(isRegisterNickname(user), user.getId(), jwtTokens);
+        return new SocialLoginResult(isRegisterNickname(user), user.getId(), jwtTokens);
     }
 
     private SocialUserProfile resolveSocialUser(SocialProvider provider, String token) {
@@ -205,11 +203,11 @@ public class AuthService {
      * 로그인한 사용자 탈퇴
      */
     @Transactional
-    public AuthResponse.WithdrawDto deleteUser(Long userId) {
+    public WithdrawResult deleteUser(Long userId) {
         User deleteUser = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         deleteUserInfo(deleteUser);
-        return new AuthResponse.WithdrawDto(true);
+        return new WithdrawResult(true);
     }
 
     public void deleteUserInfo(User deleteUser) {

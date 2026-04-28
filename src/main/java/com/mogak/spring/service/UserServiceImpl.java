@@ -12,9 +12,10 @@ import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.security.SecurityAuthority;
+import com.mogak.spring.service.result.user.UserCreateResult;
+import com.mogak.spring.service.result.user.UserProfileResult;
 import com.mogak.spring.util.Regex;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
-import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +35,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserResponseDto.CreateDto create(Long userId, CreateUserDto request, UploadImageDto uploadImageDto) {
+    public UserCreateResult create(Long userId, CreateUserDto request, UploadImageDto uploadImageDto) {
         inputVerify(request);
         Job job = jobRepository.findJobByName(request.job())
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
@@ -49,7 +50,7 @@ public class UserServiceImpl implements UserService {
         }
         user.registerUser(request.nickname(), job, address, profileImgUrl, profileImgName);
         JwtTokens tokens = issueUserTokens(user);
-        return new UserResponseDto.CreateDto(user.getId(), user.getNickname(), tokens);
+        return new UserCreateResult(user.getId(), user.getNickname(), tokens);
     }
 
     private Optional<User> findUserByNickname(String nickname) {
@@ -149,12 +150,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto.GetUserDto getUserProfile(Long userId) {
+    public UserProfileResult getUserProfile(Long userId) {
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         String nickname = user.getNickname();
         String job = user.getJob().getName();
         String profileImgUrl = user.getProfileImgUrl();
-        return new UserResponseDto.GetUserDto(nickname, job, profileImgUrl);
+        return new UserProfileResult(nickname, job, profileImgUrl);
     }
 }
