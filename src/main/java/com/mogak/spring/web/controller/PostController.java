@@ -1,7 +1,7 @@
 package com.mogak.spring.web.controller;
 
-import com.mogak.spring.converter.PostConverter;
 import com.mogak.spring.domain.post.Post;
+import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.jwt.AuthenticatedUser;
@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 import static com.mogak.spring.web.dto.postdto.PostImgRequestDto.CreatePostImgDto;
 import static com.mogak.spring.web.dto.postdto.PostResponseDto.*;
@@ -68,7 +69,10 @@ public class PostController {
                     e.getClass().getSimpleName());
             throw e;
         }
-        return ResponseEntity.ok(new BaseResponse<>(PostConverter.toCreatePostDto(post)));
+        List<String> imgUrls = post.getPostImgs().stream()
+                .map(PostImg::getImgUrl)
+                .toList();
+        return ResponseEntity.ok(new BaseResponse<>(CreatePostDto.from(post, imgUrls)));
     }
 
     //read-전체 조회
@@ -100,7 +104,7 @@ public class PostController {
         Post post = postService.getByJogakAndTargetDate(authenticatedUser.getUserId(), jogakId, targetDate);
         List<String> imgUrls = postService.findNotThumbnailImg(post);
         List<Long> commentIds = postService.findActiveCommentIds(post);
-        return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostDto(post, imgUrls, commentIds)));
+        return ResponseEntity.ok(new BaseResponse<>(PostDto.from(post, imgUrls, commentIds)));
     }
 
     //read-상세 조회
@@ -118,7 +122,7 @@ public class PostController {
         Post post = postService.findById(authenticatedUser.getUserId(), postId);
         List<String> imgUrls = postService.findNotThumbnailImg(post); //썸네일은 제외하고 보여주기
         List<Long> commentIds = postService.findActiveCommentIds(post);
-        return ResponseEntity.ok(new BaseResponse<>(PostConverter.toPostDto(post, imgUrls, commentIds)));
+        return ResponseEntity.ok(new BaseResponse<>(PostDto.from(post, imgUrls, commentIds)));
     }
 
     //update - 권한 설정 필요
@@ -137,7 +141,7 @@ public class PostController {
                                                                   @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                   @Valid @RequestBody PostRequestDto.UpdatePostDto request) {
         Post post = postService.update(authenticatedUser.getUserId(), postId, request);
-        return ResponseEntity.ok(new BaseResponse<>(PostConverter.toUpdatePostDto(post)));
+        return ResponseEntity.ok(new BaseResponse<>(UpdatePostDto.from(post, LocalDateTime.now())));
     }
 
     //Delete - 이미지 삭제,댓글 삭제도 구현
@@ -153,7 +157,7 @@ public class PostController {
     public ResponseEntity<BaseResponse<DeletePostDto>> deletePost(@PathVariable Long postId,
                                                                   @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         postService.delete(authenticatedUser.getUserId(), postId);
-        return ResponseEntity.ok(new BaseResponse<>(PostConverter.toDeletePostDto()));
+        return ResponseEntity.ok(new BaseResponse<>(DeletePostDto.deleted()));
     }
 
 }

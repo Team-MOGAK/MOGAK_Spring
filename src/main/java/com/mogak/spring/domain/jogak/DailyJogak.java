@@ -3,7 +3,6 @@ package com.mogak.spring.domain.jogak;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.mogak.MogakCategory;
 import com.mogak.spring.global.SoftDeletableEntity;
-import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import lombok.*;
 
 import jakarta.persistence.*;
@@ -39,6 +38,22 @@ public class DailyJogak extends SoftDeletableEntity {
     @Column(nullable = false)
     private Boolean isRoutine;
 
+    public static DailyJogak create(Jogak jogak, LocalDate targetDate) {
+        return DailyJogak.builder()
+                .mogak(jogak.getMogak())
+                .category(jogak.getCategory())
+                .title(jogak.getTitle())
+                .targetDate(targetDate)
+                .status(DailyJogakStatus.PENDING)
+                .jogak(jogak)
+                .isRoutine(jogak.getIsRoutine())
+                .build();
+    }
+
+    public static DailyJogak create(Jogak jogak) {
+        return create(jogak, LocalDate.now());
+    }
+
     public boolean isSuccess() {
         return status == DailyJogakStatus.SUCCESS;
     }
@@ -59,23 +74,5 @@ public class DailyJogak extends SoftDeletableEntity {
         this.jogak = jogak;
         this.title = jogak.getTitle();
         this.isRoutine = jogak.getIsRoutine();
-    }
-
-    public static JogakResponseDto.GetRoutineJogakDto getRoutineJogakDto(DailyJogak dailyJogak) {
-        return JogakResponseDto.GetRoutineJogakDto.builder()
-                .dailyJogakId(dailyJogak.getId())
-                .date(dailyJogak.getTargetDate())
-                .isAchievement(dailyJogak.isSuccess())
-                .title(dailyJogak.getTitle())
-                .build();
-    }
-
-    public static JogakResponseDto.GetRoutineJogakDto getFutureRoutineJogakDto(LocalDate date, String title) {
-        return JogakResponseDto.GetRoutineJogakDto.builder()
-                .dailyJogakId(-1L)
-                .date(date)
-                .isAchievement(false)
-                .title(title)
-                .build();
     }
 }

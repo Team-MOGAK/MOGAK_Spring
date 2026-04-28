@@ -1,6 +1,5 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.domain.user.User;
@@ -39,7 +38,7 @@ public class PostCommentServiceImpl implements PostCommentService {
         if (request.getContents().length() > 200) {
             throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
         }
-        PostComment comment = CommentConverter.toComment(request,post, user);
+        PostComment comment = PostComment.create(post, user, request.getContents());
         post.putComment(comment);
         post.addCommentCnt();
         return postCommentRepository.save(comment);

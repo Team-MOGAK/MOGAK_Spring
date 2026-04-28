@@ -50,6 +50,19 @@ public class Jogak extends SoftDeletableEntity {
     private LocalDate endAt;
     private String state;
 
+    public static Jogak create(Mogak mogak, String title, Boolean isRoutine, LocalDate startAt, LocalDate endAt) {
+        return Jogak.builder()
+                .user(mogak.getUser())
+                .mogak(mogak)
+                .category(mogak.getBigCategory())
+                .title(title)
+                .isRoutine(isRoutine)
+                .achievements(0)
+                .startAt(startAt)
+                .endAt(endAt)
+                .build();
+    }
+
     public List<String> getPeriods() {
         return this.getJogakPeriods()
                 .stream()

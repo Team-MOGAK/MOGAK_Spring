@@ -44,6 +44,15 @@ public class Post extends SoftDeletableEntity {
     @Column(nullable = false)
     private int commentCnt = 0; //데이터 일관성 문제 있을수도
 
+    public static Post create(DailyJogak dailyJogak, User user, String contents) {
+        return Post.builder()
+                .dailyJogak(dailyJogak)
+                .user(user)
+                .contents(contents)
+                .viewCnt(0)
+                .build();
+    }
+
     //setter 대신
     public void updatePost(String contents){
         this.contents=contents;

@@ -1,5 +1,7 @@
 package com.mogak.spring.web.dto.postdto;
 
+import com.mogak.spring.domain.jogak.DailyJogak;
+import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import com.mogak.spring.web.dto.commentdto.CommentResponseDto;
 import lombok.*;
@@ -30,6 +32,23 @@ public class PostResponseDto {
         private int likeCnt;
         private int commentCnt;
 
+        public static PostDto from(Post post, List<String> imgUrls, List<Long> commentIds) {
+            DailyJogak dailyJogak = post.getDailyJogak();
+            return PostDto.builder()
+                    .postId(post.getId())
+                    .mogakId(dailyJogak.getJogak().getMogak().getId())
+                    .jogakId(dailyJogak.getJogak().getId())
+                    .dailyJogakId(dailyJogak.getId())
+                    .targetDate(dailyJogak.getTargetDate())
+                    .userId(post.getUser().getId())
+                    .contents(post.getContents())
+                    .imgUrls(imgUrls)
+                    .commentId(commentIds)
+                    .likeCnt(post.getLikeCnt())
+                    .commentCnt(post.getCommentCnt())
+                    .build();
+        }
+
     }
     @Getter
     @Builder
@@ -45,6 +64,19 @@ public class PostResponseDto {
         private String contents;
         private String thumbnailUrl;
         private int likeCnt;
+
+        public static GetPostDto from(Post post) {
+            DailyJogak dailyJogak = post.getDailyJogak();
+            return GetPostDto.builder()
+                    .postId(post.getId())
+                    .mogakId(dailyJogak.getJogak().getMogak().getId())
+                    .jogakId(dailyJogak.getJogak().getId())
+                    .dailyJogakId(dailyJogak.getId())
+                    .targetDate(dailyJogak.getTargetDate())
+                    .contents(post.getContents())
+                    .thumbnailUrl(post.getPostThumbnailUrl())
+                    .build();
+        }
     }
     @Getter
     @Builder
@@ -69,6 +101,21 @@ public class PostResponseDto {
         private String contents;
         private List<String> imgUrls;
         private LocalDateTime createdAt;
+
+        public static CreatePostDto from(Post post, List<String> imgUrls) {
+            DailyJogak dailyJogak = post.getDailyJogak();
+            return CreatePostDto.builder()
+                    .id(post.getId())
+                    .mogakId(dailyJogak.getJogak().getMogak().getId())
+                    .jogakId(dailyJogak.getJogak().getId())
+                    .dailyJogakId(dailyJogak.getId())
+                    .targetDate(dailyJogak.getTargetDate())
+                    .userId(post.getUser().getId())
+                    .contents(post.getContents())
+                    .imgUrls(imgUrls)
+                    .createdAt(post.getCreatedAt())
+                    .build();
+        }
     }
 
     @Getter
@@ -79,6 +126,14 @@ public class PostResponseDto {
         private Long id;
         private String contents;
         private LocalDateTime updatedAt;
+
+        public static UpdatePostDto from(Post post, LocalDateTime updatedAt) {
+            return UpdatePostDto.builder()
+                    .id(post.getId())
+                    .contents(post.getContents())
+                    .updatedAt(updatedAt)
+                    .build();
+        }
     }
 
     @Getter
@@ -87,6 +142,12 @@ public class PostResponseDto {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class DeletePostDto {
         private boolean deleted;
+
+        public static DeletePostDto deleted() {
+            return DeletePostDto.builder()
+                    .deleted(true)
+                    .build();
+        }
     }
 
     @Getter
@@ -100,6 +161,20 @@ public class PostResponseDto {
         private List<CommentResponseDto.NetworkCommentDto> comments;
         private int likeCnt;
         private int viewCnt;
+
+        public static NetworkPostDto from(Post post,
+                                          UserResponseDto.UserDto user,
+                                          List<String> imgUrls,
+                                          List<CommentResponseDto.NetworkCommentDto> comments) {
+            return NetworkPostDto.builder()
+                    .user(user)
+                    .contents(post.getContents())
+                    .imgUrls(imgUrls)
+                    .comments(comments)
+                    .likeCnt(post.getLikeCnt())
+                    .viewCnt(post.getViewCnt())
+                    .build();
+        }
     }
 
     //전체 네트워크
@@ -115,6 +190,18 @@ public class PostResponseDto {
         private List<String> imgUrls;
         private int commentCnt;
         private int likeCnt;
+
+        public static GetAllNetworkDto from(Post post, List<String> imgUrls) {
+            return GetAllNetworkDto.builder()
+                    .postId(post.getId())
+                    .userName(post.getUser().getNickname())
+                    .userJob(post.getUser().getJob().getName())
+                    .contents(post.getContents())
+                    .imgUrls(imgUrls)
+                    .commentCnt(post.getCommentCnt())
+                    .likeCnt(post.getLikeCnt())
+                    .build();
+        }
     }
     @Getter
     @Builder

@@ -26,6 +26,15 @@ public class Modarat extends SoftDeletableEntity {
     private String title;
     @Column(nullable = false)
     private String color;
+
+    public static Modarat of(User user, String title, String color) {
+        return Modarat.builder()
+                .user(user)
+                .title(title)
+                .color(color)
+                .build();
+    }
+
     public void update(String title, String color) {
         Optional.ofNullable(title).ifPresent(t -> this.title = t);
         Optional.ofNullable(color).ifPresent(c -> this.color = c);

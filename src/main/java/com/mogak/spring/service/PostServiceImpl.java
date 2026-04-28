@@ -1,9 +1,5 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.converter.CommentConverter;
-import com.mogak.spring.converter.PostConverter;
-import com.mogak.spring.converter.PostImgConverter;
-import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.jogak.DailyJogak;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.JogakPeriod;
@@ -23,6 +19,8 @@ import com.mogak.spring.web.dto.postdto.PostRequestDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.GetAllNetworkDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.GetPostDto;
 import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkPostDto;
+import com.mogak.spring.web.dto.commentdto.CommentResponseDto;
+import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
@@ -85,9 +83,9 @@ public class PostServiceImpl implements PostService {
         }
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        Post post = PostConverter.toPost(request, user, dailyJogak);
+        Post post = Post.create(dailyJogak, user, request.getContents());
         for (PostImgRequestDto.CreatePostImgDto postImgDto : postImgDtoList) {
-            PostImg postImg = PostImgConverter.toPostImg(postImgDto, post);
+            PostImg postImg = PostImg.create(post, postImgDto.getImgName(), postImgDto.getImgUrl());
             //썸네일이미지인지 체크 필요
             if (postImgDto.isThumbnail()) {
                 post.putPostThumbnailUrl(postImg.getImgUrl()); //썸네일 이미지는 thumbnailurl에 추가
@@ -123,7 +121,7 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(page, size);
 
         return postRepository.findAllPosts(mogakId, pageable)
-                .map(PostConverter::toGetPostDto);
+                .map(GetPostDto::from);
     }
 
     //회고록 상세 조회 + 댓글, 이미지 같이 보이게
@@ -181,16 +179,16 @@ public class PostServiceImpl implements PostService {
         return posts.stream()
                 .map(p -> {
                     List<String> imgUrls = findNotThumbnailImgUrls(p, imagesByPostId);
-                    return NetworkPostDto.builder()
-                            .user(UserConverter.toUserDto(p.getUser()))
-                            .contents(p.getContents())
-                            .imgUrls(imgUrls)
-                            .comments(commentsByPostId.getOrDefault(p.getId(), Collections.emptyList()).stream()
-                                    .map(CommentConverter::toNetworkCommentDto)
-                                    .collect(Collectors.toList()))
-                            .likeCnt(p.getLikeCnt())
-                            .viewCnt(p.getViewCnt())
-                            .build();
+                    List<CommentResponseDto.NetworkCommentDto> comments = commentsByPostId
+                            .getOrDefault(p.getId(), Collections.emptyList()).stream()
+                            .map(CommentResponseDto.NetworkCommentDto::from)
+                            .collect(Collectors.toList());
+                    return NetworkPostDto.from(
+                            p,
+                            UserResponseDto.UserDto.from(p.getUser()),
+                            imgUrls,
+                            comments
+                    );
                 })
                 .collect(Collectors.toList());
     }
@@ -206,15 +204,7 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(page, size);
         Slice<Post> posts = postRepository.findNetworkPosts(address, sort, pageable);
         Map<Long, List<PostImg>> imagesByPostId = groupImagesByPostId(extractPostIds(posts.getContent()));
-        return posts.map(post -> GetAllNetworkDto.builder()
-                .postId(post.getId())
-                .userName(post.getUser().getNickname())
-                .userJob(post.getUser().getJob().getName())
-                .contents(post.getContents())
-                .imgUrls(findNotThumbnailImgUrls(post, imagesByPostId))
-                .commentCnt(post.getCommentCnt())
-                .likeCnt(post.getLikeCnt())
-                .build());
+        return posts.map(post -> GetAllNetworkDto.from(post, findNotThumbnailImgUrls(post, imagesByPostId)));
     }
 
     private List<Long> extractPostIds(List<Post> posts) {

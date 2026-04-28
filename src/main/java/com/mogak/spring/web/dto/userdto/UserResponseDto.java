@@ -1,5 +1,6 @@
 package com.mogak.spring.web.dto.userdto;
 
+import com.mogak.spring.domain.user.User;
 import com.mogak.spring.jwt.JwtTokens;
 import lombok.*;
 
@@ -30,6 +31,13 @@ public class UserResponseDto {
     public static class UserDto {
         private String nickname;
         private String job;
+
+        public static UserDto from(User user) {
+            return UserDto.builder()
+                    .nickname(user.getNickname())
+                    .job(user.getJob().getName())
+                    .build();
+        }
     }
 
     @Getter

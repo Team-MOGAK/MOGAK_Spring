@@ -1,7 +1,5 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.converter.FollowConverter;
-import com.mogak.spring.converter.UserConverter;
 import com.mogak.spring.domain.user.Follow;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.UserException;
@@ -35,7 +33,7 @@ public class FollowServiceImpl implements FollowService {
         if (followRepository.findByFromAndTo(fromUser, toUser).isPresent()) {
             throw new UserException(ErrorCode.ALREADY_CREATE_FOLLOW);
         }
-        followRepository.save(FollowConverter.toFollow(fromUser, toUser));
+        followRepository.save(Follow.of(fromUser, toUser));
     }
 
     @Transactional
@@ -62,7 +60,7 @@ public class FollowServiceImpl implements FollowService {
         User user = userRepository.findActiveByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<User> users = followRepository.findMotosByUser(user);
         return users.stream()
-                .map(UserConverter::toUserDto)
+                .map(UserDto::from)
                 .collect(Collectors.toList());
     }
 
@@ -71,7 +69,7 @@ public class FollowServiceImpl implements FollowService {
         User user = userRepository.findActiveByNickname(nickname).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         List<User> users = followRepository.findMentorsByUser(user);
         return users.stream()
-                .map(UserConverter::toUserDto)
+                .map(UserDto::from)
                 .collect(Collectors.toList());
     }
 

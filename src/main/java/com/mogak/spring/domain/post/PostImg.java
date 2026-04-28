@@ -22,4 +22,12 @@ public class PostImg extends BaseEntity {
     private String imgName;
     @Column(nullable = false)
     private String imgUrl;
+
+    public static PostImg create(Post post, String imgName, String imgUrl) {
+        return PostImg.builder()
+                .post(post)
+                .imgName(imgName)
+                .imgUrl(imgUrl)
+                .build();
+    }
 }

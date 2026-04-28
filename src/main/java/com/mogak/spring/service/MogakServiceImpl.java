@@ -1,7 +1,5 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.converter.JogakConverter;
-import com.mogak.spring.converter.MogakConverter;
 import com.mogak.spring.domain.jogak.DailyJogak;
 import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.modarat.Modarat;
@@ -55,8 +53,15 @@ public class MogakServiceImpl implements MogakService {
         }
         MogakCategory category = categoryRepository.findMogakCategoryByName(request.getBigCategory())
                 .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_CATEGORY));
-        Mogak result = mogakRepository.save(MogakConverter.toMogak(request, modarat, category, request.getSmallCategory(), user));
-        return MogakConverter.toGetMogakDto(result);
+        Mogak result = mogakRepository.save(Mogak.of(
+                user,
+                modarat,
+                category,
+                request.getSmallCategory(),
+                request.getTitle(),
+                request.getColor()
+        ));
+        return toGetMogakDto(result);
     }
 
     // 모다라트의 모각 개수 검증
@@ -64,12 +69,6 @@ public class MogakServiceImpl implements MogakService {
         // 현재 유효한 기간 및 종료 날짜가 없는 조각 개수 체크
         return mogakRepository.findAllByModaratId(modarat.getId()).size() < 8;
     }
-
-//    private void createTodayJogak(Mogak result, List<Period> periods, int dayNum) {
-//        if (periods.stream().anyMatch(day -> day.getId() == dayNum) && result.getState().equals(State.ONGOING.name())) {
-//            jogakRepository.save(JogakConverter.toJogak(result));
-//        }
-//    }
 
 //    /**
 //     * 모각주기 저장 메소드
@@ -114,18 +113,6 @@ public class MogakServiceImpl implements MogakService {
 //        }
 //    }
 
-//    /**
-//     * 모각 미리 달성 메소드
-//     * */
-//    @Transactional
-//    @Override
-//    public MogakResponseDto.UpdateStateDto achieveMogak(Long mogakId) {
-//        Mogak mogak = mogakRepository.findById(mogakId)
-//                .orElseThrow(() -> new MogakException(ErrorCode.NOT_EXIST_MOGAK));
-//        mogak.updateState(State.COMPLETE.toString());
-//        return MogakConverter.toUpdateDto(mogak);
-//    }
-
     /**
      * 모각 업데이트 메소드
      * */
@@ -143,7 +130,7 @@ public class MogakServiceImpl implements MogakService {
             jogakList.forEach(jogak -> jogak.updateCategory(category));
         });
         mogak.update(request.getTitle(), request.getSmallCategory(), request.getColor());
-        return MogakConverter.toGetMogakDto(mogak);
+        return toGetMogakDto(mogak);
     }
 
     /**
@@ -154,7 +141,13 @@ public class MogakServiceImpl implements MogakService {
         userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Modarat modarat = getOwnedModarat(modaratId, userId);
-        return MogakConverter.toGetMogakListDto(mogakRepository.findAllByModaratId(modarat.getId()));
+        List<MogakResponseDto.GetMogakDto> mogaks = mogakRepository.findAllByModaratId(modarat.getId()).stream()
+                .map(this::toGetMogakDto)
+                .collect(Collectors.toList());
+        return MogakResponseDto.GetMogakListDto.builder()
+                .mogaks(mogaks)
+                .size(mogaks.size())
+                .build();
     }
 
     /**
@@ -241,7 +234,7 @@ public class MogakServiceImpl implements MogakService {
         List<DailyJogak> dailyJogak = dailyJogakRepository.findDailyJogaks(user, day);
         return jogakRepository.findAllByMogakWithFetchGraph(mogak).stream()
                 .filter(jogak -> jogak.getEndAt() == null || jogak.getEndAt().isAfter(day.minusDays(1)))
-                .map(jogak -> JogakConverter.toGetJogakResponseDto(jogak, findCorrespondingDailyJogak(jogak, dailyJogak)))
+                .map(jogak -> JogakResponseDto.getJogakFrom(jogak, findCorrespondingDailyJogak(jogak, dailyJogak)))
                 .collect(Collectors.toList());
     }
 
@@ -257,6 +250,16 @@ public class MogakServiceImpl implements MogakService {
             throw new AuthException(ErrorCode.INVALID_PERMISSION);
         }
         return modarat;
+    }
+
+    private MogakResponseDto.GetMogakDto toGetMogakDto(Mogak mogak) {
+        return MogakResponseDto.GetMogakDto.builder()
+                .id(mogak.getId())
+                .title(mogak.getTitle())
+                .bigCategory(mogak.getBigCategory())
+                .smallCategory(mogak.getSmallCategory())
+                .color(mogak.getColor())
+                .build();
     }
 
     private Mogak getOwnedMogak(Long mogakId, Long userId) {
