@@ -7,13 +7,13 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
+import com.mogak.spring.service.result.NetworkPostSummaryResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
-import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.GetAllNetworkDto;
+import com.mogak.spring.web.dto.postdto.*;
+import com.mogak.spring.web.dto.postdto.NetworkPostSummaryResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -29,7 +29,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -71,8 +70,8 @@ class NetworkControllerTest {
     @DisplayName("좋아요 요청은 기존 POST /api/posts/like 바디 계약으로 토글 서비스에 위임한다")
     void updateLikeContractForwardsBodyAndUserId() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "user@test.com", "ROLE_USER");
-        PostLikeRequestDto.LikeDto request = likeRequest(10L);
-        when(postLikeService.updateLike(eq(7L), any(PostLikeRequestDto.LikeDto.class)))
+        LikePostRequest request = likeRequest(10L);
+        when(postLikeService.updateLike(eq(7L), any(Long.class)))
                 .thenReturn("좋아요가 생성되었습니다");
 
         mockMvc.perform(post("/api/posts/like")
@@ -82,17 +81,15 @@ class NetworkControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.result").value("좋아요가 생성되었습니다"));
 
-        ArgumentCaptor<PostLikeRequestDto.LikeDto> requestCaptor = ArgumentCaptor.forClass(PostLikeRequestDto.LikeDto.class);
-        verify(postLikeService).updateLike(eq(7L), requestCaptor.capture());
-        assertThat(requestCaptor.getValue().postId()).isEqualTo(10L);
+        verify(postLikeService).updateLike(eq(7L), eq(10L));
     }
 
     @Test
     @DisplayName("좋아요 토글 서비스 예외는 전역 에러 응답으로 변환된다")
     void updateLikeMapsServiceError() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "user@test.com", "ROLE_USER");
-        PostLikeRequestDto.LikeDto request = likeRequest(10L);
-        when(postLikeService.updateLike(eq(7L), any(PostLikeRequestDto.LikeDto.class)))
+        LikePostRequest request = likeRequest(10L);
+        when(postLikeService.updateLike(eq(7L), any(Long.class)))
                 .thenThrow(new PostException(ErrorCode.NOT_EXIST_POST));
 
         mockMvc.perform(post("/api/posts/like")
@@ -115,7 +112,7 @@ class NetworkControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.code").value("Z005"));
 
-        verify(postLikeService, never()).updateLike(any(), any(PostLikeRequestDto.LikeDto.class));
+        verify(postLikeService, never()).updateLike(any(), any(Long.class));
     }
 
     @Test
@@ -130,10 +127,10 @@ class NetworkControllerTest {
     }
 
     @Test
-    @DisplayName("네트워크 게시글 조회는 기존 Slice DTO JSON 계약을 유지한다")
-    void getAllPostsReturnsSliceDtoContract() throws Exception {
+    @DisplayName("네트워크 게시글 조회는 기존 Slice JSON 계약을 유지한다")
+    void getAllPostsReturnsSliceResponseContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "user@test.com", "ROLE_USER");
-        GetAllNetworkDto post = GetAllNetworkDto.of(
+        NetworkPostSummaryResult post = new NetworkPostSummaryResult(
                 20L,
                 "writer",
                 "개발/데이터",
@@ -142,7 +139,7 @@ class NetworkControllerTest {
                 2,
                 5
         );
-        Slice<GetAllNetworkDto> posts = new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true);
+        Slice<NetworkPostSummaryResult> posts = new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true);
         when(postService.getNetworkPosts(7L, 0, 10, "createdAt", "서울특별시")).thenReturn(posts);
 
         mockMvc.perform(get("/api/posts")
@@ -169,7 +166,7 @@ class NetworkControllerTest {
         verify(postService).getNetworkPosts(7L, 0, 10, "createdAt", "서울특별시");
     }
 
-    private PostLikeRequestDto.LikeDto likeRequest(Long postId) {
-        return new PostLikeRequestDto.LikeDto(postId);
+    private LikePostRequest likeRequest(Long postId) {
+        return new LikePostRequest(postId);
     }
 }

@@ -5,11 +5,12 @@ import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.exception.GlobalExceptionHandler;
 import com.mogak.spring.jwt.JwtTokenProvider;
-import com.mogak.spring.repository.query.SingleDetailModaratDto;
 import com.mogak.spring.service.ModaratService;
+import com.mogak.spring.service.result.ModaratDetailResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
-import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
+import com.mogak.spring.web.dto.modaratdto.CreateModaratRequest;
+import com.mogak.spring.web.dto.modaratdto.UpdateModaratRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -69,8 +70,8 @@ class ModaratControllerTest {
     void createModaratContract() throws Exception {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", TestFixtureFactory.job("개발"), TestFixtureFactory.address("서울"));
         Modarat modarat = TestFixtureFactory.modarat(10L, user, "메인 모다라트", "#112233");
-        when(modaratService.create(anyLong(), any(ModaratRequestDto.CreateModaratDto.class))).thenReturn(modarat);
-        ModaratRequestDto.CreateModaratDto request = new ModaratRequestDto.CreateModaratDto("메인 모다라트", "#112233");
+        when(modaratService.create(anyLong(), any(String.class), any(String.class))).thenReturn(modarat);
+        CreateModaratRequest request = new CreateModaratRequest("메인 모다라트", "#112233");
 
         mockMvc.perform(post("/api/modarats")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -84,13 +85,13 @@ class ModaratControllerTest {
                 .andExpect(jsonPath("$.result.id").value(10L))
                 .andExpect(jsonPath("$.result.title").value("메인 모다라트"));
 
-        verify(modaratService).create(eq(1L), any(ModaratRequestDto.CreateModaratDto.class));
+        verify(modaratService).create(eq(1L), eq("메인 모다라트"), eq("#112233"));
     }
 
     @Test
     @DisplayName("모다라트 상세 조회 요청이 성공하면 userId를 서비스로 전달한다")
     void getDetailModaratForwardsUserId() throws Exception {
-        when(modaratService.getDetailModarat(eq(1L), eq(10L))).thenReturn(new SingleDetailModaratDto(10L, "메인 모다라트", "#112233"));
+        when(modaratService.getDetailModarat(eq(1L), eq(10L))).thenReturn(new ModaratDetailResult(10L, "메인 모다라트", "#112233", java.util.List.of()));
 
         mockMvc.perform(get("/api/modarats/10"))
                 .andExpect(status().isOk())
@@ -106,8 +107,8 @@ class ModaratControllerTest {
     void updateModaratForwardsUserId() throws Exception {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", TestFixtureFactory.job("개발"), TestFixtureFactory.address("서울"));
         Modarat modarat = TestFixtureFactory.modarat(10L, user, "수정된 모다라트", "#445566");
-        when(modaratService.update(eq(1L), eq(10L), any(ModaratRequestDto.UpdateModaratDto.class))).thenReturn(modarat);
-        ModaratRequestDto.UpdateModaratDto request = new ModaratRequestDto.UpdateModaratDto("수정된 모다라트", "#445566");
+        when(modaratService.update(eq(1L), eq(10L), any(String.class), any(String.class))).thenReturn(modarat);
+        UpdateModaratRequest request = new UpdateModaratRequest("수정된 모다라트", "#445566");
 
         mockMvc.perform(put("/api/modarats/10")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -116,7 +117,7 @@ class ModaratControllerTest {
                 .andExpect(jsonPath("$.result.id").value(10L))
                 .andExpect(jsonPath("$.result.title").value("수정된 모다라트"));
 
-        verify(modaratService).update(eq(1L), eq(10L), any(ModaratRequestDto.UpdateModaratDto.class));
+        verify(modaratService).update(eq(1L), eq(10L), eq("수정된 모다라트"), eq("#445566"));
     }
 
     @Test

@@ -10,6 +10,9 @@ import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.security.ApiAccessDeniedHandler;
 import com.mogak.spring.security.ApiAuthenticationEntryPoint;
 import com.mogak.spring.security.SecurityAuthority;
+import com.mogak.spring.service.result.ProfileImageResult;
+import com.mogak.spring.service.result.SocialLoginResult;
+import com.mogak.spring.service.result.UserCreateResult;
 import com.mogak.spring.service.AuthService;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
@@ -17,8 +20,9 @@ import com.mogak.spring.web.controller.AuthController;
 import com.mogak.spring.web.controller.UserController;
 import com.mogak.spring.web.dto.authdto.SocialLoginRequest;
 import com.mogak.spring.web.dto.authdto.SocialLoginResponse;
-import com.mogak.spring.web.dto.userdto.UserRequestDto;
-import com.mogak.spring.web.dto.userdto.UserResponseDto;
+import com.mogak.spring.web.dto.userdto.UserCreateRequest;
+import com.mogak.spring.web.dto.userdto.UserCreateResponse;
+import com.mogak.spring.web.dto.userdto.UserUploadImageRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,8 +130,8 @@ class SecurityConfigTest {
     @Test
     @DisplayName("공급자별 소셜 로그인 API는 토큰 없이 호출할 수 있다")
     void socialLoginIsPublic() throws Exception {
-        when(authService.socialLogin(any(), any(SocialLoginRequest.class)))
-                .thenReturn(new SocialLoginResponse(false, 10L, new JwtTokens("access-token", "refresh-token")));
+        when(authService.socialLogin(any(), any(String.class)))
+                .thenReturn(new SocialLoginResult(false, 10L, new JwtTokens("access-token", "refresh-token")));
 
         mockMvc.perform(post("/api/auth/google/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -138,7 +142,7 @@ class SecurityConfigTest {
 
         verify(authService).socialLogin(
                 eq(SocialProvider.GOOGLE),
-                argThat(request -> "google-id-token".equals(request.token()))
+                eq("google-id-token")
         );
     }
 
@@ -159,8 +163,8 @@ class SecurityConfigTest {
     @Test
     @DisplayName("ROLE_PENDING access token은 회원 등록 API에 접근할 수 있다")
     void joinAllowsPendingRole() throws Exception {
-        when(userService.create(anyLong(), any(UserRequestDto.CreateUserDto.class), any(UserRequestDto.UploadImageDto.class)))
-                .thenReturn(new UserResponseDto.CreateDto(10L, "tester", new JwtTokens("access-token", "refresh-token")));
+        when(userService.create(anyLong(), any(String.class), any(String.class), any(String.class), any(ProfileImageResult.class)))
+                .thenReturn(new UserCreateResult(10L, "tester", new JwtTokens("access-token", "refresh-token")));
 
         mockMvc.perform(joinRequest(SecurityAuthority.PENDING.getAuthority()))
                 .andExpect(status().isCreated())
@@ -174,7 +178,7 @@ class SecurityConfigTest {
                 "request",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsBytes(new UserRequestDto.CreateUserDto("tester", "개발/데이터", "서울특별시"))
+                objectMapper.writeValueAsBytes(new UserCreateRequest("tester", "개발/데이터", "서울특별시"))
         );
 
         return multipart("/api/users/join")

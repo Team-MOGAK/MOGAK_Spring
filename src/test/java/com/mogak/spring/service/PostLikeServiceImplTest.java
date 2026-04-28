@@ -9,7 +9,6 @@ import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
-import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,13 +44,11 @@ class PostLikeServiceImplTest {
     void updateLikeCreatesLikeWhenMissing() {
         User user = user(1L);
         Post post = post(10L, user);
-        PostLikeRequestDto.LikeDto request = likeRequest(10L);
-
         when(postRepository.findActiveByIdForUpdate(10L)).thenReturn(Optional.of(post));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
         when(postLikeRepository.findByPostAndUser(post, user)).thenReturn(Optional.empty());
 
-        String result = postLikeService.updateLike(1L, request);
+        String result = postLikeService.updateLike(1L, 10L);
 
         assertThat(result).isEqualTo("좋아요가 생성되었습니다");
         assertThat(post.getLikeCnt()).isEqualTo(1);
@@ -73,13 +70,11 @@ class PostLikeServiceImplTest {
                 .post(post)
                 .user(user)
                 .build();
-        PostLikeRequestDto.LikeDto request = likeRequest(10L);
-
         when(postRepository.findActiveByIdForUpdate(10L)).thenReturn(Optional.of(post));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
         when(postLikeRepository.findByPostAndUser(post, user)).thenReturn(Optional.of(like));
 
-        String result = postLikeService.updateLike(1L, request);
+        String result = postLikeService.updateLike(1L, 10L);
 
         assertThat(result).isEqualTo("좋아요가 삭제되었습니다");
         assertThat(post.getLikeCnt()).isZero();
@@ -90,11 +85,9 @@ class PostLikeServiceImplTest {
     @Test
     @DisplayName("삭제된 게시글은 존재하지 않는 게시글로 처리한다")
     void updateLikeThrowsWhenActivePostMissing() {
-        PostLikeRequestDto.LikeDto request = likeRequest(10L);
-
         when(postRepository.findActiveByIdForUpdate(10L)).thenReturn(Optional.empty());
 
-        Throwable throwable = catchThrowable(() -> postLikeService.updateLike(1L, request));
+        Throwable throwable = catchThrowable(() -> postLikeService.updateLike(1L, 10L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_EXIST_POST);
         verify(userRepository, never()).findActiveById(org.mockito.ArgumentMatchers.anyLong());
@@ -103,7 +96,7 @@ class PostLikeServiceImplTest {
     @Test
     @DisplayName("좋아요 요청 게시글 ID가 없으면 입력값 오류를 반환한다")
     void updateLikeThrowsWhenPostIdMissing() {
-        Throwable throwable = catchThrowable(() -> postLikeService.updateLike(1L, new PostLikeRequestDto.LikeDto(null)));
+        Throwable throwable = catchThrowable(() -> postLikeService.updateLike(1L, null));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PARAMETER_ERROR);
         verify(postRepository, never()).findActiveByIdForUpdate(org.mockito.ArgumentMatchers.anyLong());
@@ -125,22 +118,16 @@ class PostLikeServiceImplTest {
     void updateLikeThrowsWhenActiveUserMissing() {
         User user = user(1L);
         Post post = post(10L, user);
-        PostLikeRequestDto.LikeDto request = likeRequest(10L);
-
         when(postRepository.findActiveByIdForUpdate(10L)).thenReturn(Optional.of(post));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.empty());
 
-        Throwable throwable = catchThrowable(() -> postLikeService.updateLike(1L, request));
+        Throwable throwable = catchThrowable(() -> postLikeService.updateLike(1L, 10L));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_EXIST_USER);
         verify(postLikeRepository, never()).findByPostAndUser(
                 org.mockito.ArgumentMatchers.any(Post.class),
                 org.mockito.ArgumentMatchers.any(User.class)
         );
-    }
-
-    private PostLikeRequestDto.LikeDto likeRequest(Long postId) {
-        return new PostLikeRequestDto.LikeDto(postId);
     }
 
     private User user(Long id) {

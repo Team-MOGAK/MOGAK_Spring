@@ -9,11 +9,12 @@ import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.security.SecurityAuthority;
+import com.mogak.spring.service.result.ProfileImageResult;
+import com.mogak.spring.service.result.UserCreateResult;
+import com.mogak.spring.service.result.UserProfileResult;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.util.Regex;
-import com.mogak.spring.web.dto.userdto.UserRequestDto;
-import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -85,8 +86,7 @@ class UserServiceImplTest {
         Job job = TestFixtureFactory.job("개발/데이터");
         Address address = TestFixtureFactory.address("서울특별시");
         User user = TestFixtureFactory.user(10L, "user@test.com", null, null, null);
-        UserRequestDto.CreateUserDto request = new UserRequestDto.CreateUserDto("tester", "개발/데이터", "서울특별시");
-        UserRequestDto.UploadImageDto uploadImageDto = new UserRequestDto.UploadImageDto("profile.png", "https://cdn/profile.png");
+        ProfileImageResult profileImage = new ProfileImageResult("profile.png", "https://cdn/profile.png");
 
         when(userRepository.findActiveByNickname("tester")).thenReturn(Optional.empty());
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(job));
@@ -95,7 +95,7 @@ class UserServiceImplTest {
         when(jwtTokenProvider.createAccessToken(10L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(10L)).thenReturn("refresh-token");
 
-        UserResponseDto.CreateDto result = userService.create(10L, request, uploadImageDto);
+        UserCreateResult result = userService.create(10L, "tester", "개발/데이터", "서울특별시", profileImage);
 
         assertThat(result.userId()).isEqualTo(10L);
         assertThat(result.nickname()).isEqualTo("tester");
@@ -112,15 +112,14 @@ class UserServiceImplTest {
         Job job = TestFixtureFactory.job("개발/데이터");
         Address address = TestFixtureFactory.address("서울특별시");
         User user = TestFixtureFactory.user(10L, "user@test.com", "existing", null, null);
-        UserRequestDto.CreateUserDto request = new UserRequestDto.CreateUserDto("tester", "개발/데이터", "서울특별시");
-        UserRequestDto.UploadImageDto uploadImageDto = new UserRequestDto.UploadImageDto(null, null);
-
         when(userRepository.findActiveByNickname("tester")).thenReturn(Optional.empty());
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(job));
         when(addressRepository.findAddressByName("서울특별시")).thenReturn(Optional.of(address));
         when(userRepository.findActiveById(10L)).thenReturn(Optional.of(user));
 
-        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(() -> userService.create(10L, request, uploadImageDto));
+        Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(
+                () -> userService.create(10L, "tester", "개발/데이터", "서울특별시", new ProfileImageResult(null, null))
+        );
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.ALREADY_EXIST_USER);
     }
@@ -136,7 +135,7 @@ class UserServiceImplTest {
         when(jobRepository.findJobByName("개발/데이터")).thenReturn(Optional.of(updatedJob));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
-        userService.updateJob(1L, new UserRequestDto.UpdateJobDto("개발/데이터"));
+        userService.updateJob(1L, "개발/데이터");
 
         assertThat(user.getJob()).isEqualTo(updatedJob);
     }
@@ -150,9 +149,7 @@ class UserServiceImplTest {
 
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
-        UserRequestDto.UpdateImageDto dto = new UserRequestDto.UpdateImageDto("updated.png", "https://cdn/updated.png");
-
-        userService.updateImg(1L, dto);
+        userService.updateImg(1L, new ProfileImageResult("updated.png", "https://cdn/updated.png"));
 
         assertThat(user.getProfileImgName()).isEqualTo("updated.png");
         assertThat(user.getProfileImgUrl()).isEqualTo("https://cdn/updated.png");
@@ -168,7 +165,7 @@ class UserServiceImplTest {
 
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
-        UserResponseDto.GetUserDto result = userService.getUserProfile(1L);
+        UserProfileResult result = userService.getUserProfile(1L);
 
         assertThat(result.nickname()).isEqualTo("tester");
         assertThat(result.job()).isEqualTo("개발/데이터");

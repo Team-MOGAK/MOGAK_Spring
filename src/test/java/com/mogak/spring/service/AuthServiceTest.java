@@ -16,13 +16,9 @@ import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.repository.*;
 import com.mogak.spring.security.SecurityAuthority;
+import com.mogak.spring.service.result.SocialLoginResult;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
-import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
-import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
-import com.mogak.spring.web.dto.authdto.AuthResponse;
-import com.mogak.spring.web.dto.authdto.SocialLoginRequest;
-import com.mogak.spring.web.dto.authdto.SocialLoginResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -73,7 +69,6 @@ class AuthServiceTest {
     void appleLoginStoresRefreshToken() {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
         SocialAccount socialAccount = SocialAccount.connect(user, SocialProvider.APPLE, "apple-sub", "user@test.com");
-        AppleLoginRequest request = new AppleLoginRequest("apple-id-token");
 
         when(socialOAuthUserProvider.supports(SocialProvider.APPLE)).thenReturn(true);
         when(socialOAuthUserProvider.getUser("apple-id-token"))
@@ -83,7 +78,7 @@ class AuthServiceTest {
         when(jwtTokenProvider.createAccessToken(1L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(1L)).thenReturn("refresh-token");
 
-        AppleLoginResponse response = authService.appleLogin(request);
+        SocialLoginResult response = authService.appleLogin("apple-id-token");
 
         assertThat(response.tokens().refreshToken()).isEqualTo("refresh-token");
         assertThat(ReflectionTestUtils.getField(user, "refreshToken")).isEqualTo("refresh-token");
@@ -94,7 +89,6 @@ class AuthServiceTest {
     void appleLoginUsesConnectedSocialAccountWithoutEmail() {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
         SocialAccount socialAccount = SocialAccount.connect(user, SocialProvider.APPLE, "apple-sub", "user@test.com");
-        AppleLoginRequest request = new AppleLoginRequest("apple-id-token");
 
         when(socialOAuthUserProvider.supports(SocialProvider.APPLE)).thenReturn(true);
         when(socialOAuthUserProvider.getUser("apple-id-token"))
@@ -104,7 +98,7 @@ class AuthServiceTest {
         when(jwtTokenProvider.createAccessToken(1L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(1L)).thenReturn("refresh-token");
 
-        AppleLoginResponse response = authService.appleLogin(request);
+        SocialLoginResult response = authService.appleLogin("apple-id-token");
 
         assertThat(response.userId()).isEqualTo(1L);
         assertThat(response.tokens().accessToken()).isEqualTo("access-token");
@@ -115,7 +109,6 @@ class AuthServiceTest {
     void socialLoginUsesConnectedSocialAccount() {
         User user = TestFixtureFactory.user(1L, "google@test.com", "tester", null, null);
         SocialAccount socialAccount = SocialAccount.connect(user, SocialProvider.GOOGLE, "google-sub", "google@test.com");
-        SocialLoginRequest request = new SocialLoginRequest("google-id-token");
 
         when(socialOAuthUserProvider.supports(SocialProvider.GOOGLE)).thenReturn(true);
         when(socialOAuthUserProvider.getUser("google-id-token"))
@@ -125,7 +118,7 @@ class AuthServiceTest {
         when(jwtTokenProvider.createAccessToken(1L, "google@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(1L)).thenReturn("refresh-token");
 
-        SocialLoginResponse response = authService.socialLogin(SocialProvider.GOOGLE, request);
+        SocialLoginResult response = authService.socialLogin(SocialProvider.GOOGLE, "google-id-token");
 
         assertThat(response.isRegistered()).isTrue();
         assertThat(response.userId()).isEqualTo(1L);
@@ -136,7 +129,6 @@ class AuthServiceTest {
     @DisplayName("같은 이메일의 활성 사용자가 있으면 자동 연결하지 않고 계정 연결 필요 오류를 반환한다")
     void socialLoginRejectsExistingEmailUserWithoutLinkedSocialAccount() {
         User user = TestFixtureFactory.user(1L, "kakao@test.com", "tester", null, null);
-        SocialLoginRequest request = new SocialLoginRequest("kakao-access-token");
 
         when(socialOAuthUserProvider.supports(SocialProvider.KAKAO)).thenReturn(true);
         when(socialOAuthUserProvider.getUser("kakao-access-token"))
@@ -145,7 +137,7 @@ class AuthServiceTest {
                 .thenReturn(Optional.empty());
         when(userRepository.findByEmail("kakao@test.com")).thenReturn(Optional.of(user));
 
-        Throwable throwable = catchThrowable(() -> authService.socialLogin(SocialProvider.KAKAO, request));
+        Throwable throwable = catchThrowable(() -> authService.socialLogin(SocialProvider.KAKAO, "kakao-access-token"));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.SOCIAL_ACCOUNT_LINK_REQUIRED);
     }
@@ -154,7 +146,6 @@ class AuthServiceTest {
     @DisplayName("같은 이메일의 사용자가 없으면 새 사용자와 소셜 계정을 생성한다")
     void socialLoginCreatesNewUserAndSocialAccount() {
         User user = TestFixtureFactory.user(2L, "new-kakao@test.com", null, null, null);
-        SocialLoginRequest request = new SocialLoginRequest("kakao-access-token");
 
         when(socialOAuthUserProvider.supports(SocialProvider.KAKAO)).thenReturn(true);
         when(socialOAuthUserProvider.getUser("kakao-access-token"))
@@ -166,7 +157,7 @@ class AuthServiceTest {
         when(jwtTokenProvider.createAccessToken(2L, "new-kakao@test.com", SecurityAuthority.PENDING.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(2L)).thenReturn("refresh-token");
 
-        SocialLoginResponse response = authService.socialLogin(SocialProvider.KAKAO, request);
+        SocialLoginResult response = authService.socialLogin(SocialProvider.KAKAO, "kakao-access-token");
 
         assertThat(response.isRegistered()).isFalse();
         verify(socialAccountRepository).saveAndFlush(org.mockito.ArgumentMatchers.argThat(account ->
@@ -180,7 +171,6 @@ class AuthServiceTest {
     @DisplayName("카카오 신규 사용자는 이메일이 없어도 PENDING 사용자와 소셜 계정을 생성한다")
     void socialLoginCreatesNewKakaoUserWithoutEmail() {
         User user = TestFixtureFactory.user(3L, null, null, null, null);
-        SocialLoginRequest request = new SocialLoginRequest("kakao-access-token");
 
         when(socialOAuthUserProvider.supports(SocialProvider.KAKAO)).thenReturn(true);
         when(socialOAuthUserProvider.getUser("kakao-access-token"))
@@ -191,7 +181,7 @@ class AuthServiceTest {
         when(jwtTokenProvider.createAccessToken(3L, null, SecurityAuthority.PENDING.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(3L)).thenReturn("refresh-token");
 
-        SocialLoginResponse response = authService.socialLogin(SocialProvider.KAKAO, request);
+        SocialLoginResult response = authService.socialLogin(SocialProvider.KAKAO, "kakao-access-token");
 
         assertThat(response.isRegistered()).isFalse();
         assertThat(response.tokens().refreshToken()).isEqualTo("refresh-token");
@@ -206,7 +196,6 @@ class AuthServiceTest {
     @Test
     @DisplayName("신규 소셜 로그인 이메일이 검증되지 않았으면 사용자를 생성하지 않는다")
     void socialLoginRejectsUnverifiedEmailForNewUser() {
-        SocialLoginRequest request = new SocialLoginRequest("google-id-token");
 
         when(socialOAuthUserProvider.supports(SocialProvider.GOOGLE)).thenReturn(true);
         when(socialOAuthUserProvider.getUser("google-id-token"))
@@ -214,7 +203,7 @@ class AuthServiceTest {
         when(socialAccountRepository.findByProviderAndProviderUserId(SocialProvider.GOOGLE, "google-sub"))
                 .thenReturn(Optional.empty());
 
-        Throwable throwable = catchThrowable(() -> authService.socialLogin(SocialProvider.GOOGLE, request));
+        Throwable throwable = catchThrowable(() -> authService.socialLogin(SocialProvider.GOOGLE, "google-id-token"));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.SOCIAL_EMAIL_NOT_VERIFIED);
     }
@@ -222,7 +211,6 @@ class AuthServiceTest {
     @Test
     @DisplayName("신규 사용자 저장 중 이메일 unique 제약이 발생하면 계정 연결 필요 오류를 반환한다")
     void socialLoginConvertsEmailUniqueRaceToLinkRequired() {
-        SocialLoginRequest request = new SocialLoginRequest("google-id-token");
 
         when(socialOAuthUserProvider.supports(SocialProvider.GOOGLE)).thenReturn(true);
         when(socialOAuthUserProvider.getUser("google-id-token"))
@@ -233,7 +221,7 @@ class AuthServiceTest {
         when(userRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(User.class)))
                 .thenThrow(new DataIntegrityViolationException("duplicate email"));
 
-        Throwable throwable = catchThrowable(() -> authService.socialLogin(SocialProvider.GOOGLE, request));
+        Throwable throwable = catchThrowable(() -> authService.socialLogin(SocialProvider.GOOGLE, "google-id-token"));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.SOCIAL_ACCOUNT_LINK_REQUIRED);
     }
@@ -301,9 +289,8 @@ class AuthServiceTest {
         when(mogakRepository.findAllByUser(user)).thenReturn(List.of(mogak));
         when(modaratRepository.findModaratsByUserId(1L)).thenReturn(List.of(modarat));
 
-        AuthResponse.WithdrawDto result = authService.deleteUser(1L);
+        authService.deleteUser(1L);
 
-        assertThat(result.isDeleted()).isTrue();
         assertThat(user.isDeleted()).isTrue();
         assertThat(jogak.isDeleted()).isTrue();
         assertThat(mogak.isDeleted()).isTrue();
