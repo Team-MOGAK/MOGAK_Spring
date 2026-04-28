@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS post (
     deleted_at timestamp(6),
     updated_at timestamp(6),
     like_cnt integer NOT NULL,
-    post_thumbnail_url varchar(255) NOT NULL,
+    post_thumbnail_url varchar(255),
     contents varchar(350) NOT NULL,
     view_cnt integer NOT NULL,
     CONSTRAINT fk_post_daily_jogak FOREIGN KEY (daily_jogak_id) REFERENCES daily_jogak (daily_jogak_id),

@@ -61,7 +61,6 @@ public class PostServiceImpl implements PostService {
     @Override
     public void validateCreateAccess(Long userId, LocalDate targetDate, String contents, List<MultipartFile> multipartFile, Long jogakId) {
         validateContents(contents);
-        validateSourceImages(multipartFile);
         DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, targetDate);
         validateTargetDate(dailyJogak.getJogak(), dailyJogak.getTargetDate());
         if (postRepository.existsByDailyJogakIdAndDeletedAtIsNull(dailyJogak.getId())) {
@@ -74,7 +73,6 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post create(Long userId, LocalDate targetDate, String contents, List<UploadedPostImageResult> uploadedImages, Long jogakId) {
         validateContents(contents);
-        validateCreatedImages(uploadedImages);
         DailyJogak dailyJogak = getOwnedDailyJogak(userId, jogakId, targetDate);
         validateTargetDate(dailyJogak.getJogak(), targetDate);
         if (postRepository.existsByDailyJogakIdAndDeletedAtIsNull(dailyJogak.getId())) {
@@ -83,7 +81,7 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         Post post = Post.create(dailyJogak, user, contents);
-        for (UploadedPostImageResult uploadedImage : uploadedImages) {
+        for (UploadedPostImageResult uploadedImage : normalizeUploadedImages(uploadedImages)) {
             PostImg postImg = PostImg.create(post, uploadedImage.imgName(), uploadedImage.imgUrl());
             //썸네일이미지인지 체크 필요
             if (uploadedImage.isThumbnail()) {
@@ -268,7 +266,7 @@ public class PostServiceImpl implements PostService {
         List<PostImg> postImgList = postImgRepository.findAllByPost(post);
         List<String> imgUrls = new ArrayList<>();
         for (PostImg postImg : postImgList) {
-            if (!thumbnailUrl.equals(postImg.getImgUrl())) {
+            if (!Objects.equals(thumbnailUrl, postImg.getImgUrl())) {
                 imgUrls.add(postImg.getImgUrl());
             }
         }
@@ -333,16 +331,11 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    private void validateSourceImages(List<MultipartFile> multipartFile) {
-        if (multipartFile == null || multipartFile.stream().allMatch(MultipartFile::isEmpty)) {
-            throw new PostException(ErrorCode.NOT_HAVE_IMAGE);
+    private List<UploadedPostImageResult> normalizeUploadedImages(List<UploadedPostImageResult> uploadedImages) {
+        if (uploadedImages == null) {
+            return List.of();
         }
-    }
-
-    private void validateCreatedImages(List<UploadedPostImageResult> uploadedImages) {
-        if (uploadedImages == null || uploadedImages.isEmpty()) {
-            throw new PostException(ErrorCode.NOT_HAVE_IMAGE);
-        }
+        return uploadedImages;
     }
 
     private void validateOwner(Long ownerUserId, Long userId) {

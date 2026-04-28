@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.exception.AuthException;
+import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.exception.GlobalExceptionHandler;
 import com.mogak.spring.exception.PostException;
 import com.mogak.spring.global.ErrorCode;
@@ -126,6 +127,111 @@ class PostControllerTest {
         inOrder.verify(postService).validateCreateAccess(eq(7L), any(LocalDate.class), any(String.class), anyList(), eq(1L));
         inOrder.verify(storageService).uploadImg(any(), any());
         inOrder.verify(postService).create(eq(7L), any(LocalDate.class), any(String.class), eq(uploadedImages), eq(1L));
+    }
+
+    @Test
+    @DisplayName("게시글 생성은 이미지 part가 없어도 storage 업로드 없이 생성한다")
+    void createPostWithoutMultipartFileCreatesWithoutStorageUpload() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        CreatePostRequest request = createRequest("content");
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+        Post post = createPost(1L, 7L, 1L, "content", null);
+
+        when(postService.create(eq(7L), any(LocalDate.class), eq("content"), eq(List.of()), eq(1L))).thenReturn(post);
+
+        mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
+                        .file(requestPart)
+                        .with(mockRequest -> {
+                            mockRequest.setMethod("POST");
+                            return mockRequest;
+                        }))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.id").value(1))
+                .andExpect(jsonPath("$.result.imgUrls").isArray())
+                .andExpect(jsonPath("$.result.imgUrls").isEmpty());
+
+        verify(postService).validateCreateAccess(eq(7L), any(LocalDate.class), eq("content"), eq(List.of()), eq(1L));
+        verify(storageService, never()).uploadImg(any(), any());
+        verify(postService).create(eq(7L), any(LocalDate.class), eq("content"), eq(List.of()), eq(1L));
+    }
+
+    @Test
+    @DisplayName("게시글 생성은 빈 이미지 part를 이미지 없음으로 처리한다")
+    void createPostWithEmptyMultipartFileTreatsImageAsMissing() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        CreatePostRequest request = createRequest("content");
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+        MockMultipartFile emptyImage = new MockMultipartFile(
+                "multipartFile",
+                "",
+                MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                new byte[0]
+        );
+        Post post = createPost(1L, 7L, 1L, "content", null);
+
+        when(postService.create(eq(7L), any(LocalDate.class), eq("content"), eq(List.of()), eq(1L))).thenReturn(post);
+
+        mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
+                        .file(requestPart)
+                        .file(emptyImage)
+                        .with(mockRequest -> {
+                            mockRequest.setMethod("POST");
+                            return mockRequest;
+                        }))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.id").value(1))
+                .andExpect(jsonPath("$.result.imgUrls").isArray())
+                .andExpect(jsonPath("$.result.imgUrls").isEmpty());
+
+        verify(postService).validateCreateAccess(eq(7L), any(LocalDate.class), eq("content"), eq(List.of()), eq(1L));
+        verify(storageService, never()).uploadImg(any(), any());
+        verify(postService).create(eq(7L), any(LocalDate.class), eq("content"), eq(List.of()), eq(1L));
+    }
+
+    @Test
+    @DisplayName("게시글 생성은 실제 이미지 업로드 중 storage 비활성화를 503으로 전파한다")
+    void createPostWithActualImagePropagatesStorageDisabled() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        CreatePostRequest request = createRequest("content");
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+        MockMultipartFile image = new MockMultipartFile(
+                "multipartFile",
+                "post.png",
+                MediaType.IMAGE_PNG_VALUE,
+                "png".getBytes()
+        );
+
+        when(storageService.uploadImg(any(), eq("img"))).thenThrow(new BaseException(ErrorCode.STORAGE_DISABLED));
+
+        mockMvc.perform(multipart("/api/jogaks/{jogakId}/posts", 1L)
+                        .file(requestPart)
+                        .file(image)
+                        .with(mockRequest -> {
+                            mockRequest.setMethod("POST");
+                            return mockRequest;
+                        }))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value("Z006"));
+
+        verify(storageService).uploadImg(any(), eq("img"));
+        verify(postService, never()).create(any(), any(), any(), anyList(), any());
+        verify(storageCleanupService, never()).deleteUploadedImagesBestEffort(anyList(), any());
     }
 
     @Test
@@ -323,6 +429,30 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.numberOfElements").value(1))
                 .andExpect(jsonPath("$.result.first").value(true))
                 .andExpect(jsonPath("$.result.last").value(false));
+    }
+
+    @Test
+    @DisplayName("모각별 게시글 조회는 이미지 없는 게시글의 thumbnailUrl을 null로 반환한다")
+    void getPostListReturnsNullThumbnailUrlWhenPostHasNoImage() throws Exception {
+        SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
+        PostSummaryResult post = new PostSummaryResult(
+                11L,
+                1L,
+                2L,
+                3L,
+                LocalDate.of(2026, 4, 21),
+                "오늘 회고",
+                null,
+                4
+        );
+        Slice<PostSummaryResult> posts = new SliceImpl<>(List.of(post), PageRequest.of(0, 10), false);
+        when(postService.getAllPosts(7L, 0, 1L, 10)).thenReturn(posts);
+
+        mockMvc.perform(get("/api/mogaks/{mogakId}/posts", 1L)
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.content[0].thumbnailUrl").isEmpty());
     }
 
     @Test
