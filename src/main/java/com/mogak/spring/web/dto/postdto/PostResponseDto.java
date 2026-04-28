@@ -1,6 +1,8 @@
 package com.mogak.spring.web.dto.postdto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mogak.spring.domain.jogak.DailyJogak;
+import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import com.mogak.spring.web.dto.commentdto.CommentResponseDto;
 
@@ -41,6 +43,23 @@ public class PostResponseDto {
         ) {
             return new PostDto(postId, mogakId, jogakId, dailyJogakId, targetDate, userId, contents, imgUrls, commentId, likeCnt, commentCnt);
         }
+
+        public static PostDto from(Post post, List<String> imgUrls, List<Long> commentIds) {
+            DailyJogak dailyJogak = post.getDailyJogak();
+            return of(
+                    post.getId(),
+                    dailyJogak.getJogak().getMogak().getId(),
+                    dailyJogak.getJogak().getId(),
+                    dailyJogak.getId(),
+                    dailyJogak.getTargetDate(),
+                    post.getUser().getId(),
+                    post.getContents(),
+                    imgUrls,
+                    commentIds,
+                    post.getLikeCnt(),
+                    post.getCommentCnt()
+            );
+        }
     }
 
     public record GetPostDto(
@@ -64,6 +83,20 @@ public class PostResponseDto {
                 int likeCnt
         ) {
             return new GetPostDto(postId, mogakId, jogakId, dailyJogakId, targetDate, contents, thumbnailUrl, likeCnt);
+        }
+
+        public static GetPostDto from(Post post) {
+            DailyJogak dailyJogak = post.getDailyJogak();
+            return of(
+                    post.getId(),
+                    dailyJogak.getJogak().getMogak().getId(),
+                    dailyJogak.getJogak().getId(),
+                    dailyJogak.getId(),
+                    dailyJogak.getTargetDate(),
+                    post.getContents(),
+                    post.getPostThumbnailUrl(),
+                    post.getLikeCnt()
+            );
         }
     }
 
@@ -101,6 +134,21 @@ public class PostResponseDto {
         ) {
             return new CreatePostDto(id, mogakId, jogakId, dailyJogakId, targetDate, userId, contents, imgUrls, createdAt);
         }
+
+        public static CreatePostDto from(Post post, List<String> imgUrls) {
+            DailyJogak dailyJogak = post.getDailyJogak();
+            return of(
+                    post.getId(),
+                    dailyJogak.getJogak().getMogak().getId(),
+                    dailyJogak.getJogak().getId(),
+                    dailyJogak.getId(),
+                    dailyJogak.getTargetDate(),
+                    post.getUser().getId(),
+                    post.getContents(),
+                    imgUrls,
+                    post.getCreatedAt()
+            );
+        }
     }
 
     public record UpdatePostDto(
@@ -110,6 +158,10 @@ public class PostResponseDto {
     ) {
         public static UpdatePostDto of(Long id, String contents, LocalDateTime updatedAt) {
             return new UpdatePostDto(id, contents, updatedAt);
+        }
+
+        public static UpdatePostDto from(Post post, LocalDateTime updatedAt) {
+            return of(post.getId(), post.getContents(), updatedAt);
         }
     }
 
@@ -137,6 +189,15 @@ public class PostResponseDto {
         ) {
             return new NetworkPostDto(user, contents, imgUrls, comments, likeCnt, viewCnt);
         }
+
+        public static NetworkPostDto from(
+                Post post,
+                UserResponseDto.UserDto user,
+                List<String> imgUrls,
+                List<CommentResponseDto.NetworkCommentDto> comments
+        ) {
+            return of(user, post.getContents(), imgUrls, comments, post.getLikeCnt(), post.getViewCnt());
+        }
     }
 
     public record GetAllNetworkDto(
@@ -158,6 +219,18 @@ public class PostResponseDto {
                 int likeCnt
         ) {
             return new GetAllNetworkDto(postId, userName, userJob, contents, imgUrls, commentCnt, likeCnt);
+        }
+
+        public static GetAllNetworkDto from(Post post, List<String> imgUrls) {
+            return of(
+                    post.getId(),
+                    post.getUser().getNickname(),
+                    post.getUser().getJob().getName(),
+                    post.getContents(),
+                    imgUrls,
+                    post.getCommentCnt(),
+                    post.getLikeCnt()
+            );
         }
     }
 

@@ -1,7 +1,5 @@
 package com.mogak.spring.web.controller;
 
-import com.mogak.spring.converter.ModaratConverter;
-import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
@@ -44,8 +42,8 @@ public class ModaratController {
     @PostMapping("")
     public ResponseEntity<BaseResponse<ModaratDto>> createModarat(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                    @Valid @RequestBody ModaratRequestDto.CreateModaratDto request) {
-        Modarat modarat = modaratService.create(authenticatedUser.getUserId(), request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(ModaratConverter.toModaratDto(modarat)));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new BaseResponse<>(ModaratDto.from(modaratService.create(authenticatedUser.getUserId(), request))));
     }
 
     @Operation(summary = "모다라트 삭제", description = "모다라트를 삭제합니다",
@@ -69,8 +67,8 @@ public class ModaratController {
     public ResponseEntity<BaseResponse<ModaratDto>> updateModarat(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                   @PathVariable Long modaratId,
                                                                   @Valid @RequestBody ModaratRequestDto.UpdateModaratDto request) {
-        Modarat modarat = modaratService.update(authenticatedUser.getUserId(), modaratId, request);
-        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(ModaratConverter.toModaratDto(modarat)));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse<>(ModaratDto.from(modaratService.update(authenticatedUser.getUserId(), modaratId, request))));
     }
 
     @Operation(summary = "단일 모다라트 상세조회", description = "단일 모다라트의 정보를 조회합니다",

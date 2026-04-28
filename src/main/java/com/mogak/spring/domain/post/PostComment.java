@@ -25,6 +25,15 @@ public class PostComment extends SoftDeletableEntity {
     private User user;
     @Column(nullable = false)
     private String contents;
+
+    public static PostComment create(Post post, User user, String contents) {
+        return PostComment.builder()
+                .post(post)
+                .user(user)
+                .contents(contents)
+                .build();
+    }
+
     public void updateComment(String contents){
         this.contents=contents;
     }

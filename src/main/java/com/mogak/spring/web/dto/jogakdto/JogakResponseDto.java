@@ -1,12 +1,152 @@
 package com.mogak.spring.web.dto.jogakdto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mogak.spring.domain.jogak.DailyJogak;
+import com.mogak.spring.domain.jogak.Jogak;
 import com.mogak.spring.domain.jogak.Period;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class JogakResponseDto {
+
+    public static CreateJogakDto createFromJogak(Jogak jogak) {
+        return createFromJogak(jogak, null);
+    }
+
+    public static CreateJogakDto createFromJogak(Jogak jogak, List<String> days) {
+        return CreateJogakDto.of(
+                jogak.getId(),
+                jogak.getMogak().getTitle(),
+                jogak.getCategory().getName(),
+                jogak.getTitle(),
+                jogak.getIsRoutine(),
+                days,
+                jogak.getAchievements(),
+                jogak.getStartAt(),
+                jogak.getEndAt()
+        );
+    }
+
+    public static DetailJogakDto detailFromJogak(Jogak jogak, String color) {
+        return detailFromJogak(jogak, color, null);
+    }
+
+    public static DetailJogakDto detailFromJogak(Jogak jogak, String color, List<String> days) {
+        return DetailJogakDto.of(
+                jogak.getId(),
+                jogak.getMogak().getTitle(),
+                jogak.getCategory().getName(),
+                jogak.getTitle(),
+                jogak.getIsRoutine(),
+                days,
+                color,
+                jogak.getAchievements(),
+                jogak.getStartAt(),
+                jogak.getEndAt()
+        );
+    }
+
+    public static GetJogakDto getJogakFrom(Jogak jogak, Boolean isAlreadyAdded) {
+        return GetJogakDto.of(
+                jogak.getId(),
+                jogak.getMogak().getTitle(),
+                jogak.getCategory().getName(),
+                jogak.getTitle(),
+                jogak.getIsRoutine(),
+                jogak.getPeriods(),
+                isAlreadyAdded,
+                jogak.getAchievements(),
+                jogak.getStartAt(),
+                jogak.getEndAt()
+        );
+    }
+
+    public static GetDailyJogakDto fromDailyJogak(DailyJogak dailyJogak) {
+        return GetDailyJogakDto.of(
+                dailyJogak.getJogak().getId(),
+                dailyJogak.getId(),
+                dailyJogak.getMogak().getTitle(),
+                dailyJogak.getCategory().getName(),
+                dailyJogak.getTitle(),
+                dailyJogak.getIsRoutine(),
+                dailyJogak.isSuccess()
+        );
+    }
+
+    public static GetDailyJogakDto futureDailyJogakFromJogak(Jogak jogak) {
+        return GetDailyJogakDto.of(
+                null,
+                -1L,
+                jogak.getMogak().getTitle(),
+                jogak.getCategory().getName(),
+                jogak.getTitle(),
+                jogak.getIsRoutine(),
+                false
+        );
+    }
+
+    public static GetDailyJogakListDto dailyJogakListFrom(List<DailyJogak> dailyJogaks) {
+        List<GetDailyJogakDto> dailyJogakDtos = dailyJogaks.stream()
+                .map(JogakResponseDto::fromDailyJogak)
+                .collect(Collectors.toList());
+        return new GetDailyJogakListDto(dailyJogakDtos.size(), dailyJogakDtos);
+    }
+
+    public static GetDailyJogakListDto dailyJogakListFromDtos(List<GetDailyJogakDto> dailyJogaks) {
+        return new GetDailyJogakListDto(dailyJogaks.size(), dailyJogaks);
+    }
+
+    public static GetOneTimeJogakListDto oneTimeJogakListFrom(List<Jogak> jogaks, List<DailyJogak> dailyJogaks) {
+        List<GetOneTimeJogakDto> jogakDtos = jogaks.stream()
+                .map(jogak -> GetOneTimeJogakDto.of(
+                        jogak.getId(),
+                        jogak.getMogak().getTitle(),
+                        jogak.getCategory().getName(),
+                        jogak.getTitle(),
+                        jogak.getIsRoutine(),
+                        hasMatchingDailyJogak(jogak, dailyJogaks),
+                        jogak.getAchievements(),
+                        jogak.getStartAt(),
+                        jogak.getEndAt()
+                ))
+                .collect(Collectors.toList());
+        return new GetOneTimeJogakListDto(jogakDtos.size(), jogakDtos);
+    }
+
+    public static GetRoutineJogakDto routineJogakFrom(DailyJogak dailyJogak) {
+        return GetRoutineJogakDto.of(
+                dailyJogak.getId(),
+                dailyJogak.getTargetDate(),
+                dailyJogak.isSuccess(),
+                dailyJogak.getTitle()
+        );
+    }
+
+    public static GetRoutineJogakDto futureRoutineJogakFrom(LocalDate date, String title) {
+        return GetRoutineJogakDto.of(-1L, date, false, title);
+    }
+
+    public static JogakDailyJogakDto jogakDailyJogakFrom(Jogak jogak, DailyJogak dailyJogak) {
+        return JogakDailyJogakDto.of(
+                jogak.getId(),
+                dailyJogak.getId(),
+                dailyJogak.getTitle(),
+                jogak.getMogak().getTitle(),
+                jogak.getCategory().getName(),
+                jogak.getIsRoutine(),
+                null,
+                dailyJogak.isSuccess(),
+                jogak.getAchievements()
+        );
+    }
+
+    private static boolean hasMatchingDailyJogak(Jogak jogak, List<DailyJogak> dailyJogaks) {
+        return dailyJogaks.stream()
+                .anyMatch(dailyJogak -> Objects.equals(dailyJogak.getJogak(), jogak));
+    }
 
     public record CreateJogakDto(
             Long jogakId,

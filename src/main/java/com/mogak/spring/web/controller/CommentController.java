@@ -1,6 +1,5 @@
 package com.mogak.spring.web.controller;
 
-import com.mogak.spring.converter.CommentConverter;
 import com.mogak.spring.domain.post.PostComment;
 import com.mogak.spring.exception.ErrorResponse;
 import com.mogak.spring.global.BaseResponse;
@@ -22,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.mogak.spring.web.dto.commentdto.CommentResponseDto.DeleteCommentDto;
@@ -53,7 +53,7 @@ public class CommentController {
             @RequestBody CommentRequestDto.CreateCommentDto request
             ) {
         PostComment comment = postCommentService.create(authenticatedUser.getUserId(), request, postId);
-        return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toCreateCommentDto(comment)));
+        return ResponseEntity.ok(new BaseResponse<>(CreateCommentDto.from(comment)));
     }
 
     //read
@@ -68,7 +68,7 @@ public class CommentController {
     @GetMapping("/api/posts/{postId}/comments")
     public ResponseEntity<BaseResponse<CommentListDto>> getCommentList(@PathVariable Long postId) {
         List<PostComment> commentList = postCommentService.findByPostId(postId);
-        return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toCommentListDto(commentList)));
+        return ResponseEntity.ok(new BaseResponse<>(CommentListDto.from(commentList)));
     }
 
     //update
@@ -91,7 +91,7 @@ public class CommentController {
                                                                         @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                         @RequestBody CommentRequestDto.UpdateCommentDto request) {
         PostComment comment = postCommentService.update(authenticatedUser.getUserId(), request, postId, commentId);
-        return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toUpdateCommentDto(comment)));
+        return ResponseEntity.ok(new BaseResponse<>(UpdateCommentDto.from(comment, LocalDateTime.now())));
     }
 
     //delete
@@ -113,6 +113,6 @@ public class CommentController {
                                                                         @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                         @PathVariable(name = "commentId") Long commentId) {
         postCommentService.delete(authenticatedUser.getUserId(), postId, commentId);
-        return ResponseEntity.ok(new BaseResponse<>(CommentConverter.toDeleteCommentDto()));
+        return ResponseEntity.ok(new BaseResponse<>(DeleteCommentDto.deletedResponse()));
     }
 }

@@ -38,6 +38,18 @@ public class Mogak extends SoftDeletableEntity {
     @Column(nullable = false)
     private String title;
     private String color;
+
+    public static Mogak of(User user, Modarat modarat, MogakCategory bigCategory, String smallCategory, String title, String color) {
+        return Mogak.builder()
+                .user(user)
+                .modarat(modarat)
+                .bigCategory(bigCategory)
+                .smallCategory(smallCategory)
+                .title(title)
+                .color(color)
+                .build();
+    }
+
     public void updateBigCategory(MogakCategory category) {
         this.bigCategory = category;
     }

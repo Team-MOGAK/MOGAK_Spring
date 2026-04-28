@@ -22,4 +22,11 @@ public class Follow extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "to_id")
     private User toUser;
+
+    public static Follow of(User fromUser, User toUser) {
+        return Follow.builder()
+                .fromUser(fromUser)
+                .toUser(toUser)
+                .build();
+    }
 }

@@ -22,6 +22,13 @@ public class JogakPeriod {
     @JoinColumn(name = "jogak_id")
     private Jogak jogak;
 
+    public static JogakPeriod of(Period period, Jogak jogak) {
+        return JogakPeriod.builder()
+                .period(period)
+                .jogak(jogak)
+                .build();
+    }
+
     public void updatePeriod(Period period) {
         this.period = period;
     }

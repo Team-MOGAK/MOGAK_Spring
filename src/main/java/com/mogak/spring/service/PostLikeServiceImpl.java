@@ -1,6 +1,5 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.converter.PostLIkeConverter;
 import com.mogak.spring.domain.post.Post;
 import com.mogak.spring.domain.post.PostLike;
 import com.mogak.spring.domain.user.User;
@@ -38,7 +37,7 @@ public class PostLikeServiceImpl implements PostLikeService{
             postLikeRepository.deleteByPostAndUser(post, user);
             return "좋아요가 삭제되었습니다";
         }
-        PostLike postLike = PostLIkeConverter.toPostLike(post, user);
+        PostLike postLike = PostLike.of(post, user);
         postLikeRepository.save(postLike);
         post.addPostLike();
         return "좋아요가 생성되었습니다";

@@ -1,6 +1,5 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.converter.ModaratConverter;
 import com.mogak.spring.domain.modarat.Modarat;
 import com.mogak.spring.domain.mogak.Mogak;
 import com.mogak.spring.domain.user.User;
@@ -36,7 +35,7 @@ public class ModaratServiceImpl implements ModaratService {
     @Override
     public Modarat create(Long userId, ModaratRequestDto.CreateModaratDto request) {
         User user = userRepository.findActiveById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
-        return modaratRepository.save(ModaratConverter.toModarat(user, request));
+        return modaratRepository.save(Modarat.of(user, request.title(), request.color()));
     }
 
     @Transactional
@@ -68,7 +67,7 @@ public class ModaratServiceImpl implements ModaratService {
     public List<ModaratResponseDto.ModaratDto> getModaratList(Long userId) {
         userRepository.findActiveById(userId).orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         return modaratRepository.findModaratsByUserId(userId).stream()
-                .map(ModaratConverter::toModaratDto)
+                .map(ModaratResponseDto.ModaratDto::from)
                 .collect(Collectors.toList());
     }
 

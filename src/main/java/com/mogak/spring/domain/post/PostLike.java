@@ -29,4 +29,10 @@ public class PostLike extends BaseEntity {
     @JoinColumn(name="post_id")
     private Post post;
 
+    public static PostLike of(Post post, User user) {
+        return PostLike.builder()
+                .post(post)
+                .user(user)
+                .build();
+    }
 }
