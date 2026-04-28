@@ -120,6 +120,26 @@ class PostServiceImplTest {
     }
 
     @Test
+    @DisplayName("게시글 생성 preflight는 null 또는 빈 이미지 목록을 허용한다")
+    void validateCreateAccessAcceptsNullAndEmptyImages() {
+        User owner = user(1L, "owner@test.com");
+        LocalDate targetDate = LocalDate.now();
+        var jogak = TestFixtureFactory.jogak(20L, mogak(10L, owner), "jogak", false, java.time.LocalDate.now(), null, 0);
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, targetDate, DailyJogakStatus.SUCCESS);
+
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, targetDate))
+                .thenReturn(Optional.of(dailyJogak));
+        when(postRepository.existsByDailyJogakIdAndDeletedAtIsNull(30L)).thenReturn(false);
+
+        Throwable nullImages = catchThrowable(() -> postService.validateCreateAccess(1L, targetDate, "content", null, 20L));
+        Throwable emptyImages = catchThrowable(() -> postService.validateCreateAccess(1L, targetDate, "content", List.of(emptyImage()), 20L));
+
+        assertThat(nullImages).isNull();
+        assertThat(emptyImages).isNull();
+        verify(postRepository, times(2)).existsByDailyJogakIdAndDeletedAtIsNull(30L);
+    }
+
+    @Test
     @DisplayName("게시글 생성에 성공하면 이미지와 게시글을 저장한다")
     void createSavesPostAfterValidationWithImages() {
         User writer = user(1L, "writer@test.com");
@@ -145,6 +165,30 @@ class PostServiceImplTest {
         assertThat(result.getPostImgs()).hasSize(1);
         assertThat(result.getPostThumbnailUrl()).isEqualTo("https://example.com/thumb.png");
         verify(postImgRepository, times(2)).save(any(PostImg.class));
+        verify(postRepository).saveAndFlush(any(Post.class));
+    }
+
+    @Test
+    @DisplayName("게시글 생성은 업로드 이미지가 비어 있으면 이미지 없이 게시글만 저장한다")
+    void createWithEmptyUploadedImagesSavesPostWithoutImagesAndThumbnail() {
+        User writer = user(1L, "writer@test.com");
+        LocalDate targetDate = LocalDate.now();
+        Mogak mogak = mogak(10L, writer);
+        var jogak = TestFixtureFactory.jogak(20L, mogak, "jogak", false, java.time.LocalDate.now(), null, 0);
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, targetDate, DailyJogakStatus.SUCCESS);
+
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, targetDate))
+                .thenReturn(Optional.of(dailyJogak));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
+        when(postRepository.saveAndFlush(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Post result = postService.create(1L, targetDate, "content", List.of(), 20L);
+
+        assertThat(result.getDailyJogak()).isSameAs(dailyJogak);
+        assertThat(result.getUser()).isSameAs(writer);
+        assertThat(result.getPostImgs()).isEmpty();
+        assertThat(result.getPostThumbnailUrl()).isNull();
+        verify(postImgRepository, never()).save(any(PostImg.class));
         verify(postRepository).saveAndFlush(any(Post.class));
     }
 
@@ -241,6 +285,38 @@ class PostServiceImplTest {
 
         assertThat(result).containsExactly(20L);
         verify(postCommentRepository).findActiveAllByPost(post);
+    }
+
+    @Test
+    @DisplayName("썸네일이 없는 게시글의 상세 이미지는 모든 이미지를 반환한다")
+    void findNotThumbnailImgReturnsAllImagesWhenThumbnailIsNull() {
+        User owner = user(1L, "owner@test.com");
+        Post post = Post.builder()
+                .id(10L)
+                .dailyJogak(post(10L, owner).getDailyJogak())
+                .user(owner)
+                .contents("content")
+                .postThumbnailUrl(null)
+                .viewCnt(0)
+                .build();
+        PostImg first = PostImg.builder()
+                .id(20L)
+                .post(post)
+                .imgName("first.png")
+                .imgUrl("https://example.com/first.png")
+                .build();
+        PostImg second = PostImg.builder()
+                .id(21L)
+                .post(post)
+                .imgName("second.png")
+                .imgUrl("https://example.com/second.png")
+                .build();
+
+        when(postImgRepository.findAllByPost(post)).thenReturn(List.of(first, second));
+
+        List<String> result = postService.findNotThumbnailImg(post);
+
+        assertThat(result).containsExactly("https://example.com/first.png", "https://example.com/second.png");
     }
 
     @Test
@@ -392,6 +468,15 @@ class PostServiceImplTest {
                 fileName,
                 "image/png",
                 "png".getBytes()
+        );
+    }
+
+    private MultipartFile emptyImage() {
+        return new org.springframework.mock.web.MockMultipartFile(
+                "multipartFile",
+                "",
+                "application/octet-stream",
+                new byte[0]
         );
     }
 }

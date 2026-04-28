@@ -56,9 +56,12 @@ public class PostController {
     public ResponseEntity<BaseResponse<CreatePostResponse>> createPost(@PathVariable Long jogakId,
                                                                   @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                   @Valid @RequestPart CreatePostRequest request,
-                                                                  @RequestPart(required = true) List<MultipartFile> multipartFile) {
-        postService.validateCreateAccess(authenticatedUser.getUserId(), request.targetDate(), request.contents(), multipartFile, jogakId);
-        List<UploadedPostImageResult> uploadedImages = storageService.uploadImg(multipartFile, DIR_NAME);
+                                                                  @RequestPart(required = false) List<MultipartFile> multipartFile) {
+        List<MultipartFile> postImages = normalizePostImages(multipartFile);
+        postService.validateCreateAccess(authenticatedUser.getUserId(), request.targetDate(), request.contents(), postImages, jogakId);
+        List<UploadedPostImageResult> uploadedImages = postImages.isEmpty()
+                ? List.of()
+                : storageService.uploadImg(postImages, DIR_NAME);
         Post post;
         try {
             post = postService.create(authenticatedUser.getUserId(), request.targetDate(), request.contents(), uploadedImages, jogakId);
@@ -73,6 +76,15 @@ public class PostController {
                 .map(PostImg::getImgUrl)
                 .toList();
         return ResponseEntity.ok(new BaseResponse<>(CreatePostResponse.from(post, imgUrls)));
+    }
+
+    private List<MultipartFile> normalizePostImages(List<MultipartFile> multipartFile) {
+        if (multipartFile == null) {
+            return List.of();
+        }
+        return multipartFile.stream()
+                .filter(file -> !file.isEmpty())
+                .toList();
     }
 
     //read-전체 조회

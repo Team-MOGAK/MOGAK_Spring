@@ -34,4 +34,27 @@ class PostResponseContractTest {
 
         assertThat(result.commentId()).containsExactly(7L);
     }
+
+    @Test
+    @DisplayName("게시글 생성 응답은 이미지 없는 게시글의 빈 이미지 URL 목록을 유지한다")
+    void createPostResponseKeepsEmptyImageUrlsWhenPostHasNoImage() {
+        User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
+        var modarat = TestFixtureFactory.modarat(2L, user, "모다라트", "#000000");
+        var mogak = TestFixtureFactory.mogak(3L, user, modarat, TestFixtureFactory.category(1, "자격증"), "모각", "#111111");
+        var jogak = TestFixtureFactory.jogak(4L, mogak, "조각", false, LocalDate.now(), null, 0);
+        var dailyJogak = TestFixtureFactory.dailyJogak(5L, jogak, false);
+        Post post = Post.builder()
+                .id(6L)
+                .dailyJogak(dailyJogak)
+                .user(user)
+                .contents("content")
+                .postThumbnailUrl(null)
+                .viewCnt(0)
+                .build();
+
+        var result = CreatePostResponse.from(post, List.of());
+
+        assertThat(result.imgUrls()).isEmpty();
+        assertThat(result.contents()).isEqualTo("content");
+    }
 }

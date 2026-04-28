@@ -33,7 +33,7 @@ public class Post extends SoftDeletableEntity {
     @Builder.Default
     @OneToMany(mappedBy = "post")
     private List<PostImg> postImgs = new ArrayList<>();
-    @Column(nullable = false)
+    @Column
     private String postThumbnailUrl;
     @Column(nullable = false)
     private int viewCnt;
