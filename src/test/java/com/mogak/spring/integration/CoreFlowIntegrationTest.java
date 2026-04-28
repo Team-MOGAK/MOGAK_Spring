@@ -14,11 +14,15 @@ import com.mogak.spring.service.JogakService;
 import com.mogak.spring.service.MogakService;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
+import com.mogak.spring.service.result.jogak.CreateJogakResult;
+import com.mogak.spring.service.result.jogak.DailyJogakResult;
+import com.mogak.spring.service.result.jogak.DailyJogakListResult;
+import com.mogak.spring.service.result.jogak.JogakDailyJogakResult;
+import com.mogak.spring.service.result.jogak.RoutineJogakResult;
+import com.mogak.spring.service.result.mogak.GetMogakResult;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
-import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
 import com.mogak.spring.web.dto.mogakdto.MogakRequestDto;
-import com.mogak.spring.web.dto.mogakdto.MogakResponseDto;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -77,14 +81,14 @@ class CoreFlowIntegrationTest {
         Modarat modarat = modaratRepository.save(TestFixtureFactory.modarat(null, savedUser, "메인 모다라트", "#1111"));
         Long userId = savedUser.getId();
 
-        MogakResponseDto.GetMogakDto mogak = mogakService.create(
+        GetMogakResult mogak = mogakService.create(
                 userId,
                 new MogakRequestDto.CreateDto(modarat.getId(), "정보처리기사", category.getName(), "필기", "#1234")
         );
 
-        JogakResponseDto.CreateJogakDto createdJogak = jogakService.createJogak(userId, createOneTimeJogakRequest(mogak.id(), "문제풀이", LocalDate.now()));
-        JogakResponseDto.JogakDailyJogakDto started = jogakService.startJogak(userId, createdJogak.jogakId());
-        JogakResponseDto.JogakDailyJogakDto succeeded = jogakService.successJogak(userId, started.dailyJogakId());
+        CreateJogakResult createdJogak = jogakService.createJogak(userId, createOneTimeJogakRequest(mogak.id(), "문제풀이", LocalDate.now()));
+        JogakDailyJogakResult started = jogakService.startJogak(userId, createdJogak.jogakId());
+        JogakDailyJogakResult succeeded = jogakService.successJogak(userId, started.dailyJogakId());
 
         Jogak persistedJogak = jogakRepository.findById(createdJogak.jogakId()).orElseThrow();
         DailyJogak persistedDailyJogak = dailyJogakRepository.findById(started.dailyJogakId()).orElseThrow();
@@ -110,21 +114,21 @@ class CoreFlowIntegrationTest {
                 new MogakRequestDto.CreateDto(modarat.getId(), "루틴 모각", category.getName(), "반복", "#1234")
         ).id()).orElseThrow();
 
-        JogakResponseDto.CreateJogakDto createdJogak = jogakService.createJogak(user.getId(), createRoutineJogakRequest(
+        CreateJogakResult createdJogak = jogakService.createJogak(user.getId(), createRoutineJogakRequest(
                 mogak.getId(),
                 "루틴 조각",
                 LocalDate.now(),
                 List.of(LocalDate.now().getDayOfWeek().name(), futureDate.getDayOfWeek().name())
         ));
 
-        JogakResponseDto.GetDailyJogakListDto todayResult = jogakService.getDayJogaks(user.getId(), LocalDate.now());
-        JogakResponseDto.GetDailyJogakListDto futureResult = jogakService.getDayJogaks(user.getId(), futureDate);
-        List<JogakResponseDto.GetRoutineJogakDto> routineRange = jogakService.getRoutineJogaks(user.getId(), LocalDate.now().minusDays(1), futureDate.plusDays(1));
+        DailyJogakListResult todayResult = jogakService.getDayJogaks(user.getId(), LocalDate.now());
+        DailyJogakListResult futureResult = jogakService.getDayJogaks(user.getId(), futureDate);
+        List<RoutineJogakResult> routineRange = jogakService.getRoutineJogaks(user.getId(), LocalDate.now().minusDays(1), futureDate.plusDays(1));
 
         assertThat(createdJogak.isRoutine()).isTrue();
-        assertThat(todayResult.dailyJogaks()).extracting(JogakResponseDto.GetDailyJogakDto::title).contains("루틴 조각");
-        assertThat(futureResult.dailyJogaks()).extracting(JogakResponseDto.GetDailyJogakDto::title).contains("루틴 조각");
-        assertThat(routineRange).extracting(JogakResponseDto.GetRoutineJogakDto::title).contains("루틴 조각");
+        assertThat(todayResult.dailyJogaks()).extracting(DailyJogakResult::title).contains("루틴 조각");
+        assertThat(futureResult.dailyJogaks()).extracting(DailyJogakResult::title).contains("루틴 조각");
+        assertThat(routineRange).extracting(RoutineJogakResult::title).contains("루틴 조각");
     }
 
     @Test
@@ -136,13 +140,13 @@ class CoreFlowIntegrationTest {
         ensureStandardPeriods();
         User user = userRepository.save(TestFixtureFactory.user(null, "delete@test.com", "delete-user", job, address));
         Modarat modarat = modaratRepository.save(TestFixtureFactory.modarat(null, user, "메인 모다라트", "#1111"));
-        MogakResponseDto.GetMogakDto mogak = mogakService.create(
+        GetMogakResult mogak = mogakService.create(
                 user.getId(),
                 new MogakRequestDto.CreateDto(modarat.getId(), "삭제 대상", category.getName(), "정리", "#1234")
         );
 
-        JogakResponseDto.CreateJogakDto createdJogak = jogakService.createJogak(user.getId(), createOneTimeJogakRequest(mogak.id(), "임시 조각", LocalDate.now()));
-        JogakResponseDto.JogakDailyJogakDto started = jogakService.startJogak(user.getId(), createdJogak.jogakId());
+        CreateJogakResult createdJogak = jogakService.createJogak(user.getId(), createOneTimeJogakRequest(mogak.id(), "임시 조각", LocalDate.now()));
+        JogakDailyJogakResult started = jogakService.startJogak(user.getId(), createdJogak.jogakId());
 
         mogakService.deleteMogak(user.getId(), mogak.id());
         entityManager.flush();

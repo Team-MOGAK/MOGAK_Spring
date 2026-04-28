@@ -7,6 +7,8 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
+import com.mogak.spring.service.result.user.UserCreateResult;
+import com.mogak.spring.service.result.user.UserProfileResult;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
 import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -69,8 +71,12 @@ public class UserController {
         } else {
             uploadImageDto = storageService.uploadProfileImg(multipartFile, dirName);
         }
-        UserResponseDto.CreateDto createDto = userService.create(authenticatedUser.getUserId(), request, uploadImageDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(createDto));
+        UserCreateResult result = userService.create(authenticatedUser.getUserId(), request, uploadImageDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(new UserResponseDto.CreateDto(
+                result.userId(),
+                result.nickname(),
+                result.tokens()
+        )));
     }
 
     @Operation(summary = "임시 로그인", description = "입력한 이메일로 로그인을 시도합니다",
@@ -96,8 +102,12 @@ public class UserController {
             })
     @GetMapping("/profile")
     public ResponseEntity<BaseResponse<UserResponseDto.GetUserDto>> getUserProfile(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        UserResponseDto.GetUserDto getUserDto = userService.getUserProfile(authenticatedUser.getUserId());
-        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(getUserDto));
+        UserProfileResult result = userService.getUserProfile(authenticatedUser.getUserId());
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(new UserResponseDto.GetUserDto(
+                result.nickname(),
+                result.job(),
+                result.imgUrl()
+        )));
     }
 
 

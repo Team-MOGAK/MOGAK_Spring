@@ -10,12 +10,12 @@ import com.mogak.spring.domain.user.Job;
 import com.mogak.spring.domain.user.User;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.*;
+import com.mogak.spring.service.result.post.NetworkListResult;
+import com.mogak.spring.service.result.post.PostListResult;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkListDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.PostListDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -229,7 +229,7 @@ class PostServiceImplTest {
         when(postRepository.findAllPosts(10L, PageRequest.of(0, 10)))
                 .thenReturn(new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true));
 
-        PostListDto result = postService.getAllPosts(1L, 0, 10L, 10);
+        PostListResult result = postService.getAllPosts(1L, 0, 10L, 10);
 
         assertThat(result.items())
                 .extracting("postId", "contents", "thumbnailUrl")
@@ -252,7 +252,7 @@ class PostServiceImplTest {
         when(postRepository.findNetworkPosts("서울특별시", "createdAt", PageRequest.of(0, 10)))
                 .thenReturn(new SliceImpl<>(List.of(post), PageRequest.of(0, 10), true));
 
-        NetworkListDto result = postService.getNetworkPosts(1L, 0, 10, "createdAt", "서울특별시");
+        NetworkListResult result = postService.getNetworkPosts(1L, 0, 10, "createdAt", "서울특별시");
 
         assertThat(result.items())
                 .extracting("postId", "userName", "userJob", "contents")

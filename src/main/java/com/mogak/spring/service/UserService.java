@@ -1,12 +1,13 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.domain.user.User;
+import com.mogak.spring.service.result.user.UserCreateResult;
+import com.mogak.spring.service.result.user.UserProfileResult;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
-import com.mogak.spring.web.dto.userdto.UserResponseDto;
 
 public interface UserService {
 
-    UserResponseDto.CreateDto create(Long userId, UserRequestDto.CreateUserDto request, UserRequestDto.UploadImageDto uploadImageDto);
+    UserCreateResult create(Long userId, UserRequestDto.CreateUserDto request, UserRequestDto.UploadImageDto uploadImageDto);
     Boolean verifyNickname(String request);
   
     String getToken(User user);
@@ -20,6 +21,6 @@ public interface UserService {
   
     void updateImg(Long userId, UserRequestDto.UpdateImageDto userImageDto);
 
-    UserResponseDto.GetUserDto getUserProfile(Long userId);
+    UserProfileResult getUserProfile(Long userId);
 
 }

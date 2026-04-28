@@ -7,10 +7,10 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.PostLikeService;
 import com.mogak.spring.service.PostService;
+import com.mogak.spring.service.result.post.NetworkFeedPostResult;
+import com.mogak.spring.service.result.post.NetworkListResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.web.dto.postdto.PostLikeRequestDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.GetAllNetworkDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.NetworkListDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -131,7 +131,7 @@ class NetworkControllerTest {
     @DisplayName("네트워크 게시글 조회는 전용 목록 DTO JSON 계약을 반환한다")
     void getAllPostsReturnsDedicatedListDtoContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "user@test.com", "ROLE_USER");
-        GetAllNetworkDto post = GetAllNetworkDto.of(
+        NetworkFeedPostResult post = NetworkFeedPostResult.of(
                 20L,
                 "writer",
                 "개발/데이터",
@@ -140,7 +140,7 @@ class NetworkControllerTest {
                 2,
                 5
         );
-        NetworkListDto posts = NetworkListDto.of(List.of(post), 0, 10, true);
+        NetworkListResult posts = NetworkListResult.of(List.of(post), 0, 10, true);
         when(postService.getNetworkPosts(7L, 0, 10, "createdAt", "서울특별시")).thenReturn(posts);
 
         mockMvc.perform(get("/api/posts")

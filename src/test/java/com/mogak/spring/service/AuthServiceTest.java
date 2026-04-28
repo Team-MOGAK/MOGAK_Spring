@@ -15,14 +15,13 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.repository.*;
+import com.mogak.spring.service.result.auth.SocialLoginResult;
+import com.mogak.spring.service.result.auth.WithdrawResult;
 import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.authdto.AppleLoginRequest;
-import com.mogak.spring.web.dto.authdto.AppleLoginResponse;
-import com.mogak.spring.web.dto.authdto.AuthResponse;
 import com.mogak.spring.web.dto.authdto.SocialLoginRequest;
-import com.mogak.spring.web.dto.authdto.SocialLoginResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -83,7 +82,7 @@ class AuthServiceTest {
         when(jwtTokenProvider.createAccessToken(1L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(1L)).thenReturn("refresh-token");
 
-        AppleLoginResponse response = authService.appleLogin(request);
+        SocialLoginResult response = authService.appleLogin(request);
 
         assertThat(response.tokens().refreshToken()).isEqualTo("refresh-token");
         assertThat(ReflectionTestUtils.getField(user, "refreshToken")).isEqualTo("refresh-token");
@@ -104,7 +103,7 @@ class AuthServiceTest {
         when(jwtTokenProvider.createAccessToken(1L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(1L)).thenReturn("refresh-token");
 
-        AppleLoginResponse response = authService.appleLogin(request);
+        SocialLoginResult response = authService.appleLogin(request);
 
         assertThat(response.userId()).isEqualTo(1L);
         assertThat(response.tokens().accessToken()).isEqualTo("access-token");
@@ -125,7 +124,7 @@ class AuthServiceTest {
         when(jwtTokenProvider.createAccessToken(1L, "google@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(1L)).thenReturn("refresh-token");
 
-        SocialLoginResponse response = authService.socialLogin(SocialProvider.GOOGLE, request);
+        SocialLoginResult response = authService.socialLogin(SocialProvider.GOOGLE, request);
 
         assertThat(response.isRegistered()).isTrue();
         assertThat(response.userId()).isEqualTo(1L);
@@ -166,7 +165,7 @@ class AuthServiceTest {
         when(jwtTokenProvider.createAccessToken(2L, "new-kakao@test.com", SecurityAuthority.PENDING.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(2L)).thenReturn("refresh-token");
 
-        SocialLoginResponse response = authService.socialLogin(SocialProvider.KAKAO, request);
+        SocialLoginResult response = authService.socialLogin(SocialProvider.KAKAO, request);
 
         assertThat(response.isRegistered()).isFalse();
         verify(socialAccountRepository).saveAndFlush(org.mockito.ArgumentMatchers.argThat(account ->
@@ -191,7 +190,7 @@ class AuthServiceTest {
         when(jwtTokenProvider.createAccessToken(3L, null, SecurityAuthority.PENDING.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(3L)).thenReturn("refresh-token");
 
-        SocialLoginResponse response = authService.socialLogin(SocialProvider.KAKAO, request);
+        SocialLoginResult response = authService.socialLogin(SocialProvider.KAKAO, request);
 
         assertThat(response.isRegistered()).isFalse();
         assertThat(response.tokens().refreshToken()).isEqualTo("refresh-token");
@@ -301,9 +300,9 @@ class AuthServiceTest {
         when(mogakRepository.findAllByUser(user)).thenReturn(List.of(mogak));
         when(modaratRepository.findModaratsByUserId(1L)).thenReturn(List.of(modarat));
 
-        AuthResponse.WithdrawDto result = authService.deleteUser(1L);
+        WithdrawResult result = authService.deleteUser(1L);
 
-        assertThat(result.isDeleted()).isTrue();
+        assertThat(result.deleted()).isTrue();
         assertThat(user.isDeleted()).isTrue();
         assertThat(jogak.isDeleted()).isTrue();
         assertThat(mogak.isDeleted()).isTrue();

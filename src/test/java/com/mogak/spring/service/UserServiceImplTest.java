@@ -8,12 +8,13 @@ import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.service.result.user.UserCreateResult;
+import com.mogak.spring.service.result.user.UserProfileResult;
 import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.util.Regex;
 import com.mogak.spring.web.dto.userdto.UserRequestDto;
-import com.mogak.spring.web.dto.userdto.UserResponseDto;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -95,7 +96,7 @@ class UserServiceImplTest {
         when(jwtTokenProvider.createAccessToken(10L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(10L)).thenReturn("refresh-token");
 
-        UserResponseDto.CreateDto result = userService.create(10L, request, uploadImageDto);
+        UserCreateResult result = userService.create(10L, request, uploadImageDto);
 
         assertThat(result.userId()).isEqualTo(10L);
         assertThat(result.nickname()).isEqualTo("tester");
@@ -168,7 +169,7 @@ class UserServiceImplTest {
 
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
-        UserResponseDto.GetUserDto result = userService.getUserProfile(1L);
+        UserProfileResult result = userService.getUserProfile(1L);
 
         assertThat(result.nickname()).isEqualTo("tester");
         assertThat(result.job()).isEqualTo("개발/데이터");

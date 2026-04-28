@@ -11,12 +11,12 @@ import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.PostService;
 import com.mogak.spring.service.StorageCleanupService;
 import com.mogak.spring.service.StorageService;
+import com.mogak.spring.service.result.post.PostListResult;
+import com.mogak.spring.service.result.post.PostSummaryResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.support.TestFixtureFactory;
 import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
 import com.mogak.spring.web.dto.postdto.PostRequestDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.GetPostDto;
-import com.mogak.spring.web.dto.postdto.PostResponseDto.PostListDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -274,7 +274,7 @@ class PostControllerTest {
     @DisplayName("모각별 게시글 조회는 인증 사용자의 id를 서비스에 전달한다")
     void getPostListUsesAuthenticatedUserId() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        PostListDto posts = PostListDto.of(List.of(), 0, 10, false);
+        PostListResult posts = PostListResult.of(List.of(), 0, 10, false);
         when(postService.getAllPosts(7L, 0, 1L, 10)).thenReturn(posts);
 
         mockMvc.perform(get("/api/mogaks/{mogakId}/posts", 1L)
@@ -289,7 +289,7 @@ class PostControllerTest {
     @DisplayName("모각별 게시글 조회는 전용 목록 DTO JSON 계약을 반환한다")
     void getPostListReturnsDedicatedListDtoContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        GetPostDto post = GetPostDto.of(
+        PostSummaryResult post = new PostSummaryResult(
                 11L,
                 1L,
                 2L,
@@ -299,7 +299,7 @@ class PostControllerTest {
                 "https://example.com/thumb.png",
                 4
         );
-        PostListDto posts = PostListDto.of(List.of(post), 0, 10, true);
+        PostListResult posts = PostListResult.of(List.of(post), 0, 10, true);
         when(postService.getAllPosts(7L, 0, 1L, 10)).thenReturn(posts);
 
         mockMvc.perform(get("/api/mogaks/{mogakId}/posts", 1L)

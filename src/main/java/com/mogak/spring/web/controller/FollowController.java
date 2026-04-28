@@ -5,6 +5,8 @@ import com.mogak.spring.global.BaseResponse;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.FollowService;
+import com.mogak.spring.service.result.follow.FollowCountResult;
+import com.mogak.spring.service.result.follow.FollowUserResult;
 import com.mogak.spring.web.dto.userdto.FollowRequestDto.CountDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -78,7 +80,8 @@ public class FollowController {
             })
     @GetMapping("counts/{nickname}")
     public ResponseEntity<BaseResponse<CountDto>> getFollowCount(@PathVariable String nickname) {
-        return ResponseEntity.ok(new BaseResponse<>(followService.getFollowCount(nickname)));
+        FollowCountResult result = followService.getFollowCount(nickname);
+        return ResponseEntity.ok(new BaseResponse<>(new CountDto(result.mentorCnt(), result.motoCnt())));
     }
 
     @Operation(summary = "모토 조회", description = "유저를 팔로우 중인 모토들을 조회 합니다",
@@ -93,7 +96,8 @@ public class FollowController {
             })
     @GetMapping("{nickname}/motos")
     public ResponseEntity<BaseResponse<List<UserDto>>> getMotoList(@PathVariable String nickname) {
-        return ResponseEntity.ok(new BaseResponse<>(followService.getMotoList(nickname)));
+        List<FollowUserResult> results = followService.getMotoList(nickname);
+        return ResponseEntity.ok(new BaseResponse<>(results.stream().map(this::toUserDto).toList()));
     }
 
     @Operation(summary = "멘토 조회", description = "유저가 팔로우 중인 멘토들을 조회 합니다",
@@ -108,7 +112,12 @@ public class FollowController {
             })
     @GetMapping("{nickname}/mentors")
     public ResponseEntity<BaseResponse<List<UserDto>>> getMentorList(@PathVariable String nickname) {
-        return ResponseEntity.ok(new BaseResponse<>(followService.getMentorList(nickname)));
+        List<FollowUserResult> results = followService.getMentorList(nickname);
+        return ResponseEntity.ok(new BaseResponse<>(results.stream().map(this::toUserDto).toList()));
+    }
+
+    private UserDto toUserDto(FollowUserResult result) {
+        return new UserDto(result.nickname(), result.job());
     }
     
 }
