@@ -1,17 +1,15 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.domain.modarat.Modarat;
-import com.mogak.spring.repository.query.SingleDetailModaratDto;
-import com.mogak.spring.web.dto.modaratdto.ModaratRequestDto;
+import com.mogak.spring.service.result.ModaratDetailResult;
+import com.mogak.spring.service.result.ModaratSummaryResult;
 
 import java.util.List;
 
-import static com.mogak.spring.web.dto.modaratdto.ModaratResponseDto.ModaratDto;
-
 public interface ModaratService {
-    Modarat create(Long userId, ModaratRequestDto.CreateModaratDto request);
+    Modarat create(Long userId, String title, String color);
     void delete(Long userId, Long modaratId);
-    Modarat update(Long userId, Long modaratId, ModaratRequestDto.UpdateModaratDto request);
-    SingleDetailModaratDto getDetailModarat(Long userId, Long modaratId);
-    List<ModaratDto> getModaratList(Long userId);
+    Modarat update(Long userId, Long modaratId, String title, String color);
+    ModaratDetailResult getDetailModarat(Long userId, Long modaratId);
+    List<ModaratSummaryResult> getModaratList(Long userId);
 }

@@ -11,7 +11,6 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.PostCommentRepository;
 import com.mogak.spring.repository.PostRepository;
 import com.mogak.spring.repository.UserRepository;
-import com.mogak.spring.web.dto.commentdto.CommentRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,14 +30,14 @@ public class PostCommentServiceImpl implements PostCommentService {
     //댓글 생성 - dto
     @Transactional
     @Override
-    public PostComment create(Long userId, CommentRequestDto.CreateCommentDto request, Long postId) {
+    public PostComment create(Long userId, String contents, Long postId) {
         Post post = postRepository.findActiveById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         User user = getUser(userId);
-        if (request.contents().length() > 200) {
+        if (contents.length() > 200) {
             throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
         }
-        PostComment comment = PostComment.create(post, user, request.contents());
+        PostComment comment = PostComment.create(post, user, contents);
         post.putComment(comment);
         post.addCommentCnt();
         return postCommentRepository.save(comment);
@@ -55,15 +54,15 @@ public class PostCommentServiceImpl implements PostCommentService {
     //댓글 수정
     @Transactional
     @Override
-    public PostComment update(Long userId, CommentRequestDto.UpdateCommentDto request, Long postId, Long commentId) {
+    public PostComment update(Long userId, String contents, Long postId, Long commentId) {
         Post post = postRepository.findActiveById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         PostComment comment = getCommentInPost(post, commentId);
         validateOwner(comment, getUser(userId));
-        if (request.contents().length() > 200 ) {
+        if (contents.length() > 200 ) {
             throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
         }
-        comment.updateComment(request.contents());
+        comment.updateComment(contents);
         return comment;
     }
 

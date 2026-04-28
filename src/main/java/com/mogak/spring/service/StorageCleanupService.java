@@ -1,7 +1,7 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.domain.post.PostImg;
-import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
+import com.mogak.spring.service.result.UploadedPostImageResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,7 @@ public class StorageCleanupService {
         });
     }
 
-    public void deleteUploadedImagesBestEffort(List<PostImgRequestDto.CreatePostImgDto> uploadedImages, String dirName) {
+    public void deleteUploadedImagesBestEffort(List<UploadedPostImageResult> uploadedImages, String dirName) {
         if (uploadedImages == null || uploadedImages.isEmpty()) {
             return;
         }

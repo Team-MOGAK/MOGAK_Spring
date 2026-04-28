@@ -7,8 +7,16 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.AuthenticatedUser;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
-import com.mogak.spring.web.dto.userdto.UserRequestDto;
-import com.mogak.spring.web.dto.userdto.UserResponseDto;
+import com.mogak.spring.service.result.ProfileImageResult;
+import com.mogak.spring.service.result.UserCreateResult;
+import com.mogak.spring.service.result.UserProfileResult;
+import com.mogak.spring.web.dto.userdto.UserCreateRequest;
+import com.mogak.spring.web.dto.userdto.UserCreateResponse;
+import com.mogak.spring.web.dto.userdto.UserGetEmailRequest;
+import com.mogak.spring.web.dto.userdto.UserNicknameCheckRequest;
+import com.mogak.spring.web.dto.userdto.UserProfileResponse;
+import com.mogak.spring.web.dto.userdto.UserUpdateJobRequest;
+import com.mogak.spring.web.dto.userdto.UserUpdateNicknameRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,8 +31,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
-
-import static com.mogak.spring.web.dto.userdto.UserRequestDto.*;
 
 @Tag(name = "유저 API", description = "유저 API 명세서")
 @RequiredArgsConstructor
@@ -42,7 +48,7 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/nickname/verify")
-    public ResponseEntity<BaseResponse<ErrorCode>> verifyNickname(@Valid @RequestBody CheckNicknameDto request) {
+    public ResponseEntity<BaseResponse<ErrorCode>> verifyNickname(@Valid @RequestBody UserNicknameCheckRequest request) {
         userService.verifyNickname(request.nickname());
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
 
@@ -60,17 +66,24 @@ public class UserController {
      * 회원가입
      */
     @PostMapping("/join")
-    public ResponseEntity<BaseResponse<UserResponseDto.CreateDto>> createUser(@Valid @RequestPart CreateUserDto request,
+    public ResponseEntity<BaseResponse<UserCreateResponse>> createUser(@Valid @RequestPart UserCreateRequest request,
                                                                               @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                               @RequestPart(required = false) MultipartFile multipartFile) {
-        UploadImageDto uploadImageDto;
+        ProfileImageResult profileImage;
         if (multipartFile == null || multipartFile.isEmpty()) {
-            uploadImageDto = new UploadImageDto(null, null);
+            profileImage = new ProfileImageResult(null, null);
         } else {
-            uploadImageDto = storageService.uploadProfileImg(multipartFile, dirName);
+            profileImage = storageService.uploadProfileImg(multipartFile, dirName);
         }
-        UserResponseDto.CreateDto createDto = userService.create(authenticatedUser.getUserId(), request, uploadImageDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(createDto));
+        UserCreateResult result = userService.create(
+                authenticatedUser.getUserId(),
+                request.nickname(),
+                request.job(),
+                request.address(),
+                profileImage
+        );
+        UserCreateResponse response = new UserCreateResponse(result.userId(), result.nickname(), result.tokens());
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(response));
     }
 
     @Operation(summary = "임시 로그인", description = "입력한 이메일로 로그인을 시도합니다",
@@ -82,8 +95,8 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @PostMapping("/login")
-    public ResponseEntity<BaseResponse<String>> login(@RequestBody UserRequestDto.GetEmailDto getEmailDto) {
-        User user = userService.getUserByEmail(getEmailDto.email());
+    public ResponseEntity<BaseResponse<String>> login(@RequestBody UserGetEmailRequest emailRequest) {
+        User user = userService.getUserByEmail(emailRequest.email());
         return ResponseEntity.ok().body(new BaseResponse<>(userService.getToken(user)));
     }
 
@@ -95,9 +108,10 @@ public class UserController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
     @GetMapping("/profile")
-    public ResponseEntity<BaseResponse<UserResponseDto.GetUserDto>> getUserProfile(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        UserResponseDto.GetUserDto getUserDto = userService.getUserProfile(authenticatedUser.getUserId());
-        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(getUserDto));
+    public ResponseEntity<BaseResponse<UserProfileResponse>> getUserProfile(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        UserProfileResult result = userService.getUserProfile(authenticatedUser.getUserId());
+        UserProfileResponse response = new UserProfileResponse(result.nickname(), result.job(), result.imgUrl());
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(response));
     }
 
 
@@ -112,8 +126,8 @@ public class UserController {
             })
     @PutMapping("/profile/nickname")
     public ResponseEntity<BaseResponse<ErrorCode>> updateNickname(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                                   @Valid @RequestBody UpdateNicknameDto nicknameDto) {
-        userService.updateNickname(authenticatedUser.getUserId(), nicknameDto);
+                                                                   @Valid @RequestBody UserUpdateNicknameRequest nicknameRequest) {
+        userService.updateNickname(authenticatedUser.getUserId(), nicknameRequest.nickname());
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -126,8 +140,8 @@ public class UserController {
             })
     @PutMapping("/profile/job")
     public ResponseEntity<BaseResponse<ErrorCode>> updateJob(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                                             @Valid @RequestBody UpdateJobDto jobDto) {
-        userService.updateJob(authenticatedUser.getUserId(), jobDto);
+                                                             @Valid @RequestBody UserUpdateJobRequest jobRequest) {
+        userService.updateJob(authenticatedUser.getUserId(), jobRequest.job());
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 
@@ -142,16 +156,16 @@ public class UserController {
     public ResponseEntity<BaseResponse<ErrorCode>> updateImage(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                @RequestPart MultipartFile multipartFile) {
         String profileImgName = userService.getProfileImgName(authenticatedUser.getUserId()); //기존 프로필사진받아오기
-        UserRequestDto.UpdateImageDto updateImageDto;
+        ProfileImageResult profileImage;
         if (multipartFile == null || multipartFile.isEmpty()) {
             if (profileImgName != null) {
                 storageService.deleteProfileImg(profileImgName);
             }
-            updateImageDto = new UpdateImageDto(null, null);
+            profileImage = new ProfileImageResult(null, null);
         } else {
-            updateImageDto = storageService.updateProfileImg(multipartFile, profileImgName, dirName);
+            profileImage = storageService.updateProfileImg(multipartFile, profileImgName, dirName);
         }
-        userService.updateImg(authenticatedUser.getUserId(), updateImageDto);
+        userService.updateImg(authenticatedUser.getUserId(), profileImage);
         return ResponseEntity.ok(new BaseResponse<>(ErrorCode.SUCCESS));
     }
 

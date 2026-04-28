@@ -1,7 +1,13 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.web.dto.jogakdto.JogakRequestDto;
-import com.mogak.spring.web.dto.jogakdto.JogakResponseDto;
+import com.mogak.spring.service.command.CreateJogakCommand;
+import com.mogak.spring.service.command.UpdateJogakCommand;
+import com.mogak.spring.service.result.CreateJogakResult;
+import com.mogak.spring.service.result.DailyJogakListResult;
+import com.mogak.spring.service.result.JogakDailyResult;
+import com.mogak.spring.service.result.JogakDetailResult;
+import com.mogak.spring.service.result.OneTimeJogakListResult;
+import com.mogak.spring.service.result.RoutineJogakResult;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -9,23 +15,23 @@ import java.util.List;
 public interface JogakService {
 
     void createRoutineJogakToday();
-    JogakResponseDto.CreateJogakDto createJogak(Long userId, JogakRequestDto.CreateJogakDto createJogakDto);
-    JogakResponseDto.CreateJogakDto updateJogak(Long userId, Long jogakId, JogakRequestDto.UpdateJogakDto updateJogakDto);
-    JogakResponseDto.GetOneTimeJogakListDto getDailyJogaks(Long userId, LocalDate day);
-    JogakResponseDto.GetDailyJogakListDto getDayJogaks(Long userId, LocalDate day);
+    CreateJogakResult createJogak(Long userId, CreateJogakCommand command);
+    CreateJogakResult updateJogak(Long userId, Long jogakId, UpdateJogakCommand command);
+    OneTimeJogakListResult getDailyJogaks(Long userId, LocalDate day);
+    DailyJogakListResult getDayJogaks(Long userId, LocalDate day);
 //    void failRoutineJogakAtMidnight();
 //    void failJogakAtFour();
 
-    JogakResponseDto.JogakDailyJogakDto startJogak(Long userId, Long jogakId);
+    JogakDailyResult startJogak(Long userId, Long jogakId);
 
-    JogakResponseDto.JogakDailyJogakDto successJogak(Long userId, Long dailyJogakId);
+    JogakDailyResult successJogak(Long userId, Long dailyJogakId);
 
     void deleteJogak(Long userId, Long jogakId);
     void deleteJogakCascadeAfterParentAuthorization(Long jogakId);
 
-    List<JogakResponseDto.GetRoutineJogakDto> getRoutineJogaks(Long userId, LocalDate startDay, LocalDate endDay);
+    List<RoutineJogakResult> getRoutineJogaks(Long userId, LocalDate startDay, LocalDate endDay);
 
-    JogakResponseDto.JogakDailyJogakDto failJogak(Long userId, Long dailyJogakId);
+    JogakDailyResult failJogak(Long userId, Long dailyJogakId);
 
-    JogakResponseDto.DetailJogakDto getJogakDetail(Long userId, Long jogakId);
+    JogakDetailResult getJogakDetail(Long userId, Long jogakId);
 }

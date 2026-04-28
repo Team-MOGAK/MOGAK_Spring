@@ -23,7 +23,7 @@ public class KakaoOAuthUserProvider implements SocialOAuthUserProvider {
     public SocialUserProfile getUser(String token) {
         try {
             KakaoUserResponse response = kakaoClient.getUser(BEARER_PREFIX + token);
-            Long providerUserId = response.getId();
+            Long providerUserId = response.id();
             if (providerUserId == null) {
                 throw new BaseException(ErrorCode.INVALID_SOCIAL_TOKEN);
             }

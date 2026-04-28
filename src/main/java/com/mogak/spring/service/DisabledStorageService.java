@@ -3,8 +3,8 @@ package com.mogak.spring.service;
 import com.mogak.spring.domain.post.PostImg;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
-import com.mogak.spring.web.dto.postdto.PostImgRequestDto;
-import com.mogak.spring.web.dto.userdto.UserRequestDto;
+import com.mogak.spring.service.result.ProfileImageResult;
+import com.mogak.spring.service.result.UploadedPostImageResult;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,12 +16,12 @@ import java.util.List;
 public class DisabledStorageService implements StorageService {
 
     @Override
-    public List<PostImgRequestDto.CreatePostImgDto> uploadImg(List<MultipartFile> multipartFile, String dirName) {
+    public List<UploadedPostImageResult> uploadImg(List<MultipartFile> multipartFile, String dirName) {
         throw storageDisabled();
     }
 
     @Override
-    public UserRequestDto.UploadImageDto uploadProfileImg(MultipartFile request, String dirName) {
+    public ProfileImageResult uploadProfileImg(MultipartFile request, String dirName) {
         throw storageDisabled();
     }
 
@@ -36,7 +36,7 @@ public class DisabledStorageService implements StorageService {
     }
 
     @Override
-    public UserRequestDto.UpdateImageDto updateProfileImg(MultipartFile request, String profileImgName, String dirName) {
+    public ProfileImageResult updateProfileImg(MultipartFile request, String profileImgName, String dirName) {
         throw storageDisabled();
     }
 
