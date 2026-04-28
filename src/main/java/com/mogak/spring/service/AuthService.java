@@ -52,8 +52,8 @@ public class AuthService {
     //로그인
     @Transactional
     public AppleLoginResponse appleLogin(AppleLoginRequest request) {
-        AppleUserResponse appleUser = appleOAuthUserProvider.getAppleUser(request.getId_token());
-        Optional<User> existingUser = userRepository.findByEmail(appleUser.getEmail());
+        AppleUserResponse appleUser = appleOAuthUserProvider.getAppleUser(request.idToken());
+        Optional<User> existingUser = userRepository.findByEmail(appleUser.email());
         if (existingUser.isPresent() && existingUser.get().isDeleted()) {
             throw new UserException(ErrorCode.NOT_EXIST_USER);
         }
@@ -62,27 +62,15 @@ public class AuthService {
             User findUser = existingUser.orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
             JwtTokens jwtTokens = issueTokens(findUser); //토큰 발급
             if (!isRegisterNickname(findUser)) { //해당 이메일로 가입한 유저의 닉네임 없으면 회원가입하도록
-                return AppleLoginResponse.builder()
-                        .isRegistered(false)
-                        .userId(findUser.getId())
-                        .tokens(jwtTokens)
-                        .build();
+                return new AppleLoginResponse(false, findUser.getId(), jwtTokens);
             }
-            return AppleLoginResponse.builder()
-                    .isRegistered(true)
-                    .userId(findUser.getId())
-                    .tokens(jwtTokens)
-                    .build();
+            return new AppleLoginResponse(true, findUser.getId(), jwtTokens);
         }
         //회원가입이 되어 있지 않은 경우
-        User oauthUser = new User(appleUser.getEmail());
+        User oauthUser = new User(appleUser.email());
         User savedUser = userRepository.save(oauthUser);
         JwtTokens jwtTokens = issueTokens(savedUser);
-        return AppleLoginResponse.builder()
-                .isRegistered(false)
-                .userId(savedUser.getId())
-                .tokens(jwtTokens)
-                .build();
+        return new AppleLoginResponse(false, savedUser.getId(), jwtTokens);
     }
 
     /**
@@ -103,10 +91,7 @@ public class AuthService {
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getEmail(), resolveTokenRole(user));
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
         user.updateRefreshToken(refreshToken);
-        return JwtTokens.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        return new JwtTokens(accessToken, refreshToken);
 
     }
 
@@ -118,7 +103,7 @@ public class AuthService {
         validateStoredRefreshToken(findUser, refreshToken);
 
         JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, findUser.getId(), email, resolveTokenRole(findUser));
-        findUser.updateRefreshToken(jwtTokens.getRefreshToken());
+        findUser.updateRefreshToken(jwtTokens.refreshToken());
         return jwtTokens;
     }
 
@@ -138,9 +123,7 @@ public class AuthService {
         User deleteUser = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_USER));
         deleteUserInfo(deleteUser);
-        return AuthResponse.WithdrawDto.builder()
-                .isDeleted(true)
-                .build();
+        return new AuthResponse.WithdrawDto(true);
     }
 
     public void deleteUserInfo(User deleteUser) {

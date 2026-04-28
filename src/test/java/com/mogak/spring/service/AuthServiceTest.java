@@ -60,9 +60,7 @@ class AuthServiceTest {
     @DisplayName("기존 사용자가 애플 로그인하면 발급한 refresh 토큰을 사용자 DB에 저장한다")
     void appleLoginStoresRefreshToken() {
         User user = TestFixtureFactory.user(1L, "user@test.com", "tester", null, null);
-        AppleLoginRequest request = AppleLoginRequest.builder()
-                .id_token("apple-id-token")
-                .build();
+        AppleLoginRequest request = new AppleLoginRequest("apple-id-token");
 
         when(appleOAuthUserProvider.getAppleUser("apple-id-token")).thenReturn(new AppleUserResponse("user@test.com"));
         when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
@@ -71,7 +69,7 @@ class AuthServiceTest {
 
         AppleLoginResponse response = authService.appleLogin(request);
 
-        assertThat(response.getTokens().getRefreshToken()).isEqualTo("refresh-token");
+        assertThat(response.tokens().refreshToken()).isEqualTo("refresh-token");
         assertThat(ReflectionTestUtils.getField(user, "refreshToken")).isEqualTo("refresh-token");
     }
 
@@ -98,15 +96,12 @@ class AuthServiceTest {
         when(jwtTokenProvider.getEmailByRefresh("stored-refresh-token")).thenReturn("user@test.com");
         when(userRepository.findActiveByEmail("user@test.com")).thenReturn(Optional.of(user));
         when(jwtTokenProvider.refresh("stored-refresh-token", 1L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn(
-                JwtTokens.builder()
-                        .accessToken("new-access-token")
-                        .refreshToken("rotated-refresh-token")
-                        .build()
+                new JwtTokens("new-access-token", "rotated-refresh-token")
         );
 
         JwtTokens result = authService.reissue("stored-refresh-token");
 
-        assertThat(result.getRefreshToken()).isEqualTo("rotated-refresh-token");
+        assertThat(result.refreshToken()).isEqualTo("rotated-refresh-token");
         assertThat(ReflectionTestUtils.getField(user, "refreshToken")).isEqualTo("rotated-refresh-token");
     }
 

@@ -74,9 +74,9 @@ class JwtTokenProviderTest {
 
         JwtTokens jwtTokens = jwtTokenProvider.refresh(refreshToken, 1L, "user@test.com");
 
-        assertThat(jwtTokens.getAccessToken()).isNotBlank();
-        assertThat(jwtTokens.getRefreshToken()).isNotBlank();
-        assertThat(jwtTokenProvider.getEmailByRefresh(jwtTokens.getRefreshToken())).isEqualTo("user@test.com");
+        assertThat(jwtTokens.accessToken()).isNotBlank();
+        assertThat(jwtTokens.refreshToken()).isNotBlank();
+        assertThat(jwtTokenProvider.getEmailByRefresh(jwtTokens.refreshToken())).isEqualTo("user@test.com");
     }
 
     @Test
