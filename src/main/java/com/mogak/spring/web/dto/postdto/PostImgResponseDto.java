@@ -1,31 +1,27 @@
 package com.mogak.spring.web.dto.postdto;
 
-
-import lombok.*;
-
 import java.time.LocalDateTime;
 
 public class PostImgResponseDto {
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class PostImgDto {
-        private Long id;
-        private Long postId;
-        private String imgName;
-        private String imgUrl;
-        private LocalDateTime createdAt;
+
+    private PostImgResponseDto() {
     }
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class CreatePostImgDto {
-        private Long id;
-        private Long postId;
-        private String imgName;
-        private String imgUrl;
-        private LocalDateTime createdAt;
+
+    public record PostImgDto(
+            Long id,
+            Long postId,
+            String imgName,
+            String imgUrl,
+            LocalDateTime createdAt
+    ) {
+    }
+
+    public record CreatePostImgDto(
+            Long id,
+            Long postId,
+            String imgName,
+            String imgUrl,
+            LocalDateTime createdAt
+    ) {
     }
 }

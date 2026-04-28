@@ -21,7 +21,6 @@ import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,7 +77,7 @@ class NetworkControllerTest {
 
         ArgumentCaptor<PostLikeRequestDto.LikeDto> requestCaptor = ArgumentCaptor.forClass(PostLikeRequestDto.LikeDto.class);
         verify(postLikeService).updateLike(eq(7L), requestCaptor.capture());
-        assertThat(requestCaptor.getValue().getPostId()).isEqualTo(10L);
+        assertThat(requestCaptor.getValue().postId()).isEqualTo(10L);
     }
 
     @Test
@@ -124,8 +123,6 @@ class NetworkControllerTest {
     }
 
     private PostLikeRequestDto.LikeDto likeRequest(Long postId) {
-        PostLikeRequestDto.LikeDto request = new PostLikeRequestDto.LikeDto();
-        ReflectionTestUtils.setField(request, "postId", postId);
-        return request;
+        return new PostLikeRequestDto.LikeDto(postId);
     }
 }

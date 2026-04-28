@@ -60,11 +60,11 @@ class StorageCleanupServiceTest {
     @DisplayName("업로드 보상 삭제는 업로드 DTO를 삭제 대상 이미지로 변환한다")
     void deleteUploadedImagesBestEffortConvertsUploadedDtos() {
         List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
-                PostImgRequestDto.CreatePostImgDto.builder()
-                        .imgName("uploaded.png")
-                        .imgUrl("https://example.com/uploaded.png")
-                        .thumbnail(true)
-                        .build()
+                new PostImgRequestDto.CreatePostImgDto(
+                        "uploaded.png",
+                        "https://example.com/uploaded.png",
+                        true
+                )
         );
 
         storageCleanupService.deleteUploadedImagesBestEffort(uploadedImages, "img");

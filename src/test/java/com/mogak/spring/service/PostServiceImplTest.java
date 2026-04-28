@@ -65,9 +65,9 @@ class PostServiceImplTest {
         var jogak = TestFixtureFactory.jogak(20L, mogak(10L, owner), "jogak", false, java.time.LocalDate.now(), null, 0);
         PostRequestDto.CreatePostDto request = createRequest("content");
         List<MultipartFile> images = List.of(image("post.png"));
-        var dailyJogak = TestFixtureFactory.dailyJogak(10L, jogak, request.getTargetDate(), DailyJogakStatus.SUCCESS);
+        var dailyJogak = TestFixtureFactory.dailyJogak(10L, jogak, request.targetDate(), DailyJogakStatus.SUCCESS);
 
-        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(10L, request.getTargetDate()))
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(10L, request.targetDate()))
                 .thenReturn(Optional.of(dailyJogak));
 
         Throwable throwable = catchThrowable(() -> postService.validateCreateAccess(2L, request, images, 10L));
@@ -109,9 +109,9 @@ class PostServiceImplTest {
         PostRequestDto.CreatePostDto request = createRequest("content");
         List<MultipartFile> images = List.of(image("post.png"));
         var jogak = TestFixtureFactory.jogak(20L, mogak(10L, owner), "jogak", false, java.time.LocalDate.now(), null, 0);
-        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.getTargetDate(), DailyJogakStatus.SUCCESS);
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.targetDate(), DailyJogakStatus.SUCCESS);
 
-        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.getTargetDate()))
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.targetDate()))
                 .thenReturn(Optional.of(dailyJogak));
         when(postRepository.existsByDailyJogakIdAndDeletedAtIsNull(30L)).thenReturn(true);
 
@@ -127,21 +127,13 @@ class PostServiceImplTest {
         PostRequestDto.CreatePostDto request = createRequest("content");
         Mogak mogak = mogak(10L, writer);
         var jogak = TestFixtureFactory.jogak(20L, mogak, "jogak", false, java.time.LocalDate.now(), null, 0);
-        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.getTargetDate(), DailyJogakStatus.SUCCESS);
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.targetDate(), DailyJogakStatus.SUCCESS);
         List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
-                PostImgRequestDto.CreatePostImgDto.builder()
-                        .imgName("thumb.png")
-                        .imgUrl("https://example.com/thumb.png")
-                        .thumbnail(true)
-                        .build(),
-                PostImgRequestDto.CreatePostImgDto.builder()
-                        .imgName("body.png")
-                        .imgUrl("https://example.com/body.png")
-                        .thumbnail(false)
-                .build()
+                new PostImgRequestDto.CreatePostImgDto("thumb.png", "https://example.com/thumb.png", true),
+                new PostImgRequestDto.CreatePostImgDto("body.png", "https://example.com/body.png", false)
         );
 
-        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.getTargetDate()))
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.targetDate()))
                 .thenReturn(Optional.of(dailyJogak));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
         when(postImgRepository.save(any(PostImg.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -164,16 +156,12 @@ class PostServiceImplTest {
         PostRequestDto.CreatePostDto request = createRequest("content");
         Mogak mogak = mogak(10L, writer);
         var jogak = TestFixtureFactory.jogak(20L, mogak, "jogak", false, java.time.LocalDate.now(), null, 0);
-        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.getTargetDate(), DailyJogakStatus.SUCCESS);
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.targetDate(), DailyJogakStatus.SUCCESS);
         List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
-                PostImgRequestDto.CreatePostImgDto.builder()
-                        .imgName("thumb.png")
-                        .imgUrl("https://example.com/thumb.png")
-                        .thumbnail(true)
-                        .build()
+                new PostImgRequestDto.CreatePostImgDto("thumb.png", "https://example.com/thumb.png", true)
         );
 
-        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.getTargetDate()))
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.targetDate()))
                 .thenReturn(Optional.of(dailyJogak));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
         when(postImgRepository.save(any(PostImg.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -192,16 +180,12 @@ class PostServiceImplTest {
         PostRequestDto.CreatePostDto request = createRequest("content");
         Mogak mogak = mogak(10L, writer);
         var jogak = TestFixtureFactory.jogak(20L, mogak, "jogak", false, java.time.LocalDate.now(), null, 0);
-        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.getTargetDate(), DailyJogakStatus.SUCCESS);
+        var dailyJogak = TestFixtureFactory.dailyJogak(30L, jogak, request.targetDate(), DailyJogakStatus.SUCCESS);
         List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
-                PostImgRequestDto.CreatePostImgDto.builder()
-                        .imgName("thumb.png")
-                        .imgUrl("https://example.com/thumb.png")
-                        .thumbnail(true)
-                        .build()
+                new PostImgRequestDto.CreatePostImgDto("thumb.png", "https://example.com/thumb.png", true)
         );
 
-        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.getTargetDate()))
+        when(dailyJogakRepository.findActiveByJogakIdAndTargetDateWithJogakGraph(20L, request.targetDate()))
                 .thenReturn(Optional.of(dailyJogak));
         when(userRepository.findActiveById(1L)).thenReturn(Optional.of(writer));
         when(postImgRepository.save(any(PostImg.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -406,16 +390,11 @@ class PostServiceImplTest {
     }
 
     private PostRequestDto.CreatePostDto createRequest(String contents) {
-        PostRequestDto.CreatePostDto request = new PostRequestDto.CreatePostDto();
-        ReflectionTestUtils.setField(request, "targetDate", java.time.LocalDate.now());
-        ReflectionTestUtils.setField(request, "contents", contents);
-        return request;
+        return new PostRequestDto.CreatePostDto(java.time.LocalDate.now(), contents);
     }
 
     private PostRequestDto.UpdatePostDto updateRequest(String contents) {
-        PostRequestDto.UpdatePostDto request = new PostRequestDto.UpdatePostDto();
-        ReflectionTestUtils.setField(request, "contents", contents);
-        return request;
+        return new PostRequestDto.UpdatePostDto(contents);
     }
 
     private MultipartFile image(String fileName) {

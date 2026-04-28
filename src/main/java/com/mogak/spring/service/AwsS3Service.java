@@ -63,21 +63,21 @@ public class AwsS3Service implements StorageService {
                 String imgName = createImgName(format, dirName);
                 uploadedObjectNames.add(imgName);
                 uploadImgToS3(imgName, img, format);
-                postImgRequestDtoList.add(PostImgRequestDto.CreatePostImgDto.builder()
-                        .imgName(imgName)
-                        .imgUrl(createObjectUrl(imgName))
-                        .thumbnail(false)
-                        .build());
+                postImgRequestDtoList.add(new PostImgRequestDto.CreatePostImgDto(
+                        imgName,
+                        createObjectUrl(imgName),
+                        false
+                ));
                 if (multipartFile.get(0) == img) {
                     String thumbnailImgName = createThumbnailImgName(format, dirName);
                     MultipartFile thumbnailImg = resizeImage(thumbnailImgName, format, img, 200, 200);
                     uploadedObjectNames.add(thumbnailImgName);
                     uploadThumbnailToS3(thumbnailImgName, thumbnailImg, format);
-                    postImgRequestDtoList.add(PostImgRequestDto.CreatePostImgDto.builder()
-                            .imgName(thumbnailImgName)
-                            .imgUrl(createObjectUrl(thumbnailImgName))
-                            .thumbnail(true)
-                            .build());
+                    postImgRequestDtoList.add(new PostImgRequestDto.CreatePostImgDto(
+                            thumbnailImgName,
+                            createObjectUrl(thumbnailImgName),
+                            true
+                    ));
                 }
             });
         } catch (RuntimeException e) {
@@ -159,10 +159,7 @@ public class AwsS3Service implements StorageService {
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
         }
-        return UserRequestDto.UploadImageDto.builder()
-                .imgName(imgName)
-                .imgUrl(createObjectUrl(imgName))
-                .build();
+        return new UserRequestDto.UploadImageDto(imgName, createObjectUrl(imgName));
     }
 
     @Override
@@ -221,10 +218,7 @@ public class AwsS3Service implements StorageService {
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 업로드 실패했습니다");
         }
-        return UserRequestDto.UpdateImageDto.builder()
-                .imgName(imgName)
-                .imgUrl(createObjectUrl(imgName))
-                .build();
+        return new UserRequestDto.UpdateImageDto(imgName, createObjectUrl(imgName));
     }
 
     private void validateImagePresent(MultipartFile multipartFile) {

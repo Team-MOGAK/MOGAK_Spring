@@ -36,7 +36,7 @@ public class PostCommentServiceImpl implements PostCommentService {
         Post post = postRepository.findActiveById(postId)
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         User user = getUser(userId);
-        if (request.getContents().length() > 200) {
+        if (request.contents().length() > 200) {
             throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
         }
         PostComment comment = CommentConverter.toComment(request,post, user);
@@ -61,10 +61,10 @@ public class PostCommentServiceImpl implements PostCommentService {
                 .orElseThrow(() -> new PostException(ErrorCode.NOT_EXIST_POST));
         PostComment comment = getCommentInPost(post, commentId);
         validateOwner(comment, getUser(userId));
-        if (request.getContents().length() > 200 ) {
+        if (request.contents().length() > 200 ) {
             throw new PostCommentException(ErrorCode.EXCEED_MAX_NUM_COMMENT);
         }
-        comment.updateComment(request.getContents());
+        comment.updateComment(request.contents());
         return comment;
     }
 

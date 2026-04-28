@@ -30,7 +30,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -98,13 +97,13 @@ class PostControllerTest {
                 "png".getBytes()
         );
         List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
-                PostImgRequestDto.CreatePostImgDto.builder()
-                        .imgName("post.png")
-                        .imgUrl("https://example.com/post.png")
-                        .thumbnail(true)
-                        .build()
+                new PostImgRequestDto.CreatePostImgDto(
+                        "post.png",
+                        "https://example.com/post.png",
+                        true
+                )
         );
-        Post post = createPost(1L, 7L, 1L, "content", uploadedImages.get(0).getImgUrl());
+        Post post = createPost(1L, 7L, 1L, "content", uploadedImages.get(0).imgUrl());
 
         doNothing().when(postService).validateCreateAccess(eq(7L), any(), anyList(), eq(1L));
         when(storageService.uploadImg(any(), any())).thenReturn(uploadedImages);
@@ -182,11 +181,11 @@ class PostControllerTest {
                 "png".getBytes()
         );
         List<PostImgRequestDto.CreatePostImgDto> uploadedImages = List.of(
-                PostImgRequestDto.CreatePostImgDto.builder()
-                        .imgName("post.png")
-                        .imgUrl("https://example.com/post.png")
-                        .thumbnail(true)
-                        .build()
+                new PostImgRequestDto.CreatePostImgDto(
+                        "post.png",
+                        "https://example.com/post.png",
+                        true
+                )
         );
 
         doNothing().when(postService).validateCreateAccess(eq(7L), any(), anyList(), eq(1L));
@@ -211,8 +210,7 @@ class PostControllerTest {
     @DisplayName("게시글 생성은 targetDate가 없으면 서비스 호출 전에 입력값 오류를 반환한다")
     void createPostRejectsMissingTargetDateBeforeServiceCall() throws Exception {
         SecurityContextTestHelper.setAuthentication(7L, "writer@test.com", "ROLE_USER");
-        PostRequestDto.CreatePostDto request = new PostRequestDto.CreatePostDto();
-        ReflectionTestUtils.setField(request, "contents", "content");
+        PostRequestDto.CreatePostDto request = new PostRequestDto.CreatePostDto(null, "content");
         MockMultipartFile requestPart = new MockMultipartFile(
                 "request",
                 "",
@@ -402,16 +400,11 @@ class PostControllerTest {
     }
 
     private PostRequestDto.CreatePostDto createRequest(String contents) {
-        PostRequestDto.CreatePostDto request = new PostRequestDto.CreatePostDto();
-        ReflectionTestUtils.setField(request, "targetDate", java.time.LocalDate.now());
-        ReflectionTestUtils.setField(request, "contents", contents);
-        return request;
+        return new PostRequestDto.CreatePostDto(java.time.LocalDate.now(), contents);
     }
 
     private PostRequestDto.UpdatePostDto updateRequest(String contents) {
-        PostRequestDto.UpdatePostDto request = new PostRequestDto.UpdatePostDto();
-        ReflectionTestUtils.setField(request, "contents", contents);
-        return request;
+        return new PostRequestDto.UpdatePostDto(contents);
     }
 
     private Post createPost(Long postId, Long userId, Long mogakId, String contents, String thumbnailUrl) {

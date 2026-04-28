@@ -18,73 +18,68 @@ public class PostConverter {
     //이미지까지 업로드 잘 되어있는지 확인
     public static PostResponseDto.CreatePostDto toCreatePostDto(Post post){
         DailyJogak dailyJogak = post.getDailyJogak();
-        return PostResponseDto.CreatePostDto.builder()
-                .id(post.getId())
-                .mogakId(dailyJogak.getJogak().getMogak().getId())
-                .jogakId(dailyJogak.getJogak().getId())
-                .dailyJogakId(dailyJogak.getId())
-                .targetDate(dailyJogak.getTargetDate())
-                .userId(post.getUser().getId())
-                .contents(post.getContents())
-                .createdAt(post.getCreatedAt())
-                .imgUrls(post.getPostImgs().stream()
-                        .map(m -> m.getImgUrl())
-                        .collect(Collectors.toList())
-                )
-                .build();
+        List<String> imgUrls = post.getPostImgs().stream()
+                .map(PostImg::getImgUrl)
+                .collect(Collectors.toList());
+        return PostResponseDto.CreatePostDto.of(
+                post.getId(),
+                dailyJogak.getJogak().getMogak().getId(),
+                dailyJogak.getJogak().getId(),
+                dailyJogak.getId(),
+                dailyJogak.getTargetDate(),
+                post.getUser().getId(),
+                post.getContents(),
+                imgUrls,
+                post.getCreatedAt()
+        );
     }
 
     public static Post toPost(PostRequestDto.CreatePostDto request, User user, DailyJogak dailyJogak){
         return Post.builder()
                 .dailyJogak(dailyJogak)
                 .user(user)
-                .contents(request.getContents())
+                .contents(request.contents())
                 .viewCnt(0)  //조회수 초기화
                 .build();
     }
     //상세 조회
     public static PostResponseDto.PostDto toPostDto(Post post, List<String> imgUrls, List<Long> commentIds){
         DailyJogak dailyJogak = post.getDailyJogak();
-        return PostResponseDto.PostDto.builder()
-                .postId(post.getId())
-                .mogakId(dailyJogak.getJogak().getMogak().getId())
-                .jogakId(dailyJogak.getJogak().getId())
-                .dailyJogakId(dailyJogak.getId())
-                .targetDate(dailyJogak.getTargetDate())
-                .userId(post.getUser().getId())
-                .contents(post.getContents())
-                .imgUrls(imgUrls)
-                .commentId(commentIds) //일단 comment id로 조회하는 것으로 함
-                .likeCnt(post.getLikeCnt())
-                .commentCnt(post.getCommentCnt())
-                .build();
+        return PostResponseDto.PostDto.of(
+                post.getId(),
+                dailyJogak.getJogak().getMogak().getId(),
+                dailyJogak.getJogak().getId(),
+                dailyJogak.getId(),
+                dailyJogak.getTargetDate(),
+                post.getUser().getId(),
+                post.getContents(),
+                imgUrls,
+                commentIds,
+                post.getLikeCnt(),
+                post.getCommentCnt()
+        );
     }
 
     public static PostResponseDto.UpdatePostDto toUpdatePostDto(Post post){
-        return PostResponseDto.UpdatePostDto.builder()
-                .id(post.getId())
-                .contents(post.getContents())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        return PostResponseDto.UpdatePostDto.of(post.getId(), post.getContents(), LocalDateTime.now());
     }
 
     public static PostResponseDto.DeletePostDto toDeletePostDto(){
-        return PostResponseDto.DeletePostDto.builder()
-                .deleted(true)
-                .build();
+        return PostResponseDto.DeletePostDto.deletedResponse();
     }
     //전체조회
     public static PostResponseDto.GetPostDto toGetPostDto(Post post){
         DailyJogak dailyJogak = post.getDailyJogak();
-        return PostResponseDto.GetPostDto.builder()
-                .postId(post.getId())
-                .mogakId(dailyJogak.getJogak().getMogak().getId())
-                .jogakId(dailyJogak.getJogak().getId())
-                .dailyJogakId(dailyJogak.getId())
-                .targetDate(dailyJogak.getTargetDate())
-                .contents(post.getContents())
-                .thumbnailUrl(post.getPostThumbnailUrl())
-                .build();
+        return PostResponseDto.GetPostDto.of(
+                post.getId(),
+                dailyJogak.getJogak().getMogak().getId(),
+                dailyJogak.getJogak().getId(),
+                dailyJogak.getId(),
+                dailyJogak.getTargetDate(),
+                post.getContents(),
+                post.getPostThumbnailUrl(),
+                post.getLikeCnt()
+        );
     }
     public static List<PostResponseDto.GetPostDto> toPostDtoList(List<Post> postList){
         return postList.stream()
@@ -92,28 +87,26 @@ public class PostConverter {
                 .collect(Collectors.toList());
     }
     public static PostResponseDto.PostListDto toPostListDto(List<Post> postList){
-        return PostResponseDto.PostListDto.builder()
-                .postDtoList(toPostDtoList(postList))
-                .size(postList.size())
-                .build();
+        return PostResponseDto.PostListDto.of(toPostDtoList(postList), false, postList.size());
     }
     public static Slice<PostResponseDto.GetPostDto> toPostPagingDto(Slice<Post> posts){
         return posts.map(post -> toGetPostDto(post));
     }
     //네트워킹전체조회
     public static PostResponseDto.GetAllNetworkDto toGetNetworkDto(Post post){
-        return PostResponseDto.GetAllNetworkDto.builder()
-                .postId(post.getId())
-                .userName(post.getUser().getNickname())
-                .userJob(post.getUser().getJob().getName())
-                .contents(post.getContents())
-                .imgUrls(post.getPostImgs().stream()
-                        .filter(img -> !Objects.equals(img.getImgUrl(), post.getPostThumbnailUrl()))
-                        .map(PostImg::getImgUrl)
-                        .collect(Collectors.toList()))
-                .commentCnt(post.getCommentCnt())
-                .likeCnt(post.getLikeCnt())
-                .build();
+        List<String> imgUrls = post.getPostImgs().stream()
+                .filter(img -> !Objects.equals(img.getImgUrl(), post.getPostThumbnailUrl()))
+                .map(PostImg::getImgUrl)
+                .collect(Collectors.toList());
+        return PostResponseDto.GetAllNetworkDto.of(
+                post.getId(),
+                post.getUser().getNickname(),
+                post.getUser().getJob().getName(),
+                post.getContents(),
+                imgUrls,
+                post.getCommentCnt(),
+                post.getLikeCnt()
+        );
 
     }
     public static List<PostResponseDto.GetAllNetworkDto> toNetworkDtoList(List<Post> postList){
@@ -122,10 +115,7 @@ public class PostConverter {
                 .collect(Collectors.toList());
     }
     public static PostResponseDto.NetworkListDto toNetworkListDto (List<Post> postList){
-        return PostResponseDto.NetworkListDto.builder()
-                .postDtoList(toNetworkDtoList(postList))
-                .size(postList.size())
-                .build();
+        return PostResponseDto.NetworkListDto.of(toNetworkDtoList(postList), false, postList.size());
     }
 
     public static Slice<PostResponseDto.GetAllNetworkDto> toNetworkPagingDto(Slice<Post> posts){
@@ -134,8 +124,18 @@ public class PostConverter {
 
     //좋아요 생성
     public static PostResponseDto.PostDto toCreateLikePostDto(Post post){
-        return PostResponseDto.PostDto.builder()
-                .likeCnt(post.getLikeCnt())
-                .build();
+        return PostResponseDto.PostDto.of(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                post.getLikeCnt(),
+                0
+        );
     }
 }

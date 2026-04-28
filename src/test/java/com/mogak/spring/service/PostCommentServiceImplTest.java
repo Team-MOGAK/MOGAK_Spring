@@ -16,7 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
@@ -183,14 +182,10 @@ class PostCommentServiceImplTest {
     }
 
     private static CommentRequestDto.CreateCommentDto createRequest(String contents) {
-        CommentRequestDto.CreateCommentDto request = new CommentRequestDto.CreateCommentDto();
-        ReflectionTestUtils.setField(request, "contents", contents);
-        return request;
+        return new CommentRequestDto.CreateCommentDto(contents);
     }
 
     private static CommentRequestDto.UpdateCommentDto updateRequest(String contents) {
-        CommentRequestDto.UpdateCommentDto request = new CommentRequestDto.UpdateCommentDto();
-        ReflectionTestUtils.setField(request, "contents", contents);
-        return request;
+        return new CommentRequestDto.UpdateCommentDto(contents);
     }
 }
