@@ -12,7 +12,6 @@ import com.mogak.spring.service.result.MogakListResult;
 import com.mogak.spring.service.result.MogakResult;
 import com.mogak.spring.support.SecurityContextTestHelper;
 import com.mogak.spring.web.dto.mogakdto.CreateMogakRequest;
-import com.mogak.spring.web.dto.mogakdto.UpdateMogakRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -84,7 +83,7 @@ class MogakControllerTest {
                 )
         );
 
-        mockMvc.perform(post("/api/modarats/mogaks")
+        mockMvc.perform(post("/api/mogaks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new CreateMogakRequest(
                                 10L,
@@ -109,7 +108,7 @@ class MogakControllerTest {
     @Test
     @DisplayName("모각 생성 요청이 유효하지 않으면 에러 응답 계약을 반환한다")
     void createMogakValidationErrorContract() throws Exception {
-        mockMvc.perform(post("/api/modarats/mogaks")
+        mockMvc.perform(post("/api/mogaks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"정보처리기사\"}"))
                 .andExpect(status().isBadRequest())
@@ -167,7 +166,7 @@ class MogakControllerTest {
                 )
         ));
 
-        mockMvc.perform(get("/api/modarats/mogaks/1/jogaks")
+        mockMvc.perform(get("/api/mogaks/1/jogaks")
                         .param("date", "2026-03-26"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -184,7 +183,7 @@ class MogakControllerTest {
     @Test
     @DisplayName("모각 삭제 요청이 성공하면 성공 응답 계약을 반환한다")
     void deleteMogakContract() throws Exception {
-        mockMvc.perform(delete("/api/modarats/mogaks/1"))
+        mockMvc.perform(delete("/api/mogaks/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.time").exists())
@@ -209,15 +208,9 @@ class MogakControllerTest {
                 )
         );
 
-        mockMvc.perform(put("/api/modarats/mogaks")
+        mockMvc.perform(put("/api/mogaks/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new UpdateMogakRequest(
-                                1L,
-                                "수정된 모각",
-                                "자격증",
-                                "필기",
-                                "#112233"
-                        ))))
+                        .content("{\"title\":\"수정된 모각\",\"bigCategory\":\"자격증\",\"smallCategory\":\"필기\",\"color\":\"#112233\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.title").value("수정된 모각"));
 
@@ -230,12 +223,21 @@ class MogakControllerTest {
         doThrow(new MogakException(ErrorCode.NOT_EXIST_MOGAK))
                 .when(mogakService).deleteMogak(1L, 99L);
 
-        mockMvc.perform(delete("/api/modarats/mogaks/99"))
+        mockMvc.perform(delete("/api/mogaks/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.time").exists())
                 .andExpect(jsonPath("$.status").value("NOT_FOUND"))
                 .andExpect(jsonPath("$.code").value("M004"))
                 .andExpect(jsonPath("$.message").value("존재하지 않는 모각입니다"));
+    }
+
+    @Test
+    @DisplayName("구버전 모각 생성 라우트는 더 이상 노출되지 않는다")
+    void legacyCreateMogakRouteIsNotExposed() throws Exception {
+        mockMvc.perform(post("/api/modarats/mogaks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"modaratId\":10,\"title\":\"정보처리기사\",\"bigCategory\":\"자격증\",\"smallCategory\":\"필기\",\"color\":\"#112233\"}"))
+                .andExpect(status().isNotFound());
     }
 }
