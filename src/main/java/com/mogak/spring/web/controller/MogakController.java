@@ -36,7 +36,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 @Tag(name = "모각 API", description = "모각 API 명세서")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/modarats")
+@RequestMapping("/api")
 public class MogakController {
     private final MogakService mogakService;
 
@@ -82,12 +82,13 @@ public class MogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각, 존재하지 않는 카테고리",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
-    @PutMapping("/mogaks")
+    @PutMapping("/mogaks/{mogakId}")
     public ResponseEntity<BaseResponse<MogakResponse>> updateMogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                                                  @PathVariable Long mogakId,
                                                                                   @Valid @RequestBody UpdateMogakRequest request) {
         MogakResult result = mogakService.updateMogak(
                 authenticatedUser.getUserId(),
-                request.mogakId(),
+                mogakId,
                 request.title(),
                 request.bigCategory(),
                 request.smallCategory(),
@@ -103,7 +104,7 @@ public class MogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/{modaratId}/mogaks")
+    @GetMapping("/modarats/{modaratId}/mogaks")
     public ResponseEntity<BaseResponse<MogakListResponse>> getMogakList(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                                        @PathVariable Long modaratId) {
         return ResponseEntity.ok(new BaseResponse<>(toMogakListResponse(mogakService.getMogakList(authenticatedUser.getUserId(), modaratId))));

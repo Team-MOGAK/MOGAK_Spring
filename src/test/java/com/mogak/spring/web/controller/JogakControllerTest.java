@@ -7,13 +7,16 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.JogakService;
 import com.mogak.spring.service.command.CreateJogakCommand;
+import com.mogak.spring.service.command.UpdateJogakCommand;
 import com.mogak.spring.service.result.CreateJogakResult;
 import com.mogak.spring.service.result.DailyJogakListResult;
 import com.mogak.spring.service.result.DailyJogakResult;
 import com.mogak.spring.service.result.JogakDailyResult;
+import com.mogak.spring.service.result.JogakDetailResult;
 import com.mogak.spring.service.result.OneTimeJogakListResult;
 import com.mogak.spring.service.result.OneTimeJogakResult;
 import com.mogak.spring.service.result.RoutineJogakResult;
+import com.mogak.spring.web.dto.jogakdto.UpdateJogakRequest;
 import com.mogak.spring.support.SecurityContextTestHelper;
 
 import org.junit.jupiter.api.AfterEach;
@@ -37,6 +40,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -88,7 +92,7 @@ class JogakControllerTest {
                 )
         );
 
-        mockMvc.perform(post("/api/modarats/mogaks/jogaks")
+        mockMvc.perform(post("/api/jogaks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"mogakId\":1,\"title\":\"문제풀이\",\"isRoutine\":false,\"today\":\"2026-03-26\"}"))
                 .andExpect(status().isCreated())
@@ -104,7 +108,7 @@ class JogakControllerTest {
     @Test
     @DisplayName("조각 생성 요청이 유효하지 않으면 에러 응답 계약을 반환한다")
     void createJogakValidationErrorContract() throws Exception {
-        mockMvc.perform(post("/api/modarats/mogaks/jogaks")
+        mockMvc.perform(post("/api/jogaks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"mogakId\":1,\"title\":\"문제풀이\",\"isRoutine\":false}"))
                 .andExpect(status().isBadRequest())
@@ -135,7 +139,7 @@ class JogakControllerTest {
                 )
         );
 
-        mockMvc.perform(get("/api/modarats/mogaks/jogaks/daily")
+        mockMvc.perform(get("/api/jogaks/daily")
                         .param("date", "2026-03-26"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -154,7 +158,7 @@ class JogakControllerTest {
                 new RoutineJogakResult(-1L, LocalDate.of(2026, 3, 27), false, "루틴 조각")
         ));
 
-        mockMvc.perform(get("/api/modarats/mogaks/jogaks/routines")
+        mockMvc.perform(get("/api/jogaks/routines")
                         .param("startDay", "2026-03-26")
                         .param("endDay", "2026-03-30"))
                 .andExpect(status().isOk())
@@ -185,7 +189,7 @@ class JogakControllerTest {
                 )
         );
 
-        mockMvc.perform(get("/api/modarats/mogaks/jogaks")
+        mockMvc.perform(get("/api/jogaks")
                         .param("date", "2026-03-26"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -195,6 +199,35 @@ class JogakControllerTest {
                 .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
                 .andExpect(jsonPath("$.result.size").value(1))
                 .andExpect(jsonPath("$.result.dailyJogaks[0].title").value("루틴 조각"));
+    }
+
+    @Test
+    @DisplayName("조각 단일 조회 요청이 성공하면 조회 응답 계약을 반환한다")
+    void getJogakContract() throws Exception {
+        when(jogakService.getJogakDetail(1L, 1L)).thenReturn(
+                new JogakDetailResult(
+                        1L,
+                        "정보처리기사",
+                        "자격증",
+                        "문제풀이",
+                        false,
+                        List.of("MONDAY"),
+                        "#112233",
+                        2,
+                        LocalDate.of(2026, 3, 1),
+                        LocalDate.of(2026, 3, 31)
+                )
+        );
+
+        mockMvc.perform(get("/api/jogaks/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.time").exists())
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andExpect(jsonPath("$.code").value("success"))
+                .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
+                .andExpect(jsonPath("$.result.jogakId").value(1L))
+                .andExpect(jsonPath("$.result.title").value("문제풀이"));
     }
 
     @Test
@@ -214,7 +247,7 @@ class JogakControllerTest {
                 )
         );
 
-        mockMvc.perform(post("/api/modarats/mogaks/jogaks/1/start"))
+        mockMvc.perform(post("/api/jogaks/1/start"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.time").exists())
@@ -230,13 +263,60 @@ class JogakControllerTest {
     void startJogakAlreadyStartedErrorContract() throws Exception {
         when(jogakService.startJogak(1L, 1L)).thenThrow(new JogakException(ErrorCode.ALREADY_START_JOGAK));
 
-        mockMvc.perform(post("/api/modarats/mogaks/jogaks/1/start"))
+        mockMvc.perform(post("/api/jogaks/1/start"))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.time").exists())
                 .andExpect(jsonPath("$.status").value("CONFLICT"))
                 .andExpect(jsonPath("$.code").value("J002"))
                 .andExpect(jsonPath("$.message").value("이미 시작한 조각입니다"));
+    }
+
+    @Test
+    @DisplayName("조각 수정 요청이 성공하면 수정 응답 계약을 반환한다")
+    void updateJogakContract() throws Exception {
+        when(jogakService.updateJogak(eq(1L), eq(1L), any(UpdateJogakCommand.class))).thenReturn(
+                new CreateJogakResult(
+                        1L,
+                        "정보처리기사",
+                        "자격증",
+                        "문제풀이(수정)",
+                        false,
+                        List.of("MONDAY"),
+                        0,
+                        LocalDate.of(2026, 3, 1),
+                        LocalDate.of(2026, 4, 30)
+                )
+        );
+
+        mockMvc.perform(put("/api/jogaks/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new UpdateJogakRequest(
+                                "문제풀이(수정)",
+                                false,
+                                List.of("MONDAY"),
+                                LocalDate.of(2026, 4, 30)
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.time").exists())
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andExpect(jsonPath("$.code").value("success"))
+                .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
+                .andExpect(jsonPath("$.result.title").value("문제풀이(수정)"));
+    }
+
+    @Test
+    @DisplayName("조각 삭제 요청이 성공하면 성공 응답 계약을 반환한다")
+    void deleteJogakContract() throws Exception {
+        mockMvc.perform(delete("/api/jogaks/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.time").exists())
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andExpect(jsonPath("$.code").value("success"))
+                .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
+                .andExpect(jsonPath("$.result").doesNotExist());
     }
 
     @Test
@@ -256,7 +336,7 @@ class JogakControllerTest {
                 )
         );
 
-        mockMvc.perform(put("/api/modarats/mogaks/jogaks/10/success"))
+        mockMvc.perform(put("/api/daily-jogaks/10/success"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.time").exists())
@@ -268,11 +348,39 @@ class JogakControllerTest {
     }
 
     @Test
+    @DisplayName("조각 실패 요청이 성공하면 응답 계약을 반환한다")
+    void failJogakContract() throws Exception {
+        when(jogakService.failJogak(1L, 10L)).thenReturn(
+                new JogakDailyResult(
+                        1L,
+                        10L,
+                        "문제풀이",
+                        "정보처리기사",
+                        "자격증",
+                        false,
+                        null,
+                        false,
+                        0
+                )
+        );
+
+        mockMvc.perform(put("/api/daily-jogaks/10/fail"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.time").exists())
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andExpect(jsonPath("$.code").value("success"))
+                .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
+                .andExpect(jsonPath("$.result.dailyJogakId").value(10L))
+                .andExpect(jsonPath("$.result.isAchievement").value(false));
+    }
+
+    @Test
     @DisplayName("이미 종료한 조각의 성공을 요청하면 에러 응답 계약을 반환한다")
     void successJogakAlreadyEndedErrorContract() throws Exception {
         when(jogakService.successJogak(1L, 10L)).thenThrow(new JogakException(ErrorCode.ALREADY_END_JOGAK));
 
-        mockMvc.perform(put("/api/modarats/mogaks/jogaks/10/success"))
+        mockMvc.perform(put("/api/daily-jogaks/10/success"))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.time").exists())
@@ -286,12 +394,21 @@ class JogakControllerTest {
     void successJogakNotFoundErrorContract() throws Exception {
         when(jogakService.successJogak(1L, 999L)).thenThrow(new JogakException(ErrorCode.NOT_EXIST_JOGAK));
 
-        mockMvc.perform(put("/api/modarats/mogaks/jogaks/999/success"))
+        mockMvc.perform(put("/api/daily-jogaks/999/success"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.time").exists())
                 .andExpect(jsonPath("$.status").value("NOT_FOUND"))
                 .andExpect(jsonPath("$.code").value("J005"))
                 .andExpect(jsonPath("$.message").value("존재하지 않는 조각입니다"));
+    }
+
+    @Test
+    @DisplayName("구버전 조각 생성 라우트는 더 이상 노출되지 않는다")
+    void legacyCreateJogakRouteIsNotExposed() throws Exception {
+        mockMvc.perform(post("/api/modarats/mogaks/jogaks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isNotFound());
     }
 }
