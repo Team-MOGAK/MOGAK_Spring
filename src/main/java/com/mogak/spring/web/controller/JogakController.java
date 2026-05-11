@@ -49,7 +49,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 @Tag(name = "조각 API", description = "조각 API 명세서")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/modarats/mogaks/jogaks")
+@RequestMapping("/api")
 public class JogakController {
     private final JogakService jogakService;
 
@@ -62,7 +62,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 모각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PostMapping("")
+    @PostMapping("/jogaks")
     public ResponseEntity<BaseResponse<CreateJogakResponse>> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                                  @Valid @RequestBody CreateJogakRequest createJogakRequest) {
         CreateJogakResult result = jogakService.createJogak(
@@ -86,7 +86,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/{jogakId}/detail")
+    @GetMapping("/jogaks/{jogakId}")
     public ResponseEntity<BaseResponse<JogakDetailResponse>> getJogakDetail(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                                          @PathVariable Long jogakId) {
         return ResponseEntity.ok(new BaseResponse<>(toJogakDetailResponse(jogakService.getJogakDetail(authenticatedUser.getUserId(), jogakId))));
@@ -100,7 +100,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/daily")
+    @GetMapping("/jogaks/daily")
     public ResponseEntity<BaseResponse<OneTimeJogakListResponse>> getDailyJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. format: YYYY-MM-DD", example = "2024-02-15")
             @RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
@@ -114,7 +114,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping
+    @GetMapping("/jogaks")
     public ResponseEntity<BaseResponse<DailyJogakListResponse>> getDayJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @Parameter(description = "조회를 원하는 날짜를 입력해주시면 됩니다. format: YYYY-MM-DD", example = "2024-02-14")
             @RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
@@ -128,7 +128,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 유저",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @GetMapping("/routines")
+    @GetMapping("/jogaks/routines")
     public ResponseEntity<BaseResponse<List<RoutineJogakResponse>>> getRoutineJogaks(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @Parameter(description = "조회를 원하는 첫 날짜를 입력. format: YYYY-MM-DD", example = "2024-02-14")
             @RequestParam("startDay") @DateTimeFormat(iso = ISO.DATE) LocalDate startDay,
@@ -149,7 +149,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "409", description = "이미 시작한 조각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PostMapping("{jogakId}/start")
+    @PostMapping("/jogaks/{jogakId}/start")
     public ResponseEntity<BaseResponse<JogakDailyResponse>> startJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                                         @PathVariable Long jogakId) {
         return ResponseEntity.ok(new BaseResponse<>(toJogakDailyResponse(jogakService.startJogak(authenticatedUser.getUserId(), jogakId))));
@@ -167,7 +167,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "409", description = "이미 종료한 조각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("{dailyJogakId}/success")
+    @PutMapping("/daily-jogaks/{dailyJogakId}/success")
     public ResponseEntity<BaseResponse<JogakDailyResponse>> successJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                                            @PathVariable Long dailyJogakId) {
         return ResponseEntity.ok(new BaseResponse<>(toJogakDailyResponse(jogakService.successJogak(authenticatedUser.getUserId(), dailyJogakId))));
@@ -185,7 +185,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "409", description = "이미 종료한 조각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("{dailyJogakId}/fail")
+    @PutMapping("/daily-jogaks/{dailyJogakId}/fail")
     public ResponseEntity<BaseResponse<JogakDailyResponse>> failJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                                         @PathVariable Long dailyJogakId) {
         return ResponseEntity.ok(new BaseResponse<>(toJogakDailyResponse(jogakService.failJogak(authenticatedUser.getUserId(), dailyJogakId))));
@@ -200,7 +200,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 조각, 존재하지 않는 카테고리",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @PutMapping("/{jogakId}")
+    @PutMapping("/jogaks/{jogakId}")
     public ResponseEntity<BaseResponse<CreateJogakResponse>> updateJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                @PathVariable Long jogakId,
                                                                @Valid @RequestBody UpdateJogakRequest updateJogakRequest) {
@@ -225,7 +225,7 @@ public class JogakController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않는 조각",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             })
-    @DeleteMapping("/{jogakId}")
+    @DeleteMapping("/jogaks/{jogakId}")
     public ResponseEntity<BaseResponse<ErrorCode>> deleteJogak(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                                @PathVariable Long jogakId) {
         jogakService.deleteJogak(authenticatedUser.getUserId(), jogakId);
