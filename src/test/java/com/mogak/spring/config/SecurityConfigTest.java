@@ -12,17 +12,18 @@ import com.mogak.spring.security.ApiAuthenticationEntryPoint;
 import com.mogak.spring.security.SecurityAuthority;
 import com.mogak.spring.service.result.ProfileImageResult;
 import com.mogak.spring.service.result.SocialLoginResult;
+import com.mogak.spring.service.result.metadata.MetadataOptionResult;
 import com.mogak.spring.service.result.UserCreateResult;
 import com.mogak.spring.service.AuthService;
+import com.mogak.spring.service.MetadataService;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.web.controller.AuthController;
+import com.mogak.spring.web.controller.MetadataController;
 import com.mogak.spring.web.controller.UserController;
 import com.mogak.spring.web.dto.authdto.SocialLoginRequest;
 import com.mogak.spring.web.dto.authdto.SocialLoginResponse;
 import com.mogak.spring.web.dto.userdto.UserCreateRequest;
-import com.mogak.spring.web.dto.userdto.UserCreateResponse;
-import com.mogak.spring.web.dto.userdto.UserUploadImageRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,11 +39,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -53,7 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-@WebMvcTest({UserController.class, AuthController.class})
+@WebMvcTest({UserController.class, AuthController.class, MetadataController.class})
 @Import({
         SecurityConfig.class,
         JwtAuthenticationProvider.class,
@@ -78,6 +79,8 @@ class SecurityConfigTest {
     private AuthService authService;
     @MockitoBean
     private StorageService storageService;
+    @MockitoBean
+    private MetadataService metadataService;
     @MockitoBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
@@ -170,6 +173,17 @@ class SecurityConfigTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.result.userId").value(10L))
                 .andExpect(jsonPath("$.result.tokens.accessToken").value("access-token"));
+    }
+
+    @Test
+    @DisplayName("메타데이터 조회 API는 토큰 없이 호출할 수 있다")
+    void metadataJobsEndpointIsPublic() throws Exception {
+        when(metadataService.getJobs()).thenReturn(List.of(new MetadataOptionResult("개발/데이터")));
+
+        mockMvc.perform(get("/api/metadata/jobs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("success"))
+                .andExpect(jsonPath("$.result[0].name").value("개발/데이터"));
     }
 
     private org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder joinRequest(String role)
