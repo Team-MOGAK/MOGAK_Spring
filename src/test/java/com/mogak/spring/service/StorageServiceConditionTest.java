@@ -4,8 +4,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class StorageServiceConditionTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withUserConfiguration(StorageServiceConditionTest.TestConfig.class);
+            .withUserConfiguration(AwsS3Service.class, DisabledStorageService.class);
 
     @Test
     @DisplayName("feature.storage.enabled가 없거나 false면 DisabledStorageService가 StorageService로 등록된다")
@@ -52,8 +50,4 @@ class StorageServiceConditionTest {
                 });
     }
 
-    @Configuration(proxyBeanMethods = false)
-    @Import({AwsS3Service.class, DisabledStorageService.class})
-    static class TestConfig {
-    }
 }
