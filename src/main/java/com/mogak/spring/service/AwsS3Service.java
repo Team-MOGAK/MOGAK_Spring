@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +27,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,9 +70,9 @@ public class AwsS3Service implements StorageService {
                 ));
                 if (multipartFile.get(0) == img) {
                     String thumbnailImgName = createThumbnailImgName(format, dirName);
-                    MultipartFile thumbnailImg = resizeImage(thumbnailImgName, format, img, 200, 200);
+                    ThumbnailImage thumbnailImg = resizeImage(format, img, 200, 200);
                     uploadedObjectNames.add(thumbnailImgName);
-                    uploadThumbnailToS3(thumbnailImgName, thumbnailImg, format);
+                    uploadThumbnailToS3(thumbnailImgName, thumbnailImg);
                     uploadedImages.add(new UploadedPostImageResult(
                             thumbnailImgName,
                             createObjectUrl(thumbnailImgName),
@@ -87,12 +87,9 @@ public class AwsS3Service implements StorageService {
         return uploadedImages;
     }
 
-    private void uploadThumbnailToS3(String thumbnailImgName, MultipartFile thumbnailImg, String format) {
-        try (InputStream inputThumbnailStream = thumbnailImg.getInputStream()) {
-            putObject(thumbnailImgName, thumbnailImg.getSize(), contentTypeForFormat(format), inputThumbnailStream);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "s3 썸네일 업로드 실패했습니다");
-        }
+    private void uploadThumbnailToS3(String thumbnailImgName, ThumbnailImage thumbnailImg) {
+        ByteArrayInputStream inputThumbnailStream = new ByteArrayInputStream(thumbnailImg.bytes());
+        putObject(thumbnailImgName, thumbnailImg.size(), thumbnailImg.contentType(), inputThumbnailStream);
     }
 
     private void uploadImgToS3(String imgName, MultipartFile multipartFile, String format) {
@@ -116,7 +113,7 @@ public class AwsS3Service implements StorageService {
         );
     }
 
-    private MultipartFile resizeImage(String thumbnailImgName, String imgFormat, MultipartFile multipartFile, int width, int height) {
+    private ThumbnailImage resizeImage(String imgFormat, MultipartFile multipartFile, int width, int height) {
         try {
             BufferedImage image = ImageIO.read(multipartFile.getInputStream());
             if (image == null) {
@@ -131,9 +128,12 @@ public class AwsS3Service implements StorageService {
 
             BufferedImage imageNoAlpha = marvinImage.getBufferedImageNoAlpha();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(imageNoAlpha, imgFormat, baos);
+            if (!ImageIO.write(imageNoAlpha, imgFormat, baos)) {
+                throw invalidImageRequest();
+            }
             baos.flush();
-            return new MockMultipartFile(thumbnailImgName, baos.toByteArray());
+            byte[] bytes = baos.toByteArray();
+            return new ThumbnailImage(bytes, bytes.length, contentTypeForFormat(imgFormat));
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fail to generate thumbnail");
         }
@@ -287,5 +287,8 @@ public class AwsS3Service implements StorageService {
         return s3Client.utilities()
                 .getUrl(GetUrlRequest.builder().bucket(bucket).key(key).build())
                 .toExternalForm();
+    }
+
+    private record ThumbnailImage(byte[] bytes, long size, String contentType) {
     }
 }
