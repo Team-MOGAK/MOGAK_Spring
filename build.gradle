@@ -59,8 +59,6 @@ dependencies {
 		exclude group: 'org.bytedeco', module: 'javacv-platform'
 	}
 
-	// Test support used by production code
-	implementation 'org.springframework:spring-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-jackson-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'

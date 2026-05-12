@@ -1,6 +1,7 @@
 package com.mogak.spring.service;
 
 import com.mogak.spring.global.ErrorCode;
+import com.mogak.spring.service.result.UploadedPostImageResult;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,6 +66,31 @@ class AwsS3ServiceTest {
         Throwable throwable = catchThrowable(() -> awsS3Service.uploadImg(List.of(), "img"));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_HAVE_IMAGE);
+    }
+
+    @Test
+    @DisplayName("게시글 이미지 업로드는 첫 이미지 원본과 썸네일을 S3에 업로드한다")
+    void uploadImgUploadsOriginalAndThumbnailForFirstImage() throws Exception {
+        MockMultipartFile file = pngFile("post.png");
+        when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
+                .thenReturn(PutObjectResponse.builder().build());
+        when(s3Client.utilities()).thenReturn(s3Utilities);
+        doReturn(URI.create("https://example.com/post.png").toURL())
+                .when(s3Utilities)
+                .getUrl(any(GetUrlRequest.class));
+        ArgumentCaptor<PutObjectRequest> putCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
+
+        List<UploadedPostImageResult> results = awsS3Service.uploadImg(List.of(file), "img");
+
+        verify(s3Client, times(2)).putObject(putCaptor.capture(), any(RequestBody.class));
+        assertThat(putCaptor.getAllValues())
+                .extracting(PutObjectRequest::contentType)
+                .containsExactly("image/png", "image/png");
+        assertThat(putCaptor.getAllValues().get(0).contentLength()).isEqualTo(file.getSize());
+        assertThat(putCaptor.getAllValues().get(1).contentLength()).isPositive();
+        assertThat(results)
+                .extracting(UploadedPostImageResult::isThumbnail)
+                .containsExactly(false, true);
     }
 
     @Test
