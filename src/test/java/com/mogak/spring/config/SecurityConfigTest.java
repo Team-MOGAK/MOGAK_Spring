@@ -193,8 +193,8 @@ class SecurityConfigTest {
     }
 
     @Test
-    @DisplayName("동의 항목 조회 API는 공개 경로로 허용한다")
-    void consentItemsEndpointIsPermitAll() throws Exception {
+    @DisplayName("동의 항목 조회 API는 토큰 없이 호출할 수 있다")
+    void consentItemsEndpointIsPublic() throws Exception {
         when(consentService.getActiveConsentItems())
                 .thenReturn(List.of(new ConsentItemResult(1L, "MARKETING", "마케팅 수신", null, false)));
 
