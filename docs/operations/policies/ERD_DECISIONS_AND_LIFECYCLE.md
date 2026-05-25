@@ -5,10 +5,10 @@
 ## Scope
 - 이 문서는 공개 가능한 구조 결정만 담는다.
 - 비공개 정책의 제목, 본문, 예시 판단 기준은 적지 않는다.
-- `AgreeUser` 및 withdrawn user 처리처럼 정책 확정이 남은 항목은 pending으로 표기한다.
+- `UserConsent` 및 withdrawn user 처리처럼 정책 확정이 남은 항목은 pending으로 표기한다.
 
 ## ERD Decisions
-- `AgreeUser`는 실제 terms consent 모델로 유지한다.
+- `ConsentItem`은 동의 항목 정의, `UserConsent`는 사용자별 동의 상태로 유지한다.
 - `DailyJogak`는 `Jogak`에서 파생되는 날짜 단위 인스턴스로 본다.
 - `DailyJogak.title`과 `DailyJogak.isRoutine`은 생성 시점 스냅샷으로 취급한다.
 - 미래 일정은 `Jogak` + `JogakPeriod` 조합으로 계산하고, 미래 일정 표현용 `DailyJogak` row는 만들지 않는다.
@@ -30,7 +30,8 @@
 | `Follow` | hard delete | 팔로우 관계는 하드 삭제한다. |
 | `BlockUser` | hard delete | 차단 관계는 하드 삭제한다. |
 | `Report` | preserve | 신고 데이터는 보존한다. |
-| `AgreeUser` | pending | 실제 terms consent 모델로 유지하며, retention/anonymization/deletion policy는 pending이다. |
+| `ConsentItem` | preserve | 동의 항목 정의 데이터는 보존한다. |
+| `UserConsent` | pending | 사용자별 terms consent 상태로 유지하며, retention/anonymization/deletion policy는 pending이다. |
 
 ## DailyJogak Creation Rules
 - routine midnight batch는 오늘자 `DailyJogak` row를 생성한다.
@@ -39,9 +40,9 @@
 - 기존 `DailyJogak` row의 `title`과 `isRoutine`은 생성 시점 값을 유지한다.
 
 ## Pending Items
-- `AgreeUser` retention policy
-- `AgreeUser` anonymization policy
-- `AgreeUser` deletion policy
+- `UserConsent` retention policy
+- `UserConsent` anonymization policy
+- `UserConsent` deletion policy
 - withdrawn user email anonymization policy
 - withdrawn user nickname anonymization policy
 - withdrawn user profile anonymization policy
