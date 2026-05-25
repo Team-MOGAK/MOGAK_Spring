@@ -31,6 +31,9 @@ public enum ErrorCode {
     SOCIAL_ACCOUNT_CONFLICT(HttpStatus.CONFLICT, "U011", "이미 연결된 소셜 계정이 있습니다"),
     SOCIAL_ACCOUNT_LINK_REQUIRED(HttpStatus.CONFLICT, "U012", "기존 계정에 소셜 계정 연결이 필요합니다"),
     SOCIAL_EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "U013", "소셜 로그인 이메일 검증이 필요합니다"),
+    NOT_EXIST_CONSENT_ITEM(HttpStatus.BAD_REQUEST, "U014", "존재하지 않는 동의 항목입니다"),
+    INACTIVE_CONSENT_ITEM(HttpStatus.BAD_REQUEST, "U015", "비활성화된 동의 항목입니다"),
+    DUPLICATE_CONSENT_ITEM(HttpStatus.BAD_REQUEST, "U016", "중복된 동의 항목입니다"),
 
     /**
      * 모다라트 에러

@@ -43,6 +43,7 @@ public class SecurityConfig {
             "/api/auth/refresh",
             "/api/users/nickname/verify",
             "/api/users/login",
+            "/api/consents",
             "/api/metadata/**"
     );
     private static final List<String> CORS_ALLOWED_METHODS = List.of(

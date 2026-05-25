@@ -39,6 +39,8 @@ class UserServiceImplTest {
     private AddressRepository addressRepository;
     @Mock
     private JwtTokenProvider jwtTokenProvider;
+    @Mock
+    private ConsentService consentService;
 
     @InjectMocks
     private UserServiceImpl userService;

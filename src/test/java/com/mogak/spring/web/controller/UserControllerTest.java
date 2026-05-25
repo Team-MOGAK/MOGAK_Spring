@@ -7,6 +7,7 @@ import com.mogak.spring.jwt.JwtTokenProvider;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.security.SecurityAuthority;
+import com.mogak.spring.service.command.UserConsentCommand;
 import com.mogak.spring.service.result.ProfileImageResult;
 import com.mogak.spring.service.result.UserCreateResult;
 import com.mogak.spring.service.result.UserProfileResult;
@@ -16,6 +17,7 @@ import com.mogak.spring.web.dto.userdto.UserUpdateNicknameRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -28,9 +30,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -99,7 +107,7 @@ class UserControllerTest {
     void createUserMultipartContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
         UserCreateResult response = new UserCreateResult(1L, "tester", null);
-        when(userService.create(anyLong(), any(String.class), any(String.class), any(String.class), any(ProfileImageResult.class)))
+        when(userService.create(anyLong(), any(String.class), any(String.class), any(String.class), any(ProfileImageResult.class), anyList()))
                 .thenReturn(response);
 
         MockMultipartFile requestPart = new MockMultipartFile(
@@ -135,6 +143,81 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("회원 가입 요청의 동의 목록은 서비스 생성 요청으로 전달된다")
+    void createUserForwardsConsents() throws Exception {
+        SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
+        UserCreateResult response = new UserCreateResult(1L, "tester", null);
+        when(userService.create(anyLong(), any(String.class), any(String.class), any(String.class), any(ProfileImageResult.class), anyList()))
+                .thenReturn(response);
+
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                """
+                        {"nickname":"tester","job":"개발/데이터","address":"서울특별시","consents":[{"consentItemId":1,"agreed":true},{"consentItemId":2,"agreed":false}]}
+                        """.getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/users/join")
+                        .file(requestPart)
+                        .with(request -> {
+                            request.setMethod("POST");
+                            return request;
+                        }))
+                .andExpect(status().isCreated());
+
+        ArgumentCaptor<List<UserConsentCommand>> captor = ArgumentCaptor.captor();
+        verify(userService).create(
+                eq(1L),
+                eq("tester"),
+                eq("개발/데이터"),
+                eq("서울특별시"),
+                any(ProfileImageResult.class),
+                captor.capture()
+        );
+        assertThat(captor.getValue()).containsExactly(
+                new UserConsentCommand(1L, true),
+                new UserConsentCommand(2L, false)
+        );
+    }
+
+    @Test
+    @DisplayName("회원 가입 요청의 nullable 동의 목록은 빈 목록으로 전달된다")
+    void createUserForwardsEmptyConsentsWhenNullable() throws Exception {
+        SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
+        UserCreateResult response = new UserCreateResult(1L, "tester", null);
+        when(userService.create(anyLong(), any(String.class), any(String.class), any(String.class), any(ProfileImageResult.class), anyList()))
+                .thenReturn(response);
+
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                "{\"nickname\":\"tester\",\"job\":\"개발/데이터\",\"address\":\"서울특별시\",\"consents\":null}".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/users/join")
+                        .file(requestPart)
+                        .with(request -> {
+                            request.setMethod("POST");
+                            return request;
+                        }))
+                .andExpect(status().isCreated());
+
+        ArgumentCaptor<List<UserConsentCommand>> captor = ArgumentCaptor.captor();
+        verify(userService).create(
+                eq(1L),
+                eq("tester"),
+                eq("개발/데이터"),
+                eq("서울특별시"),
+                any(ProfileImageResult.class),
+                captor.capture()
+        );
+        assertThat(captor.getValue()).isEmpty();
+    }
+
+    @Test
     @DisplayName("이미지가 포함된 회원 가입 요청은 storage 비활성 상태에서 503 에러 응답 계약을 반환한다")
     void createUserMultipartStorageDisabledContract() throws Exception {
         SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
@@ -167,6 +250,42 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.status").value("SERVICE_UNAVAILABLE"))
                 .andExpect(jsonPath("$.code").value("Z006"))
                 .andExpect(jsonPath("$.message").value("스토리지 기능이 비활성화되어 있습니다"));
+    }
+
+    @Test
+    @DisplayName("이미지 업로드 후 회원 가입이 실패하면 업로드된 프로필 이미지를 삭제한다")
+    void createUserDeletesUploadedProfileImageWhenRegistrationFails() throws Exception {
+        SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                """
+                        {"nickname":"tester","job":"개발/데이터","address":"서울특별시","consents":[{"consentItemId":1,"agreed":true},{"consentItemId":1,"agreed":false}]}
+                        """.getBytes()
+        );
+        MockMultipartFile image = new MockMultipartFile(
+                "multipartFile",
+                "profile.png",
+                MediaType.IMAGE_PNG_VALUE,
+                "png".getBytes()
+        );
+        when(storageService.uploadProfileImg(any(), any()))
+                .thenReturn(new ProfileImageResult("uploaded-profile.png", "https://cdn/uploaded-profile.png"));
+        when(userService.create(anyLong(), any(String.class), any(String.class), any(String.class), any(ProfileImageResult.class), anyList()))
+                .thenThrow(new com.mogak.spring.exception.BaseException(ErrorCode.DUPLICATE_CONSENT_ITEM));
+
+        mockMvc.perform(multipart("/api/users/join")
+                        .file(requestPart)
+                        .file(image)
+                        .with(request -> {
+                            request.setMethod("POST");
+                            return request;
+                        }))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("U016"));
+
+        verify(storageService).deleteProfileImg("uploaded-profile.png");
     }
 
     @Test
