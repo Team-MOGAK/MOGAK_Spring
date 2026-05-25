@@ -21,6 +21,20 @@ SELECT setval(
     COALESCE((SELECT MAX(period_id) FROM period), 1)
 );
 
+INSERT INTO consent_item (code, name, description, required, active)
+SELECT v.code, v.name, v.description, v.required, v.active
+FROM (
+    VALUES
+        ('MARKETING', '마케팅 수신 동의', CAST(NULL AS text), false, true),
+        ('ADVERTISEMENT', '광고성 정보 수신 동의', CAST(NULL AS text), false, true),
+        ('NOTIFICATION', '알림 수신 동의', CAST(NULL AS text), false, true)
+) AS v(code, name, description, required, active)
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM consent_item c
+    WHERE c.code = v.code
+);
+
 INSERT INTO mogak_category (name)
 SELECT v.name
 FROM (

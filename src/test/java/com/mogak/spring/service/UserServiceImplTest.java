@@ -39,6 +39,8 @@ class UserServiceImplTest {
     private AddressRepository addressRepository;
     @Mock
     private JwtTokenProvider jwtTokenProvider;
+    @Mock
+    private ConsentService consentService;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -95,7 +97,7 @@ class UserServiceImplTest {
         when(jwtTokenProvider.createAccessToken(10L, "user@test.com", SecurityAuthority.USER.getAuthority())).thenReturn("access-token");
         when(jwtTokenProvider.createRefreshToken(10L)).thenReturn("refresh-token");
 
-        UserCreateResult result = userService.create(10L, "tester", "개발/데이터", "서울특별시", profileImage);
+        UserCreateResult result = userService.create(10L, "tester", "개발/데이터", "서울특별시", profileImage, java.util.List.of());
 
         assertThat(result.userId()).isEqualTo(10L);
         assertThat(result.nickname()).isEqualTo("tester");
@@ -118,7 +120,7 @@ class UserServiceImplTest {
         when(userRepository.findActiveById(10L)).thenReturn(Optional.of(user));
 
         Throwable throwable = org.assertj.core.api.Assertions.catchThrowable(
-                () -> userService.create(10L, "tester", "개발/데이터", "서울특별시", new ProfileImageResult(null, null))
+                () -> userService.create(10L, "tester", "개발/데이터", "서울특별시", new ProfileImageResult(null, null), java.util.List.of())
         );
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.ALREADY_EXIST_USER);

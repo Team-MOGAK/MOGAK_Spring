@@ -75,7 +75,8 @@ class CoreFlowIntegrationTest {
                 "flow-user",
                 job.getName(),
                 address.getName(),
-                new ProfileImageResult(null, null)
+                new ProfileImageResult(null, null),
+                java.util.List.of()
         );
 
         User savedUser = userRepository.findById(rawUser.getId()).orElseThrow();

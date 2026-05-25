@@ -75,15 +75,33 @@ public class UserController {
         } else {
             profileImage = storageService.uploadProfileImg(multipartFile, dirName);
         }
-        UserCreateResult result = userService.create(
-                authenticatedUser.getUserId(),
-                request.nickname(),
-                request.job(),
-                request.address(),
-                profileImage
-        );
+        UserCreateResult result;
+        try {
+            result = userService.create(
+                    authenticatedUser.getUserId(),
+                    request.nickname(),
+                    request.job(),
+                    request.address(),
+                    profileImage,
+                    request.toConsentCommands()
+            );
+        } catch (RuntimeException e) {
+            cleanupUploadedProfileImage(profileImage, e);
+            throw e;
+        }
         UserCreateResponse response = new UserCreateResponse(result.userId(), result.nickname(), result.tokens());
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(response));
+    }
+
+    private void cleanupUploadedProfileImage(ProfileImageResult profileImage, RuntimeException failure) {
+        if (profileImage.imgName() == null) {
+            return;
+        }
+        try {
+            storageService.deleteProfileImg(profileImage.imgName());
+        } catch (RuntimeException cleanupFailure) {
+            failure.addSuppressed(cleanupFailure);
+        }
     }
 
     @Operation(summary = "임시 로그인", description = "입력한 이메일로 로그인을 시도합니다",

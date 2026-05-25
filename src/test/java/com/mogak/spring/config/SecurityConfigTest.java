@@ -10,6 +10,8 @@ import com.mogak.spring.jwt.JwtTokens;
 import com.mogak.spring.security.ApiAccessDeniedHandler;
 import com.mogak.spring.security.ApiAuthenticationEntryPoint;
 import com.mogak.spring.security.SecurityAuthority;
+import com.mogak.spring.service.ConsentService;
+import com.mogak.spring.service.result.ConsentItemResult;
 import com.mogak.spring.service.result.ProfileImageResult;
 import com.mogak.spring.service.result.SocialLoginResult;
 import com.mogak.spring.service.result.metadata.MetadataOptionResult;
@@ -19,6 +21,7 @@ import com.mogak.spring.service.MetadataService;
 import com.mogak.spring.service.StorageService;
 import com.mogak.spring.service.UserService;
 import com.mogak.spring.web.controller.AuthController;
+import com.mogak.spring.web.controller.ConsentController;
 import com.mogak.spring.web.controller.MetadataController;
 import com.mogak.spring.web.controller.UserController;
 import com.mogak.spring.web.dto.authdto.SocialLoginRequest;
@@ -42,6 +45,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -54,7 +58,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-@WebMvcTest({UserController.class, AuthController.class, MetadataController.class})
+@WebMvcTest({UserController.class, AuthController.class, MetadataController.class, ConsentController.class})
 @Import({
         SecurityConfig.class,
         JwtAuthenticationProvider.class,
@@ -81,6 +85,8 @@ class SecurityConfigTest {
     private StorageService storageService;
     @MockitoBean
     private MetadataService metadataService;
+    @MockitoBean
+    private ConsentService consentService;
     @MockitoBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
@@ -166,7 +172,7 @@ class SecurityConfigTest {
     @Test
     @DisplayName("ROLE_PENDING access token은 회원 등록 API에 접근할 수 있다")
     void joinAllowsPendingRole() throws Exception {
-        when(userService.create(anyLong(), any(String.class), any(String.class), any(String.class), any(ProfileImageResult.class)))
+        when(userService.create(anyLong(), any(String.class), any(String.class), any(String.class), any(ProfileImageResult.class), anyList()))
                 .thenReturn(new UserCreateResult(10L, "tester", new JwtTokens("access-token", "refresh-token")));
 
         mockMvc.perform(joinRequest(SecurityAuthority.PENDING.getAuthority()))
@@ -184,6 +190,18 @@ class SecurityConfigTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("success"))
                 .andExpect(jsonPath("$.result[0].name").value("개발/데이터"));
+    }
+
+    @Test
+    @DisplayName("동의 항목 조회 API는 토큰 없이 호출할 수 있다")
+    void consentItemsEndpointIsPublic() throws Exception {
+        when(consentService.getActiveConsentItems())
+                .thenReturn(List.of(new ConsentItemResult(1L, "MARKETING", "마케팅 수신", null, false)));
+
+        mockMvc.perform(get("/api/consents"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("success"))
+                .andExpect(jsonPath("$.result[0].code").value("MARKETING"));
     }
 
     private org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder joinRequest(String role)

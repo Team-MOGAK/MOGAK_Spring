@@ -12,6 +12,7 @@ import com.mogak.spring.repository.AddressRepository;
 import com.mogak.spring.repository.JobRepository;
 import com.mogak.spring.repository.UserRepository;
 import com.mogak.spring.security.SecurityAuthority;
+import com.mogak.spring.service.command.UserConsentCommand;
 import com.mogak.spring.service.result.ProfileImageResult;
 import com.mogak.spring.service.result.UserCreateResult;
 import com.mogak.spring.service.result.UserProfileResult;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -30,10 +32,18 @@ public class UserServiceImpl implements UserService {
     private final JobRepository jobRepository;
     private final AddressRepository addressRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final ConsentService consentService;
 
     @Transactional
     @Override
-    public UserCreateResult create(Long userId, String nickname, String jobName, String addressName, ProfileImageResult profileImage) {
+    public UserCreateResult create(
+            Long userId,
+            String nickname,
+            String jobName,
+            String addressName,
+            ProfileImageResult profileImage,
+            List<UserConsentCommand> consents
+    ) {
         inputVerify(nickname);
         Job job = jobRepository.findJobByName(jobName)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_EXIST_JOB));
@@ -47,6 +57,7 @@ public class UserServiceImpl implements UserService {
             throw new UserException(ErrorCode.ALREADY_EXIST_USER);
         }
         user.registerUser(nickname, job, address, profileImgUrl, profileImgName);
+        consentService.saveUserConsents(user, consents);
         JwtTokens tokens = issueUserTokens(user);
         return new UserCreateResult(user.getId(), user.getNickname(), tokens);
     }
