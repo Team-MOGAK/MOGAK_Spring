@@ -243,12 +243,3 @@ CREATE TABLE IF NOT EXISTS report (
     CONSTRAINT fk_report_from_user FOREIGN KEY (from_id) REFERENCES users (user_id),
     CONSTRAINT fk_report_to_user FOREIGN KEY (to_id) REFERENCES users (user_id)
 );
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_users_email ON users (email);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_job_name ON job (name);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_address_name ON address (name);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_mogak_category_name ON mogak_category (name);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_period_days ON period (days);
-CREATE UNIQUE INDEX IF NOT EXISTS uq_daily_jogak_jogak_target_date ON daily_jogak (jogak_id, target_date) WHERE deleted_at IS NULL;
-CREATE UNIQUE INDEX IF NOT EXISTS uq_post_active_daily_jogak ON post (daily_jogak_id) WHERE deleted_at IS NULL;
-CREATE UNIQUE INDEX IF NOT EXISTS uq_post_like_post_user ON post_like (post_id, user_id);
