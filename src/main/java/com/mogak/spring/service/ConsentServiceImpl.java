@@ -94,7 +94,7 @@ public class ConsentServiceImpl implements ConsentService {
     private void validateConsentCommands(List<UserConsentCommand> consents) {
         Set<Long> ids = new HashSet<>();
         for (UserConsentCommand consent : consents) {
-            if (consent.consentItemId() == null || consent.agreed() == null) {
+            if (consent == null || consent.consentItemId() == null || consent.agreed() == null) {
                 throw new BaseException(ErrorCode.INVALID_PARAMETER_ERROR);
             }
             if (!ids.add(consent.consentItemId())) {

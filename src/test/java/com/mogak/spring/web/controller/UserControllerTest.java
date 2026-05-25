@@ -38,6 +38,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -215,6 +216,31 @@ class UserControllerTest {
                 captor.capture()
         );
         assertThat(captor.getValue()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("회원 가입 요청의 동의 목록에 null 항목이 있으면 400을 반환한다")
+    void createUserRejectsNullConsentItem() throws Exception {
+        SecurityContextTestHelper.setAuthentication(1L, "user@test.com", SecurityAuthority.PENDING.getAuthority());
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                """
+                        {"nickname":"tester","job":"개발/데이터","address":"서울특별시","consents":[null]}
+                        """.getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/users/join")
+                        .file(requestPart)
+                        .with(request -> {
+                            request.setMethod("POST");
+                            return request;
+                        }))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("Z005"));
+
+        verify(userService, never()).create(anyLong(), any(String.class), any(String.class), any(String.class), any(ProfileImageResult.class), anyList());
     }
 
     @Test

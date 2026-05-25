@@ -11,6 +11,7 @@ import com.mogak.spring.service.command.UserConsentCommand;
 import com.mogak.spring.service.result.ConsentItemResult;
 import com.mogak.spring.support.ErrorCodeAssertions;
 import com.mogak.spring.support.TestFixtureFactory;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -108,6 +109,18 @@ class ConsentServiceImplTest {
         )));
 
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.DUPLICATE_CONSENT_ITEM);
+    }
+
+    @Test
+    @DisplayName("null 동의 항목 요청은 실패한다")
+    void nullConsentCommandThrows() {
+        User user = TestFixtureFactory.user(10L, "user@test.com", "tester", null, null);
+        List<UserConsentCommand> consents = new ArrayList<>();
+        consents.add(null);
+
+        Throwable throwable = catchThrowable(() -> consentService.saveUserConsents(user, consents));
+
+        ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.INVALID_PARAMETER_ERROR);
     }
 
     @Test

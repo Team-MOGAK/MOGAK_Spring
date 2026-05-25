@@ -25,7 +25,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -99,5 +102,21 @@ class ConsentControllerTest {
                 new UserConsentCommand(1L, true),
                 new UserConsentCommand(2L, false)
         );
+    }
+
+    @Test
+    @DisplayName("사용자 동의 변경 요청에 null 항목이 있으면 400을 반환한다")
+    void updateUserConsentsRejectsNullAgreementItem() throws Exception {
+        SecurityContextTestHelper.setAuthentication(10L, "user@test.com", SecurityAuthority.USER.getAuthority());
+
+        mockMvc.perform(put("/api/users/consents")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"consents":[null]}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("Z005"));
+
+        verify(consentService, never()).updateUserConsents(anyLong(), anyList());
     }
 }
