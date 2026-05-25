@@ -1,6 +1,7 @@
-package com.mogak.spring.domain.user;
+package com.mogak.spring.domain.consent;
 
 import com.mogak.spring.global.BaseEntity;
+import com.mogak.spring.domain.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

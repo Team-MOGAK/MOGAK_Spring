@@ -5,7 +5,6 @@ public record ConsentItemResult(
         String code,
         String name,
         String description,
-        Boolean required,
-        Integer displayOrder
+        Boolean required
 ) {
 }

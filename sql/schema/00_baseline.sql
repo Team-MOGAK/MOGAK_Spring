@@ -42,10 +42,9 @@ CREATE TABLE IF NOT EXISTS consent_item (
     created_at timestamp(6),
     updated_at timestamp(6),
     active boolean NOT NULL,
-    display_order integer,
     required boolean NOT NULL,
     code varchar(100) NOT NULL,
-    description varchar(255),
+    description text,
     name varchar(255) NOT NULL,
     CONSTRAINT uq_consent_item_code UNIQUE (code)
 );
@@ -245,19 +244,11 @@ CREATE TABLE IF NOT EXISTS report (
     CONSTRAINT fk_report_to_user FOREIGN KEY (to_id) REFERENCES users (user_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_users_email ON users (email);
-CREATE INDEX IF NOT EXISTS idx_users_nickname ON users (nickname);
-CREATE INDEX IF NOT EXISTS idx_consent_item_active_order ON consent_item (active, display_order, consent_item_id);
-CREATE INDEX IF NOT EXISTS idx_user_consent_user_id ON user_consent (user_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_job_name ON job (name);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_address_name ON address (name);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_mogak_category_name ON mogak_category (name);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_period_days ON period (days);
-CREATE INDEX IF NOT EXISTS idx_mogak_modarat_id ON mogak (modarat_id);
-CREATE INDEX IF NOT EXISTS idx_jogak_mogak_id ON jogak (mogak_id);
-CREATE INDEX IF NOT EXISTS idx_daily_jogak_jogak_id ON daily_jogak (jogak_id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_daily_jogak_jogak_target_date ON daily_jogak (jogak_id, target_date) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_post_daily_jogak_id ON post (daily_jogak_id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_post_active_daily_jogak ON post (daily_jogak_id) WHERE deleted_at IS NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_post_like_post_user ON post_like (post_id, user_id);

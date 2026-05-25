@@ -7,8 +7,7 @@ public record ConsentItemResponse(
         String code,
         String name,
         String description,
-        Boolean required,
-        Integer displayOrder
+        Boolean required
 ) {
     public static ConsentItemResponse from(ConsentItemResult result) {
         return new ConsentItemResponse(
@@ -16,8 +15,7 @@ public record ConsentItemResponse(
                 result.code(),
                 result.name(),
                 result.description(),
-                result.required(),
-                result.displayOrder()
+                result.required()
         );
     }
 }

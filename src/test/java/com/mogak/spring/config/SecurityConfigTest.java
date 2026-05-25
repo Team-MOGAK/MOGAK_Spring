@@ -196,7 +196,7 @@ class SecurityConfigTest {
     @DisplayName("동의 항목 조회 API는 토큰 없이 호출할 수 있다")
     void consentItemsEndpointIsPublic() throws Exception {
         when(consentService.getActiveConsentItems())
-                .thenReturn(List.of(new ConsentItemResult(1L, "MARKETING", "마케팅 수신", null, false, 1)));
+                .thenReturn(List.of(new ConsentItemResult(1L, "MARKETING", "마케팅 수신", null, false)));
 
         mockMvc.perform(get("/api/consents"))
                 .andExpect(status().isOk())

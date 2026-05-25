@@ -1,8 +1,8 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.domain.user.ConsentItem;
+import com.mogak.spring.domain.consent.ConsentItem;
+import com.mogak.spring.domain.consent.UserConsent;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.domain.user.UserConsent;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.ConsentItemRepository;
 import com.mogak.spring.repository.UserConsentRepository;
@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -42,8 +43,8 @@ class ConsentServiceImplTest {
     @Test
     @DisplayName("활성 동의 항목을 응답 결과로 변환한다")
     void getActiveConsentItemsReturnsResults() {
-        when(consentItemRepository.findAllByActiveTrueOrderByDisplayOrderAscIdAsc())
-                .thenReturn(List.of(consentItem(1L, "MARKETING", true, false, 1)));
+        when(consentItemRepository.findAllByActiveTrueOrderByIdAsc())
+                .thenReturn(List.of(consentItem(1L, "MARKETING", true, false)));
 
         List<ConsentItemResult> results = consentService.getActiveConsentItems();
 
@@ -52,8 +53,7 @@ class ConsentServiceImplTest {
                 "MARKETING",
                 "마케팅 수신 동의",
                 null,
-                false,
-                1
+                false
         ));
     }
 
@@ -61,7 +61,7 @@ class ConsentServiceImplTest {
     @DisplayName("신규 사용자 동의 상태를 저장한다")
     void saveUserConsentsCreatesUserConsent() {
         User user = TestFixtureFactory.user(10L, "user@test.com", "tester", null, null);
-        ConsentItem item = consentItem(1L, "MARKETING", true, false, 1);
+        ConsentItem item = consentItem(1L, "MARKETING", true, false);
         when(consentItemRepository.findAllById(List.of(1L))).thenReturn(List.of(item));
         when(userConsentRepository.findByUserIdAndConsentItemId(10L, 1L)).thenReturn(Optional.empty());
 
@@ -81,7 +81,7 @@ class ConsentServiceImplTest {
     @DisplayName("기존 사용자 동의 상태를 철회 상태로 갱신한다")
     void updateUserConsentsUpdatesExistingUserConsent() {
         User user = TestFixtureFactory.user(10L, "user@test.com", "tester", null, null);
-        ConsentItem item = consentItem(1L, "MARKETING", true, false, 1);
+        ConsentItem item = consentItem(1L, "MARKETING", true, false);
         UserConsent existing = UserConsent.builder()
                 .user(user)
                 .consentItem(item)
@@ -94,7 +94,7 @@ class ConsentServiceImplTest {
 
         assertThat(existing.isAgreed()).isFalse();
         assertThat(existing.getWithdrawnAt()).isNotNull();
-        verify(userConsentRepository).save(existing);
+        verify(userConsentRepository, never()).save(existing);
     }
 
     @Test
@@ -115,7 +115,7 @@ class ConsentServiceImplTest {
     void inactiveConsentItemThrows() {
         User user = TestFixtureFactory.user(10L, "user@test.com", "tester", null, null);
         when(consentItemRepository.findAllById(List.of(1L)))
-                .thenReturn(List.of(consentItem(1L, "MARKETING", false, false, 1)));
+                .thenReturn(List.of(consentItem(1L, "MARKETING", false, false)));
 
         Throwable throwable = catchThrowable(() -> consentService.saveUserConsents(
                 user,
@@ -139,14 +139,13 @@ class ConsentServiceImplTest {
         ErrorCodeAssertions.assertErrorCode(throwable, ErrorCode.NOT_EXIST_CONSENT_ITEM);
     }
 
-    private ConsentItem consentItem(Long id, String code, boolean active, boolean required, Integer displayOrder) {
+    private ConsentItem consentItem(Long id, String code, boolean active, boolean required) {
         return ConsentItem.builder()
                 .id(id)
                 .code(code)
                 .name("마케팅 수신 동의")
                 .active(active)
                 .required(required)
-                .displayOrder(displayOrder)
                 .build();
     }
 }

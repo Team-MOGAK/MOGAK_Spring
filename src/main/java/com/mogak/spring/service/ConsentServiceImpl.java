@@ -1,8 +1,8 @@
 package com.mogak.spring.service;
 
-import com.mogak.spring.domain.user.ConsentItem;
+import com.mogak.spring.domain.consent.ConsentItem;
+import com.mogak.spring.domain.consent.UserConsent;
 import com.mogak.spring.domain.user.User;
-import com.mogak.spring.domain.user.UserConsent;
 import com.mogak.spring.exception.BaseException;
 import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.ConsentItemRepository;
@@ -31,14 +31,13 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional(readOnly = true)
     @Override
     public List<ConsentItemResult> getActiveConsentItems() {
-        return consentItemRepository.findAllByActiveTrueOrderByDisplayOrderAscIdAsc().stream()
+        return consentItemRepository.findAllByActiveTrueOrderByIdAsc().stream()
                 .map(item -> new ConsentItemResult(
                         item.getId(),
                         item.getCode(),
                         item.getName(),
                         item.getDescription(),
-                        item.isRequired(),
-                        item.getDisplayOrder()
+                        item.isRequired()
                 ))
                 .toList();
     }
@@ -77,14 +76,18 @@ public class ConsentServiceImpl implements ConsentService {
                 throw new BaseException(ErrorCode.INACTIVE_CONSENT_ITEM);
             }
 
-            UserConsent userConsent = userConsentRepository
-                    .findByUserIdAndConsentItemId(user.getId(), consent.consentItemId())
-                    .orElseGet(() -> UserConsent.builder()
-                            .user(user)
-                            .consentItem(consentItem)
-                            .build());
-            userConsent.update(consent.agreed(), now);
-            userConsentRepository.save(userConsent);
+            userConsentRepository.findByUserIdAndConsentItemId(user.getId(), consent.consentItemId())
+                    .ifPresentOrElse(
+                            userConsent -> userConsent.update(consent.agreed(), now),
+                            () -> {
+                                UserConsent userConsent = UserConsent.builder()
+                                        .user(user)
+                                        .consentItem(consentItem)
+                                        .build();
+                                userConsent.update(consent.agreed(), now);
+                                userConsentRepository.save(userConsent);
+                            }
+                    );
         }
     }
 

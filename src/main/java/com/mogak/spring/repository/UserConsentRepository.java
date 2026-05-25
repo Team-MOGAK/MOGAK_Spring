@@ -1,6 +1,6 @@
 package com.mogak.spring.repository;
 
-import com.mogak.spring.domain.user.UserConsent;
+import com.mogak.spring.domain.consent.UserConsent;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

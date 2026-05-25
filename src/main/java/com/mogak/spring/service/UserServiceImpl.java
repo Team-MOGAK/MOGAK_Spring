@@ -36,12 +36,6 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserCreateResult create(Long userId, String nickname, String jobName, String addressName, ProfileImageResult profileImage) {
-        return create(userId, nickname, jobName, addressName, profileImage, List.of());
-    }
-
-    @Transactional
-    @Override
     public UserCreateResult create(
             Long userId,
             String nickname,

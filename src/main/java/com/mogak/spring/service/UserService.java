@@ -9,9 +9,6 @@ import com.mogak.spring.service.result.UserProfileResult;
 import java.util.List;
 
 public interface UserService {
-
-    UserCreateResult create(Long userId, String nickname, String job, String address, ProfileImageResult profileImage);
-
     UserCreateResult create(
             Long userId,
             String nickname,

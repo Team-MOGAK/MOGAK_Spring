@@ -1,4 +1,4 @@
-package com.mogak.spring.domain.user;
+package com.mogak.spring.domain.consent;
 
 import com.mogak.spring.global.BaseEntity;
 import jakarta.persistence.Column;
@@ -37,7 +37,7 @@ public class ConsentItem extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)
@@ -46,6 +46,4 @@ public class ConsentItem extends BaseEntity {
     @Column(nullable = false)
     private boolean active;
 
-    @Column(name = "display_order")
-    private Integer displayOrder;
 }

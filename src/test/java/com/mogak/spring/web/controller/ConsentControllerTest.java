@@ -57,8 +57,8 @@ class ConsentControllerTest {
     @DisplayName("동의 항목 조회는 BaseResponse 배열 계약을 반환한다")
     void getConsentsReturnsBaseResponseContract() throws Exception {
         when(consentService.getActiveConsentItems()).thenReturn(List.of(
-                new ConsentItemResult(1L, "TERMS", "이용약관", "서비스 이용약관", true, 1),
-                new ConsentItemResult(2L, "MARKETING", "마케팅 수신", "이벤트 알림 수신", false, 2)
+                new ConsentItemResult(1L, "TERMS", "이용약관", "서비스 이용약관", true),
+                new ConsentItemResult(2L, "MARKETING", "마케팅 수신", "이벤트 알림 수신", false)
         ));
 
         mockMvc.perform(get("/api/consents"))
@@ -73,7 +73,6 @@ class ConsentControllerTest {
                 .andExpect(jsonPath("$.result[0].name").value("이용약관"))
                 .andExpect(jsonPath("$.result[0].description").value("서비스 이용약관"))
                 .andExpect(jsonPath("$.result[0].required").value(true))
-                .andExpect(jsonPath("$.result[0].displayOrder").value(1))
                 .andExpect(jsonPath("$.result[1].id").value(2L))
                 .andExpect(jsonPath("$.result[1].code").value("MARKETING"))
                 .andExpect(jsonPath("$.result[1].required").value(false));
