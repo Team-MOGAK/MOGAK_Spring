@@ -31,7 +31,7 @@
 | `BlockUser` | hard delete | 차단 관계는 하드 삭제한다. |
 | `Report` | preserve | 신고 데이터는 보존한다. |
 | `ConsentItem` | preserve | 동의 항목 정의 데이터는 보존한다. |
-| `UserConsent` | pending | 사용자별 terms consent 상태로 유지하며, retention/anonymization/deletion policy는 pending이다. |
+| `UserConsent` | pending | 사용자별 동의 상태로 유지하며, retention/anonymization/deletion policy는 pending이다. |
 
 ## DailyJogak Creation Rules
 - routine midnight batch는 오늘자 `DailyJogak` row를 생성한다.

@@ -52,6 +52,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -202,6 +203,24 @@ class SecurityConfigTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("success"))
                 .andExpect(jsonPath("$.result[0].code").value("MARKETING"));
+    }
+
+    @Test
+    @DisplayName("광고/마케팅 동의 조회 API는 토큰 없이 호출하면 401을 반환한다")
+    void marketingConsentGetRejectsMissingToken() throws Exception {
+        mockMvc.perform(get("/api/users/marketing-consent"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("T003"));
+    }
+
+    @Test
+    @DisplayName("광고/마케팅 동의 변경 API는 토큰 없이 호출하면 401을 반환한다")
+    void marketingConsentPatchRejectsMissingToken() throws Exception {
+        mockMvc.perform(patch("/api/users/marketing-consent")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"marketingAgreed\":true}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("T003"));
     }
 
     private org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder joinRequest(String role)

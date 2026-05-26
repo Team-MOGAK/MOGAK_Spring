@@ -63,6 +63,7 @@ public class UserConsent extends BaseEntity {
             this.withdrawnAt = null;
             return;
         }
+        this.agreedAt = null;
         this.withdrawnAt = changedAt;
     }
 }
