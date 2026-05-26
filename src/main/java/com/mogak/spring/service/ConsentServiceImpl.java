@@ -8,8 +8,12 @@ import com.mogak.spring.global.ErrorCode;
 import com.mogak.spring.repository.ConsentItemRepository;
 import com.mogak.spring.repository.UserConsentRepository;
 import com.mogak.spring.repository.UserRepository;
+import com.mogak.spring.service.command.MarketingConsentCommand;
 import com.mogak.spring.service.command.UserConsentCommand;
 import com.mogak.spring.service.result.ConsentItemResult;
+import com.mogak.spring.service.result.MarketingConsentResult;
+import java.util.Collection;
+import java.util.HashMap;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +28,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Service
 public class ConsentServiceImpl implements ConsentService {
+    private static final String MARKETING_CODE = "MARKETING";
+    private static final String ADVERTISEMENT_CODE = "ADVERTISEMENT";
+    private static final List<String> MARKETING_CONSENT_CODES = List.of(
+            MARKETING_CODE,
+            ADVERTISEMENT_CODE
+    );
+
     private final ConsentItemRepository consentItemRepository;
     private final UserConsentRepository userConsentRepository;
     private final UserRepository userRepository;
@@ -42,6 +53,13 @@ public class ConsentServiceImpl implements ConsentService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public MarketingConsentResult getMarketingConsent(Long userId) {
+        validateActiveUser(userId);
+        return getCurrentMarketingConsent(userId);
+    }
+
     @Transactional
     @Override
     public void saveUserConsents(User user, List<UserConsentCommand> consents) {
@@ -54,12 +72,30 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional
     @Override
     public void updateUserConsents(Long userId, List<UserConsentCommand> consents) {
-        User user = userRepository.findActiveById(userId)
-                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
+        User user = validateActiveUser(userId);
         if (consents == null || consents.isEmpty()) {
             return;
         }
         upsertUserConsents(user, consents);
+    }
+
+    @Transactional
+    @Override
+    public MarketingConsentResult updateMarketingConsent(Long userId, MarketingConsentCommand command) {
+        if (command == null || command.isEmpty()) {
+            throw new BaseException(ErrorCode.INVALID_PARAMETER_ERROR);
+        }
+
+        User user = validateActiveUser(userId);
+        List<String> requestedCodes = requestedCodes(command);
+        Map<String, ConsentItem> consentItems = findActiveConsentItemsByCode(requestedCodes);
+        Map<String, UserConsent> userConsents = findUserConsentsByCode(userId, requestedCodes);
+        LocalDateTime now = LocalDateTime.now();
+
+        updateMarketingConsent(user, command.marketingAgreed(), MARKETING_CODE, consentItems, userConsents, now);
+        updateMarketingConsent(user, command.advertisementAgreed(), ADVERTISEMENT_CODE, consentItems, userConsents, now);
+
+        return getCurrentMarketingConsent(userId);
     }
 
     private void upsertUserConsents(User user, List<UserConsentCommand> consents) {
@@ -109,5 +145,76 @@ public class ConsentServiceImpl implements ConsentService {
                 .toList();
         return consentItemRepository.findAllById(ids).stream()
                 .collect(Collectors.toMap(ConsentItem::getId, Function.identity()));
+    }
+
+    private User validateActiveUser(Long userId) {
+        return userRepository.findActiveById(userId)
+                .orElseThrow(() -> new BaseException(ErrorCode.NOT_EXIST_USER));
+    }
+
+    private MarketingConsentResult getCurrentMarketingConsent(Long userId) {
+        Map<String, UserConsent> userConsents = findUserConsentsByCode(userId, MARKETING_CONSENT_CODES);
+        return new MarketingConsentResult(
+                agreed(userConsents, MARKETING_CODE),
+                agreed(userConsents, ADVERTISEMENT_CODE)
+        );
+    }
+
+    private boolean agreed(Map<String, UserConsent> userConsents, String code) {
+        UserConsent userConsent = userConsents.get(code);
+        return userConsent != null && userConsent.isAgreed();
+    }
+
+    private List<String> requestedCodes(MarketingConsentCommand command) {
+        return MARKETING_CONSENT_CODES.stream()
+                .filter(code -> {
+                    if (MARKETING_CODE.equals(code)) {
+                        return command.marketingAgreed() != null;
+                    }
+                    if (ADVERTISEMENT_CODE.equals(code)) {
+                        return command.advertisementAgreed() != null;
+                    }
+                    return false;
+                })
+                .toList();
+    }
+
+    private Map<String, ConsentItem> findActiveConsentItemsByCode(Collection<String> codes) {
+        Map<String, ConsentItem> consentItems = consentItemRepository.findAllByCodeInAndActiveTrue(codes).stream()
+                .collect(Collectors.toMap(ConsentItem::getCode, Function.identity()));
+        if (consentItems.size() != codes.size()) {
+            throw new BaseException(ErrorCode.NOT_EXIST_CONSENT_ITEM);
+        }
+        return consentItems;
+    }
+
+    private Map<String, UserConsent> findUserConsentsByCode(Long userId, Collection<String> codes) {
+        Map<String, UserConsent> userConsents = new HashMap<>();
+        userConsentRepository.findAllByUserIdAndConsentItemCodeIn(userId, codes)
+                .forEach(userConsent -> userConsents.put(userConsent.getConsentItem().getCode(), userConsent));
+        return userConsents;
+    }
+
+    private void updateMarketingConsent(
+            User user,
+            Boolean agreed,
+            String code,
+            Map<String, ConsentItem> consentItems,
+            Map<String, UserConsent> userConsents,
+            LocalDateTime now
+    ) {
+        if (agreed == null) {
+            return;
+        }
+
+        UserConsent userConsent = userConsents.get(code);
+        if (userConsent == null) {
+            userConsent = UserConsent.builder()
+                    .user(user)
+                    .consentItem(consentItems.get(code))
+                    .build();
+            userConsentRepository.save(userConsent);
+        }
+        userConsent.update(agreed, now);
     }
 }
