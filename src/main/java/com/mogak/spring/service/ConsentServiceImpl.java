@@ -92,8 +92,12 @@ public class ConsentServiceImpl implements ConsentService {
         Map<String, UserConsent> userConsents = findUserConsentsByCode(userId, requestedCodes);
         LocalDateTime now = LocalDateTime.now();
 
-        updateMarketingConsent(user, command.marketingAgreed(), MARKETING_CODE, consentItems, userConsents, now);
-        updateMarketingConsent(user, command.advertisementAgreed(), ADVERTISEMENT_CODE, consentItems, userConsents, now);
+        if (command.marketingAgreed() != null) {
+            updateMarketingConsent(user, command.marketingAgreed(), MARKETING_CODE, consentItems, userConsents, now);
+        }
+        if (command.advertisementAgreed() != null) {
+            updateMarketingConsent(user, command.advertisementAgreed(), ADVERTISEMENT_CODE, consentItems, userConsents, now);
+        }
 
         return getCurrentMarketingConsent(userId);
     }
@@ -203,10 +207,6 @@ public class ConsentServiceImpl implements ConsentService {
             Map<String, UserConsent> userConsents,
             LocalDateTime now
     ) {
-        if (agreed == null) {
-            return;
-        }
-
         UserConsent userConsent = userConsents.get(code);
         if (userConsent == null) {
             userConsent = UserConsent.builder()
