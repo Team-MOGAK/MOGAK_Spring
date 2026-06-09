@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: ${profile}
+    active: ${SPRING_PROFILES_ACTIVE:${profile:}}
     group:
       local: local, aws
       dev: dev

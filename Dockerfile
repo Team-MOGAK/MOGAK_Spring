@@ -13,9 +13,12 @@ FROM eclipse-temurin:25-jre-alpine
 
 WORKDIR /app
 
-RUN addgroup -S mogak && adduser -S mogak -G mogak
+RUN addgroup -S mogak \
+    && adduser -S mogak -G mogak \
+    && mkdir -p /app/logs \
+    && chown -R mogak:mogak /app
 
-COPY --from=builder /workspace/build/libs/*.jar app.jar
+COPY --chown=mogak:mogak --from=builder /workspace/build/libs/*.jar app.jar
 
 USER mogak
 EXPOSE 8080
