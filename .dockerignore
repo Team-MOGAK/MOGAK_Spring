@@ -1,0 +1,10 @@
+.DS_Store
+.git
+.github
+.gradle
+.idea
+.omc
+.omx
+build
+logs
+*.log
