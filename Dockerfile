@@ -23,4 +23,4 @@ COPY --chown=mogak:mogak --from=builder /workspace/build/libs/*.jar app.jar
 USER mogak
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java ${JAVA_OPTS:-} -Dserver.port=${PORT:-8080} -jar /app/app.jar"]

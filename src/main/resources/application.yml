@@ -5,6 +5,9 @@ spring:
       local: local, aws
       dev: dev
 
+server:
+  port: ${PORT:8080}
+
 feature:
   storage:
     enabled: false
