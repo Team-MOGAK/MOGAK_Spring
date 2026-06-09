@@ -50,7 +50,7 @@ jwt:
 
 server:
   domain: ${SERVER_DOMAIN:http://localhost:8080}
-  port: 8080
+  port: ${PORT:8080}
   ssl:
     enabled: ${SERVER_SSL_ENABLED:false}
     key-store: ${SSL_KEY_STORE:}
