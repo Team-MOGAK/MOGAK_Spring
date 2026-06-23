@@ -28,9 +28,6 @@ public class KakaoOAuthUserProvider implements SocialOAuthUserProvider {
                 throw new BaseException(ErrorCode.INVALID_SOCIAL_TOKEN);
             }
             String email = response.email();
-            if (email == null || email.isBlank()) {
-                throw new BaseException(ErrorCode.SOCIAL_EMAIL_REQUIRED);
-            }
             return new SocialUserProfile(SocialProvider.KAKAO, String.valueOf(providerUserId), email, response.emailVerified());
         } catch (BaseException e) {
             throw e;

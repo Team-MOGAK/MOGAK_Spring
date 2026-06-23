@@ -51,6 +51,20 @@ class KakaoOAuthUserProviderTest {
         assertThat(profile.emailVerified()).isFalse();
     }
 
+    @Test
+    @DisplayName("Kakao 이메일이 없어도 providerUserId를 기반으로 프로필을 반환한다")
+    void extractsKakaoProfileWithoutEmail() throws Exception {
+        when(kakaoClient.getUser("Bearer kakao-access-token"))
+                .thenReturn(kakaoResponseWithoutEmail());
+
+        SocialUserProfile profile = provider.getUser("kakao-access-token");
+
+        assertThat(profile.provider()).isEqualTo(SocialProvider.KAKAO);
+        assertThat(profile.providerUserId()).isEqualTo("12345");
+        assertThat(profile.email()).isNull();
+        assertThat(profile.emailVerified()).isFalse();
+    }
+
     private KakaoUserResponse kakaoResponse(boolean emailValid, boolean emailVerified) throws Exception {
         String json = """
                 {
@@ -62,6 +76,16 @@ class KakaoOAuthUserProviderTest {
                   }
                 }
                 """.formatted(emailValid, emailVerified);
+        return objectMapper.readValue(json, KakaoUserResponse.class);
+    }
+
+    private KakaoUserResponse kakaoResponseWithoutEmail() throws Exception {
+        String json = """
+                {
+                  "id": 12345,
+                  "kakao_account": {}
+                }
+                """;
         return objectMapper.readValue(json, KakaoUserResponse.class);
     }
 }
