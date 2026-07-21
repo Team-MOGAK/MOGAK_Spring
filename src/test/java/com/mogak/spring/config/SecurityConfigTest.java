@@ -120,6 +120,17 @@ class SecurityConfigTest {
     }
 
     @Test
+    @DisplayName("Actuator는 health만 공개하고 나머지 경로는 차단한다")
+    void onlyActuatorHealthIsPublic() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/actuator/info"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("T003"));
+    }
+
+    @Test
     @DisplayName("보호 API는 만료 access token이면 T002를 반환한다")
     void protectedApiRejectsExpiredTokenWithExpireTokenCode() throws Exception {
         mockMvc.perform(get("/api/users/profile")

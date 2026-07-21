@@ -10,4 +10,14 @@ public class SecurityProbeController {
     String internalProbe() {
         return "ok";
     }
+
+    @GetMapping("/actuator/health")
+    String health() {
+        return "UP";
+    }
+
+    @GetMapping("/actuator/info")
+    String info() {
+        return "info";
+    }
 }

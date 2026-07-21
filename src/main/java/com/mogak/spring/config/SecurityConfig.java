@@ -75,6 +75,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(PUBLIC_API_PATTERNS.toArray(String[]::new)).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/join")
                         .hasAuthority(SecurityAuthority.PENDING.getAuthority())
                         .requestMatchers("/api/auth/logout")
