@@ -40,6 +40,8 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.List;
@@ -63,10 +65,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         UserController.class,
         AuthController.class,
         MetadataController.class,
-        ConsentController.class,
-        SecurityProbeController.class
+        ConsentController.class
 })
 @Import({
+        SecurityConfigTest.SecurityProbeController.class,
         SecurityConfig.class,
         JwtAuthenticationProvider.class,
         ApiAuthenticationEntryPoint.class,
@@ -76,6 +78,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @ActiveProfiles("test")
 class SecurityConfigTest {
+
+    @RestController
+    public static class SecurityProbeController {
+
+        @GetMapping("/internal/security-probe")
+        String internalProbe() {
+            return "ok";
+        }
+
+        @GetMapping("/actuator/health")
+        String health() {
+            return "UP";
+        }
+
+        @GetMapping("/actuator/info")
+        String info() {
+            return "info";
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
