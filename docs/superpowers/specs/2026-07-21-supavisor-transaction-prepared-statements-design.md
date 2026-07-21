@@ -18,8 +18,8 @@ The setting will live in `application-dev.yml`, next to the production datasourc
 ## Scope
 
 - Add the pgJDBC property and explanatory comment.
-- Add an automated configuration regression test proving that the `dev` profile exposes `prepareThreshold=0` through Hikari data source properties.
-- Run the focused test and the repository's default `sh gradlew test` verification.
+- Use the production error log as the reproduction evidence because a local YAML assertion would not exercise Supavisor session switching.
+- Run the repository's default `sh gradlew test` verification to catch configuration parsing and application regressions.
 
 Hikari pool sizing, Cloud Run scaling limits, Supabase pool limits, and exception-to-HTTP-status mapping are intentionally out of scope.
 

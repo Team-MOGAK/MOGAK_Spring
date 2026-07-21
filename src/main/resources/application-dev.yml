@@ -12,6 +12,10 @@ spring:
     url: ${APP_DB_URL:${url}}
     username: ${APP_DB_USERNAME:${rds_username}}
     password: ${APP_DB_PASSWORD:${rds_password}}
+    hikari:
+      data-source-properties:
+        # Disable session-local named statements for Supavisor transaction mode (port 6543).
+        prepareThreshold: 0
   jpa:
     hibernate:
       ddl-auto: validate
