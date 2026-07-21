@@ -59,7 +59,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-@WebMvcTest({UserController.class, AuthController.class, MetadataController.class, ConsentController.class})
+@WebMvcTest({
+        UserController.class,
+        AuthController.class,
+        MetadataController.class,
+        ConsentController.class,
+        SecurityProbeController.class
+})
 @Import({
         SecurityConfig.class,
         JwtAuthenticationProvider.class,
@@ -102,6 +108,14 @@ class SecurityConfigTest {
                         }))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost"))
+                .andExpect(jsonPath("$.code").value("T003"));
+    }
+
+    @Test
+    @DisplayName("명시되지 않은 경로는 토큰 없이 호출하면 401을 반환한다")
+    void unmatchedRouteRejectsMissingToken() throws Exception {
+        mockMvc.perform(get("/internal/security-probe"))
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("T003"));
     }
 

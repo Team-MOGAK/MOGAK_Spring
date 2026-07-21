@@ -83,7 +83,7 @@ public class SecurityConfig {
                         .hasAnyAuthority(
                                 SecurityAuthority.USER.getAuthority(),
                                 SecurityAuthority.ADMIN.getAuthority())
-                        .anyRequest().permitAll())
+                        .anyRequest().denyAll())
                 .addFilterBefore(
                         new JwtAuthenticationFilter(
                                 jwtAuthenticationProvider,
