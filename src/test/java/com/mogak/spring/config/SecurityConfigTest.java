@@ -40,6 +40,8 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.List;
@@ -59,8 +61,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-@WebMvcTest({UserController.class, AuthController.class, MetadataController.class, ConsentController.class})
+@WebMvcTest({
+        UserController.class,
+        AuthController.class,
+        MetadataController.class,
+        ConsentController.class
+})
 @Import({
+        SecurityConfigTest.SecurityProbeController.class,
         SecurityConfig.class,
         JwtAuthenticationProvider.class,
         ApiAuthenticationEntryPoint.class,
@@ -70,6 +78,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @ActiveProfiles("test")
 class SecurityConfigTest {
+
+    @RestController
+    public static class SecurityProbeController {
+
+        @GetMapping("/internal/security-probe")
+        String internalProbe() {
+            return "ok";
+        }
+
+        @GetMapping("/actuator/health")
+        String health() {
+            return "UP";
+        }
+
+        @GetMapping("/actuator/info")
+        String info() {
+            return "info";
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -102,6 +129,25 @@ class SecurityConfigTest {
                         }))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost"))
+                .andExpect(jsonPath("$.code").value("T003"));
+    }
+
+    @Test
+    @DisplayName("명시되지 않은 경로는 토큰 없이 호출하면 401을 반환한다")
+    void unmatchedRouteRejectsMissingToken() throws Exception {
+        mockMvc.perform(get("/internal/security-probe"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("T003"));
+    }
+
+    @Test
+    @DisplayName("Actuator는 health만 공개하고 나머지 경로는 차단한다")
+    void onlyActuatorHealthIsPublic() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/actuator/info"))
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("T003"));
     }
 
